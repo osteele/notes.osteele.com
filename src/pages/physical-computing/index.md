@@ -3,36 +3,30 @@ title: "Physical Computing"
 layout: ../../layouts/BaseLayout.astro
 ---
 
-Physical computing involves creating interactive physical systems using software and hardware that can sense and respond to the world.
+# Visualization Tools
 
-## Visualization Tools
+[Map Explorer](https://osteele.github.io/map-explorer/) ([source](https://github.com/osteele/map-explorer)) lets students explore the `map()` function.
 
-### Map Explorer
+[PWM Explorer](https://osteele.github.io/pwm-explorer/) ([source](https://osteele.github.io/pwm-explorer/)) is an online visualization with sliders to adjust PWM frequency (or period) and duty cycle, and see the effects on the waveform, the average voltage, and a simulated motor and LED.
 
-Lets students explore the `map()` function.
+The [Arduino PWM Explorer](https://github.com/osteele/arduino-pwm-explorer) is a project, that includes code, for students to learn about PWM by adjusting a couple of potentiometers and seeing the affect on (1) an LED and (2) a simulated oscilloscope.
 
-<ul class="page-list"><li><a href="https://osteele.github.io/map-explorer/">Map Explorer</a></li><li><a href="https://github.com/osteele/map-explorer">GitHub Repository</a></li></ul>
+# IMU Tools
 
-### PWM Explorer
+[https://github.com/osteele/imu-tools](https://github.com/osteele/imu-tools) is a set of tools for sending IMU data from an ESP32 and receiving it on a command-line program or in a web application. It includes the source for an npm package that can be used in a web application to receive data via MQTT (any browser) or Bluetooth (Google Chrome).
 
-Online visualization with adjustable PWM frequency/period and duty cycle, showing effects on waveforms, average voltage, and simulated motor/LED.
+[https://github.com/osteele/Arduino-BLE-IMU](https://github.com/osteele/Arduino-BLE-IMU) is firmware that runs on an ESP32 and relays BNO055 data wirelessly to computer via MQTT (over WiFi) and/or Bluetooth.
 
-<ul class="page-list"><li><a href="https://osteele.github.io/pwm-explorer/">PWM Explorer</a></li></ul>
+[https://github.com/osteele/imu-client-examples](https://github.com/osteele/imu-client-examples) is a set of examples that use relayed wireless IMU data in various ways: to animate one or more Stanford bunnies, and to graph the data.
 
-### Arduino PWM Explorer
+# Sub Pages
 
-A project enabling students to learn PWM by adjusting potentiometers while observing LED effects and simulated oscilloscope output.
+[Arduino](/arduino/)
 
-<ul class="page-list"><li><a href="https://github.com/osteele/arduino-pwm-explorer">GitHub Repository</a></li></ul>
+[Raspberry Pi](/raspberry-pi/)
 
-## IMU Tools
+[IMUs and Accelerometers](/physical-computing/imus-and-accelerometers/)
 
-<ul class="page-list"><li><a href="https://github.com/osteele/imu-tools">imu-tools</a> – Set of tools for sending IMU data from an ESP32 via command-line or web application. Includes npm package for MQTT and Bluetooth reception.</li><li><a href="https://github.com/osteele/Arduino-BLE-IMU">Arduino-BLE-IMU</a> – ESP32 firmware relaying BNO055 data via MQTT (WiFi) and/or Bluetooth</li><li><a href="https://github.com/osteele/imu-client-examples">imu-client-examples</a> – Examples using wireless IMU data for animation and graphing</li></ul>
+[Properties of Electronic Components](/physical-computing/properties-of-electronic-components/)
 
-## Platforms
-
-<ul class="page-list"><li><a href="/arduino/">Arduino</a></li><li><a href="/raspberry-pi/">Raspberry Pi</a></li></ul>
-
-## Related
-
-<ul class="page-list"><li><a href="/creative-coding/">Creative Coding</a></li><li><a href="/p5js/">p5.js Resources</a></li></ul>
+[p5.js IMU Workshop](/physical-computing/p5js-imu-workshop/)

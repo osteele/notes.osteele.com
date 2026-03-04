@@ -3,8 +3,4 @@ title: "JavaScript Features"
 layout: ../../../../layouts/BaseLayout.astro
 ---
 
-Modern JavaScript features useful for p5.js development: arrow functions, destructuring, spread operator, and more.
-
-## Related
-
-<ul class="page-list"><li><a href="/javascript/">JavaScript Resources</a></li><li><a href="/javascript/iteration-methods/">Iteration Methods</a></li><li><a href="/p5js/tutorials/">All Tutorials</a></li></ul>
+This tutorial continues the Retained Mode tutorial. That tutorial demonstrated how to use arrays and objects to store a list of shapes. This tutorial demonstrates some more advanced features of the JavaScript language, that you may optionally use in your programs.

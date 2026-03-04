@@ -3,6 +3,8 @@ title: "Photography"
 layout: ../../../layouts/BaseLayout.astro
 ---
 
+[https://kit.co/osteele/photography](https://kit.co/osteele/photography)
+
 # Mobile Apps
 
 [Halide](https://halide.cam) iPhone (and iPad) camera app, for more control while shooting iPhone photos.

@@ -3,38 +3,28 @@ title: "JavaScript Resources"
 layout: ../../layouts/BaseLayout.astro
 ---
 
-## Learning JavaScript
+# Tutorials and Examples
 
-<ul class="page-list"><li><a href="https://javascript.info/">JavaScript.info</a> – Modern JavaScript tutorial</li><li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide">MDN Web Docs: JavaScript Tutorials</a></li><li><a href="https://eloquentjavascript.net/">Eloquent JavaScript</a> – Free online book</li><li><a href="https://www.digitalocean.com/community/tutorial-series/how-to-code-in-javascript">Digital Ocean: How To Code in JavaScript</a></li></ul>
+- [JavaScript Crash Course](https://paper.dropbox.com/doc/JavaScript-Crash-Course--ApRkMF3FH~pDlkHv5aP6oi~aAg-IYQ3f4icQsFSi6YrY7IAN)
+- p5.js [Learn](https://p5js.org/learn/), [Examples](https://p5js.org/examples/)
+- [Annotated p5.js + PoseNet project](https://github.com/osteele/p5pose/blob/master/src/sketch.js). (Note that this uses the `p5.` prefix. Code created from the more recent template doesn't need this.)
 
-## JavaScript Arrays
+# JavaScript Reference Documentation
 
-Tutorials, tables, and interactives for learning arrays and array methods:
+- [JavaScript Array Methods – (MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array#Instance_methods), [W3Schools](https://www.w3schools.com/js/js_array_methods.asp))
+- [JavaScript String Methods — (MDN,](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String#Methods) [W3Schools](https://www.w3schools.com/js/js_string_methods.asp))
 
-<ul class="page-list"><li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">MDN: Array Reference</a></li><li><a href="https://javascript.info/array">JavaScript.info: Arrays</a></li><li><a href="https://javascript.info/array-methods">JavaScript.info: Array Methods</a></li></ul>
+# P5 Reference Documentation
 
-## JavaScript Objects
+- p5.js [Reference](https://p5js.org/reference/)
+- [p5.js cheat sheet](https://bmoren.github.io/p5js-cheat-sheet/)
 
-<ul class="page-list"><li><a href="https://objectexplorer.netlify.app/">JavaScript Object Explorer</a> – by Sarah Drasner</li></ul>
+# PoseNet Documentation
 
-## Reference Materials
+- PoseNet [ml5.js documentation](https://learn.ml5js.org/docs/#/reference/posenet)
+- [PoseNet reference documentation](https://github.com/tensorflow/tfjs-models/tree/master/posenet#pose-detection-in-the-browser-posenet-model)
 
-Knowing JavaScript doesn't mean memorizing everything about it. Use the following references while you code:
+# Recipes
 
-<ul class="page-list"><li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference">MDN Web Docs: JavaScript Reference</a></li><li><a href="https://htmlcheatsheet.com/js/">JavaScript Cheat Sheet</a></li></ul>
-
-## Code Editing Environments
-
-### Desktop Development
-
-[Visual Studio Code (VSCode)](https://code.visualstudio.com/) and [Atom](https://atom.io/) are recommended code editors.
-
-### Web-Based Development
-
-Code playgrounds support JavaScript for browser-based coding without local installation:
-
-<ul class="page-list"><li><a href="https://codepen.io/">CodePen</a></li><li><a href="https://jsfiddle.net/">JSFiddle</a></li><li><a href="https://codesandbox.io/">CodeSandbox</a></li></ul>
-
-## Related Resources
-
-<ul class="page-list"><li><a href="/p5js/">p5.js Resources</a> – Learning JavaScript within p5.js context</li></ul>
+- [Rotate around a point](https://editor.p5js.org/osteele/sketches/bd7mPSLKE).  This p5.js sketch includes a function rotateAbout that rotates a shape around a specific point, instead of around the origin (upper left corner). In the sketch, it’s used to rotate the rectangle around its center.
+- [Calibrate a sensor reading](https://editor.p5js.org/osteele/sketches/gxtbqdo56). Here’s an example of how to calibrate a sensor. In the sketch, the mouse X position is used to stand in for the first (yaw) euler angle, so that the code can run without a physical IMU. When you click, the program interprets this as “the physical device is now in its start position. Whatever angle the sensor returns should now be treated as the start position, even if the actual sensor number is different”. It does this by recording the current sensor angle, and subtracting it from the sensor angles. This is similar to the calibration process that you’ve seen for the Optitrack and other devices, where the performer assumes a known position and the device operator tells the computer “this is the known start position”.

@@ -1,0 +1,21 @@
+---
+import { Code } from "astro:components";
+
+interface Props {
+  code: string;
+  lang?: string;
+  image?: string;
+  alt?: string;
+}
+
+const { code, lang = "javascript", image, alt = "" } = Astro.props;
+---
+
+<div class="code-example">
+  <Code code={code.trim()} lang={lang} theme="github-light" />
+  {image && (
+    <div class="canvas-preview">
+      <img src={image} alt={alt} />
+    </div>
+  )}
+</div>

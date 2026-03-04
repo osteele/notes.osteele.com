@@ -3,25 +3,16 @@ title: "Arduino"
 layout: ../../layouts/BaseLayout.astro
 ---
 
-Arduino is an open-source electronics platform based on easy-to-use hardware and software.
+# Library
 
-## Getting Started
+# Tutorials
 
-The basic Arduino program structure:
+[Multi-Stage Sketches](/physical-computing/arduino/multi-stage-sketches/)
 
-<div class="code-example"><pre><code>void setup() {
-  // Runs once at startup
-  pinMode(LED_BUILTIN, OUTPUT);
-}
+[Serial Communication using SerialRecord](/processing/serial-communication-using-serialrecord/) 
 
-void loop() {
-  // Runs repeatedly
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(1000);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(1000);
-}</code></pre></div>
+# Also See
 
-## Related
+[Creative Coding with Processing](/processing/) 
 
-<ul class="page-list"><li><a href="/physical-computing/">Physical Computing</a></li><li><a href="/raspberry-pi/">Raspberry Pi</a></li></ul>
+[Physical Computing](/physical-computing/)

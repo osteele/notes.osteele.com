@@ -3,33 +3,41 @@ title: "Sine in Creative Coding"
 layout: ../../../layouts/BaseLayout.astro
 ---
 
-## Applications of Sine and Cosine
+In creative coding, sin and cos can be used for:
 
--   Drawing waves
--   Arranging items in circles and spirals
--   Generating smooth periodic motion
--   Creating fields that fill space with patterns affecting color, shape, or motion
+- Draw a wave
+- Arrange items in circles and spirals
+- Generate smooth periodic motion
+- An ingredient of “fields”, that fill a line or space with a pattern that determines color, shape, or other qualities of drawing or motion that appears in that space.
 
-## Reading
+# Read
 
-_Getting Started with p5.js_ chapters on circular motion (pp. 162–172) are recommended for foundational knowledge.
+- *Getting Started with p5.js*, “Circular’, pp. 162–172
+- 
+    
+    [The Nature of Code](https://natureofcode.com/book/chapter-3-oscillation/)
+    
+- Course notes:
+    
+    [Arranging Items in a Circle or Spiral](/courses/creative-coding/arranging-items-in-a-circle-or-spiral/) 
+    
 
-<div class="callout"><p>From <em>The Nature of Code</em>: "Trigonometry is a sine of the times." This introduction to Chapter 3 frames the foundational concepts of angles and angular motion used in Processing and creative coding applications.</p></div>
+# Watch
 
-## Video Learning Path
+[3.1: Angles and Angular Motion - The Nature of Code](https://www.youtube.com/watch?v=qMq-zd6hguc)
 
-Key concepts covered in instructional videos:
+[3.2: Trigonometry and Polar Coordinates - The Nature of Code](https://www.youtube.com/watch?v=znOBmOrtz_M)
 
-1.  **Angles and Angular Motion** – How angles function in Processing
-2.  **Trigonometry and Polar Coordinates** – Foundational trigonometric concepts
-3.  **Simple Harmonic Motion** – Oscillating movement techniques
-4.  **Graphing Sine Waves** – Visualization and animation of sine functions with period and phase variations
-5.  **Trigonometric Graphs** – Visual representation of sine and cosine functions
+[3.3: Simple Harmonic Motion - The Nature of Code](https://www.youtube.com/watch?v=GvwPwIUSYqE)
 
-## Interactive Resources
+[3.6 Graphing Sine Wave - Nature of Code](https://www.youtube.com/watch?v=JLAc9hMtcxk)
 
-<ul class="page-list"><li><a href="https://observablehq.com/@osteele/sin-basics-for-creative-coding">sin() basics for Creative Coding</a> – Observable notebook</li><li><a href="https://www.desmos.com/calculator/dnpqpkbgce">Sine/Cosine: The Dome</a> – Desmos visualization</li><li><a href="https://www.geogebra.org/m/cPuZqeBV">Visualizing Sine and Cosine</a> – GeoGebra interactive</li></ul>
+[Trigonometry - The graphs of sin and cos](https://www.youtube.com/watch?v=0-grw1v-dhs)
 
-## Related Tutorials
+# Interact
 
-<ul class="page-list"><li><a href="/courses/creative-coding/arranging-items-in-a-circle-or-spiral/">Arranging Items in a Circle or Spiral</a></li><li><a href="/creative-coding/creative-coding-with-p5js/animation-and-randomness/">Animation and Randomness</a></li></ul>
+[sin() basics for Creative Coding](https://observablehq.com/@osteele/creating-coding-sin-basics)
+
+[Sine/Cosine: The Dome](https://www.desmos.com/calculator/0uyr4ywrvt)
+
+[Visualizing Sine and Cosine](https://www.geogebra.org/m/XC3D226P)

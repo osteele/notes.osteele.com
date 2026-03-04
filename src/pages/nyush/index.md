@@ -3,28 +3,24 @@ title: "NYUSH"
 layout: ../../layouts/BaseLayout.astro
 ---
 
-Notes and resources for NYU Shanghai courses.
+# Prof. Steele
 
-## Prof. Steele
+[Appointment Calendar](https://calendar.google.com/calendar/u/0/selfsched?sstoken=UU1TaDFWeEV2ZzFHfGRlZmF1bHR8NzBkMmRmNGEzZGE3ZDBmNzExMGUwYWZkYzkwZmFkYWI)
 
-<ul class="page-list"><li><a href="https://calendar.google.com/calendar/selfsched?sstoken=UUVqbFVDcExqLTBFfGRlZmF1bHR8MTViZTYxNjM1MzMyNGE1MTgyYWJlYTQ1ODYzZjJjMzc">Appointment Calendar</a></li><li><a href="/courses/">Course Notes</a></li></ul>
+[Course Notes](/courses/)
 
-## Fab Lab & Woodshop
+# Fab Lab & Woodshop
 
-The Fabrication Lab is IMA's digital manufacturing working space where students can realize their ideas. Utilizing cutting-edge technologies such as 3D printing and laser cutting, students are able to interface their ideas between the digital and physical worlds.
+[Fabrication Lab - Interactive Media Arts @ NYU Shanghai](https://wp.nyu.edu/nyushanghai-fabrication-lab/)
 
-### Woodshop
+[Woodshop](https://wp.nyu.edu/nyushanghai-fabrication-lab/woodshop/)
 
-The woodshop is located in room 823C of NYU Shanghai. Make an appointment with Andy or Oliver for access.
+[Profs. Minsky and Steele will be available to open up the Fab Lab at these times. Instructors and fellows may be present at other times as well.](https://calendar.google.com/calendar/embed?src=c_fm1rijmhkjul7mlqh2shm8n5t8%40group.calendar.google.com&ctz=Asia%2FShanghai)
 
-<div class="callout"><p><strong>Safety:</strong> Don't operate a machine alone. With a strong motor, the machine's power will be much bigger than yours. They can pull you into the machine, and prevent you from reaching your phone.</p></div>
+Profs. Minsky and Steele will be available to open up the Fab Lab at these times. Instructors and fellows may be present at other times as well.
 
-## IMA/B
+# IMA/B
 
-IMA/B WIKI is a resource for IMA/B students seeking information about websites and resources. It provides details on the IMA degree, news, and faculty/fellow contact information.
+[IMA/B WIKI](http://bit.ly/nyu-ima-b-wiki)
 
-<ul class="page-list"><li><a href="http://bit.ly/nyu-ima-b-wiki">IMA/B Wiki</a></li></ul>
-
-## Related
-
-<ul class="page-list"><li><a href="/courses/">Course Notes</a></li><li><a href="/creative-coding/">Creative Coding</a></li></ul>
+[http://bit.ly/nyu-ima-b-wiki](http://bit.ly/nyu-ima-b-wiki)

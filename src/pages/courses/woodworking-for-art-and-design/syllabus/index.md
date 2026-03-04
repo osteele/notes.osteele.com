@@ -1,33 +1,10 @@
 ---
-title: "Syllabus - Woodworking for Art and Design"
+title: "Syllabus"
 layout: ../../../../layouts/BaseLayout.astro
 ---
 
-## Course Description
+### **Subject to Change Statement**
 
-This course introduces students to woodworking techniques for artistic and design applications. Students will learn fundamental skills including measuring, cutting, joining, and finishing wood while completing a series of projects.
+The syllabus and course schedule are subject to change. Changes will be communicated via email or Slack, and in Google Classroom. It is your responsibility to check email messages and course announcements to stay current in the online phase of the course.
 
-## Learning Objectives
-
--   Understand wood properties and selection
--   Safely operate hand and power tools
--   Apply joinery techniques appropriate to different projects
--   Design and execute original woodworking projects
--   Document and present creative work
-
-## Projects
-
-1.  [Food Tray](/courses/woodworking-for-art-and-design/project-1-food-tray/) - Introduction to basic cuts and assembly
-2.  [Small Object Stand](/courses/woodworking-for-art-and-design/project-2-small-object-stand/) - Exploring joinery
-3.  [Band Saw Box](/courses/woodworking-for-art-and-design/project-3-band-saw-box/) - Curved cuts and interior work
-4.  [Final Project](/courses/woodworking-for-art-and-design/final-projects/) - Self-directed design
-
-## Grading
-
--   Projects: 60%
--   Documentation: 20%
--   Participation: 20%
-
-## Related
-
-<ul class="page-list"><li><a href="/courses/woodworking-for-art-and-design/course-details/">Course Details</a></li><li><a href="/courses/woodworking-for-art-and-design/documentation-guidelines/">Documentation Guidelines</a></li><li><a href="/courses/woodworking-for-art-and-design/">Course Home</a></li></ul>
+[Woodworking Syllabus](https://docs.google.com/document/d/10hSIJ9meP4uMR7vitujV9SX4gP6476TK1EMmzdflVPU/edit?usp=drivesdk)

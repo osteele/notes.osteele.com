@@ -1,0 +1,534 @@
+---
+title: "Processing Arrays and Animation"
+layout: ../../../layouts/BaseLayout.astro
+---
+
+## Draw a circle
+
+Draw a circle.
+
+```java
+void setup() {
+  size(600, 500);
+}
+
+void draw() {
+  background(200);
+
+  circle(100, 100, 20);
+}
+```
+Things to note: The background() call is in `draw()`, not `setup()`. This doesn’t matter for a static animation (an “animation” where each call to `draw()` draws exactly the same, so that it nothing is changing on the screen), like this.
+
+## Animate the circle
+
+In this sketch, the circle moves downwards. To do this, we introduce variables `x` and `y` to hold the circle position. We use a *variable* for y instead of the *literal value* 100, because the value changes (varies) from frame to frame.
+
+Each animation frame (each call to `draw()`) *increments* the value of y – it increases the value by one. This causes the circle to be drawn at a different position each time.
+
+```java
+float x = 100;
+float y = 100;
+
+void setup() {
+  size(600, 500);
+}
+
+void draw() {
+  background(200);
+
+  circle(x, y, 20);
+  y += 1;
+}
+```
+Things to note: This sketch also introduces a variable for x, even though it doesn’t every change its value. This use of a variable simply introduces a mnemonic name for the value. It also makes the code easier to read, because x and y are treaded the same way.
+
+Things to note: Here is the pay-off for the fact that the call to `background()` is inside `draw()` instead of `setup()`. Can you see why this is necessary? How does the sketch behave differently if you move the call to `background()` back to `setup()`, or remove it entirely?
+
+## Prepare to add a second circle
+
+Prepare to add another circle. Rename `x` and `y` to `x0` and `y0`, so that we can name the new variables `x1` and `y1`.
+
+```java
+float x0 = 100;
+float y0 = 100;
+
+void setup() {
+  size(600, 500);
+}
+
+void draw() {
+  background(200);
+
+  circle(x0, y0, 20);
+  y0 += 1;
+}
+```
+Things to note: This sketch behaves the same as the previous sketch. It sets up the code for the next step (adding a second circle), but doesn’t actually take that step. When developing a sketch (or other project), it is useful to break the steps down as small as possible, so that you can test each small change by itself. It is also useful to alternate between: (1) code changes that don’t change the behavior of a sketch, but make the code more flexible, and (2) code changes that add or change behavior.
+
+## Add the second circle
+
+Copy the code that *defines* the variables (at the top of the sketch), *and* the code that *uses* the variables (inside `draw()`), to make another falling circle.
+
+```java
+float x0 = 200;
+float y0 = 100;
+
+float x1 = 100;
+float y1 = 100;
+
+void setup() {
+  size(600, 500);
+}
+
+void draw() {
+  background(200);
+
+  circle(x0, y0, 20);
+  y0 += 1;
+
+  circle(x1, y1, 20);
+  y1 += 1;
+}
+```
+Question: How would you extend this sketch to draw three circles, instead of two? How about 100 circles?
+
+## Replace variables by an array
+
+Replace `x0` and `x1` by any array `xs`. Now the first x value is at `xs[0]` and the second x value is at `xs[1]`.
+
+```java
+float[] xs = {100, 200};
+float[] ys = {100, 100};
+
+void setup() {
+  size(600, 500);
+}
+
+void draw() {
+  background(200);
+
+  circle(xs[0], ys[0], 20);
+  ys[0] += 1;
+
+  circle(xs[1], ys[1], 20);
+  ys[1] += 1;
+}
+```
+## Use a variable to index the array
+
+Instead of writing `xs[0]` directly, create a variable `i` whose value is 0, and use `xs[i]` instead. Also do the same for `xs[1]`.
+
+This makes the second code block (lines 13–14) the same as the first code block (lines 19–20). These two code blocks are now exactly the same, except for the value of `i`.
+
+```java
+float[] xs = {100, 200};
+float[] ys = {100, 100};
+
+void setup() {
+  size(600, 500);
+}
+
+void draw() {
+  background(200);
+
+  {
+    int i = 0;
+    circle(xs[i], ys[i], 20);
+    ys[i] += 1;
+  }
+
+  {
+    int i = 1;
+    circle(xs[i], ys[i], 20);
+    ys[i] += 1;
+  }
+}
+```
+Question: How would you extend this sketch to draw three circles, instead of two? How about 100 circles?
+
+## Replace the two code blocks by a `for` loop
+
+Replace the two blocks of code, that run with different values of `i`, with a single block inside a `for` loop. This block is executed twice. The first time, `i` is equal to 0, so this has the effect of the first block in the previous sketch. The second time, `i` is equal to 1, so this has the effect of the second block in the previous sketch.
+
+```java
+float[] xs = {100, 200};
+float[] ys = {100, 100};
+
+void setup() {
+  size(600, 500);
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < 2; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += 1;
+  }
+}
+```
+## Another way to initialize an array
+
+`float[] xs = {100, 200}` is one way to initialize an array. It’s useful when you know ahead of time how many values there are in the array, and what each of them is. It creates a new array with initial values `100` and `200`.
+
+`new float[2]` is another way to create a new array. It creates an array with initial values `0` and `0`. Then we change the array values, on lines 6–9. (So far, this looks like a more verbose way of doing the same thing as the previous step. We will see in a couple of sketches why it is useful.)
+
+```java
+float[] xs = new float[2];
+float[] ys = new float[2];
+
+void setup() {
+  size(600, 500);
+  xs[0] = 100;
+  xs[1] = 200;
+  ys[0] = 100;
+  ys[1] = 100;
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < 2; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += 1;
+  }
+}
+```
+## Using `random()`
+
+Set the array values to random numbers. Each time we run the sketch, the circles will start in a different position.
+
+```java
+float[] xs = new float[2];
+float[] ys = new float[2];
+
+void setup() {
+  size(600, 500);
+  xs[0] = random(width);
+  xs[1] = random(width);
+  ys[0] = random(40);
+  ys[1] = random(40);
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < 2; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += 1;
+  }
+```
+## Use a loop to initialize the positions
+
+In the previous sketch, all the lines to initialize the x positions look the same (`xs[0] = random(width)`), and all the lines to initialize the y positions look the same (`ys[0] = random(40)`), except that the Array indices are different. This is a clue that we could be using a `for` loop.
+
+This sketch replaces the code that uses one line to set `xs[0]` and another to set `xs[1]`, by a `for` loop that sets all the values in `xs`.
+
+```java
+float[] xs = new float[2];
+float[] ys = new float[2];
+
+void setup() {
+  size(600, 500);
+  for (int i = 0; i < 2; i++) {
+    xs[i] = random(width);
+    ys[i] = random(40);
+  }
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < 2; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += 1;
+  }
+}
+```
+## Draw ten circles instead of two
+
+Now it is easy to change the number of circles. This sketch draws 10 circles instead of two. We have to change `2` to `10` in four places: lines 1, 2, 6, and 15.
+
+```java
+float[] xs = new float[10];
+float[] ys = new float[10];
+
+void setup() {
+  size(600, 500);
+  for (int i = 0; i < 10; i++) {
+    xs[i] = random(width);
+    ys[i] = random(40);
+  }
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < 10; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += 1;
+  }
+}
+```
+## Use `Array.length`
+
+Instead of using `10` in the `for` loops, use `xs.length` to ask the Array for its length. Now the loop is reading the length from the array itself, so it will always loop over the correct number of elements. In order to change the number of circles back to two, or to 100, we need to change it in two places: the initialization of `xs`, and the initialization of `ys`.
+
+```java
+float[] xs = new float[10];
+float[] ys = new float[10];
+
+void setup() {
+  size(600, 500);
+  for (int i = 0; i < xs.length; i++) {
+    xs[i] = random(width);
+    ys[i] = random(40);
+  }
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < xs.length; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += 1;
+  }
+}
+```
+Things to note: This code uses `xs.length` to control a sketch that loops over both `xs` and `ys`. It works because `xs` and `ys` have the same length. They need to have the same length in this sketch, because they are used to represent two different properties of the same “object”: a circle that has an x and y position.
+
+To try: Now change to 30, 100, 300, etc.
+
+## Replace all the `10`s by a variable
+
+Replace the `10` in `new float[10]` by a variable `DOT_COUNT`. Now we can change the value of `DOT_COUNT`, and `xs` and `ys` will automatically have the new length as each other.
+
+This change, where both arrays are driven from the same number, is more useful when there are more and more arrays, as in the sketches that we will see below.
+
+```java
+int DOT_COUNT = 10;
+float[] xs = new float[DOT_COUNT];
+float[] ys = new float[DOT_COUNT];
+
+void setup() {
+  size(600, 500);
+  for (int i = 0; i < xs.length; i++) {
+    xs[i] = random(width);
+    ys[i] = random(40);
+  }
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < xs.length; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += 1;
+  }
+}
+```
+## Use a variable to control the speed
+
+Change speed from a constant 1 into a variable.
+
+```java
+int DOT_COUNT = 10;
+float[] xs = new float[DOT_COUNT];
+float[] ys = new float[DOT_COUNT];
+float speed = 1;
+
+void setup() {
+  size(600, 500);
+  for (int i = 0; i < xs.length; i++) {
+    xs[i] = random(width);
+    ys[i] = random(40);
+  }
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < xs.length; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += speed;
+  }
+}
+```
+Things to try: Try different speeds, *e.g.* 4.
+
+## Make an array of speeds
+
+Make an *array* of speeds. This sets us up to give each circle a different speed. Remember to use `DOT_COUNT`!
+
+```java
+int DOT_COUNT = 10;
+float[] xs = new float[DOT_COUNT];
+float[] ys = new float[DOT_COUNT];
+float[] speeds = new float[DOT_COUNT];
+
+void setup() {
+  size(600, 500);
+  for (int i = 0; i < xs.length; i++) {
+    xs[i] = random(width);
+    ys[i] = random(40);
+    speeds[i] = 1;
+  }
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < xs.length; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += speeds[i];
+  }
+}
+```
+## Use a different speed for each circle
+
+```java
+int DOT_COUNT = 10;
+float[] xs = new float[DOT_COUNT];
+float[] ys = new float[DOT_COUNT];
+float[] speeds = new float[DOT_COUNT];
+
+void setup() {
+  size(600, 500);
+  for (int i = 0; i < xs.length; i++) {
+    xs[i] = random(width);
+    ys[i] = random(40);
+    speeds[i] = random(5);
+  }
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < xs.length; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += speeds[i];
+  }
+}
+```
+Note: The circles disappear when they reach the bottom of the canvas. (Philosophy question: Where do they go?)
+
+## Bounce the circles off the bottom of the canvas.
+
+```jsx
+int DOT_COUNT = 10;
+float[] xs = new float[DOT_COUNT];
+float[] ys = new float[DOT_COUNT];
+float[] speeds = new float[DOT_COUNT];
+
+void setup() {
+  size(600, 500);
+  for (int i = 0; i < xs.length; i++) {
+    xs[i] = random(width);
+    ys[i] = random(40);
+    speeds[i] = random(5);
+  }
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < xs.length; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += speeds[i];
+    if (ys[i] > height && speeds[i] > 0) {
+      speeds[i] *= -1;
+    }
+  }
+}
+```
+Note: `speeds[i] *= -1` is equivalent to `speeds[i] = -1 * speeds[i]`, which  is equivalent to to `speeds[i] = -speeds[i]`.
+
+Note: The test `speeds[i] > 0` is not necessary for this sketch to behave correctly. It prevents a certain undesirable behavior if the code is changed implement an [*inelastic collision*](https://en.wikipedia.org/wiki/Inelastic_collision), by changing the `-1` to a smaller number.
+
+Note: Now, the circles disappear when they reach the top of the canvas.
+
+## Bounce the circles off the top too
+
+```jsx
+int DOT_COUNT = 10;
+float[] xs = new float[DOT_COUNT];
+float[] ys = new float[DOT_COUNT];
+float[] speeds = new float[DOT_COUNT];
+
+void setup() {
+  size(600, 500);
+  for (int i = 0; i < xs.length; i++) {
+    xs[i] = random(width);
+    ys[i] = random(40);
+    speeds[i] = random(5);
+  }
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < xs.length; i++) {
+    circle(xs[i], ys[i], 20);
+    ys[i] += speeds[i];
+    if (ys[i] > height && speeds[i] > 0) {
+      speeds[i] *= -1;
+    }
+    if (ys[i] < 0 && speeds[i] < 0) {
+      speeds[i] *= -1;
+    }
+  }
+}
+```
+## Now use icecream() function instead of circles
+
+```java
+int DOT_COUNT = 17;
+float[] xs = new float[DOT_COUNT];
+float[] ys = new float[DOT_COUNT];
+float[] speeds = new float[DOT_COUNT];
+
+void setup() {
+  size(600, 600);
+  for (int i = 0; i < xs.length; i++) {
+    xs[i] = random(width);
+    ys[i] = random(40);
+    speeds[i] = random(2,5);
+  }
+}
+
+void draw() {
+  background(200);
+
+  for (int i = 0; i < xs.length; i++) {
+    icecream(xs[i], ys[i], color(255,0,0));
+    ys[i] += speeds[i];
+    if (ys[i] > height && speeds[i] > 0) {
+      speeds[i] *= -1;
+    }
+    if (ys[i] < 0 && speeds[i] < 0) {
+      speeds[i] *= -1;
+    }
+  }
+}
+
+void icecream(float x, float y, color c) {
+  fill(c);
+  arc(x, y, 30, 30, PI, 2*PI);
+  fill(0, 0, 100);
+  triangle(x + 15, y, x -15, y, x, y+60);
+}
+```
+# Things to try
+
+- Give each circle (or icecream, or your own function) its own color. Use random colors. What happens if you try this *without* an array (by calling the `random()` function inside of `draw()`)?
+- The graphics move vertically. Make them move horizontally as well.
+- Now that the graphics move horizontally, they leave the canvas to the left or right and disappear forever (the same as they used to disappear off the top and bottom, before we added collisions to those edges). Make them bounce off the left and right edges of they canvas, just as they bounce off the top and bottom edges.
+- Replace the circle by a different drawing. If you have a function that draws your shape, call it instead of `circle()`. This is shown above for icecream().
+- Change the circle() or icecream() or your own function to have new parameters, such as size.
+- Note that the circles stick out past the edges of the canvas before they bounce back. One reason for this is that the code tests when the *center* of the circle has passed an edge. Change the `if` statements to detect whether the right, left, top, or bottom of the circle has touched the appropriate edge, instead of whether the center has passed.
+- Challenge (*very advanced*): Make the circles bounce off *each other*. You can use the `dist()` function to tell how the distance between two circles, and compare that to the sum of their radii.
+
+---
+
+©2020–2022 by Oliver Steele.

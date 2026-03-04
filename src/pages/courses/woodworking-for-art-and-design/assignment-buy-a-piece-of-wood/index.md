@@ -1,45 +1,20 @@
 ---
-title: "Assignment: Buy a Piece of Wood"
+title: "Assignment: Buy a piece of wood"
 layout: ../../../../layouts/BaseLayout.astro
 ---
 
-Visit a lumber yard or home improvement store and purchase wood for your first project.
+Your assignment is to buy a piece of wood that inspires you. You may be inspired by its color, its shape, its grain, its feel, its smell. It may suggest to you a piece that you would like to make from it, something that you might make if you had a larger piece or could combine it with other pieces of wood (or other materials), or it may just remind you of an object or image that you might then use in a design for an entirely different material.
 
-## Objectives
+Find out its English and Chinese name, where it comes from, what it’s used for. What does the tree it comes from look like? What are its material properties — density, stiffness (modulus of elasticity), strength (modulus of rupture); how do these compare with a wood that you have used.
 
--   Learn to navigate a lumber yard
--   Understand wood sizing and pricing
--   Select appropriate wood for your project
--   Practice evaluating wood quality
+The class can fund 200元 if the vendor can provide you with fapiao. Be aware that some vendors may provide fapiao for larger orders but not small ones; you may want to collaborate with your classmates to buy pieces together from the same vendor.
 
-## What to Buy
+You do not need to avoid wood that is the same species as your classmates, but it should be something that you find meaningful independent of whether anyone else has chosen a similar piece of stock.
 
-For the food tray project, you'll need approximately:
+There will be a written portion of this assignment that is due after the break.
 
--   One board, 1" x 6" x 4' (or equivalent)
--   Look for: straight grain, no large knots, flat (not warped)
+The purpose of this exercise is to think about design and to familiarize yourself with the materiality of wood. You are not committed to using this stock in a project.
 
-## Wood Selection Tips
+# Reference
 
--   **Sight down the board** - Check for warping or twisting
--   **Check for defects** - Avoid large knots, cracks, or stains
--   **Consider the grain** - Straight grain is easier to work
--   **Think about appearance** - Will this look good finished?
-
-## Where to Buy
-
--   Home improvement stores (Home Depot, Lowes)
--   Local lumber yards
--   Specialty wood suppliers
-
-## Deliverable
-
-Bring your wood to class and be prepared to discuss:
-
--   What species did you buy?
--   Why did you choose this piece?
--   What did it cost?
-
-## Related
-
-<ul class="page-list"><li><a href="/courses/woodworking-for-art-and-design/project-1-food-tray/">Project 1: Food Tray</a></li><li><a href="/courses/woodworking-for-art-and-design/">Course Home</a></li></ul>
+[The Wood Database](https://www.wood-database.com/)

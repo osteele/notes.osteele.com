@@ -3,42 +3,11 @@ title: "Language Constructs"
 layout: ../../../../layouts/BaseLayout.astro
 ---
 
-[
-
-🎶
-
-Oliver’s Notes
-
-](/)
-
--   [
-    
-    Cascading if
-    
-    ](#block-6a2e706c64f04eb89036460ed26906b9)
--   [
-    
-    switch / case
-    
-    ](#block-f0bd961055744dbea12d3b96d14440c9)
--   [
-    
-    The else is optional
-    
-    ](#block-b18933f41c964af7a6b1dd77a1831b55)
--   [
-    
-    Optional break
-    
-    ](#block-83a6958a998b46399c58b7c462750244)
-
 # Cascading `if`
 
 I might teach this indentation pattern for `if` when there’s more than two arms, as an alternative to actually nesting them. (The parse tree is still nested, but the indentation level isn’t.)
 
-Copy
-
-```arduino
+```cpp
 if (expr == 1) {
   …
 } else {
@@ -56,9 +25,7 @@ if (expr == 1) {
 
 ⇒
 
-Copy
-
-```arduino
+```cpp
 if (expr == 1) {
   …
 } else if (expr == 2) {
@@ -72,11 +39,9 @@ if (expr == 1) {
 
 # `switch` / `case`
 
-I like to introduce `switch` as an alternative to “chained” `if` statements:
+I like to introduce `switch`  as an alternative to “chained” `if` statements:
 
-Copy
-
-```arduino
+```cpp
 if (expr == 1) {
   …
 } else if (expr == 2) {
@@ -90,9 +55,7 @@ if (expr == 1) {
 
 ⇒
 
-Copy
-
-```none
+```
 switch (expr) {
   case 1:
     …
@@ -110,8 +73,8 @@ switch (expr) {
 
 that has the advantages:
 
--   Communicates the design intent – this is the most important
--   Only evaluates `expr` once (doesn’t matter if `expr` is a variable)
+- Communicates the design intent – this is the most important
+- Only evaluates `expr` once (doesn’t matter if `expr` is a variable)
 
 Note: Having to use `break` (in C/C++/Arduino, but lots of other languages too) is a gotcha and an annoyance though.
 
@@ -121,9 +84,7 @@ Note: It took me decades to get straight that `switch` goes on the outside and
 
 In a chained `if`, the `else` is optional. In a `switch`/`case`, the `default` is optional.
 
-Copy
-
-```arduino
+```cpp
 if (expr == 1) {
   …
 } else if (expr == 2) {
@@ -133,9 +94,7 @@ if (expr == 1) {
 }
 ```
 
-Copy
-
-```none
+```
 switch (expr) {
   case 1:
     …
@@ -153,9 +112,7 @@ switch (expr) {
 
 The `break` comes in handy when two (or more) cases share the same code:
 
-Copy
-
-```none
+```
 if (expr == 1) {
   // executed when expr is 1
 } else if (expr == 2 || expr == 3) {
@@ -163,9 +120,7 @@ if (expr == 1) {
 }
 ```
 
-Copy
-
-```none
+```
 switch (expr) {
   case 1:
     // executed when expr is 1

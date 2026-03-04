@@ -1,10 +1,10 @@
 ---
-title: "Raspberry Pi Pinouts"
+title: "Pinouts"
 layout: ../../../layouts/BaseLayout.astro
 ---
 
-GPIO pinout reference for Raspberry Pi.
+[Raspberry Pi Pinout](https://pinout.xyz)
 
-## Related
+![](/images/pinouts/raspi-4-pinout.png)
 
-<ul class="page-list"><li><a href="/raspberry-pi/">Raspberry Pi</a></li><li><a href="/raspberry-pi/uart/">UART</a></li></ul>
+![](/images/pinouts/raspi-4-pinout-2.png)

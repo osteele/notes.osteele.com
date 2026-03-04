@@ -7,9 +7,7 @@ layout: ../../../../layouts/BaseLayout.astro
 
 Use the following alias to launch VSCode with a distinct Profile for presentations. You can use this to launch without extensions and other customizations, in order to present a simpler mode that looks like what students will see. For example, I like to code with ligatures, but this is very confusing.
 
-Copy
-
-```shell
+```bash
 function codi() {
   local dir=~/.vscode-teaching
   if [[ ! -d $dir ]]; then
@@ -34,26 +32,30 @@ I generally launch this from Alfred keyword, rather than from the terminal. If y
 
 You can also use Automator to make it look like an app. Then the workflow for launching it will look the same as for students. (I have given it a different name and icon, but you can of course replace these.)
 
-[
-
-Visual Studio Code (presentation).app.zip2947.9KB
-
-](https://assets.super.so/69ceaa36-3dbd-448e-a6f1-948727642c5c/files/1d4a6b2c-ce40-4282-b817-829c647e2fef.zip)
+[Visual Studio Code (presentation).app.zip](Visual%20Studio%20Code%20for%20Presentations/Visual_Studio_Code_(presentation).app.zip)
 
 # Settings
 
 [Visual Studio Code's Screencast Mode](https://code.visualstudio.com/updates/v1_31#_screencast-mode) shows clicks and keypress. Configure it to only show only keyboard shortcuts, and place them lower on the screen:
 
-**Screencast Mode: Only Keyboard Shortcuts** → true **Screencast Mode: Vertical Offset** → 2 (e.g.)
+**Screencast Mode: Only Keyboard Shortcuts** → true
+**Screencast Mode: Vertical Offset** → 2 (e.g.)
 
 Other useful setting overrides for presentations:
 
-**Editor: Font Size** **Window: Zoom Level**
+**Editor: Font Size**
+**Window: Zoom Level**
 
 Not specific to presentations: I generally instruct students to install the following extension:
 
--   [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)
+- [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)
 
 and override the following settings:
 
-**Files: Auto Save** → onFocusChange **Editor: Format on Save** → enabled **Files: Insert Final Newline** → enabled **Files: Trim Final Newlines** → enabled **Files: Trim Trailing Whitespace** → enabled **JavaScript > Suggest** → disabled **Live Server > Settings: Custom Browser** → chrome
+**Files: Auto Save** → onFocusChange
+**Editor: Format on Save** → enabled
+**Files: Insert Final Newline** → enabled
+**Files: Trim Final Newlines** → enabled
+**Files: Trim Trailing Whitespace** → enabled
+**JavaScript > Suggest** → disabled
+**Live Server > Settings: Custom Browser** → chrome

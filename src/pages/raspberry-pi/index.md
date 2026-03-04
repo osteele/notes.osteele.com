@@ -3,64 +3,123 @@ title: "Raspberry Pi"
 layout: ../../layouts/BaseLayout.astro
 ---
 
-The Raspberry Pi is a small, affordable computer for learning programming and physical computing.
+# Create a SIM Card
 
-## Create a SD Card
+Use BalenaEtcher to create a SIM card. 8GB is adequate for Raspbian if you don't install too much on it.
 
-Use BalenaEtcher to create a SD card. 8GB is adequate for Raspbian if you don't install too much on it.
+# Networking
 
-## Networking Configuration
+`sudo raspi-config`. Join WiFi. Optionally, change the hostname, here or via `sudo nano /etc/hosts` (followed reboot).
 
-Setup involves joining WiFi, optionally changing hostname, and enabling SSH access.
+Enable ssh (below)
 
-### Enable SSH
+Discover the IP address. On the Pi: `hostname -I`. Or install Bonjour via `sudo apt-get install avahi-daemon libnss-mdns`. (Seems already to be installed…)
+
+From a local laptop, `ssh-copy-id pi@<IP-ADDRESS>`
+
+## Enable ssh
 
 Three methods:
 
-1.  Use the UI (Raspberry Pi Configuration)
-2.  Command line:
+1. Use the UI.
+2. From the command line:
     
-    <div class="code-example"><pre><code>sudo systemctl enable ssh
-    sudo systemctl start ssh</code></pre></div>
+    ```bash
+    sudo systemctl enable ssh
+    sudo systemctl start ssh
+    ```
     
-3.  Create empty `ssh` file on boot partition
+3. Create an empty file named `ssh` on the boot partition.
 
-### Change Hostname
+## Disable password login
 
-<div class="code-example"><pre><code>sudo nano /etc/hosts
-sudo nano /etc/hostname</code></pre></div>
+```bash
+sudo sed -i 's/#\?ChallengeResponseAuthentication yes/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
+sudo sed -i 's/#\?PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+sudo sed -i 's/#\?UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
+sudo /etc/init.d/ssh reload
+```
 
-### Disable Password Login
+## Change the hostname
 
-Edit `/etc/ssh/sshd_config` to disable password authentication after setting up SSH keys.
+```bash
+sudo nano /etc/hosts
+sudo nano /etc/hostname
+```
 
-## Install ngrok
+# Install FPR client
 
-Download from [ngrok.com/download](https://ngrok.com/download), unzip to `~/bin`, then configure:
+Download and build.
 
-<div class="code-example"><pre><code># Configure ngrok
-ngrok authtoken YOUR_AUTH_TOKEN
+# Install ngrok
 
-# Settings go in ~/.ngrok2/ngrok.yml</code></pre></div>
+Download ngrok from [https://ngrok.com/download](https://ngrok.com/download). Unzip it into `~/bin`.
 
-## Home Automation
+Retrieve the ngrok ssh token.
 
-### Install MQTT (RabbitMQ)
+`ngrok authtoken ${TOKEN}`
 
-<div class="code-example"><pre><code>curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.deb.sh | sudo bash
+`ngrok tcp -remote-addr=[1.tcp.ap.ngrok.io:21265](http://1.tcp.ap.ngrok.io:21265/) -region=ap -log=stdout 22 > ngrok.log`
+
+Edit `~/.ngrok2/ngrok.yml`. Add the following after the `authtoken` line.
+
+```
+region: ap
+log: /var/log/ngrok.log
+update: true
+tunnels:
+  ssh:
+    proto: tcp
+    addr: 22
+    remote_addr: xxxx
+    subdomain: 1.tcp.ap.ngrok.io
+```
+
+ngrok start ssh
+
+Home Automation
+
+```bash
+sudo su homeassistant
+cd
+source bin/activate
+```
+
+## Install MQTT
+
+```bash
+curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.deb.sh | sudo bash
 sudo apt-get install rabbitmq-server
-sudo systemctl enable rabbitmq-server</code></pre></div>
+sudo systemctl enable rabbitmq-server
+sudo systemctl start rabbitmq-server
+sudo rabbitmq-plugins enable rabbitmq_management
 
-## Display Configuration
+In your web browser go to http://<IP of PI>:15672/
+```
 
-Configure via `/boot/config.txt` for HDMI settings and touchscreen setup.
+# Displays
 
-## Screensaver
+`sudo nano /boot/config.txt`
 
-Wake command:
+```
+[EDID=XMD-Mi_TV]
+hdmi_group=2
+hdmi_mode=82 
 
-<div class="code-example"><pre><code>xscreensaver-command -deactivate</code></pre></div>
+[all]
+cec_osd_name=MoPi
+```
 
-## Related
+See [HDMI resolution table](https://www.raspberrypi.org/documentation/configuration/config-txt/video.md) and [HDMI configuration](https://www.raspberrypi.org/documentation/configuration/hdmi-config.md).
 
-<ul class="page-list"><li><a href="/physical-computing/">Physical Computing</a></li><li><a href="/arduino/">Arduino</a></li></ul>
+3.5" TFT Touchscreen: 
+
+`cd /home/pi/LCD-show && sudo ./LCD-hdmi`
+
+# Screensaver
+
+Wake from CLI: `xscreensaver-command -deactivate`
+
+[UART](/raspberry-pi/uart/)
+
+[Pinouts](/raspberry-pi/pinouts/)

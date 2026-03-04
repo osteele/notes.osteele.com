@@ -3,41 +3,12 @@ title: "Visual Studio Code"
 layout: ../../../../layouts/BaseLayout.astro
 ---
 
-[code.visualstudio.com](https://code.visualstudio.com/)
+Visual Studio Code (“VSCode”) is a [Code Editor](Code%20Editors%202084976ee4e44e5484c0cab5471b374a.md), for editing code on your desktop/laptop computer.
 
-A free, open-source code editor from Microsoft with excellent extension support.
+[Visual Studio Code for P5.js](/p5js/vscode/)
 
-## Key Features
+[Visual Studio Theme Color](/p5js/vscode/visual-studio-theme-color/)
 
--   IntelliSense code completion
--   Built-in Git integration
--   Integrated terminal
--   Extensive extension marketplace
--   Remote development support
--   Debugging support for many languages
+# External Links
 
-## Essential Extensions
-
--   **Live Server** - Local development server with live reload
--   **Prettier** - Code formatter
--   **ESLint** - JavaScript linting
--   **GitLens** - Enhanced Git features
--   **Auto Rename Tag** - Automatically rename paired HTML tags
-
-## For p5.js Development
-
--   p5.vscode - p5.js autocomplete and snippets
--   Live Server - Preview sketches in browser
-
-See [p5.js in VS Code](/p5js/vscode/) for setup details.
-
-## Keyboard Shortcuts
-
--   `Cmd/Ctrl + P` - Quick file open
--   `Cmd/Ctrl + Shift + P` - Command palette
--   `` Cmd/Ctrl + ` `` - Toggle terminal
--   `Cmd/Ctrl + B` - Toggle sidebar
-
-## Related
-
-<ul class="page-list"><li><a href="/tools/vscode/">VS Code Notes</a></li><li><a href="/tools/code-editors/github-codespaces/">GitHub Codespaces</a></li><li><a href="/tools/code-editors/">All Code Editors</a></li></ul>
+[Learn to code with Visual Studio Code](https://code.visualstudio.com/learn)

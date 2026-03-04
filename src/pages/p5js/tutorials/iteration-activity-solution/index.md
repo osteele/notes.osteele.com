@@ -1,10 +1,8 @@
 ---
-title: "Iteration Activity Solution"
+title: "Iteration Activity: Solution"
 layout: ../../../../layouts/BaseLayout.astro
 ---
 
-Solution set for the iteration activity exercises.
+Screenshot: ../../../p5%20js%20Resources/p5%20js%20Course%20Materials/Screenshot_of_ScreenFloat_(2020-11-27_12-08-54_PM).png
 
-## Related
-
-<ul class="page-list"><li><a href="/courses/creative-coding/iteration-notes/">Iteration Notes</a></li><li><a href="/p5js/tutorials/">All Tutorials</a></li></ul>
+Solution to in-class exercise.

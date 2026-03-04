@@ -13,9 +13,7 @@ A quicker way is to [yoke](https://en.wiktionary.org/wiki/yoke#Verb) the paramet
 
 Here's an example using the [Lissajous curve](https://en.wikipedia.org/wiki/Lissajous_curve). This curve generalizes the use of `sin()` and `cos()` to produce a circle, to produce different curves that loop back and forth different numbers of times.
 
-Copy
-
-```javascript
+```jsx
 function setup() {
 	createCanvas(windowWidth, windowHeight);
 	angleMode(DEGREES);
@@ -35,15 +33,13 @@ function draw() {
 }
 ```
 
-![image](https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/f136c67d-37d8-4525-820e-b280854672af/untitled/w=1920,quality=90,fit=scale-down)
+![](/images/techniques-for-exploring-parameter-spaces/untitled.png)
 
-# 1\. Editing Code
+# 1. Editing Code
 
 Let's edit the code to use a different value for `ratio`:
 
-Copy
-
-```javascript
+```jsx
 function draw() {
 	background(10);
 	translate(width / 2, height / 2);
@@ -58,13 +54,11 @@ function draw() {
 }
 ```
 
-![image](https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/e553bc42-5bcc-4a9f-bd88-df73c2fc977b/untitled-2/w=1920,quality=90,fit=scale-down)
+![](/images/techniques-for-exploring-parameter-spaces/untitled-2.png)
 
 And a third value:
 
-Copy
-
-```javascript
+```jsx
 function draw() {
 	background(10);
 	translate(width / 2, height / 2);
@@ -79,15 +73,13 @@ function draw() {
 }
 ```
 
-![image](https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/02ecaedf-edb3-4b8b-a2ed-e95eaf09b5c0/untitled-4/w=1920,quality=90,fit=scale-down)
+![](/images/techniques-for-exploring-parameter-spaces/untitled-4.png)
 
-# 2\. Driving a value from the mouse position
+# 2. Driving a value from the mouse position
 
 Now, modify this to drive `ratio` from the mouse x position. This allows us to scrub the mouse left and right, in order to rapidly explore a range of values.
 
-Copy
-
-```javascript
+```jsx
 function draw() {
 	background(10);
 	translate(width / 2, height / 2);
@@ -102,15 +94,13 @@ function draw() {
 }
 ```
 
-![image](https://assets.super.so/69ceaa36-3dbd-448e-a6f1-948727642c5c/images/25c8e5a4-ce4a-44bb-8a67-f7d9dbc88d54/2021-03-04_19.32.29.gif?w=1678)
+![](/images/techniques-for-exploring-parameter-spaces/2021-03-04_19.32.29.gif)
 
 The missing piece is that need to be able to find out what numbers looked good. There are three ways to do this:
 
 Print all the values to the console:
 
-Copy
-
-```javascript
+```jsx
 function draw() {
 	background(10);
 	translate(width / 2, height / 2);
@@ -126,13 +116,11 @@ function draw() {
 }
 ```
 
-![image](https://assets.super.so/69ceaa36-3dbd-448e-a6f1-948727642c5c/images/3ad4a2c7-2099-4577-bb19-b117e1308df1/2021-03-04_19.37.00.gif?w=1770)
+![](/images/techniques-for-exploring-parameter-spaces/2021-03-04_19.37.00.gif)
 
-Print a value to the console when we click the mouse. (In order for this to work, the value has to be a global variable, so that `mousePressed()` can _read_ the variable that `draw()` _sets_.)
+Print a value to the console when we click the mouse. (In order for this to work, the value has to be a global variable, so that `mousePressed()` can *read* the variable that `draw()` *sets*.)
 
-Copy
-
-```javascript
+```jsx
 let ratio;
 
 function draw() {
@@ -155,9 +143,7 @@ function keyPressed() {
 
 Use `text()` to display the value directly on the canvas:
 
-Copy
-
-```javascript
+```jsx
 function draw() {
 	background(10);
 	noStroke();
@@ -179,4 +165,4 @@ function draw() {
 }
 ```
 
-![image](https://assets.super.so/69ceaa36-3dbd-448e-a6f1-948727642c5c/images/b10a31bf-c968-4aae-b051-b421fd0b457d/2021-03-04_19.41.42.gif?w=1674)
+![](/images/techniques-for-exploring-parameter-spaces/2021-03-04_19.41.42.gif)

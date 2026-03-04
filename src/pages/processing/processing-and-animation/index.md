@@ -1,0 +1,103 @@
+---
+title: "Processing and Animation"
+layout: ../../../layouts/BaseLayout.astro
+---
+
+This tutorial teaches animation and interactivity in Processing through practical sketches that gradually increase in complexity.
+
+## Basic Execution Model
+
+Processing runs sketches through a repeating cycle: `setup()` executes once, then `draw()` runs repeatedly. The instructions to do this are inside of `draw()`, and Processing calls (runs) `draw()` over and over again.
+
+<div class="code-example"><pre><code>void setup() {
+  size(400, 300);
+}
+
+void draw() {
+  background(200);
+  ellipse(200, 150, 100, 100);
+}</code></pre><div class="canvas-preview"><div class="canvas-placeholder">Canvas: Static circle</div></div></div>
+
+## Variables and Interactivity
+
+Two approaches to dynamic values:
+
+1.  **User-defined variables:** Create custom variables like `int x = 100;` that persist across frames
+2.  **Built-in variables:** Processing provides `mouseX` and `mouseY` that automatically update from input device position
+
+<div class="code-example"><pre><code>void setup() {
+  size(400, 300);
+}
+
+void draw() {
+  background(200);
+  ellipse(mouseX, mouseY, 100, 100);
+}</code></pre><div class="canvas-preview"><div class="canvas-placeholder">Canvas: Mouse-following circle</div></div></div>
+
+## Range and Domain Mapping
+
+Values from input sources often need conversion. For example, `mouseX` ranges from 0 to canvas width, but `fill()` expects 0-255.
+
+<div class="code-example"><pre><code>void setup() {
+  size(400, 300);
+}
+
+void draw() {
+  background(200);
+  float red = map(mouseX, 0, width - 1, 0, 255);
+  fill(red, 100, 100);
+  ellipse(200, 150, 100, 100);
+}</code></pre><div class="canvas-preview"><div class="canvas-placeholder">Canvas: Color-changing circle</div></div></div>
+
+<div class="callout"><p><strong>Note:</strong> Use floating-point division (<code>255.0</code>) rather than integer division to prevent unwanted rounding.</p></div>
+
+## Time-Based Animation
+
+### Using millis()
+
+`millis()` returns the number of milliseconds (thousands of a second) since the sketch started running. Unlike `mouseX`, `millis()` requires parentheses `()` and can return different values within a single frame.
+
+<div class="code-example"><pre><code>void setup() {
+  size(400, 300);
+}
+
+void draw() {
+  background(200);
+  float diameter = millis() / 10.0;
+  ellipse(200, 150, diameter, diameter);
+}</code></pre><div class="canvas-preview"><div class="canvas-placeholder">Canvas: Growing circle</div></div></div>
+
+### Periodic Motion with sin()
+
+The `sin()` function creates oscillating values between -1 and 1. Combined with `map()`, it enables scaling, positioning, and speed control.
+
+<div class="code-example"><pre><code>void setup() {
+  size(400, 300);
+}
+
+void draw() {
+  background(200);
+  float diameter = map(sin(millis() / 100.0), -1, 1, 50, 150);
+  ellipse(200, 150, diameter, diameter);
+}</code></pre><div class="canvas-preview"><div class="canvas-placeholder">Canvas: Pulsing circle</div></div></div>
+
+## Lissajous Curves
+
+When x and y positions animate at different frequencies while being drawn without clearing the background, the result creates a Lissajous curve—a mathematical pattern formed by the intersection of perpendicular oscillations.
+
+<div class="code-example"><pre><code>void setup() {
+  size(400, 300);
+  colorMode(HSB, 360, 100, 100);
+}
+
+void draw() {
+  float hue = millis() / 10 % 360;
+  fill(hue, 80, 90);
+  float x = 200 + 100 * sin(millis() / 500.0);
+  float y = 150 + 100 * cos(millis() / 700.0);
+  ellipse(x, y, 50, 50);
+}</code></pre><div class="canvas-preview"><div class="canvas-placeholder">Canvas: Color-cycling Lissajous</div></div></div>
+
+## Related Tutorials
+
+<ul class="page-list"><li><a href="/processing/processing-arrays-and-animation/">Processing Arrays and Animation</a></li><li><a href="/creative-coding/creative-coding-with-p5js/animation-and-randomness/">Animation and Randomness (p5.js)</a></li><li><a href="/creative-coding/sine/">Sine in Creative Coding</a></li></ul>

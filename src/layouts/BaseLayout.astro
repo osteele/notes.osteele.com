@@ -1,0 +1,93 @@
+---
+interface Props {
+  title: string;
+  breadcrumbs?: { label: string; href: string }[];
+}
+
+const { title, breadcrumbs: customBreadcrumbs } = Astro.props;
+
+// Auto-generate breadcrumbs from URL path if not provided
+const pathname = Astro.url.pathname;
+const segments = pathname.split("/").filter(Boolean);
+
+let breadcrumbs: { label: string; href: string }[];
+if (customBreadcrumbs) {
+  breadcrumbs = customBreadcrumbs;
+} else if (segments.length > 0) {
+  breadcrumbs = [{ label: "Oliver's Notes", href: "/" }];
+  for (let i = 0; i < segments.length - 1; i++) {
+    const href = "/" + segments.slice(0, i + 1).join("/") + "/";
+    const label = segments[i]
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    breadcrumbs.push({ label, href });
+  }
+} else {
+  breadcrumbs = [];
+}
+
+const pageTitle = segments.length > 0 ? `${title} - Oliver's Notes` : title;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav>
+      <div class="container">
+        <a href="https://osteele.com/">About</a>
+        <a href="https://code.osteele.com/">Code</a>
+        <a href="/" class="active">Notes</a>
+        <a href="https://flickr.com/osteele/">Photos</a>
+      </div>
+    </nav>
+
+    <main class="container">
+      {
+        breadcrumbs.length > 0 && (
+          <div class="breadcrumb">
+            {breadcrumbs.map((b, i) => (
+              <>
+                <a href={b.href}>{b.label}</a>
+                {i < breadcrumbs.length - 1 ? "" : ""}
+                {" / "}
+              </>
+            ))}
+            {title}
+          </div>
+        )
+      }
+
+      <h1>{title}</h1>
+
+      <slot />
+    </main>
+
+    <footer>
+      <div class="container">Oliver Steele</div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  @import "../styles/styles.css";
+
+  /* Prevent Shiki from overriding our pre styles */
+  .astro-code {
+    background: var(--code-bg) !important;
+    padding: 15px 20px;
+    border-radius: 5px;
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-size: 0.9em;
+    line-height: 1.5;
+    margin: 1.5em 0;
+  }
+</style>

@@ -1,0 +1,19 @@
+{
+  "name": "yes",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.17.1",
+    "cheerio": "^1.2.0",
+    "turndown": "^7.2.2"
+  },
+  "devDependencies": {
+    "@types/turndown": "^5.0.6"
+  }
+}

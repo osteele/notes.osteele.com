@@ -56,7 +56,7 @@ Slides:
 
 [Google Slides - create and edit presentations online, for free.](https://docs.google.com/presentation/d/1PGsOq2nX3TUVFP2PMmw0tM9wz2AF1PDtils8NjUWEbg/edit#slide=id.gc864a4b957_1_0)
 
-![](/images/lecture-notes/pixar-lamp-11-2783.jpg)
+![](/images/lecture-notes/lecture-notes-04.jpg)
 
 [Neoteny](https://en.wikipedia.org/wiki/Neoteny)
 
@@ -64,13 +64,13 @@ Slides:
 
 [Veneernet](http://www.veneernet.com/matching.html)
 
-![[http://s3.amazonaws.com/urwodhome/types-of-wood-veneer-matches.html](http://s3.amazonaws.com/urwodhome/types-of-wood-veneer-matches.html)](/images/lecture-notes/iu.jpeg)
+![[http://s3.amazonaws.com/urwodhome/types-of-wood-veneer-matches.html](http://s3.amazonaws.com/urwodhome/types-of-wood-veneer-matches.html)](/images/lecture-notes/lecture-notes-03.jpeg)
 
 [http://s3.amazonaws.com/urwodhome/types-of-wood-veneer-matches.html](http://s3.amazonaws.com/urwodhome/types-of-wood-veneer-matches.html)
 
-![](/images/lecture-notes/0e70e8_afa8b7c3fef685b89fab81fd5c232958.jpg_srz_313_260_85_22_0.50_1.20_0.00_jpg_srz.jpeg)
+![](/images/lecture-notes/lecture-notes-01.jpeg)
 
-![](/images/lecture-notes/e6d4dac5a0fe4283548e13aaad2fe6f8.png)
+![](/images/lecture-notes/lecture-notes-02.png)
 
 [](https://www.pinterest.com/pin/120330621281495102/)
 

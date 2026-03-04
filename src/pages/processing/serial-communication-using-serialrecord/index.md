@@ -99,7 +99,7 @@ This defines the number of sensor values you will be receiving from Arduino and 
 
 Now, run the code, to verify that it detects the port that the Arduino is connect to. If it cannot detect this port, it will print a warning, and display a list of ports as in the following screenshot:
 
-![The Processing sketch console displays this if the sketch cannot figure out which port to use.](/images/serial-communication-using-serialrecord/Untitled.png)
+![The Processing sketch console displays this if the sketch cannot figure out which port to use.](/images/serial-communication-using-serialrecord/serial-communication-using-serialrecord-01.png)
 
 The Processing sketch console displays this if the sketch cannot figure out which port to use.
 

@@ -26,7 +26,7 @@ function draw() {
 }
 ```
 
-![](/images/random-elements-in-a-grid/Untitled.png)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-12.png)
 
 Note: From here on, the definitions of `rows`, `columns`, and `setup()` are not shown. Each of the following code samples assumes that the sketch also contains a `setup()` function, and definitions of `rows` and `columns`:
 
@@ -63,7 +63,7 @@ function draw() {
 }
 ```
 
-![](/images/random-elements-in-a-grid/Untitled 1.png)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-02.png)
 
 The *nested* `if` (the `if` within another `if`) above can be replaced by "and" (`&&`).
 
@@ -106,7 +106,7 @@ function draw() {
 }
 ```
 
-![](/images/random-elements-in-a-grid/Untitled 2.png)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-04.png)
 
 `rectMode()` changes the behavior of `square()` (and `rect()`) to match `circle()`, so that it is easier to use `square()` and `circle()` (and `rect()` and `ellipse()`) interchangeably.
 
@@ -132,7 +132,7 @@ function draw() {
 }
 ```
 
-![](/images/random-elements-in-a-grid/Untitled 3.png)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-05.png)
 
 We can look at any combination of and `row` and `column`, and functions that combine them, to decide what to draw in a cell.
 
@@ -155,7 +155,7 @@ function draw() {
 }
 ```
 
-![](/images/random-elements-in-a-grid/Untitled 4.png)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-06.png)
 
 ```jsx
 function draw() {
@@ -176,7 +176,7 @@ function draw() {
 }
 ```
 
-![](/images/random-elements-in-a-grid/Untitled 5.png)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-07.png)
 
 Note: For the following code samples, the values of `rows` and `columns` have been changed to 20.
 
@@ -199,7 +199,7 @@ function draw() {
 }
 ```
 
-![](/images/random-elements-in-a-grid/Untitled 6.png)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-08.png)
 
 ```jsx
 function draw() {
@@ -222,7 +222,7 @@ function draw() {
 }
 ```
 
-![](/images/random-elements-in-a-grid/Untitled 7.png)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-09.png)
 
 ```jsx
 function draw() {
@@ -245,7 +245,7 @@ function draw() {
 }
 ```
 
-![](/images/random-elements-in-a-grid/Untitled 8.png)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-10.png)
 
 ## Draw some cells differently: using `random()`
 
@@ -274,7 +274,7 @@ function draw() {
 }
 ```
 
-![](/images/random-elements-in-a-grid/Untitled 9.png)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-11.png)
 
 Note: We could also test for `random(4) <= 1`.
 
@@ -286,11 +286,11 @@ Consider the sketch above.
 
 Each time `grid()` is called, it will produce a different random pattern.
 
-![](/images/random-elements-in-a-grid/Untitled 10.png)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-03.png)
 
 Since it is called thirty times per second, this creates a flicker effect.
 
-![](/images/random-elements-in-a-grid/2021-02-25_16.42.56.gif)
+![](/images/random-elements-in-a-grid/random-elements-in-a-grid-01.gif)
 
 ## Technique #1: Do all drawing inside of `setup()`
 

@@ -18,7 +18,7 @@ function draw() {
 		let y = 100;
 		circle(x, 100, 40);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Screenshot_of_Notion_%284-7-22_11-42-58_PM%29.png" alt="Screenshot of Notion (4-7-22, 11-42-58 PM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-02.png" alt="Screenshot of Notion (4-7-22, 11-42-58 PM).png" />
 
 Note: From here on, the definition of `setup()` is not shown. Each of the following code samples assumes that the sketch also contains a `setup()` function:
 
@@ -37,7 +37,7 @@ We can use the `sin()` or `cos()` functions to make the items swing between the 
 		let y = 100 + 50 * sin(i);
 		circle(x, y, 50);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Screenshot_of_Safari_%284-7-22_11-50-43_PM%29.png" alt="Screenshot of Safari (4-7-22, 11-50-43 PM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-05.png" alt="Screenshot of Safari (4-7-22, 11-50-43 PM).png" />
 
 <CodeExample code={`function draw() {
 	for (let i = 0; i < 10; i++) {
@@ -45,7 +45,7 @@ We can use the `sin()` or `cos()` functions to make the items swing between the 
 		let y = 100 + 50 * cos(i);
 		circle(x, y, 50);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Screenshot_of_Safari_%284-7-22_11-51-20_PM%29.png" alt="Screenshot of Safari (4-7-22, 11-51-20 PM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-06.png" alt="Screenshot of Safari (4-7-22, 11-51-20 PM).png" />
 
 Trying to use `sin` (or `cos`) for both x and y arranges the items on a diagonal line. This is true any time that x and y use the same equation, because then they will have the same value.
 
@@ -55,7 +55,7 @@ Trying to use `sin` (or `cos`) for both x and y arranges the items on a diagonal
 		let y = 100 + 50 * sin(i);
 		circle(x, y, 50);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Untitled.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-15.png" alt="" />
 
 The solution is to use `cos` for `x` and `sin` for `y`. These functions are cleverly designed so that using them together this way makes a circle.
 
@@ -67,7 +67,7 @@ Let’s look at just using `sin` for `y` (instead of `x`), and compare that to t
 		let y = 100 + 50 * i;
 		circle(x, y, 50);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Screenshot_of_Notion_%284-7-22_11-56-41_PM%29.png" alt="Screenshot of Notion (4-7-22, 11-56-41 PM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-03.png" alt="Screenshot of Notion (4-7-22, 11-56-41 PM).png" />
 
 Combining `cos` for `x` with `sin` for `y` creates a circle.
 
@@ -77,7 +77,7 @@ Combining `cos` for `x` with `sin` for `y` creates a circle.
 		let y = 100 + 50 * sin(i);
 		circle(x, y, 50);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Screenshot_of_Notion_%284-8-22_12-00-13_AM%29.png" alt="Screenshot of Notion (4-8-22, 12-00-13 AM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-04.png" alt="Screenshot of Notion (4-8-22, 12-00-13 AM).png" />
 
 There’s two things that may be wrong with this circle, depending on your design intent: (1) it is too small relative to the items that are placed along its edge; and, the items are wrapped around the circle more than once.
 
@@ -99,7 +99,7 @@ function draw() {
 ```
 Note: We could also have used `map(i, 0, 10, 0, TWO_PI)` instead of `i * TWO_PI / 10`.
 
-![](/images/arranging-items-in-a-circle-or-spiral/Untitled 1.png)
+![](/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-07.png)
 
 Here is another way of doing this. `angleMode(DEGREES)` causes `sin` and `cos` to repeat every 360, instead of every $2\pi$.
 
@@ -116,7 +116,7 @@ function draw() {
 ```
 Note: It is more standard to put `angleMode(DEGREES)` in `setup()`, because (1) it only needs to be done once, and (2) that way it will affect any calls to `sin` and `cos` that run in `setup()`. Here, we are putting it in `draw()` just because that’s the only part of the sketch that is shown in these examples.
 
-![](/images/arranging-items-in-a-circle-or-spiral/Untitled 2.png)
+![](/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-08.png)
 
 Yet another way to do this is to increment the angle directly instead of computing it from the index position. This is useful if we know the number of degrees we want to leave between items, instead of the number of items.
 
@@ -127,7 +127,7 @@ Yet another way to do this is to increment the angle directly instead of computi
 		let y = 300 + 150 * sin(angle);
 		circle(x, y, 50);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Untitled 3.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-09.png" alt="" />
 
 # Drawing some items differently
 
@@ -147,7 +147,7 @@ We can use a conditional in order to draw some items differently from others.
 		}
 		circle(x, y, 50);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Untitled 4.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-10.png" alt="" />
 
 <CodeExample code={`angleMode(DEGREES);
 	for (let i = 0; i < 360; i += 10) {
@@ -166,7 +166,7 @@ We can use a conditional in order to draw some items differently from others.
 			strokeWeight(1);
 		}
 		circle(x, y, 50);
-	}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Untitled 5.png" alt="" />
+	}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-11.png" alt="" />
 
 <CodeExample code={`function draw() {
 	angleMode(DEGREES);
@@ -188,7 +188,7 @@ We can use a conditional in order to draw some items differently from others.
 		}
 		circle(x, y, 50);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Untitled 6.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-12.png" alt="" />
 
 # Animating the circle
 
@@ -214,7 +214,7 @@ Incorporate the time (`millis()`) into the equation, in order to animate the cir
 		}
 		circle(x, y, 50);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/2021-02-25_20.30.57.gif" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-01.gif" alt="" />
 
 # From circle to spiral
 
@@ -240,7 +240,7 @@ The circle sketches place each object the same distance from the center. `sin` a
 		}
 		circle(x, y, 80);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Untitled 7.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-13.png" alt="" />
 
 Increasing the angle to 720 degrees to wrap around the circle twice ($2 * 360$).
 
@@ -264,7 +264,7 @@ Increasing the angle to 720 degrees to wrap around the circle twice ($2 * 360$).
 		}
 		circle(x, y, 50);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/Untitled 8.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-14.png" alt="" />
 
 ---
 

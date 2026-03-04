@@ -7,11 +7,11 @@ layout: ../../../../layouts/BaseLayout.astro
 
 [Processing Reference](https://processing.org/reference/). Also available from inside the Processing app, via the menu item Help > Reference.
 
-![](/images/processing/Untitled.png)
+![](/images/processing/processing-03.png)
 
 [Surattack.com's Processing Cheat Sheet](https://www.cs.bham.ac.uk/~cxp291/ri/processing_cheat_sheet_english.pdf) — this is the one that was handed out in IxLab class.
 
-![](/images/processing/Untitled 1.png)
+![](/images/processing/processing-01.png)
 
 # Learn
 
@@ -40,7 +40,7 @@ layout: ../../../../layouts/BaseLayout.astro
 - [Slides 20 – Serial Communication (1)](https://docs.google.com/presentation/d/1ra_Tti678QUQgISm5GCZipBnXNe5FlYC05yGsh-QDVo/edit?usp=sharing)
 - [Slides 21 – Serial Communication (2)](https://docs.google.com/presentation/d/1KJ5bygJSMnm4E4leoZNhzE5ijAqj9jav0mfWRYLurUQ/edit?usp=sharing)
 
-![](/images/processing/Untitled 2.png)
+![](/images/processing/processing-02.png)
 
 ## Books
 

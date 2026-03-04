@@ -16,7 +16,7 @@ We can make the sketch *animate* by using *time as an input*. Modify `y` so that
 		let y = map(sin(i + millis() / 100), -1, 1, 80, 120);
 		circle(x, y, 20);
 	}
-}`} lang="jsx" image="/images/animation-and-randomness/CleanShot_2022-04-08_at_09.32.17.gif" alt="CleanShot 2022-04-08 at 09.32.17.gif" />
+}`} lang="jsx" image="/images/animation-and-randomness/animation-and-randomness-01.gif" alt="CleanShot 2022-04-08 at 09.32.17.gif" />
 
 Note: Now that the circles are drawn in a different position each time `draw()` is called, it is important to clear the canvas (`background(200)`) at the beginning of `draw()`. Otherwise each circle will be drawn on top of all the circles drawn by previous calls to `draw()`. (This has been happening in all the sketches so far, but since all the circles were drawn at the same position, this was not detectable.)
 
@@ -35,11 +35,11 @@ The previous sketch uses *time* to drive one of the shape’s properties (its ve
 		circle(x, y, 20);
 	}
   noLoop();
-}`} lang="jsx" image="/images/animation-and-randomness/Screenshot_of_Safari_%284-8-22_11-23-20_AM%29.png" alt="Screenshot of Safari (4-8-22, 11-23-20 AM).png" />
+}`} lang="jsx" image="/images/animation-and-randomness/animation-and-randomness-06.png" alt="Screenshot of Safari (4-8-22, 11-23-20 AM).png" />
 
-![Screenshot of Safari (4-8-22, 11-23-34 AM).png](/images/animation-and-randomness/Screenshot_of_Safari_%284-8-22_11-23-34_AM%29.png)
+![Screenshot of Safari (4-8-22, 11-23-34 AM).png](/images/animation-and-randomness/animation-and-randomness-07.png)
 
-![Screenshot of Safari (4-8-22, 11-24-00 AM).png](/images/animation-and-randomness/Screenshot_of_Safari_%284-8-22_11-24-00_AM%29.png)
+![Screenshot of Safari (4-8-22, 11-24-00 AM).png](/images/animation-and-randomness/animation-and-randomness-08.png)
 
 Note: There are *three* screenshots next to the code, to show that the `random()` returns a different sequence of values, and therefore the sketch draws a different image, each time it is run.
 
@@ -53,7 +53,7 @@ The `noLoop()` function prevents `draw()` from being called again. Let’s see w
     let y = random(80, 120);
 		circle(x, y, 20);
 	}
-}`} lang="jsx" image="/images/animation-and-randomness/CleanShot_2022-04-08_at_11.28.41.gif" alt="CleanShot 2022-04-08 at 11.28.41.gif" />
+}`} lang="jsx" image="/images/animation-and-randomness/animation-and-randomness-02.gif" alt="CleanShot 2022-04-08 at 11.28.41.gif" />
 
 Aargh! Just as the previous sketch drew the circles at different positions each time it was run, this one draws them at different positions *every frame*.
 
@@ -74,7 +74,7 @@ In JavaScript, the way to *remember* things is to use a *variable*. A variable c
 		let x = 10 + 50 * i;
 		circle(x, ys[i], 20);
 	}
-}`} lang="jsx" image="/images/animation-and-randomness/CleanShot_2022-04-08_at_11.28.41.gif" alt="CleanShot 2022-04-08 at 11.28.41.gif" />
+}`} lang="jsx" image="/images/animation-and-randomness/animation-and-randomness-02.gif" alt="CleanShot 2022-04-08 at 11.28.41.gif" />
 
 Note: You could also write `let ys = []` instead of `let ys = new Array()`. `[]` is an abbreviation for `new Array()`.
 
@@ -100,7 +100,7 @@ function draw() {
 		let x = 10 + 50 * i;
 		circle(x, ys[i], 20);
 	}
-}`} lang="jsx" image="/images/animation-and-randomness/Screenshot_of_Safari_%284-8-22_11-23-20_AM%29.png" alt="Screenshot of Safari (4-8-22, 11-23-20 AM).png" />
+}`} lang="jsx" image="/images/animation-and-randomness/animation-and-randomness-06.png" alt="Screenshot of Safari (4-8-22, 11-23-20 AM).png" />
 
 Now we can combine this with time-based animation, to get an effect that uses both randomness (from `random()` in `setup()`) and time (from `millis()` in `draw()`), without getting new random numbers every frame.
 
@@ -112,7 +112,7 @@ Now we can combine this with time-based animation, to get an effect that uses bo
 		let size = map(sin(i + millis() / 100), -1, 1, 10, 20);
 		circle(x, ys[i], size);
 	}
-}`} lang="jsx" image="/images/animation-and-randomness/CleanShot_2022-04-08_at_11.47.03.gif" alt="CleanShot 2022-04-08 at 11.47.03.gif" />
+}`} lang="jsx" image="/images/animation-and-randomness/animation-and-randomness-03.gif" alt="CleanShot 2022-04-08 at 11.47.03.gif" />
 
 # Update-Based (or Incremental) Animation
 
@@ -137,7 +137,7 @@ function draw() {
 		circle(x, ys[i], 20);
 		ys[i] += random(1);
 	}
-}`} lang="jsx" image="/images/animation-and-randomness/CleanShot_2022-04-08_at_12.44.37.gif" alt="CleanShot 2022-04-08 at 12.44.37.gif" />
+}`} lang="jsx" image="/images/animation-and-randomness/animation-and-randomness-05.gif" alt="CleanShot 2022-04-08 at 12.44.37.gif" />
 
 # Noise
 
@@ -155,7 +155,7 @@ Here’s the sketch from the [Random section](/courses/creative-coding/arranging
     let y = map(noise(i), 0, 1, 80, 120);
 		circle(x, y, 20);
 	}
-}`} lang="jsx" image="/images/animation-and-randomness/Screenshot_of_Safari_%284-8-22_12-21-50_PM%29.png" alt="Screenshot of Safari (4-8-22, 12-21-50 PM).png" />
+}`} lang="jsx" image="/images/animation-and-randomness/animation-and-randomness-09.png" alt="Screenshot of Safari (4-8-22, 12-21-50 PM).png" />
 
 Note: `noise()` returns a value between 0 and 1, like `random()` with no arguments. To make it behave like `random(80, 120)`, we must use `map()` or write our own version of this arithmetic.
 
@@ -169,7 +169,7 @@ Note: `noise()` returns a value between 0 and 1, like `random()` with no argumen
     let y = map(noise(i, millis() / 1000), 0, 1, 80, 120);
 		circle(x, y, 20);
 	}
-}`} lang="jsx" image="/images/animation-and-randomness/CleanShot_2022-04-08_at_12.28.23.gif" alt="CleanShot 2022-04-08 at 12.28.23.gif" />
+}`} lang="jsx" image="/images/animation-and-randomness/animation-and-randomness-04.gif" alt="CleanShot 2022-04-08 at 12.28.23.gif" />
 
 `noise()` returns values that are close together when its inputs are close together. (It is kind of like a cross between `random()` and `sine()`. ) The successive values for `i` from item to item are far apart, so there’s not any continuity between the first and the second element. The successive values of `millis() / 1000` are close together from one call to `draw()` to the next so there is continuity from frame to frame, resulting in a smooth animation. (This is why we divide `millis()` by 1000. The value of `millis()`  itself changes too much from one frame to the next; this is how we slow it down.)
 

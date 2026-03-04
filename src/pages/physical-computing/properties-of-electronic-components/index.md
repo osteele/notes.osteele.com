@@ -9,17 +9,17 @@ A variety of sensors (and other components) are available from the ER (and from 
 - What is its ***physical interface*** (how do you create an mechanical connection)? Some possibilities include:
     - A [***through-hole component***](https://www.build-electronic-circuits.com/through-hole-components/) has pins or wires that can be inserted directly into a protoboard. If the component has wires, they can be inserted into the headers on your Arduino.
         
-        ![Image source: [https://www.build-electronic-circuits.com/category/basic-electronics/](https://www.build-electronic-circuits.com/category/basic-electronics/)](/images/properties-of-electronic-components/components-1.jpg)
+        ![Image source: [https://www.build-electronic-circuits.com/category/basic-electronics/](https://www.build-electronic-circuits.com/category/basic-electronics/)](/images/properties-of-electronic-components/properties-of-electronic-components-03.jpg)
         
         Image source: [https://www.build-electronic-circuits.com/category/basic-electronics/](https://www.build-electronic-circuits.com/category/basic-electronics/)
         
     - Some components have ***female headers***, that you can stick a wire into. Your Arduino is an example of this.
         
-        ![DFR0181.jpg](/images/properties-of-electronic-components/DFR0181.jpg)
+        ![DFR0181.jpg](/images/properties-of-electronic-components/properties-of-electronic-components-01.jpg)
         
     - Some components have ***sockets***, that a cable plugs into. There are a variety of different socket types. See the note about Grove components, below.
         
-        ![SEN0287.jpg](/images/properties-of-electronic-components/SEN0287.jpg)
+        ![SEN0287.jpg](/images/properties-of-electronic-components/properties-of-electronic-components-02.jpg)
         
 - What is its ***logical interface***? Some possibilities are *analog*, *serial*, [I2C](https://en.wikipedia.org/wiki/I²C), [SPI](https://en.wikipedia.org/wiki/SPI), and [1-Wire](https://en.wikipedia.org/wiki/1-Wire). The Arduino supports all of these. Some require libraries, that you can download and install.
 - Is there ***documentation***? Is there example code for the Arduino?

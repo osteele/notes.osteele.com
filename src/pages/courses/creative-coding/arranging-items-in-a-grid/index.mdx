@@ -10,11 +10,11 @@ There are two strategies for arranging items in a grid:
 
 1. Use a *single loop* to iterate over the number of items; derive the x and y position from the item number.
     
-    ![Screenshot of Notion (4-8-22, 12-57-55 AM).png](/images/arranging-items-in-a-grid/Screenshot_of_Notion_%284-8-22_12-57-55_AM%29.png)
+    ![Screenshot of Notion (4-8-22, 12-57-55 AM).png](/images/arranging-items-in-a-grid/arranging-items-in-a-grid-05.png)
     
 2. Use a *nested loop* to iterate over the x positions and, for each x, iterate over the y positions (left sketches). If the item number is required, derive it from the values of x and y (right sketch).
     
-    ![Screenshot of Microsoft Edge (4-8-22, 1-02-54 AM).png](/images/arranging-items-in-a-grid/Screenshot_of_Microsoft_Edge_%284-8-22_1-02-54_AM%29.png)
+    ![Screenshot of Microsoft Edge (4-8-22, 1-02-54 AM).png](/images/arranging-items-in-a-grid/arranging-items-in-a-grid-02.png)
     
 
 # Strategy 1: Deriving the x and y positions from the index
@@ -32,7 +32,7 @@ function draw() {
 		let x = 20 + 50 * i;
 		circle(x, 100, 40);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 1.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-10.png" alt="" />
 
 The *shape position* is derived from the *loop index*, using the function $x = 10 + 50i$ used here.
 
@@ -51,7 +51,7 @@ Derive `y` from `i` as well.
 		let y = 30 + 10 * i;
 		circle(x, y, 40);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 3.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-14.png" alt="" />
 
 ## Deriving the column (x position)
 
@@ -63,11 +63,11 @@ Let’s start with the angled line from above, and just look at the x position.
 		let y = 30 + 50 * i;
 		circle(x, y, 20);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-21.png" alt="" />
 
 Instead of a diagonal line, where each x is greater than the previous x and each y is greater than the previous y, we would like to arrange the items on a grid. Here, each item is labelled with its index number. The x value increases from items 0 to 4, and then it resets back to the left side and increases again to 9, and so on.
 
-![Screenshot of Safari (4-8-22, 12-44-58 AM).png](/images/arranging-items-in-a-grid/Screenshot_of_Safari_%284-8-22_12-44-58_AM%29.png)
+![Screenshot of Safari (4-8-22, 12-44-58 AM).png](/images/arranging-items-in-a-grid/arranging-items-in-a-grid-08.png)
 
 We can use the modulo (remainder) operator `%` to chop it into pieces. For an input sequence i = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 etc., the modulo operator `i % 5` produces 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, etc. The sketch then multiples this by 50 to make the result more visible: 0, 50, 100, 150, 200, 0, 50, 100, 150, 200, 0, 50, etc.
 
@@ -80,7 +80,7 @@ Note: A mnemonic for `%` is that it is like division `/` except that its value i
 		let y = 30 + 50 * i;
 		circle(x, y, 20);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Screenshot_of_Notion_%284-8-22_12-48-49_AM%29.png" alt="Screenshot of Notion (4-8-22, 12-48-49 AM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-04.png" alt="Screenshot of Notion (4-8-22, 12-48-49 AM).png" />
 
 ## Deriving the row (y position)
 
@@ -93,7 +93,7 @@ Now let’s compute the y position. Since there are five items per row, the colu
 		let y = 30 + 50 * row;
 		circle(x, y, 20);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Screenshot_of_Safari_%284-8-22_12-52-02_AM%29.png" alt="Screenshot of Safari (4-8-22, 12-52-02 AM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-09.png" alt="Screenshot of Safari (4-8-22, 12-52-02 AM).png" />
 
 Putting this together:
 
@@ -109,7 +109,7 @@ Putting this together:
 
 		circle(x, y, 20);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 1.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-10.png" alt="" />
 
 # Varying the items
 
@@ -128,7 +128,7 @@ We can use the row and column in other ways. This sketch gives each circle a siz
 		let size = map(row - column, 0, 10, 10, 50);
 		circle(x, y, size);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 2.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-13.png" alt="" />
 
 # Using a function to draw each cell
 
@@ -151,7 +151,7 @@ Instead of calling `circle`, we can use our own function.
 function myShape(x, y, row, column, i) {
 	let size = map(row - column, 0, 10, 10, 50);
 	circle(x, y, size);
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 3.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-14.png" alt="" />
 
 The following code replaces just the implementation of the `myShape` function. The code in `draw()` remains exactly the same.
 
@@ -162,7 +162,7 @@ The following code replaces just the implementation of the `myShape` function. T
 	circle(x + size, y, size / 2);
 	circle(x, y + size, size / 2);
 	circle(x + size, y + size, size / 2);
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 4.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-15.png" alt="" />
 
 # Strategy 2: Nested loops
 
@@ -197,7 +197,7 @@ If we need `i` (the index number), we can derive it from the row and column numb
 				text(i, x, y);
 		}
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Screenshot_of_Safari_%284-8-22_1-04-36_AM%29.png" alt="Screenshot of Safari (4-8-22, 1-04-36 AM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-06.png" alt="Screenshot of Safari (4-8-22, 1-04-36 AM).png" />
 
 Or we can initialize it 0, and increment it each time through the (inner) loop, to keep count of how many items we've drawn.
 
@@ -214,7 +214,7 @@ Or we can initialize it 0, and increment it each time through the (inner) loop, 
       text(i, x, y);
 		}
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Screenshot_of_Safari_%284-8-22_1-04-36_AM%29.png" alt="Screenshot of Safari (4-8-22, 1-04-36 AM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-06.png" alt="Screenshot of Safari (4-8-22, 1-04-36 AM).png" />
 
 # Drawing different items at different grid positions
 
@@ -244,7 +244,7 @@ function decoratedSquare(x, y, row, column, i) {
 	circle(0, size, size / 2);
 	circle(size, size, size / 2);
 	pop();
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Screenshot_of_Safari_%284-8-22_1-06-49_AM%29.png" alt="Screenshot of Safari (4-8-22, 1-06-49 AM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-07.png" alt="Screenshot of Safari (4-8-22, 1-06-49 AM).png" />
 
 Add a second drawing function `circles()` and call it instead.
 
@@ -273,7 +273,7 @@ function circles(x, y) {
 	circle(10, 0, 20);
 
 	pop();
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 5.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-16.png" alt="" />
 
 Now, we can call `circles()` for some cells and `decoratedSquare()` for others.
 
@@ -292,7 +292,7 @@ Now, we can call `circles()` for some cells and `decoratedSquare()` for others.
 			}
 		}
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Screenshot_of_Notion_%284-8-22_1-09-40_AM%29.png" alt="Screenshot of Notion (4-8-22, 1-09-40 AM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-03.png" alt="Screenshot of Notion (4-8-22, 1-09-40 AM).png" />
 
 Animate the circles, by incorporating data from `millis()`.
 
@@ -310,7 +310,7 @@ Animate the circles, by incorporating data from `millis()`.
 	circle(dx, 0, 30);
 
 	pop();
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/CleanShot_2022-04-08_at_01.11.25.gif" alt="CleanShot 2022-04-08 at 01.11.25.gif" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-01.gif" alt="CleanShot 2022-04-08 at 01.11.25.gif" />
 
 # Extracting `grid()` into a function
 
@@ -386,7 +386,7 @@ function grid(rows, columns) {
 			circles(x, y, row, column);
 		}
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 6.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-17.png" alt="" />
 
 # Appendix I: Higher-Order Programming
 
@@ -415,7 +415,7 @@ function grid(rows, columns, drawer) {
 			drawer(x, y, row, column);
 		}
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 6.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-17.png" alt="" />
 
 Now different calls to `grid()` can draw different cells.
 
@@ -440,7 +440,7 @@ function grid(rows, columns, drawer) {
 			drawer(x, y, row, column);
 		}
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 7.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-18.png" alt="" />
 
 # Appendix II: Why `push` and `pop`
 
@@ -467,7 +467,7 @@ function myShape(x, y, row, column, i) {
 	circle(size, y, size / 2);
 	circle(0, size, size / 2);
 	circle(size, size, size / 2);
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 8.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-19.png" alt="" />
 
 Draw just the first shape
 
@@ -495,7 +495,7 @@ function myShape(x, y, row, column, i) {
 	circle(size, 0, size / 2);
 	circle(0, size, size / 2);
 	circle(size, size, size / 2);
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 9.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-20.png" alt="" />
 
 Draw just the fourth shape
 
@@ -524,7 +524,7 @@ function myShape(x, y, row, column, i) {
 	circle(size, 0, size / 2);
 	circle(0, size, size / 2);
 	circle(size, size, size / 2);
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 10.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-11.png" alt="" />
 
 Fixed: add `push()` and `pop()`
 
@@ -553,7 +553,7 @@ function myShape(x, y, row, column, i) {
 	circle(0, size, size / 2);
 	circle(size, size, size / 2);
 	pop();
-}`} lang="jsx" image="/images/arranging-items-in-a-grid/Untitled 11.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-12.png" alt="" />
 
 ---
 

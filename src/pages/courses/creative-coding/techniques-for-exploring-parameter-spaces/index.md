@@ -33,7 +33,7 @@ function draw() {
 }
 ```
 
-![](/images/techniques-for-exploring-parameter-spaces/untitled.png)
+![](/images/techniques-for-exploring-parameter-spaces/techniques-for-exploring-parameter-spaces-06.png)
 
 # 1. Editing Code
 
@@ -54,7 +54,7 @@ function draw() {
 }
 ```
 
-![](/images/techniques-for-exploring-parameter-spaces/untitled-2.png)
+![](/images/techniques-for-exploring-parameter-spaces/techniques-for-exploring-parameter-spaces-04.png)
 
 And a third value:
 
@@ -73,7 +73,7 @@ function draw() {
 }
 ```
 
-![](/images/techniques-for-exploring-parameter-spaces/untitled-4.png)
+![](/images/techniques-for-exploring-parameter-spaces/techniques-for-exploring-parameter-spaces-05.png)
 
 # 2. Driving a value from the mouse position
 
@@ -94,7 +94,7 @@ function draw() {
 }
 ```
 
-![](/images/techniques-for-exploring-parameter-spaces/2021-03-04_19.32.29.gif)
+![](/images/techniques-for-exploring-parameter-spaces/techniques-for-exploring-parameter-spaces-01.gif)
 
 The missing piece is that need to be able to find out what numbers looked good. There are three ways to do this:
 
@@ -116,7 +116,7 @@ function draw() {
 }
 ```
 
-![](/images/techniques-for-exploring-parameter-spaces/2021-03-04_19.37.00.gif)
+![](/images/techniques-for-exploring-parameter-spaces/techniques-for-exploring-parameter-spaces-02.gif)
 
 Print a value to the console when we click the mouse. (In order for this to work, the value has to be a global variable, so that `mousePressed()` can *read* the variable that `draw()` *sets*.)
 
@@ -165,4 +165,4 @@ function draw() {
 }
 ```
 
-![](/images/techniques-for-exploring-parameter-spaces/2021-03-04_19.41.42.gif)
+![](/images/techniques-for-exploring-parameter-spaces/techniques-for-exploring-parameter-spaces-03.gif)

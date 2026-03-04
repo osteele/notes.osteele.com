@@ -191,7 +191,7 @@ Duck Duck Go’s [Bang shortcuts](https://duckduckgo.com/bang). I use Raycast (a
 
 I use a ~~ridiculous~~ number of screenshot apps (*I’ve winnowed this down as Cleanshot becomes more capable*), but they each have different strengths. These are useful for preparing instructional material and other documentation; also, the occasional bug report.
 
-![](/images/macos/Untitled.png)
+![](/images/macos/macos-02.png)
 
 ## [Cleanshot](https://cleanshot.com)
 
@@ -213,7 +213,7 @@ I use a ~~ridiculous~~ number of screenshot apps (*I’ve winnowed this down as 
 
 ## [~~Xnip~~](http://xnipapp.com)
 
-![](/images/macos/Untitled 1.png)
+![](/images/macos/macos-01.png)
 
 - ~~Adjust the borders of the shot after capture.~~
 - ~~Annotations, including pixelate and step-by-step callouts.~~

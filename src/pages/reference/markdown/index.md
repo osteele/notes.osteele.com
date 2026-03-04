@@ -7,7 +7,7 @@ layout: ../../../layouts/BaseLayout.astro
 
 [https://guides.github.com/pdfs/markdown-cheatsheet-online.pdf](https://guides.github.com/pdfs/markdown-cheatsheet-online.pdf)
 
-![](/images/markdown/Untitled.png)
+![](/images/markdown/markdown-01.png)
 
 # Markdown Editors
 

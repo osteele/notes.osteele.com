@@ -18,7 +18,7 @@ function draw() {
 	circle(50, 100, 20);
 	circle(50, 150, 20);
 	circle(50, 200, 20);
-}`} lang="jsx" image="/images/iteration-notes/Untitled.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-15.png" alt="" />
 
 Add two more circles by adding two more lines of code.
 
@@ -29,13 +29,13 @@ Add two more circles by adding two more lines of code.
 	circle(50, 200, 20);
 	circle(50, 250, 20);
 	circle(50, 300, 20);
-}`} lang="jsx" image="/images/iteration-notes/Untitled 1.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-02.png" alt="" />
 
 # Source code repetition: advantages
 
 There is a simple correspondence between lines of code, and generated graphics.
 
-![](/images/iteration-notes/Artboard.png)
+![](/images/iteration-notes/iteration-notes-01.png)
 
 It is easy to change *just one* repeated element.
 
@@ -46,7 +46,7 @@ It is easy to change *just one* repeated element.
 	circle(50, 200, 20);
 	circle(50, 250, 20);
 	circle(50, 300, 20);
-}`} lang="jsx" image="/images/iteration-notes/Untitled 2.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-07.png" alt="" />
 
 # Source code repetition: disadvantages
 
@@ -59,7 +59,7 @@ Changing *many* elements requires editing *many lines of code*.
 	circle(50, 200, 50);
 	circle(50, 250, 50);
 	circle(50, 300, 50);
-}`} lang="jsx" image="/images/iteration-notes/Untitled 3.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-08.png" alt="" />
 
 Drawing a large number of elements would require a lot of code.
 
@@ -71,7 +71,7 @@ Drawing a large number of elements would require a lot of code.
 	circle(50, 250, 50);
 	circle(50, 300, 50);
 	// …
-}`} lang="jsx" image="/images/iteration-notes/Untitled 4.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-09.png" alt="" />
 
 # Preparing for iteration
 
@@ -84,7 +84,7 @@ Let's pare back to four circles, and demonstrate a different way to repeat multi
 	circle(50, 100, 40);
 	circle(50, 150, 40);
 	circle(50, 200, 40);
-}`} lang="jsx" image="/images/iteration-notes/Untitled.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-15.png" alt="" />
 
 Introduce a variable, so that the calls to `circle` all look the same.
 
@@ -219,7 +219,7 @@ function draw() {
 		circle(50, y, 40);
 		y += 50;
 	}
-}`} lang="jsx" image="/images/iteration-notes/Untitled 5.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-10.png" alt="" />
 
 Now it's easy to change the *spacing* ( change `y += 50` to e.g. `y += 80`):
 
@@ -230,7 +230,7 @@ Now it's easy to change the *spacing* ( change `y += 50` to e.g. `y += 80`):
 		circle(50, y, 40);
 		y += 30;
 	}
-}`} lang="jsx" image="/images/iteration-notes/Untitled 6.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-11.png" alt="" />
 
 Or the *termination* c*ondition* (change `y <= 200` to e.g. `y <= 400`).
 
@@ -241,7 +241,7 @@ Or the *termination* c*ondition* (change `y <= 200` to e.g. `y <= 400`).
 		circle(50, y, 40);
 		y += 80;
 	}
-}`} lang="jsx" image="/images/iteration-notes/Untitled 7.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-12.png" alt="" />
 
 These would be bigger changes, if each line of circle were drawn by a different line of code.
 
@@ -307,7 +307,7 @@ function draw() {
 	for (let y = 50; y <= 200; y += 50) {
 		circle(50, y, 40);
 	}
-}`} lang="jsx" image="/images/iteration-notes/Untitled 8.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-13.png" alt="" />
 
 We can demonstrate this by writing a single function that uses both forms of loop.
 
@@ -321,7 +321,7 @@ We can demonstrate this by writing a single function that uses both forms of loo
 		circle(150, y, 40);
 		y += 80;
 	}
-}`} lang="jsx" image="/images/iteration-notes/Untitled 9.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-14.png" alt="" />
 
 # Controlling loop count
 
@@ -519,7 +519,7 @@ This code, similar to the code above  increments `y` by a constant amount until 
 	for (let y = 50; y < height; y += 80) {
 		circle(50, y, 40);
 	}
-}`} lang="jsx" image="/images/iteration-notes/Untitled 10.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-03.png" alt="" />
 
 We can instead increase `y` by 10% each time through the loop. (`y *= 1.1` is an abbreviation of `y = y * 1.1`, which increases the value of `y` by 10%.)
 
@@ -527,7 +527,7 @@ We can instead increase `y` by 10% each time through the loop. (`y *= 1.1` is an
 	for (let y = 50; y < height; y *= 1.1) {
 		circle(50, y, 40);
 	}
-}`} lang="jsx" image="/images/iteration-notes/Untitled 11.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-04.png" alt="" />
 
 ## Drawing one shape differently
 
@@ -567,7 +567,7 @@ function draw() {
 		circle(50, y, i === 3 ? 60 : 40);
 		y += 80;
 	}
-}`} lang="jsx" image="/images/iteration-notes/Untitled 12.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-05.png" alt="" />
 
 ## Modifying x and y
 
@@ -598,7 +598,7 @@ function draw() {
 	for (let y = 50, x = 50; y < height; x += 10, y *= 1.1) {
 		circle(x, y, 40);
 	}
-}`} lang="jsx" image="/images/iteration-notes/Untitled 13.png" alt="" />
+}`} lang="jsx" image="/images/iteration-notes/iteration-notes-06.png" alt="" />
 
 ---
 

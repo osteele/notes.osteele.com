@@ -24,7 +24,7 @@ You can choose which woods to laminate into a thicker block, in order to match t
 
 ## Plane the Maple Board
 
-![](/images/project-3-band-saw-box/DeWALTplaner.jpeg)
+![](/images/project-3-band-saw-box/project-3-band-saw-box-03.jpeg)
 
 [Woodshop](https://wp.nyu.edu/nyushanghai-fabrication-lab/woodshop/#planer)
 
@@ -32,7 +32,7 @@ Use the powered thickness planer to plane the (large) maple board.
 
 Read the grain at the edge of the board, and feed the board so that the grain goes *downhill* as the piece enters the machine. (The photograph above is correct.) This ensures that the blades cut across the fibers. The other orientation causes the blades to pry the fibers out of the wood, instead of cutting them.
 
-![Source: [https://workshopcompanion.com/KnowHow/Techniques/Jointing_Planing/3_Planing_KnowHow/3_Planing_KnowHow.htm](https://workshopcompanion.com/KnowHow/Techniques/Jointing_Planing/3_Planing_KnowHow/3_Planing_KnowHow.htm)](/images/project-3-band-saw-box/JP_3_5_300.jpg)
+![Source: [https://workshopcompanion.com/KnowHow/Techniques/Jointing_Planing/3_Planing_KnowHow/3_Planing_KnowHow.htm](https://workshopcompanion.com/KnowHow/Techniques/Jointing_Planing/3_Planing_KnowHow/3_Planing_KnowHow.htm)](/images/project-3-band-saw-box/project-3-band-saw-box-07.jpg)
 
 Source: [https://workshopcompanion.com/KnowHow/Techniques/Jointing_Planing/3_Planing_KnowHow/3_Planing_KnowHow.htm](https://workshopcompanion.com/KnowHow/Techniques/Jointing_Planing/3_Planing_KnowHow/3_Planing_KnowHow.htm)
 
@@ -46,17 +46,17 @@ The walnut blank is too short to run through the powered planer. (You can use th
 
 Since the hand plan is mobile, you will need to immobilize the work piece, either by clamping it (left) or using a plane stop (right).
 
-![Clamped stock for planing. Note that the stock must be higher than the ***bench dogs*** (the metal posts) that are used to hold it.](/images/project-3-band-saw-box/IMG_3304.jpeg)
+![Clamped stock for planing. Note that the stock must be higher than the ***bench dogs*** (the metal posts) that are used to hold it.](/images/project-3-band-saw-box/project-3-band-saw-box-04.jpeg)
 
 Clamped stock for planing. Note that the stock must be higher than the ***bench dogs*** (the metal posts) that are used to hold it.
 
-![Stock that rests against the hook at the end of a plane board. This is one of several jigs that can be used to support a board for hand planing. Instead of fully clamping the board, it provides a stop that resists movement in the single direction that the planing operation applies force.](/images/project-3-band-saw-box/IMG_3305.jpeg)
+![Stock that rests against the hook at the end of a plane board. This is one of several jigs that can be used to support a board for hand planing. Instead of fully clamping the board, it provides a stop that resists movement in the single direction that the planing operation applies force.](/images/project-3-band-saw-box/project-3-band-saw-box-05.jpeg)
 
 Stock that rests against the hook at the end of a plane board. This is one of several jigs that can be used to support a board for hand planing. Instead of fully clamping the board, it provides a stop that resists movement in the single direction that the planing operation applies force.
 
 As with the powered thickness planer, you will need to read the grain direction, and make sure that the plane is cutting across the fibers instead of lifting them out of the wood. The correct orientation is shown to the right.
 
-![](/images/project-3-band-saw-box/IMG_3306.jpeg)
+![](/images/project-3-band-saw-box/project-3-band-saw-box-06.jpeg)
 
 Notes: 
 
@@ -73,10 +73,10 @@ Not shown: the plane should be held skew to the board.
 
 In addition to the F clamps shown in the instructions, we have a number of ***parallel clamps***. These are heavy and most of them are long, but if you can maneuver them into place, they are excellent clamps for this purpose.
 
-![F Clamps. For best results, place a piece of sacrificial wood between the workpiece and the clamp jaw, to protect the workpiece from dents. ](/images/project-3-band-saw-box/BandsawBoxClamping.jpeg)
+![F Clamps. For best results, place a piece of sacrificial wood between the workpiece and the clamp jaw, to protect the workpiece from dents. ](/images/project-3-band-saw-box/project-3-band-saw-box-02.jpeg)
 
 F Clamps. For best results, place a piece of sacrificial wood between the workpiece and the clamp jaw, to protect the workpiece from dents. 
 
-![Parallel clamps. These are very heavy, but supply even pressure across the entire jaw length and do not twist when you tighten them. The jaws do not generally dent wood.](/images/project-3-band-saw-box/149056.0.jpg)
+![Parallel clamps. These are very heavy, but supply even pressure across the entire jaw length and do not twist when you tighten them. The jaws do not generally dent wood.](/images/project-3-band-saw-box/project-3-band-saw-box-01.jpg)
 
 Parallel clamps. These are very heavy, but supply even pressure across the entire jaw length and do not twist when you tighten them. The jaws do not generally dent wood.

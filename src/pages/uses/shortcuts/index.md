@@ -7,11 +7,11 @@ layout: ../../../layouts/BaseLayout.astro
 
 Via [Raycast](https://www.raycast.com), [Keyboard Maestro](https://www.keyboardmaestro.com/main/), and [Better Touch Tool](https://folivora.ai).
 
-![keypad shortcuts.png](/images/shortcuts/keypad_shortcuts.png)
+![keypad shortcuts.png](/images/shortcuts/shortcuts-02.png)
 
 # Mouse Button Shortcuts
 
-![Logi Options.png](/images/shortcuts/Logi_Options.png)
+![Logi Options.png](/images/shortcuts/shortcuts-01.png)
 
 # Touch Pad Shortcuts
 

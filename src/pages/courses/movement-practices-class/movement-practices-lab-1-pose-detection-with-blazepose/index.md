@@ -67,7 +67,7 @@ Note your findings, to answer in the homework assignment.
 3. Press the Run button ▶︎, grant camera permissions, and verify that you are able to run BlazeNet. You should see an image from your WebCam. After a few moments, this should be overlayed with circles and lines that indicate the detected bodypart landmarks.
 4. Select the menu item File > Duplicate to make your own copy of the project, that you can modify. Note: This is the File menu inside the browser window, not Chrome’s File menu.
 
-![You should see something like this. Note the red circles and white text on top of the image. Move further away from the camera in order to see the estimated pose for your whole body.](/images/movement-practices-lab-1-pose-detection-with-blazepose/Untitled.png)
+![You should see something like this. Note the red circles and white text on top of the image. Move further away from the camera in order to see the estimated pose for your whole body.](/images/movement-practices-lab-1-pose-detection-with-blazepose/movement-practices-lab-1-pose-detection-with-blazepose-02.png)
 
 You should see something like this. Note the red circles and white text on top of the image. Move further away from the camera in order to see the estimated pose for your whole body.
 
@@ -160,7 +160,7 @@ Whenever you run into an issue with a web application that you are developing, y
 
 The following warnings are expected, and you can ignore them. You can distinguish these from other warnings because they are all about URLs whose names end in `.map` not being found (”HTTP error: status code 404”).
 
-![Screenshot of Google Chrome (3-31-22, 2-18-03 PM).png](/images/movement-practices-lab-1-pose-detection-with-blazepose/Screenshot_of_Google_Chrome_%283-31-22_2-18-03_PM%29.png)
+![Screenshot of Google Chrome (3-31-22, 2-18-03 PM).png](/images/movement-practices-lab-1-pose-detection-with-blazepose/movement-practices-lab-1-pose-detection-with-blazepose-01.png)
 
 ## Site Doesn’t Have Permission to Use the Webcam
 

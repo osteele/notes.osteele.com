@@ -5,6 +5,6 @@ layout: ../../../layouts/BaseLayout.astro
 
 [Raspberry Pi Pinout](https://pinout.xyz)
 
-![](/images/pinouts/raspi-4-pinout.png)
+![](/images/pinouts/pinouts-02.png)
 
-![](/images/pinouts/raspi-4-pinout-2.png)
+![](/images/pinouts/pinouts-01.png)

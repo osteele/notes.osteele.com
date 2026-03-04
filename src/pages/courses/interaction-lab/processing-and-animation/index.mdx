@@ -31,9 +31,9 @@ Take particular note of the difference between descriptions #5 and #6. This sket
 
 Also note that at no time do we see just the background, without the circle. This is because the execution model for Processing looks like this:
 
-![Screenshot of Microsoft Edge (3-30-22, 9-14-00 PM).png](/images/processing-and-animation/Screenshot_of_Microsoft_Edge_%283-30-22_9-14-00_PM%29.png)
+![Screenshot of Microsoft Edge (3-30-22, 9-14-00 PM).png](/images/processing-and-animation/processing-and-animation-04.png)
 
-![Screenshot of Microsoft Edge (3-30-22, 9-11-22 PM).png](/images/processing-and-animation/Screenshot_of_Microsoft_Edge_%283-30-22_9-11-22_PM%29.png)
+![Screenshot of Microsoft Edge (3-30-22, 9-11-22 PM).png](/images/processing-and-animation/processing-and-animation-03.png)
 
 Now consider this modification.
 
@@ -59,13 +59,13 @@ There are a few variables that Processing itself defines. Consider this modifica
 
 One way to visualize what is happening is to draw a *data flow diagram*. The diagram on the left shows the sketch with the variable `x`. This variable gets a value when we assign to it: `x = 10`. The diagram on the right shows what happens when we use `mouseX`. Each time before `draw()` is called, it gets a new value by reading the position of the physical mouse (or trackpad) that is connected to the computer. (This is something Processing does, so it happens automatically so far as your sketch is concerned.) (This may remind you of reading the value of a potentiometer in an Arduino sketch.)
 
-![Screenshot of Microsoft Edge (3-30-22, 9-25-54 PM).png](/images/processing-and-animation/Screenshot_of_Microsoft_Edge_%283-30-22_9-25-54_PM%29.png)
+![Screenshot of Microsoft Edge (3-30-22, 9-25-54 PM).png](/images/processing-and-animation/processing-and-animation-05.png)
 
-![Screenshot of Microsoft Edge (3-30-22, 9-26-03 PM).png](/images/processing-and-animation/Screenshot_of_Microsoft_Edge_%283-30-22_9-26-03_PM%29.png)
+![Screenshot of Microsoft Edge (3-30-22, 9-26-03 PM).png](/images/processing-and-animation/processing-and-animation-06.png)
 
 We could add more detail to this second diagram, to show *all* the values, and all the arguments to `fill()` and `circle()`. (We’ll omit `background()`, so it doesn’t get too crazy.)
 
-![Screenshot of Notion (3-30-22, 9-34-12 PM).png](/images/processing-and-animation/Screenshot_of_Notion_%283-30-22_9-34-12_PM%29.png)
+![Screenshot of Notion (3-30-22, 9-34-12 PM).png](/images/processing-and-animation/processing-and-animation-08.png)
 
 (It generally isn’t a good idea to try to put everything into one diagram, and we’ll stop doing this now that we’ve seen this one example.)
 
@@ -80,7 +80,7 @@ void draw() {
   noStroke();
   fill(mouseX, 0, 0);
   circle(mouseX, mouseY, 50);
-}`} lang="cpp" image="/images/processing-and-animation/Screenshot_of_Notion_%283-30-22_9-35-54_PM%29.png" alt="Screenshot of Notion (3-30-22, 9-35-54 PM).png" />
+}`} lang="cpp" image="/images/processing-and-animation/processing-and-animation-09.png" alt="Screenshot of Notion (3-30-22, 9-35-54 PM).png" />
 
 What happens as you scrub the mouse across the canvas? If you look carefully, you may notice that the circles changes from black (on the left), to red (about 2/3 of the way to the right), and then stays the same color when it is positioned between 2/3 of the way from the left to the right, and 100% of the way from the left to the right.
 
@@ -102,7 +102,7 @@ Follow either of these by:
 
 The first of these uses the `map()` function to re-scale a value from one range (0…width-1) to another (0…255). The other uses arithmetic functions to do the same thing. You can think of them as fixing the red arrow so that the output from `mouseX` matches the input to `fill()`. (Question: Why didn’t we need to do that for `circle()`?)
 
-![Screenshot of Microsoft Edge (3-30-22, 9-50-01 PM).png](/images/processing-and-animation/Screenshot_of_Microsoft_Edge_%283-30-22_9-50-01_PM%29.png)
+![Screenshot of Microsoft Edge (3-30-22, 9-50-01 PM).png](/images/processing-and-animation/processing-and-animation-07.png)
 
 You may have done this on the Arduino, to connect a sensor input (range = 0…1023) to an output (domain = 0…255).
 
@@ -112,7 +112,7 @@ Note: `mouseX` is multiplied by `255.0`
 
 `mouseX` is a way of getting information from the outside world into your program, so that it can *respond* (do something different when the world changes), and *interact* (participate in a cycle of response and display). The specific feature of the outside world it reads is the position of the mouse or trackpad.
 
-![Screenshot of Microsoft Edge (3-30-22, 10-05-39 PM).png](/images/processing-and-animation/Screenshot_of_Microsoft_Edge_%283-30-22_10-05-39_PM%29.png)
+![Screenshot of Microsoft Edge (3-30-22, 10-05-39 PM).png](/images/processing-and-animation/processing-and-animation-01.png)
 
 Another feature of the outside world is *time*, and the way to get information about it is to use the `millis()` function. This returns the number of milliseconds (thousands of a second) since the sketch started running.
 
@@ -130,7 +130,7 @@ void draw() {
   float red = map(millis(), 0, width - 1, 0, 255);
   fill(red, 0, 0);
   circle(mouseX, mouseY, 50);
-}`} lang="cpp" image="/images/processing-and-animation/Screenshot_of_Microsoft_Edge_%283-30-22_10-14-41_PM%29.png" alt="Screenshot of Microsoft Edge (3-30-22, 10-14-41 PM).png" />
+}`} lang="cpp" image="/images/processing-and-animation/processing-and-animation-02.png" alt="Screenshot of Microsoft Edge (3-30-22, 10-14-41 PM).png" />
 
 What happens? What do you expect to happen?
 

@@ -18,12 +18,12 @@ The instructions for configuring Visual Studio Code and Chrome for web developme
 1. Launch Visual Studio Code.
 2. Verify that File > Auto Save is enabled:
     
-    ![](/images/p5js-particle-workshop/Untitled.png)
+    ![](/images/p5js-particle-workshop/p5js-particle-workshop-06.png)
     
 
 3. Open the Extensions panel ①. Search for the “Live Server” extension ②. Install it ③.
 
-![](/images/p5js-particle-workshop/Untitled 1.png)
+![](/images/p5js-particle-workshop/p5js-particle-workshop-02.png)
 
 ## B. Download the project starter kit
 
@@ -32,27 +32,27 @@ The instructions for configuring Visual Studio Code and Chrome for web developme
 3. In Visual Studio Code, open the `sketch.js` file.
 4. In Visual Studio Code, click the Go Live button
 
-![](/images/p5js-particle-workshop/Untitled.png)
+![](/images/p5js-particle-workshop/p5js-particle-workshop-06.png)
 
 ## C. Configure Chrome
 
 1. Chrome (or your preferred browser) should open a tab that displays the sketch. (The current sketch is blank.)
 
-![](/images/p5js-particle-workshop/Untitled 2.png)
+![](/images/p5js-particle-workshop/p5js-particle-workshop-03.png)
 
 2. Open the JavaScript Console: View > Developer Tools > JavaScript Console. Or, press Command+Option+J (Mac) or Control+Shift+J (Windows).
 
-![](/images/p5js-particle-workshop/Screenshot_of_Google_Chrome_%282019-11-21_1-57-20_PM%29.png)
+![](/images/p5js-particle-workshop/p5js-particle-workshop-01.png)
 
 ## D. Arrange your windows
 
 1. Configure your desktop so that you can see your source code (in Visual Studio Code) and the drawing (in Chrome) at the same time.
 
-![](/images/p5js-particle-workshop/Untitled 3.png)
+![](/images/p5js-particle-workshop/p5js-particle-workshop-04.png)
 
 2. In order to make more space for your editor in Visual Studio Code, you can click the top (Explorer) icon to hide the Explorer side bar.
 
-![](/images/p5js-particle-workshop/Untitled 4.png)
+![](/images/p5js-particle-workshop/p5js-particle-workshop-05.png)
 
 # Live Coding
 

@@ -7,13 +7,13 @@ layout: ../../layouts/BaseLayout.astro
 
 Tools can be divided into ***hand tools*** versus ***power tools***; or, ***stationary machines*** versus ***portable tools.***
 
-![](/images/tools/Untitled_4.svg)
+![](/images/tools/tools-03.svg)
 
 Tools can also be categorized by their ***action***: *sawing* (spinning a cutting blade), *drilling* and *routing* (spinning a ***bit***), or *sanding*.
 
 Finally, tools can be categorized by their ***operation***: *milling*, *shaping*, *smoothing*, *finishing*.
 
-![Some power tools, mostly stationary machines. Take this with a grain of salt. There's other tools, and other ways to divide the operations. Refer to this if it's helpful in making sense of the woodshop initially. Eventually you will learn your way around each specific tool, and that knowledge will replace this rough typology.](/images/tools/Untitled.png)
+![Some power tools, mostly stationary machines. Take this with a grain of salt. There's other tools, and other ways to divide the operations. Refer to this if it's helpful in making sense of the woodshop initially. Eventually you will learn your way around each specific tool, and that knowledge will replace this rough typology.](/images/tools/tools-02.png)
 
 Some power tools, mostly stationary machines. Take this with a grain of salt. There's other tools, and other ways to divide the operations. Refer to this if it's helpful in making sense of the woodshop initially. Eventually you will learn your way around each specific tool, and that knowledge will replace this rough typology.
 

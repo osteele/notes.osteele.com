@@ -22,7 +22,7 @@ I*n this section, you will create a project folder on your disk that includes th
 3. In Visual Studio Code, open the `imu-workshop` folder.
 4. In Visual Studio Code, click the "Go Live" button.
 
-![](/images/p5js-imu-workshop/Untitled.png)
+![](/images/p5js-imu-workshop/p5js-imu-workshop-01.png)
 
  
 

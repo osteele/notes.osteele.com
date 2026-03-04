@@ -28,11 +28,11 @@ layout: ../../../layouts/BaseLayout.astro
 
 In Processing, ***present*** your project using *Present* (⇧⌘R), not *Run* (⌘R).
 
-![](/images/presenting-at-an-exhibition/Untitled.png)
+![](/images/presenting-at-an-exhibition/presenting-at-an-exhibition-02.png)
 
 You can also hold down the Shift key while pressing the Play (“Debug”) button, in order to *Present* instead of *Run*.
 
-![](/images/presenting-at-an-exhibition/Untitled 1.png)
+![](/images/presenting-at-an-exhibition/presenting-at-an-exhibition-01.png)
 
 If your sketch uses `fullScreen()` instead of `size()`, you do not need to do this.
 

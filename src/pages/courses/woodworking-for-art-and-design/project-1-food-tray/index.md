@@ -70,7 +70,7 @@ Review the Project Documentation section at the end of this page. This assignmen
 - Butcher's block oil, aka cutting board oil (a mix of mineral oil and wax)
 - Nitrile gloves (while applying oil and wax)
 
-![](/images/project-1-food-tray/Untitled_Artwork.jpg)
+![](/images/project-1-food-tray/project-1-food-tray-13.jpg)
 
 ## Operations
 
@@ -88,31 +88,31 @@ You break the edge by introducing a chamfer (which is flat), or a fillet (which 
 
 Image source: [https://www.engineering.com/story/chamfer-or-fillet-its-more-than-a-coin-toss](https://www.engineering.com/story/chamfer-or-fillet-its-more-than-a-coin-toss)
 
-![Source: [https://www.engineering.com/story/chamfer-or-fillet-its-more-than-a-coin-toss](https://www.engineering.com/story/chamfer-or-fillet-its-more-than-a-coin-toss)](/images/project-1-food-tray/Edge.Chamfer.Fillet.grey_okajtg.jpg)
+![Source: [https://www.engineering.com/story/chamfer-or-fillet-its-more-than-a-coin-toss](https://www.engineering.com/story/chamfer-or-fillet-its-more-than-a-coin-toss)](/images/project-1-food-tray/project-1-food-tray-02.jpg)
 
 Source: [https://www.engineering.com/story/chamfer-or-fillet-its-more-than-a-coin-toss](https://www.engineering.com/story/chamfer-or-fillet-its-more-than-a-coin-toss)
 
-![A ***roundover bit***. This produces a fillet. Source: Whiteside Catalog.](/images/project-1-food-tray/Untitled.png)
+![A ***roundover bit***. This produces a fillet. Source: Whiteside Catalog.](/images/project-1-food-tray/project-1-food-tray-12.png)
 
 A ***roundover bit***. This produces a fillet. Source: Whiteside Catalog.
 
 A ***roundover bit***. This produces a fillet. Image source: Whiteside Catalog.
 
-![A roundover bit can also be used to produce a ***bead.***](/images/project-1-food-tray/Untitled 1.png)
+![A roundover bit can also be used to produce a ***bead.***](/images/project-1-food-tray/project-1-food-tray-05.png)
 
 A roundover bit can also be used to produce a ***bead.***
 
 A roundover bit can also be used to produce a ***bead.***
 
-![A ***chamfer bit***, and a block with chamfered edge. A chamfer can also be created with a hand plane.](/images/project-1-food-tray/Untitled 2.png)
+![A ***chamfer bit***, and a block with chamfered edge. A chamfer can also be created with a hand plane.](/images/project-1-food-tray/project-1-food-tray-06.png)
 
 A ***chamfer bit***, and a block with chamfered edge. A chamfer can also be created with a hand plane.
 
 A ***chamfer bit***, and a block with chamfered edge. A chamfer can also be created with a hand plane.
 
-![](/images/project-1-food-tray/Untitled 3.png)
+![](/images/project-1-food-tray/project-1-food-tray-07.png)
 
-![](/images/project-1-food-tray/Untitled 4.png)
+![](/images/project-1-food-tray/project-1-food-tray-08.png)
 
 If you are driving the router forwards, the wood is on its left. Move the router counterclockwise around the outside of a piece, and clockwise around a hole. (But you can figure both of these out from the “wood is on the left” rule.)
 
@@ -164,37 +164,37 @@ If your workpiece is not suitable for use with the router, do this instead:
 
 ***Rasps*** are shaping tools, not smoothing tools. They can remove large amounts of material, similar to the stationary sanding machines. They change the shape of the surface; they do not leave a smooth surface.
 
-![A ***rasp***. Credit: Wikimedia commons.](/images/project-1-food-tray/Raspel_Baiter.jpg)
+![A ***rasp***. Credit: Wikimedia commons.](/images/project-1-food-tray/project-1-food-tray-04.jpg)
 
 A ***rasp***. Credit: Wikimedia commons.
 
 A ***rasp***. Credit: Wikimedia commons.
 
-![A ***Shinto saw rasp***. (Bob Villa calls this a “surfoam”. This isn't a word I've seen elsewhere.) This removes large amounts of wood. Each of the sides is a different grit. Credit: manufacturer product page.](/images/project-1-food-tray/Untitled 5.png)
+![A ***Shinto saw rasp***. (Bob Villa calls this a “surfoam”. This isn't a word I've seen elsewhere.) This removes large amounts of wood. Each of the sides is a different grit. Credit: manufacturer product page.](/images/project-1-food-tray/project-1-food-tray-09.png)
 
 A ***Shinto saw rasp***. (Bob Villa calls this a “surfoam”. This isn't a word I've seen elsewhere.) This removes large amounts of wood. Each of the sides is a different grit. Credit: manufacturer product page.
 
 A ***Shinto saw rasp***. (Bob Villa calls this a “surfoam”. This isn't a word I've seen elsewhere.) This removes large amounts of wood. Each of the sides is a different grit. Credit: manufacturer product page.
 
-![A ***file***. These come in varieties for cutting wood and metal. Credit: Lee Valley product catalog.](/images/project-1-food-tray/Untitled 6.png)
+![A ***file***. These come in varieties for cutting wood and metal. Credit: Lee Valley product catalog.](/images/project-1-food-tray/project-1-food-tray-10.png)
 
 A ***file***. These come in varieties for cutting wood and metal. Credit: Lee Valley product catalog.
 
 A ***file***. These come in varieties for cutting wood and metal. Credit: Lee Valley product catalog.
 
-![A ***riffler***. For shaping carvings and other complex shapes with cavities. Credit: Lee Valley product catalog.](/images/project-1-food-tray/Untitled 7.png)
+![A ***riffler***. For shaping carvings and other complex shapes with cavities. Credit: Lee Valley product catalog.](/images/project-1-food-tray/project-1-food-tray-11.png)
 
 A ***riffler***. For shaping carvings and other complex shapes with cavities. Credit: Lee Valley product catalog.
 
 A ***riffler***. For shaping carvings and other complex shapes with cavities. Credit: Lee Valley product catalog.
 
-![A ***block plane***. Can be used to fillet (or, with more expertise, chamfer) an edge. Credit: Tools for Working Wood catalog.](/images/project-1-food-tray/MS-CLIFBLOCK_H_big.jpg)
+![A ***block plane***. Can be used to fillet (or, with more expertise, chamfer) an edge. Credit: Tools for Working Wood catalog.](/images/project-1-food-tray/project-1-food-tray-03.jpg)
 
 A ***block plane***. Can be used to fillet (or, with more expertise, chamfer) an edge. Credit: Tools for Working Wood catalog.
 
 A ***block plane***. Can be used to fillet (or, with more expertise, chamfer) an edge. Credit: Tools for Working Wood catalog.
 
-![A cornering tool. If you have too many special-purpose hand tools, you may have one of these. (I have one of these. But not in China.) Credit: Lee Valley product catalog.](/images/project-1-food-tray/05K5030-cornering-tool-set-u-02-r.jpg)
+![A cornering tool. If you have too many special-purpose hand tools, you may have one of these. (I have one of these. But not in China.) Credit: Lee Valley product catalog.](/images/project-1-food-tray/project-1-food-tray-01.jpg)
 
 A cornering tool. If you have too many special-purpose hand tools, you may have one of these. (I have one of these. But not in China.) Credit: Lee Valley product catalog.
 

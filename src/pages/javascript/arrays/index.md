@@ -28,7 +28,7 @@ Playlist: [Array Functions in JavaScript](https://www.youtube.com/playlist?list=
 
 The [JS Cheat Sheet](https://htmlcheatsheet.com/js/) has a module on Arrays:
 
-![From the [JS Cheat Sheet](https://htmlcheatsheet.com/js/).](/images/arrays/Untitled.png)
+![From the [JS Cheat Sheet](https://htmlcheatsheet.com/js/).](/images/arrays/arrays-02.png)
 
 From the [JS Cheat Sheet](https://htmlcheatsheet.com/js/).
 
@@ -36,7 +36,7 @@ From the [JS Cheat Sheet](https://htmlcheatsheet.com/js/).
 
 Sarah Drasner's [JavaScript Array Explorer](https://arrayexplorer.netlify.app) allows you to choose the operation, and see the code (the Array method) that does this.
 
-![[JavaScript Array Explorer](https://arrayexplorer.netlify.app)](/images/arrays/Untitled 1.png)
+![[JavaScript Array Explorer](https://arrayexplorer.netlify.app)](/images/arrays/arrays-01.png)
 
 [JavaScript Array Explorer](https://arrayexplorer.netlify.app)
 

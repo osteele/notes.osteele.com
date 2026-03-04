@@ -5,7 +5,7 @@ layout: ../../../../layouts/BaseLayout.astro
 
 # Introduction to PoseNet
 
-![](/images/movement-practices-lab-1-pose-detection-with-posenet/image1.gif)
+![](/images/movement-practices-lab-1-pose-detection-with-posenet/movement-practices-lab-1-pose-detection-with-posenet-01.gif)
 
 [***PoseNet***](https://www.tensorflow.org/lite/models/pose_estimation/overview) is a machine learning vision model that estimates the pose of a person in an image or video by estimating where key body joints are.
 

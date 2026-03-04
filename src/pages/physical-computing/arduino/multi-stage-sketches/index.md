@@ -71,7 +71,7 @@ void stage3() {
 }
 ```
 
-![Screenshot of Safari (3-17-22, 10-23-42 PM).png](/images/multi-stage-sketches/Screenshot_of_Safari_%283-17-22_10-23-42_PM%29.png)
+![Screenshot of Safari (3-17-22, 10-23-42 PM).png](/images/multi-stage-sketches/multi-stage-sketches-01.png)
 
 # Combining Sketches into Stages
 
@@ -136,7 +136,7 @@ void loop() {
 }
 ```
 
-![Screenshot of Safari (3-17-22, 10-23-47 PM).png](/images/multi-stage-sketches/Screenshot_of_Safari_%283-17-22_10-23-47_PM%29.png)
+![Screenshot of Safari (3-17-22, 10-23-47 PM).png](/images/multi-stage-sketches/multi-stage-sketches-02.png)
 
 ### Combine the circuits
 

@@ -16,7 +16,7 @@
 
 body {
   font-family: 'Nanum Myeongjo', Georgia, serif;
-  line-height: 1.7;
+  line-height: 1.5;
   color: var(--primary-color);
   background: var(--bg-color);
   margin: 0;
@@ -30,7 +30,7 @@ body {
 }
 
 /* Navigation */
-nav {
+.site-nav {
   background: var(--nav-bg);
   border-bottom: 1px solid var(--border-color);
   padding: 0;
@@ -39,7 +39,7 @@ nav {
   align-items: center;
 }
 
-nav .container {
+.site-nav .container {
   display: flex;
   gap: 30px;
   padding: 0 96px;
@@ -47,13 +47,13 @@ nav .container {
   width: 100%;
 }
 
-nav a {
+.site-nav a {
   color: var(--secondary-color);
   text-decoration: none;
   font-size: 0.95em;
 }
 
-nav a:hover {
+.site-nav a:hover {
   color: var(--primary-color);
   background: #f0f0f0;
   border-radius: 3px;
@@ -61,7 +61,7 @@ nav a:hover {
   margin: -2px -6px;
 }
 
-nav a.active {
+.site-nav a.active {
   color: var(--primary-color);
   font-weight: 600;
 }
@@ -79,6 +79,29 @@ nav a.active {
 
 .breadcrumb a:hover {
   color: var(--link-color);
+}
+
+/* Table of Contents */
+.toc {
+  margin-bottom: 2em;
+}
+
+.toc ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.toc li {
+  margin-bottom: 0.4em;
+}
+
+.toc a {
+  color: var(--secondary-color);
+  text-decoration: underline;
+}
+
+.toc a:hover {
+  color: var(--primary-color);
 }
 
 /* Typography */
@@ -318,7 +341,7 @@ footer {
     padding: 15px 24px;
   }
 
-  nav .container {
+  .site-nav .container {
     padding: 0 24px;
     gap: 20px;
   }

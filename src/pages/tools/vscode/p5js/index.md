@@ -9,7 +9,7 @@ layout: ../../../../layouts/BaseLayout.astro
 
 Visual Studio Code (VSCode) is an _alternative_ to using an online code editor such as the [P5 Web Editor](https://editor.p5.js) or [OpenProcessing](https://openprocessing.org). You can copy your code back and forth between VSCode and an online editor, but at any one time you will either use VSCode to work with the file on your laptop, or use an online editor to work with a sketch that is stored in “the cloud”.
 
-## Getting Started
+# Getting Started
 
 There are _three different_ versions of the instructions; use _one_ of these. (You can always switch later.) They are listed in increasing order of setup complexity.
 

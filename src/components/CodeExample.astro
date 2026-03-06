@@ -65,6 +65,7 @@ const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8
   {live && containerId && (
     <div class="canvas-preview">
       <div id={containerId} class="p5-canvas" data-sketch={execCode} data-canvas-height={canvasHeight} data-animated={animated ? "true" : undefined}></div>
+      {animated && <button class="p5-play-pause" aria-label="Pause">⏸</button>}
     </div>
   )}
   {!live && image && (
@@ -90,7 +91,7 @@ const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8
         var isAnimated = container.dataset.animated === 'true';
         var noLoopCall = isAnimated ? '' : ' p.noLoop();';
 
-        new p5(function(p) {
+        var p5Instance = new p5(function(p) {
           var modified = sketchCode
             .replace(/windowWidth/g, String(CANVAS_WIDTH))
             .replace(/windowHeight/g, String(CANVAS_HEIGHT));
@@ -108,6 +109,25 @@ const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8
             '}');
           fn(p);
         }, container);
+
+        if (isAnimated) {
+          var btn = container.parentElement.querySelector('.p5-play-pause');
+          if (btn) {
+            var running = true;
+            btn.addEventListener('click', function() {
+              if (running) {
+                p5Instance.noLoop();
+                btn.textContent = '▶';
+                btn.setAttribute('aria-label', 'Play');
+              } else {
+                p5Instance.loop();
+                btn.textContent = '⏸';
+                btn.setAttribute('aria-label', 'Pause');
+              }
+              running = !running;
+            });
+          }
+        }
       });
     });
   </script>

@@ -207,11 +207,31 @@ pre code {
 }
 
 .code-example .canvas-preview {
+  position: relative;
   background: #f0f0f0;
   border: 1px solid var(--border-color);
   border-radius: 5px;
   padding: 10px;
   text-align: center;
+}
+
+.p5-play-pause {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+
+.p5-play-pause:hover {
+  opacity: 1;
 }
 
 .code-example .canvas-preview img {

@@ -1,6 +1,6 @@
 ---
 title: "Animation and Randomness"
-layout: ../../../../layouts/BaseLayout.astro
+layout: ../../../../layouts/CreativeCodingLayout.astro
 ---
 import CodeExample from "@/components/CodeExample.astro";
 
@@ -33,7 +33,7 @@ Try this: Change the sketch to animate the size of the object, instead of its po
 
 # Random
 
-The previous sketch uses *time* to drive one of the shape’s properties (its vertical position). Let’s use `random()` instead.
+The previous sketch uses *time* to drive one of the shape's properties (its vertical position). Let's use `random()` instead.
 
 <CodeExample live canvasHeight={200} code={`function draw() {
 	background(100);
@@ -52,7 +52,7 @@ The previous sketch uses *time* to drive one of the shape’s properties (its ve
 
 Note: There are *three* screenshots next to the code, to show that the `random()` returns a different sequence of values, and therefore the sketch draws a different image, each time it is run.
 
-The `noLoop()` function prevents `draw()` from being called again. Let’s see what would happen if we removed it.
+The `noLoop()` function prevents `draw()` from being called again. Let's see what would happen if we removed it.
 
 <CodeExample live animated canvasHeight={200} code={`function draw() {
 	background(100);
@@ -68,7 +68,7 @@ Aargh! Just as the previous sketch drew the circles at different positions each 
 
 What if we want to remember the position from frame to frame, so that we can draw the circles at the same position each time (or, move them in a more organized way that incorporates their previous position)?
 
-In JavaScript, the way to *remember* things is to use a *variable*. A variable can hold a single value, but we want to remember several values: the vertical position of each circle. The trick is that the single value that the variables holds can be an array, which itself holds several values. Here’s what it looks like to use an array to set to hold the y values, inside `draw()`.
+In JavaScript, the way to *remember* things is to use a *variable*. A variable can hold a single value, but we want to remember several values: the vertical position of each circle. The trick is that the single value that the variables holds can be an array, which itself holds several values. Here's what it looks like to use an array to set to hold the y values, inside `draw()`.
 
 <CodeExample live animated canvasHeight={200} code={`function draw() {
 	background(100);
@@ -87,11 +87,11 @@ In JavaScript, the way to *remember* things is to use a *variable*. A variable c
 
 Note: You could also write `let ys = []` instead of `let ys = new Array()`. `[]` is an abbreviation for `new Array()`.
 
-Advanced note: Each time an array item is assigned, as in `ys[i] = random(80, 120)`, JavaScript makes the Array large enough to hold the new item. [Technically this is [not quite true](http://www.martinrinehart.com/frontend-engineering/engineers/javascript/arrays/sparse-arrays.html). But the effect is similar: you don’t need to worry about making an array large enough when you create it.] But you can also write `new Array(20)`, if you know in advance how large the array needs to be.
+Advanced note: Each time an array item is assigned, as in `ys[i] = random(80, 120)`, JavaScript makes the Array large enough to hold the new item. [Technically this is [not quite true](http://www.martinrinehart.com/frontend-engineering/engineers/javascript/arrays/sparse-arrays.html). But the effect is similar: you don't need to worry about making an array large enough when you create it.] But you can also write `new Array(20)`, if you know in advance how large the array needs to be.
 
-As you can see above, simply using an array as intermediary doesn’t help with the jitter if the array is still initialized on each call to `draw()`. Each call to `draw()` makes a *new* array, stores it in a *new* variable named `ys`, and fills the array with a new set of random numbers.
+As you can see above, simply using an array as intermediary doesn't help with the jitter if the array is still initialized on each call to `draw()`. Each call to `draw()` makes a *new* array, stores it in a *new* variable named `ys`, and fills the array with a new set of random numbers.
 
-Let’s make the array a global variable, and initialize it in `setup()` instead of `draw()`.
+Let's make the array a global variable, and initialize it in `setup()` instead of `draw()`.
 
 <CodeExample live canvasHeight={200} code={`let ys = new Array();
 
@@ -127,7 +127,7 @@ Now we can combine this with time-based animation, to get an effect that uses bo
 
 An alternative to time-based animation is to modify (or update) some values each time `draw()` is called.
 
-The previous sketch initializes an array with random values, and then combines the values that it *reads* from this array with an expression that uses time. This sketch doesn’t use time at all; instead it *writes* to the array as well, so that the next frame can pick up where this frame left off.
+The previous sketch initializes an array with random values, and then combines the values that it *reads* from this array with an expression that uses time. This sketch doesn't use time at all; instead it *writes* to the array as well, so that the next frame can pick up where this frame left off.
 
 <CodeExample live animated canvasHeight={200} code={`let ys = new Array();
 
@@ -152,9 +152,9 @@ function draw() {
 
 Randomness is good for organic or interesting patterns. Continuity and stability are necessary for smooth, pleasant animation. Storing the random values in an array is one way to combine randomness with continuity.
 
-Another is to use the `noise()` function. Like `random()`, `noise()` returns values that don’t seem to have much to do with each other, at least when its arguments are far apart (as they are in the next sketch). Unlike `random()`, `noise()` returns the same values each time you call it with the same arguments.
+Another is to use the `noise()` function. Like `random()`, `noise()` returns values that don't seem to have much to do with each other, at least when its arguments are far apart (as they are in the next sketch). Unlike `random()`, `noise()` returns the same values each time you call it with the same arguments.
 
-Here’s the sketch from the [Random section](#random) above, with `random()` replaced by `noise()`. Unlike the first sketch in Random, we don’t need `noLoop()` to keep the drawing from flickering: since for each circle `noise()` is called with the same input (`i`), its value is the same, and `draw()` draws the same thing from frame to frame.
+Here's the sketch from the [Random section](#random) above, with `random()` replaced by `noise()`. Unlike the first sketch in Random, we don't need `noLoop()` to keep the drawing from flickering: since for each circle `noise()` is called with the same input (`i`), its value is the same, and `draw()` draws the same thing from frame to frame.
 
 <CodeExample live canvasHeight={200} code={`function draw() {
 	background(100);
@@ -168,7 +168,7 @@ Here’s the sketch from the [Random section](#random) above, with `random()` re
 
 Note: `noise()` returns a value between 0 and 1, like `random()` with no arguments. To make it behave like `random(80, 120)`, we must use `map()` or write our own version of this arithmetic.
 
-`noise()` can take up to three values. We have used one: the index of the circle within the line of circles. Add a second argument to `noise()`, so that its output is based on the time, as well as on the circle’s index (`i`).
+`noise()` can take up to three values. We have used one: the index of the circle within the line of circles. Add a second argument to `noise()`, so that its output is based on the time, as well as on the circle's index (`i`).
 
 <CodeExample live animated canvasHeight={200} code={`function draw() {
 	background(100);
@@ -180,15 +180,15 @@ Note: `noise()` returns a value between 0 and 1, like `random()` with no argumen
 	}
 }`} lang="jsx" image="/images/animation-and-randomness/animation-and-randomness-04.gif" alt="CleanShot 2022-04-08 at 12.28.23.gif" />
 
-`noise()` returns values that are close together when its inputs are close together. (It is kind of like a cross between `random()` and `sine()`. ) The successive values for `i` from item to item are far apart, so there’s not any continuity between the first and the second element. The successive values of `millis() / 1000` are close together from one call to `draw()` to the next so there is continuity from frame to frame, resulting in a smooth animation. (This is why we divide `millis()` by 1000. The value of `millis()`  itself changes too much from one frame to the next; this is how we slow it down.)
+`noise()` returns values that are close together when its inputs are close together. (It is kind of like a cross between `random()` and `sine()`. ) The successive values for `i` from item to item are far apart, so there's not any continuity between the first and the second element. The successive values of `millis() / 1000` are close together from one call to `draw()` to the next so there is continuity from frame to frame, resulting in a smooth animation. (This is why we divide `millis()` by 1000. The value of `millis()`  itself changes too much from one frame to the next; this is how we slow it down.)
 
 # Theory: Sources of change
 
 In order to draw a *different image each frame*, `draw()` needs access to something that has a *different value* each time `draw()` is called. Here are some possibilities:
 
-- ***Time***. In p5.js, the `frameCount` variable and the `millis()` function are the sources of time. We explored that in [Time-Based Animation](/creative-coding/creative-coding-with-p5js/animation-and-randomness/).
-- A ***global variable***. You can define your own variable that has global scope (is defined outside of `setup()` and `draw()`), and use it to remember changes from one frame to the next. There was an example of this in [Update-Based Animation](/creative-coding/creative-coding-with-p5js/animation-and-randomness/).
-- ***Randomness***. The `random()` function returns a different number each time you use it. This will cause a frame that calls `random()` to draw differently each frame. There were an examples of this in [Random](/creative-coding/creative-coding-with-p5js/animation-and-randomness/) and [Noise](/creative-coding/creative-coding-with-p5js/animation-and-randomness/).
+- ***Time***. In p5.js, the `frameCount` variable and the `millis()` function are the sources of time. We explored that in [Time-Based Animation](#time-based-animation).
+- A ***global variable***. You can define your own variable that has global scope (is defined outside of `setup()` and `draw()`), and use it to remember changes from one frame to the next. There was an example of this in [Update-Based Animation](#update-based-or-incremental-animation).
+- ***Randomness***. The `random()` function returns a different number each time you use it. This will cause a frame that calls `random()` to draw differently each frame. There were an examples of this in [Random](#random) and [Noise](#noise).
 - ***Computer peripherals***. Input devices that are connected to or built into the computer include the mouse, keyboard, webcam, and microphone.
 - Other ***connections to the outside world***. These can come from an Arduino or other device connected on the USB serial port, or from the internet.
 

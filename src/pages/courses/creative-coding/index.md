@@ -3,13 +3,23 @@ title: "Creative Coding Course"
 layout: ../../../layouts/BaseLayout.astro
 ---
 
-## Topics
+## Arranging Items
 
-<ul class="page-list"><li><a href="/courses/creative-coding/scope-and-shadowing/">Scope and Shadowing</a></li><li><a href="/courses/creative-coding/fruitful-functions-return/">Fruitful Functions (return)</a></li><li><a href="/courses/creative-coding/random-elements-in-a-grid/">Random Elements in a Grid</a></li><li><a href="/courses/creative-coding/techniques-for-exploring-parameter-spaces/">Techniques for Exploring Parameter Spaces</a></li></ul>
+Tutorials on positioning shapes using loops and math, progressing from lines to circles to grids.
 
-## Tutorials
+<ul class="page-list"><li><a href="/courses/creative-coding/arranging-items-in-a-line/">Arranging Items in a Line</a> – using arithmetic and geometric progressions</li><li><a href="/courses/creative-coding/animation-and-randomness/">Animation and Randomness</a> – time-based animation, random(), noise(), and arrays</li><li><a href="/courses/creative-coding/arranging-items-in-a-circle-or-spiral/">Arranging Items in a Circle or Spiral</a> – using sin() and cos() for curved layouts</li><li><a href="/courses/creative-coding/arranging-items-in-a-grid/">Arranging Items in a Grid</a> – single-loop and nested-loop strategies</li><li><a href="/courses/creative-coding/random-elements-in-a-grid/">Making Exceptions in a Grid</a> – drawing grid cells differently with conditional logic</li></ul>
 
-<ul class="page-list"><li><a href="/courses/creative-coding/arranging-items-in-a-line/">Arranging Items in a Line</a></li><li><a href="/courses/creative-coding/arranging-items-in-a-circle-or-spiral/">Arranging Items in a Circle or Spiral</a></li><li><a href="/courses/creative-coding/arranging-items-in-a-grid/">Arranging Items in a Grid</a></li><li><a href="/courses/creative-coding/iteration-notes/">Iteration Notes</a></li><li><a href="/courses/creative-coding/refactoring-into-functions/">Refactoring into Functions</a></li></ul>
+## Techniques
+
+Strategies and tools for developing and refining sketches.
+
+<ul class="page-list"><li><a href="/courses/creative-coding/sine/">Sine in Creative Coding</a> – waves, circular motion, and smooth periodic animation</li><li><a href="/courses/creative-coding/techniques-for-exploring-parameter-spaces/">Techniques for Exploring Parameter Spaces</a> – yoking parameters to mouse position for rapid experimentation</li><li><a href="/courses/creative-coding/refactoring-into-functions/">Refactoring into Functions</a> – extracting repeated patterns into reusable functions</li></ul>
+
+## Programming Concepts
+
+Notes on JavaScript and p5.js language features used in creative coding.
+
+<ul class="page-list"><li><a href="/courses/creative-coding/iteration-notes/">Iteration Notes</a> – using loops to reduce repetition</li><li><a href="/courses/creative-coding/scope-and-shadowing/">Scope and Shadowing</a> – local vs. global variables and visibility</li><li><a href="/courses/creative-coding/fruitful-functions-return/">Fruitful Functions (return)</a> – parameterizing functions and returning values</li></ul>
 
 ## Example Codes
 

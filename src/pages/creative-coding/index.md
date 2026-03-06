@@ -7,7 +7,7 @@ layout: ../../layouts/BaseLayout.astro
 
 [p5.js Resources](/p5js-resources/) 
 
-[Creative Coding with p5.js](/creative-coding/creative-coding-with-p5js/)
+[Creative Coding with p5.js](/courses/creative-coding/)
 
 [Creative Coding with Processing](/processing/)
 

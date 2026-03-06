@@ -10,28 +10,33 @@ interface Props {
 const props = Astro.props;
 const pathname = Astro.url.pathname;
 
-const topics = [
-  { href: "/courses/creative-coding/scope-and-shadowing/", label: "Scope and Shadowing" },
-  { href: "/courses/creative-coding/fruitful-functions-return/", label: "Fruitful Functions (return)" },
-  { href: "/courses/creative-coding/random-elements-in-a-grid/", label: "Making Exceptions in a Grid" },
-  { href: "/courses/creative-coding/techniques-for-exploring-parameter-spaces/", label: "Techniques for Exploring Parameter Spaces" },
-];
-
-const tutorials = [
-  { href: "/courses/creative-coding/iteration-notes/", label: "Iteration Notes" },
+const arrangingItems = [
   { href: "/courses/creative-coding/arranging-items-in-a-line/", label: "Arranging Items in a Line" },
+  { href: "/courses/creative-coding/animation-and-randomness/", label: "Animation and Randomness" },
   { href: "/courses/creative-coding/arranging-items-in-a-circle-or-spiral/", label: "Arranging Items in a Circle or Spiral" },
   { href: "/courses/creative-coding/arranging-items-in-a-grid/", label: "Arranging Items in a Grid" },
+  { href: "/courses/creative-coding/random-elements-in-a-grid/", label: "Making Exceptions in a Grid" },
+];
+
+const techniques = [
+  { href: "/courses/creative-coding/sine/", label: "Sine in Creative Coding" },
+  { href: "/courses/creative-coding/techniques-for-exploring-parameter-spaces/", label: "Techniques for Exploring Parameter Spaces" },
   { href: "/courses/creative-coding/refactoring-into-functions/", label: "Refactoring into Functions" },
+];
+
+const programmingConcepts = [
+  { href: "/courses/creative-coding/iteration-notes/", label: "Iteration Notes" },
+  { href: "/courses/creative-coding/scope-and-shadowing/", label: "Scope and Shadowing" },
+  { href: "/courses/creative-coding/fruitful-functions-return/", label: "Fruitful Functions (return)" },
 ];
 ---
 
 <BaseLayout {...props}>
   <nav class="sidebar">
     <a class="sidebar-section-title" href="/courses/creative-coding/">Creative Coding</a>
-    <h3>Topics</h3>
+    <h3>Arranging Items</h3>
     <ul>
-      {topics.map((page) => (
+      {arrangingItems.map((page) => (
         <li>
           <a href={page.href} class={pathname === page.href ? "active" : ""}>
             {page.label}
@@ -39,9 +44,19 @@ const tutorials = [
         </li>
       ))}
     </ul>
-    <h3>Tutorials</h3>
+    <h3>Techniques</h3>
     <ul>
-      {tutorials.map((page) => (
+      {techniques.map((page) => (
+        <li>
+          <a href={page.href} class={pathname === page.href ? "active" : ""}>
+            {page.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+    <h3>Programming Concepts</h3>
+    <ul>
+      {programmingConcepts.map((page) => (
         <li>
           <a href={page.href} class={pathname === page.href ? "active" : ""}>
             {page.label}

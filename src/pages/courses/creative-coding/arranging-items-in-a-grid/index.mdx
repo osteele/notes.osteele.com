@@ -521,7 +521,7 @@ function myShape(x, y, row, column, i) {
 	circle(size, size, size / 2);
 }`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-19.png" alt="" />
 
-Draw just the first shape
+To debug this, let's draw just the first shape by adding `break` to exit the loop after one iteration. The first shape appears in the wrong position because `translate` shifts the origin, and the shift accumulates across shapes:
 
 <CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
@@ -549,7 +549,7 @@ function myShape(x, y, row, column, i) {
 	circle(size, size, size / 2);
 }`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-20.png" alt="" />
 
-Draw just the fourth shape
+Drawing just the fourth shape (using an `if` to skip the others) shows it even more clearly — the shape appears far from where it should be, because all the previous `translate` calls have stacked up:
 
 <CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
@@ -578,7 +578,7 @@ function myShape(x, y, row, column, i) {
 	circle(size, size, size / 2);
 }`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-11.png" alt="" />
 
-Fixed: add `push()` and `pop()`
+The fix is to wrap the drawing code in `push()` and `pop()`, which save and restore the transformation state so that each shape's `translate` doesn't affect the others:
 
 <CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);

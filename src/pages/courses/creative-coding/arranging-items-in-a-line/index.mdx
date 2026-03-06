@@ -93,7 +93,7 @@ function draw() {
 ```
 # Bending the line
 
-Derive `y` from `i` as well.
+So far, all the circles share the same y position. We can make the line slope by deriving `y` from `i` as well.
 
 <CodeExample code={`function draw() {
 	for (let i = 0; i < 20; i++) {
@@ -103,11 +103,7 @@ Derive `y` from `i` as well.
 	}
 }`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-04.png" alt="" live canvasHeight={330} />
 
-Replace `10 * i` by `20 * i` (left) or `5 * i` (right) to increase or decrease the *angle* of the line (to make it more or less steep).
-
-![](/images/arranging-items-in-a-line/arranging-items-in-a-line-05.png)
-
-![](/images/arranging-items-in-a-line/arranging-items-in-a-line-06.png)
+Try dragging the `10` in `let y = 100 + 10 * i` to change the slope of the line. Scrubbing it up to `20` (so the line reads `let y = 100 + 20 * i`) makes the line steeper; scrubbing it down to `5` (`let y = 100 + 5 * i`) makes it shallower. Click the ↺ button in the canvas to reset the values.
 
 # Waves
 
@@ -133,7 +129,7 @@ Instead of using an equation $y = 100 + 20 \sin(i)$, we can use the `map()` func
 	}
 }`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-08.png" alt="" live />
 
-Also vary the size:
+We can also vary the size of each circle using `cos(i)`, so that both position and size oscillate along the line:
 
 <CodeExample code={`function draw() {
 	for (let i = 0; i < 20; i++) {

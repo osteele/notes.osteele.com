@@ -8,7 +8,7 @@ import CodeExample from "@/components/CodeExample.astro";
 
 Draw four circles by writing four calls to `circle`.
 
-<CodeExample code={`function setup() {
+<CodeExample live canvasHeight={350} code={`function setup() {
 	createCanvas(windowWidth, windowHeight);
 	background(100);
 }
@@ -22,7 +22,7 @@ function draw() {
 
 Add two more circles by adding two more lines of code.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	circle(50, 50, 20);
 	circle(50, 100, 20);
 	circle(50, 150, 20);
@@ -39,7 +39,7 @@ There is a simple correspondence between lines of code, and generated graphics.
 
 It is easy to change *just one* repeated element.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	circle(50, 50, 20);
 	circle(50, 100, 20);
 	circle(50, 150, 50);
@@ -52,7 +52,7 @@ It is easy to change *just one* repeated element.
 
 Changing *many* elements requires editing *many lines of code*.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	circle(50, 50, 50);
 	circle(50, 100, 50);
 	circle(50, 150, 50);
@@ -63,7 +63,7 @@ Changing *many* elements requires editing *many lines of code*.
 
 Drawing a large number of elements would require a lot of code.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	circle(50, 50, 50);
 	circle(50, 100, 50);
 	circle(50, 150, 50);
@@ -79,7 +79,7 @@ We will prepare the code for iteration the same way that a different sequence pr
 
 Let's pare back to four circles, and demonstrate a different way to repeat multiples.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	circle(50, 50, 40);
 	circle(50, 100, 40);
 	circle(50, 150, 40);
@@ -212,9 +212,9 @@ function draw() {
 ```
 `if` means to do a thing zero or one times. `while` means keep doing it: do it zero or *more* times. Replace the multiple `if` statements by a single `while`.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	let y = 50;
-	
+
 	while (y <= 200) {
 		circle(50, y, 40);
 		y += 50;
@@ -223,9 +223,9 @@ function draw() {
 
 Now it's easy to change the *spacing* ( change `y += 50` to e.g. `y += 80`):
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	let y = 50;
-	
+
 	while (y <= 200) {
 		circle(50, y, 40);
 		y += 30;
@@ -234,9 +234,9 @@ Now it's easy to change the *spacing* ( change `y += 50` to e.g. `y += 80`):
 
 Or the *termination* c*ondition* (change `y <= 200` to e.g. `y <= 400`).
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={400} code={`function draw() {
 	let y = 50;
-	
+
 	while (y <= 400) {
 		circle(50, y, 40);
 		y += 80;
@@ -303,7 +303,7 @@ function draw() {
 	}
 }
 ```
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	for (let y = 50; y <= 200; y += 50) {
 		circle(50, y, 40);
 	}
@@ -311,11 +311,11 @@ function draw() {
 
 We can demonstrate this by writing a single function that uses both forms of loop.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={400} code={`function draw() {
 	for (let y = 50; y <= 800; y += 80) {
 		circle(50, y, 40);
 	}
-	
+
 	let y = 50;
 	while (y <= 800) {
 		circle(150, y, 40);
@@ -515,7 +515,7 @@ function draw() {
 
 This code, similar to the code above  increments `y` by a constant amount until it reaches the bottom of the screen:
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={400} code={`function draw() {
 	for (let y = 50; y < height; y += 80) {
 		circle(50, y, 40);
 	}
@@ -523,7 +523,7 @@ This code, similar to the code above  increments `y` by a constant amount until 
 
 We can instead increase `y` by 10% each time through the loop. (`y *= 1.1` is an abbreviation of `y = y * 1.1`, which increases the value of `y` by 10%.)
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={400} code={`function draw() {
 	for (let y = 50; y < height; y *= 1.1) {
 		circle(50, y, 40);
 	}
@@ -561,7 +561,7 @@ function draw() {
 	}
 }
 ```
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={400} code={`function draw() {
 	let y = 50;
 	for (let i = 0; i < 8; i ++) {
 		circle(50, y, i === 3 ? 60 : 40);
@@ -594,7 +594,7 @@ function draw() {
 	}
 }
 ```
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={400} code={`function draw() {
 	for (let y = 50, x = 50; y < height; x += 10, y *= 1.1) {
 		circle(x, y, 40);
 	}

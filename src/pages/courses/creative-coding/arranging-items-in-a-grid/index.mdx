@@ -4,6 +4,43 @@ layout: ../../../../layouts/BaseLayout.astro
 ---
 import CodeExample from "@/components/CodeExample.astro";
 
+export const gridDraw = `function draw() {
+	background(100);
+	for (let i = 0; i < 30; i++) {
+		let row = floor(i / 5);
+		let column = i % 5;
+		let x = 30 + 50 * column;
+		let y = 40 + 50 * row;
+		myShape(x, y, row, column, i);
+	}
+}`;
+
+export const circlesFn = `function circles(x, y) {
+	push();
+	translate(x, y);
+	fill('white');
+	circle(0, 10, 20);
+	fill('yellow');
+	circle(10, 10, 20);
+	fill('green');
+	circle(10, 0, 20);
+	pop();
+}`;
+
+export const decoratedSquareFn = `function decoratedSquare(x, y, row, column, i) {
+	push();
+	translate(x, y);
+	let size = map(row - column, 0, 10, 30, 40);
+	circle(0, 0, size / 2);
+	square(0, 0, size);
+	circle(size, 0, size / 2);
+	circle(0, size, size / 2);
+	circle(size, size, size / 2);
+	pop();
+}`;
+
+export const bothShapeFns = circlesFn + "\n\n" + decoratedSquareFn;
+
 # Two Strategies
 
 There are two strategies for arranging items in a grid:
@@ -23,7 +60,7 @@ There are two strategies for arranging items in a grid:
 
 This builds on [Arranging a Line of Items](/courses/creative-coding/arranging-items-in-a-line/). Here is a sketch from that page:
 
-<CodeExample code={`function setup() {
+<CodeExample live canvasHeight={350} code={`function setup() {
 	createCanvas(windowWidth, windowHeight);
 }
 
@@ -45,7 +82,7 @@ function setup() {
 ```
 Derive `y` from `i` as well.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	for (let i = 0; i < 30; i++) {
 		let x = 30 + 50 * i;
 		let y = 30 + 10 * i;
@@ -57,7 +94,7 @@ Derive `y` from `i` as well.
 
 Let’s start with the angled line from above, and just look at the x position.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	for (let i = 0; i < 30; i++) {
 		let x = 30 + 50 * i;
 		let y = 30 + 50 * i;
@@ -73,7 +110,7 @@ We can use the modulo (remainder) operator `%` to chop it into pieces. For an in
 
 Note: A mnemonic for `%` is that it is like division `/` except that its value is what’s left over (the `°`s).
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	for (let i = 0; i < 20; i++) {
     let column = i % 5;
 		let x = 30 + 50 * column;
@@ -86,7 +123,7 @@ Note: A mnemonic for `%` is that it is like division `/` except that its value i
 
 Now let’s compute the y position. Since there are five items per row, the column is just the number of the item divided by five, and rounded down. For an input sequence i = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 etc., dividing by 5 produces 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, etc.  Rounding this down by using `floor()` produces 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, etc.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	for (let i = 0; i < 20; i++) {
     let row = floor(i / 5);
 		let x = 30 + 50 * i;
@@ -97,7 +134,7 @@ Now let’s compute the y position. Since there are five items per row, the colu
 
 Putting this together:
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 20; i++) {
@@ -115,16 +152,16 @@ Putting this together:
 
 We can use the row and column in other ways. This sketch gives each circle a size that is a function of its row and column.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 30; i++) {
     let row = floor(i / 5);
     let column = i % 5;
-		
+
 		let x = 30 + 50 * column;
 		let y = 40 + 50 * row;
-		
+
 		let size = map(row - column, 0, 10, 10, 50);
 		circle(x, y, size);
 	}
@@ -134,16 +171,16 @@ We can use the row and column in other ways. This sketch gives each circle a siz
 
 Instead of calling `circle`, we can use our own function.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 30; i++) {
     let row = floor(i / 5);
     let column = i % 5;
-		
+
 		let x = 30 + 50 * column;
 		let y = 40 + 50 * row;
-		
+
 		myShape(x, y, row, column, i);
 	}
 }
@@ -155,7 +192,7 @@ function myShape(x, y, row, column, i) {
 
 The following code replaces just the implementation of the `myShape` function. The code in `draw()` remains exactly the same.
 
-<CodeExample code={`function myShape(x, y, row, column, i) {
+<CodeExample live canvasHeight={350} preamble={gridDraw} code={`function myShape(x, y, row, column, i) {
 	let size = map(row - column, 0, 10, 30, 40);
 	circle(x, y, size / 2);
 	square(x, y, size);
@@ -184,9 +221,9 @@ function draw() {
 ```
 If we need `i` (the index number), we can derive it from the row and column numbers.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
-	
+
 	for (let row = 0; row < 5; row++) {
 		for (let column = 0; column < 6; column++) {
         let i = 5 * row + column;
@@ -201,9 +238,9 @@ If we need `i` (the index number), we can derive it from the row and column numb
 
 Or we can initialize it 0, and increment it each time through the (inner) loop, to keep count of how many items we've drawn.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
-	
+
 	let i = 0;
 	for (let row = 0; row < 5; row++) {
 		for (let column = 0; column < 6; column++) {
@@ -220,9 +257,9 @@ Or we can initialize it 0, and increment it each time through the (inner) loop, 
 
 Above, the same shape is drawn at each grid position. We will add a second function, that draws a second shape. First, rename `myShape` to `decoratedSquare`. This doesn’t change the behavior of the sketch, but it will make it more readable once we add the second shape, since then we can use descriptive names instead of `decoratedSquare1` and `decoratedSquare2`.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
-	
+
 	for (let row = 0; row < 5; row++) {
 		for (let column = 0; column < 6; column++) {
 			let x = 30 + 50 * column;
@@ -236,7 +273,7 @@ Above, the same shape is drawn at each grid position. We will add a second funct
 function decoratedSquare(x, y, row, column, i) {
 	push();
 	translate(x, y);
-	
+
 	let size = map(row - column, 0, 10, 30, 40);
 	circle(0, 0, size / 2);
 	square(0, 0, size);
@@ -248,9 +285,9 @@ function decoratedSquare(x, y, row, column, i) {
 
 Add a second drawing function `circles()` and call it instead.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	background(200);
-	
+
 	for (let row = 0; row < 5; row++) {
 		for (let column = 0; column < 6; column++) {
 			let x = 30 + 50 * column;
@@ -264,7 +301,7 @@ Add a second drawing function `circles()` and call it instead.
 function circles(x, y) {
 	push();
 	translate(x, y);
-	
+
 	fill('white');
 	circle(0, 10, 20);
 	fill('yellow');
@@ -277,9 +314,9 @@ function circles(x, y) {
 
 Now, we can call `circles()` for some cells and `decoratedSquare()` for others.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} preamble={bothShapeFns} code={`function draw() {
 	background(100);
-	
+
 	for (let row = 0; row < 5; row++) {
 		for (let column = 0; column < 6; column++) {
 			let x = 30 + 50 * column;
@@ -296,10 +333,24 @@ Now, we can call `circles()` for some cells and `decoratedSquare()` for others.
 
 Animate the circles, by incorporating data from `millis()`.
 
-<CodeExample code={`function circles(x, y) {
+<CodeExample live animated canvasHeight={350} preamble={`function draw() {
+	background(100);
+	for (let row = 0; row < 5; row++) {
+		for (let column = 0; column < 6; column++) {
+			let x = 30 + 50 * column;
+			let y = 40 + 50 * row;
+			if ((row + column) % 3 > 0) {
+				circles(x, y, row, column);
+			} else {
+				decoratedSquare(x, y, row, column);
+			}
+		}
+	}
+}
+` + decoratedSquareFn} code={`function circles(x, y) {
 	push();
 	translate(x, y);
-	
+
 	let dx = map(cos(millis() / 500), -1, 1, 0, 10);
 	let size = 30;
 	fill('white');
@@ -369,10 +420,10 @@ function grid(rows, columns) {
 ```
 Call `grid()` twice, to draw two grids of different sizes.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} preamble={circlesFn} code={`function draw() {
 	background(200);
 	grid(5, 6);
-	
+
 	translate(width / 2, height / 2);
 	grid(3, 4);
 }
@@ -394,14 +445,14 @@ Higher-Order Programming involves using a function as a parameter or other value
 
 Make the cell drawing function a parameter of `grid()`.
 
-<CodeExample code={`function setup() {
+<CodeExample live canvasHeight={350} preamble={circlesFn} code={`function setup() {
 	createCanvas(windowWidth, windowHeight);
 }
 
 function draw() {
 	background(200);
 	grid(5, 6, circles);
-	
+
 	translate(width / 2, height / 2);
 	grid(3, 4, circles);
 }
@@ -419,14 +470,14 @@ function grid(rows, columns, drawer) {
 
 Now different calls to `grid()` can draw different cells.
 
-<CodeExample code={`function setup() {
+<CodeExample live canvasHeight={350} preamble={bothShapeFns} code={`function setup() {
 	createCanvas(windowWidth, windowHeight);
 }
 
 function draw() {
 	background(200);
 	grid(5, 6, circles);
-	
+
 	translate(width / 2, height / 2);
 	grid(3, 4, decoratedSquare);
 }
@@ -444,23 +495,23 @@ function grid(rows, columns, drawer) {
 
 # Appendix II: Why `push` and `pop`
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 30; i++) {
 		let row = i % 5;
 		let column = floor(i / 5);
-		
+
 		let x = 30 + 50 * column;
 		let y = 40 + 50 * row;
-		
+
 		myShape(x, y, row, column, i);
 	}
 }
 
 function myShape(x, y, row, column, i) {
 	translate(x, y);
-	
+
 	let size = map(row - column, 0, 10, 30, 40);
 	circle(0, 0, size / 2);
 	square(0, 0, size);
@@ -471,16 +522,16 @@ function myShape(x, y, row, column, i) {
 
 Draw just the first shape
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 30; i++) {
 		let row = i % 5;
 		let column = floor(i / 5);
-		
+
 		let x = 30 + 50 * column;
 		let y = 40 + 50 * row;
-		
+
 		myShape(x, y, row, column, i);
 		break;
 	}
@@ -488,7 +539,7 @@ Draw just the first shape
 
 function myShape(x, y, row, column, i) {
 	translate(x, y);
-	
+
 	let size = map(row - column, 0, 10, 30, 40);
 	circle(0, 0, size / 2);
 	square(0, 0, size);
@@ -499,13 +550,13 @@ function myShape(x, y, row, column, i) {
 
 Draw just the fourth shape
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 30; i++) {
 		let row = i % 5;
 		let column = floor(i / 5);
-		
+
 		let x = 30 + 50 * column;
 		let y = 40 + 50 * row;
 
@@ -517,7 +568,7 @@ Draw just the fourth shape
 
 function myShape(x, y, row, column, i) {
 	translate(x, y);
-	
+
 	let size = map(row - column, 0, 10, 30, 40);
 	circle(0, 0, size / 2);
 	square(0, 0, size);
@@ -528,13 +579,13 @@ function myShape(x, y, row, column, i) {
 
 Fixed: add `push()` and `pop()`
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={350} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 30; i++) {
 		let row = i % 5;
 		let column = floor(i / 5);
-		
+
 		let x = 30 + 50 * column;
 		let y = 40 + 50 * row;
 
@@ -545,7 +596,7 @@ Fixed: add `push()` and `pop()`
 function myShape(x, y, row, column, i) {
 	push();
 	translate(x, y);
-	
+
 	let size = map(row - column, 0, 10, 30, 40);
 	circle(0, 0, size / 2);
 	square(0, 0, size);

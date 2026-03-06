@@ -19,7 +19,7 @@ function draw() {
 	for (let x = 10; x <= width; x += 50) {
 		circle(x, 100, 40);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-10.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-10.png" alt="" live />
 
 # Arranging items in a line – by item count
 
@@ -31,7 +31,7 @@ What if we want to draw a fixed number of items? This code draws exactly 20 item
 		circle(x, 100, 40);
 		x += 50;
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-02.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-02.png" alt="" live />
 
 Note: From here on, the definition of `setup()` is not shown. Each of the following code samples assumes that the sketch also contains a `setup()` function:
 
@@ -53,7 +53,7 @@ We can also increase `x` by an increasing amount. This is a [*geometric progress
 		circle(x, 100, 40);
 		x *= 1.2;
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-03.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-03.png" alt="" live />
 
 Changing the spacing is useful when the size changes too.
 
@@ -65,7 +65,7 @@ Changing the spacing is useful when the size changes too.
 		x *= 1.15;
 		size *= 1.15;
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-01.png" alt="Screenshot of Safari (4-8-22, 9-36-22 AM).png" />
+}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-01.png" alt="Screenshot of Safari (4-8-22, 9-36-22 AM).png" live />
 
 # Accumulating versus deriving
 
@@ -77,7 +77,7 @@ Back to the arithmetic progression:
 		circle(x, 100, 40);
 		x += 50;
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-02.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-02.png" alt="" live />
 
 This strategy for computing the value of `x` ***accumulates*** a value. `x` starts out with a value (10); then each time through the loop, the value is updated.
 
@@ -101,7 +101,7 @@ Derive `y` from `i` as well.
 		let y = 100 + 10 * i;
 		circle(x, y, 40);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-04.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-04.png" alt="" live canvasHeight={330} />
 
 Replace `10 * i` by `20 * i` (left) or `5 * i` (right) to increase or decrease the *angle* of the line (to make it more or less steep).
 
@@ -121,7 +121,7 @@ The payoff to using a function to compute the position is that we can use differ
 		let y = 100 + 20 * sin(i);
 		circle(x, y, 40);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-07.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-07.png" alt="" live />
 
 Instead of using an equation $y = 100 + 20 \sin(i)$, we can use the `map()` function to do the same thing. Either `y = 100 + map(sin(i), -1, 1, -20, 20)` or `y = map(sin(i), -1, 1, 80, 120)` would work. The latter most clearly expresses the range of values (80 to 120) that wil be assigned to `y`.
 
@@ -131,7 +131,7 @@ Instead of using an equation $y = 100 + 20 \sin(i)$, we can use the `map()` func
 		let y = map(sin(i), -1, 1, 80, 120);
 		circle(x, y, 40);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-08.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-08.png" alt="" live />
 
 Also vary the size:
 
@@ -142,7 +142,7 @@ Also vary the size:
 		let size = 20 + 20 * cos(i);
 		circle(x, y, size);
 	}
-}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-09.png" alt="" />
+}`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-09.png" alt="" live />
 
 ---
 

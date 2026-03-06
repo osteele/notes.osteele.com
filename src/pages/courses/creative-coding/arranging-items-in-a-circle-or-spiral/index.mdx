@@ -8,7 +8,7 @@ import CodeExample from "@/components/CodeExample.astro";
 
 This code from [Arranging a Line of Items](/courses/creative-coding/arranging-items-in-a-line/) draws a line of shapes. It uses the *derivation* strategy, to calculate a value for x directly from i each time through the loop.
 
-<CodeExample code={`function setup() {
+<CodeExample live canvasHeight={300} code={`function setup() {
 	createCanvas(windowWidth, windowHeight);
 }
 
@@ -31,7 +31,7 @@ function setup() {
 
 We can use the `sin()` or `cos()` functions to make the items swing between the top and bottom of the band, as the index value progresses.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={300} code={`function draw() {
 	for (let i = 0; i < 10; i++) {
 		let x = 20 + 50 * i;
 		let y = 100 + 50 * sin(i);
@@ -39,7 +39,7 @@ We can use the `sin()` or `cos()` functions to make the items swing between the 
 	}
 }`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-05.png" alt="Screenshot of Safari (4-7-22, 11-50-43 PM).png" />
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={300} code={`function draw() {
 	for (let i = 0; i < 10; i++) {
 		let x = 20 + 50 * i;
 		let y = 100 + 50 * cos(i);
@@ -49,7 +49,7 @@ We can use the `sin()` or `cos()` functions to make the items swing between the 
 
 Trying to use `sin` (or `cos`) for both x and y arranges the items on a diagonal line. This is true any time that x and y use the same equation, because then they will have the same value.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={300} code={`function draw() {
 	for (let i = 0; i < 10; i++) {
 		let x = 100 + 50 * sin(i);
 		let y = 100 + 50 * sin(i);
@@ -61,7 +61,7 @@ The solution is to use `cos` for `x` and `sin` for `y`. These functions are clev
 
 Let’s look at just using `sin` for `y` (instead of `x`), and compare that to the code a couple of sketches above that uses `cos` for `x`.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={500} code={`function draw() {
 	for (let i = 0; i < 10; i++) {
 		let x = 100 + 50 * cos(i);
 		let y = 100 + 50 * i;
@@ -71,7 +71,7 @@ Let’s look at just using `sin` for `y` (instead of `x`), and compare that to t
 
 Combining `cos` for `x` with `sin` for `y` creates a circle.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={300} code={`function draw() {
 	for (let i = 0; i < 10; i++) {
 		let x = 100 + 50 * cos(i);
 		let y = 100 + 50 * sin(i);
@@ -120,7 +120,7 @@ Note: It is more standard to put `angleMode(DEGREES)` in `setup()`, because (1) 
 
 Yet another way to do this is to increment the angle directly instead of computing it from the index position. This is useful if we know the number of degrees we want to leave between items, instead of the number of items.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={500} code={`function draw() {
 	angleMode(DEGREES);
 	for (let angle = 0; angle < 360; angle += 10) {
 		let x = 250 + 150 * cos(angle);
@@ -133,13 +133,13 @@ Yet another way to do this is to increment the angle directly instead of computi
 
 We can use a conditional in order to draw some items differently from others.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={500} code={`function draw() {
 	angleMode(DEGREES);
 	for (let i = 0; i < 360; i += 10) {
 		let angle = i;
 		let x = 250 + 150 * cos(angle);
 		let y = 300 + 150 * sin(angle);
-		
+
 		if (i === 180) {
 			fill('black');
 		} else {
@@ -149,12 +149,13 @@ We can use a conditional in order to draw some items differently from others.
 	}
 }`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-10.png" alt="" />
 
-<CodeExample code={`angleMode(DEGREES);
+<CodeExample live canvasHeight={500} showLines="2-18" code={`function draw() {
+	angleMode(DEGREES);
 	for (let i = 0; i < 360; i += 10) {
 		let angle = i;
 		let x = 250 + 150 * cos(angle);
 		let y = 300 + 150 * sin(angle);
-		
+
 		if (i === 180) {
 			fill('black');
 		} else {
@@ -166,16 +167,17 @@ We can use a conditional in order to draw some items differently from others.
 			strokeWeight(1);
 		}
 		circle(x, y, 50);
-	}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-11.png" alt="" />
+	}
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-11.png" alt="" />
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={500} code={`function draw() {
 	angleMode(DEGREES);
 	for (let i = 0; i < 360; i += 10) {
 		let angle = i;
 		let radius = 150;
 		let x = 250 + radius * cos(angle);
 		let y = 300 + radius * sin(angle);
-		
+
 		if (i % 40 === 0) {
 			fill('black');
 		} else {
@@ -194,14 +196,14 @@ We can use a conditional in order to draw some items differently from others.
 
 Incorporate the time (`millis()`) into the equation, in order to animate the circle.
 
-<CodeExample code={`function draw() {
+<CodeExample live animated canvasHeight={500} code={`function draw() {
 	background(200);
 	angleMode(DEGREES);
 	for (let i = 0; i < 360; i += 10) {
 		let angle = i + millis() / 15;
 		let x = 250 + 150 * cos(angle);
 		let y = 300 + 150 * sin(angle);
-		
+
 		if (i % 40 === 0) {
 			fill('black');
 		} else {
@@ -220,14 +222,14 @@ Incorporate the time (`millis()`) into the equation, in order to animate the cir
 
 The circle sketches place each object the same distance from the center. `sin` and `cos` are defined to produce x, y pairs that are all a distance of 1.0 from the origin; multiplying them both by 150 makes everything a distance of 150 pixels from the origin. Instead of multiplying each `sin` and `cos` by 150, multiple them by larger and larger numbers as the angle increases. This creates a spiral.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={500} code={`function draw() {
 	angleMode(DEGREES);
 	for (let i = 0; i <= 360; i += 10) {
 		let angle = i;
 		let radius = map(i, 0, 360, 10, 200) + 100;
 		let x = 250 + radius * cos(angle);
 		let y = 300 + radius * sin(angle);
-		
+
 		if (i % 40 === 0) {
 			fill('black');
 		} else {
@@ -244,14 +246,14 @@ The circle sketches place each object the same distance from the center. `sin` a
 
 Increasing the angle to 720 degrees to wrap around the circle twice ($2 * 360$).
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={500} code={`function draw() {
 	angleMode(DEGREES);
 	for (let i = 0; i < 720; i += 10) {
 		let angle = i;
 		let radius = map(i, 0, 360, 10, 200);
 		let x = 250 + radius * cos(angle);
 		let y = 300 + radius * sin(angle);
-		
+
 		if (i % 40 === 0) {
 			fill('black');
 		} else {

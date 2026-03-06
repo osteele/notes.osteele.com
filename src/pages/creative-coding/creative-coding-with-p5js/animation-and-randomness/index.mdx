@@ -4,11 +4,20 @@ layout: ../../../../layouts/BaseLayout.astro
 ---
 import CodeExample from "@/components/CodeExample.astro";
 
+export const ysSetup = `let ys = new Array();
+
+function setup() {
+	createCanvas(windowWidth, windowHeight);
+	for (let i = 0; i < 20; i++) {
+		ys[i] = random(80, 120);
+	}
+}`;
+
 # Time-Based Animation
 
 We can make the sketch *animate* by using *time as an input*. Modify `y` so that it is a function of time (`millis()`). This causes the sketch to animate.
 
-<CodeExample code={`function draw() {
+<CodeExample live animated canvasHeight={200} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 20; i++) {
@@ -26,7 +35,7 @@ Try this: Change the sketch to animate the size of the object, instead of its po
 
 The previous sketch uses *time* to drive one of the shape’s properties (its vertical position). Let’s use `random()` instead.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={200} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 20; i++) {
@@ -45,7 +54,7 @@ Note: There are *three* screenshots next to the code, to show that the `random()
 
 The `noLoop()` function prevents `draw()` from being called again. Let’s see what would happen if we removed it.
 
-<CodeExample code={`function draw() {
+<CodeExample live animated canvasHeight={200} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 20; i++) {
@@ -61,11 +70,11 @@ What if we want to remember the position from frame to frame, so that we can dra
 
 In JavaScript, the way to *remember* things is to use a *variable*. A variable can hold a single value, but we want to remember several values: the vertical position of each circle. The trick is that the single value that the variables holds can be an array, which itself holds several values. Here’s what it looks like to use an array to set to hold the y values, inside `draw()`.
 
-<CodeExample code={`function draw() {
+<CodeExample live animated canvasHeight={200} code={`function draw() {
 	background(100);
-	
+
 	let ys = new Array();
-	
+
 	for (let i = 0; i < 20; i++) {
 		ys[i] = random(80, 120);
 	}
@@ -84,7 +93,7 @@ As you can see above, simply using an array as intermediary doesn’t help with 
 
 Let’s make the array a global variable, and initialize it in `setup()` instead of `draw()`.
 
-<CodeExample code={`let ys = new Array();	
+<CodeExample live canvasHeight={200} code={`let ys = new Array();
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
@@ -95,7 +104,7 @@ function setup() {
 
 function draw() {
 	background(100);
-	
+
 	for (let i = 0; i < 20; i++) {
 		let x = 10 + 50 * i;
 		circle(x, ys[i], 20);
@@ -104,9 +113,9 @@ function draw() {
 
 Now we can combine this with time-based animation, to get an effect that uses both randomness (from `random()` in `setup()`) and time (from `millis()` in `draw()`), without getting new random numbers every frame.
 
-<CodeExample code={`function draw() {
+<CodeExample live animated canvasHeight={200} preamble={ysSetup} code={`function draw() {
 	background(100);
-	
+
 	for (let i = 0; i < 20; i++) {
 		let x = 10 + 50 * i;
 		let size = map(sin(i + millis() / 100), -1, 1, 10, 20);
@@ -120,7 +129,7 @@ An alternative to time-based animation is to modify (or update) some values each
 
 The previous sketch initializes an array with random values, and then combines the values that it *reads* from this array with an expression that uses time. This sketch doesn’t use time at all; instead it *writes* to the array as well, so that the next frame can pick up where this frame left off.
 
-<CodeExample code={`let ys = new Array();	
+<CodeExample live animated canvasHeight={200} code={`let ys = new Array();
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
@@ -131,7 +140,7 @@ function setup() {
 
 function draw() {
 	background(100);
-	
+
 	for (let i = 0; i < 20; i++) {
 		let x = 10 + 50 * i;
 		circle(x, ys[i], 20);
@@ -147,7 +156,7 @@ Another is to use the `noise()` function. Like `random()`, `noise()` returns val
 
 Here’s the sketch from the [Random section](/courses/creative-coding/arranging-items-in-a-line/) above, with `random()` replaced by `noise()`. Unlike the first sketch in Random, we don’t need `noLoop()` to keep the drawing from flickering: since for each circle `noise()` is called with the same input (`i`), its value is the same, and `draw()` draws the same thing from frame to frame.
 
-<CodeExample code={`function draw() {
+<CodeExample live canvasHeight={200} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 20; i++) {
@@ -161,7 +170,7 @@ Note: `noise()` returns a value between 0 and 1, like `random()` with no argumen
 
 `noise()` can take up to three values. We have used one: the index of the circle within the line of circles. Add a second argument to `noise()`, so that its output is based on the time, as well as on the circle’s index (`i`).
 
-<CodeExample code={`function draw() {
+<CodeExample live animated canvasHeight={200} code={`function draw() {
 	background(100);
 
 	for (let i = 0; i < 20; i++) {

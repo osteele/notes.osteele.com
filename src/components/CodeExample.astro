@@ -6,9 +6,14 @@ interface Props {
   lang?: string;
   image?: string;
   alt?: string;
+  live?: boolean;
+  canvasHeight?: number;
+  preamble?: string;
+  showLines?: string;
+  animated?: boolean;
 }
 
-const { code, lang = "javascript", image, alt = "" } = Astro.props;
+const { code, lang = "javascript", image, alt = "", live = false, canvasHeight = 200, preamble, showLines, animated = false } = Astro.props;
 
 // Re-indent code based on brace nesting, since MDX strips leading whitespace
 // from template literal content in JSX expressions.
@@ -28,14 +33,82 @@ function reindent(source: string, indent = "  "): string {
   }).join("\n");
 }
 
-const formattedCode = reindent(code);
+// Extract visible lines from code based on showLines prop (e.g. "1-5,10-15").
+// Gaps between ranges are rendered as "// …".
+function extractShowLines(source: string, showLinesSpec: string | undefined): string {
+  if (!showLinesSpec) return source;
+  const lines = source.trim().split("\n");
+  const ranges = showLinesSpec.split(",").map((r) => {
+    const [start, end] = r.trim().split("-").map(Number);
+    return { start, end: end ?? start };
+  });
+  const result: string[] = [];
+  let lastEnd = 0;
+  for (const { start, end } of ranges) {
+    if (lastEnd > 0 && start > lastEnd + 1) {
+      result.push("// …");
+    }
+    result.push(...lines.slice(start - 1, end));
+    lastEnd = end;
+  }
+  return result.join("\n");
+}
+
+const displayCode = extractShowLines(code, showLines);
+const formattedCode = reindent(displayCode);
+const execCode = preamble ? preamble + "\n" + code : code;
+const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8)}` : null;
 ---
 
 <div class="code-example">
   <Code code={formattedCode} lang={lang} theme="github-light" />
-  {image && (
+  {live && containerId && (
+    <div class="canvas-preview">
+      <div id={containerId} class="p5-canvas" data-sketch={execCode} data-canvas-height={canvasHeight} data-animated={animated ? "true" : undefined}></div>
+    </div>
+  )}
+  {!live && image && (
     <div class="canvas-preview">
       <img src={image} alt={alt} />
     </div>
   )}
 </div>
+
+{live && (
+  <script is:inline src="https://cdn.jsdelivr.net/npm/p5@1/lib/p5.min.js"></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.p5-canvas').forEach(function(container) {
+        if (container.dataset.initialized) return;
+        container.dataset.initialized = 'true';
+
+        var sketchCode = container.dataset.sketch;
+        if (!sketchCode) return;
+
+        var CANVAS_WIDTH = 500;
+        var CANVAS_HEIGHT = parseInt(container.dataset.canvasHeight) || 200;
+        var isAnimated = container.dataset.animated === 'true';
+        var noLoopCall = isAnimated ? '' : ' p.noLoop();';
+
+        new p5(function(p) {
+          var modified = sketchCode
+            .replace(/windowWidth/g, String(CANVAS_WIDTH))
+            .replace(/windowHeight/g, String(CANVAS_HEIGHT));
+
+          var fn = new Function('p', 'with (p) {\n' +
+            modified + '\n' +
+            'if (typeof setup === "function") {\n' +
+            '  p.setup = function() { setup();' + noLoopCall + ' };\n' +
+            '} else {\n' +
+            '  p.setup = function() { createCanvas(' + CANVAS_WIDTH + ', ' + CANVAS_HEIGHT + '); background(100);' + noLoopCall + ' };\n' +
+            '}\n' +
+            'if (typeof draw === "function") {\n' +
+            '  p.draw = draw;\n' +
+            '}\n' +
+            '}');
+          fn(p);
+        }, container);
+      });
+    });
+  </script>
+)}

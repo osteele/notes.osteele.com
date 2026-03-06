@@ -219,6 +219,12 @@ pre code {
   height: auto;
 }
 
+.code-example .canvas-preview canvas {
+  width: 100%;
+  height: auto !important;
+}
+
+
 .canvas-placeholder {
   background: linear-gradient(135deg, #e8e8e8 25%, #f5f5f5 25%, #f5f5f5 50%, #e8e8e8 50%, #e8e8e8 75%, #f5f5f5 75%);
   background-size: 20px 20px;

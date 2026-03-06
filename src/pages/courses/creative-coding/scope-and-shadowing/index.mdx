@@ -2,12 +2,13 @@
 title: "Scope and Shadowing"
 layout: ../../../../layouts/CreativeCodingLayout.astro
 ---
+import CodeExample from "@/components/CodeExample.astro";
 
 (This page just shows code similar to what was used in class. The lecture slides have a more systematic explanation of variable scope and shadowing.)
 
 # Scope
 
-You can define a variable inside a function, or at the “top level” of the program (outside of any function).
+You can define a variable inside a function, or at the "top level" of the program (outside of any function).
 
 Variables that are defined inside a function are ***local*** to that function. Variables that are defined at the top level are ***global*** variables.
 
@@ -59,8 +60,7 @@ function myShape() {
 
 Use a parameter to get a variable one function to another.
 
-```jsx
-function setup() {
+<CodeExample live canvasHeight={200} code={`function setup() {
 	createCanvas(windowWidth, windowHeight);
 }
 
@@ -71,13 +71,11 @@ function draw() {
 
 function myShape(x) {
 	square(x, 0, 10);
-}
-```
+}`} lang="jsx" />
 
 Or make the function global.
 
-```jsx
-let x = 10;
+<CodeExample live canvasHeight={200} code={`let x = 10;
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
@@ -89,32 +87,27 @@ function draw() {
 
 function myShape() {
 	square(x, 0, 10);
-}
-```
+}`} lang="jsx" />
 
 # Shadowing
 
-If there is a local variable and a global variable, the variable name refers to the local variable. It can't “see” the global variable.
+If there is a local variable and a global variable, the variable name refers to the local variable. It can't "see" the global variable.
 
-```jsx
-let x = 10;
+<CodeExample live canvasHeight={200} code={`let x = 10;
 
 function draw() {
 	let x = 20;
 	square(x, x, 10);  // draws a rectangle at (20, 20).
-}
-```
+}`} lang="jsx" />
 
 P5 provides a function named `scale`.
 
 If you define a variable named scale, you won't be able to use the P5 variable. This will work:
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={200} code={`function draw() {
 	let scale = 10;
 	square(0, 0, scale);
-}
-```
+}`} lang="jsx" />
 
 But this produces a weird error:
 

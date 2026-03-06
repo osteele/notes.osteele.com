@@ -2,11 +2,11 @@
 title: "Making Exceptions in a Grid"
 layout: ../../../../layouts/CreativeCodingLayout.astro
 ---
+import CodeExample from "@/components/CodeExample.astro";
 
 # Review: Basic grid
 
-```jsx
-let rows = 5;
+<CodeExample live canvasHeight={400} code={`let rows = 5;
 let columns = 6;
 
 function setup() {
@@ -23,10 +23,7 @@ function draw() {
 			square(x, y, 30);
 		}
 	}
-}
-```
-
-![](/images/random-elements-in-a-grid/random-elements-in-a-grid-12.png)
+}`} lang="jsx" image="/images/random-elements-in-a-grid/random-elements-in-a-grid-12.png" alt="" />
 
 Note: From here on, the definitions of `rows`, `columns`, and `setup()` are not shown. Each of the following code samples assumes that the sketch also contains a `setup()` function, and definitions of `rows` and `columns`:
 
@@ -43,8 +40,7 @@ function setup() {
 
 ## Draw some cells differently: using row and column
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={400} preamble={`let rows = 5;\nlet columns = 6;\nfunction setup() { createCanvas(windowWidth, windowHeight); }`} code={`function draw() {
 	background(200);
 	for (let row = 0; row < rows; row++) {
 		for (let column = 0; column < columns; column++) {
@@ -60,15 +56,11 @@ function draw() {
 			square(x, y, size);
 		}
 	}
-}
-```
-
-![](/images/random-elements-in-a-grid/random-elements-in-a-grid-02.png)
+}`} lang="jsx" image="/images/random-elements-in-a-grid/random-elements-in-a-grid-02.png" alt="" />
 
 The *nested* `if` (the `if` within another `if`) above can be replaced by "and" (`&&`).
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={400} preamble={`let rows = 5;\nlet columns = 6;\nfunction setup() { createCanvas(windowWidth, windowHeight); }`} code={`function draw() {
 	background(200);
 	for (let row = 0; row < rows; row++) {
 		for (let column = 0; column < columns; column++) {
@@ -82,13 +74,11 @@ function draw() {
 			square(x, y, size);
 		}
 	}
-}
-```
+}`} lang="jsx" />
 
 Replace a cell by a circle. Rectangle positions are specified as the upper left corner, and circle positions are specified as the center, so this looks bad.
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={400} preamble={`let rows = 5;\nlet columns = 6;\nfunction setup() { createCanvas(windowWidth, windowHeight); }`} code={`function draw() {
 	background(200);
 	for (let row = 0; row < rows; row++) {
 		for (let column = 0; column < columns; column++) {
@@ -103,17 +93,13 @@ function draw() {
 			}
 		}
 	}
-}
-```
-
-![](/images/random-elements-in-a-grid/random-elements-in-a-grid-04.png)
+}`} lang="jsx" image="/images/random-elements-in-a-grid/random-elements-in-a-grid-04.png" alt="" />
 
 `rectMode()` changes the behavior of `square()` (and `rect()`) to match `circle()`, so that it is easier to use `square()` and `circle()` (and `rect()` and `ellipse()`) interchangeably.
 
-Note: This is a general principle. If there are two things – in this case functions — that you want to use interchangeably, see if there’s a way to make them more alike. In this case, there is a setting that does this. If they things that you created (such as functions you wrote), you have total control over this. Otherwise, you can create a *shim* or *wrapper* around one of the things.
+Note: This is a general principle. If there are two things – in this case functions — that you want to use interchangeably, see if there's a way to make them more alike. In this case, there is a setting that does this. If they things that you created (such as functions you wrote), you have total control over this. Otherwise, you can create a *shim* or *wrapper* around one of the things.
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={400} preamble={`let rows = 5;\nlet columns = 6;\nfunction setup() { createCanvas(windowWidth, windowHeight); }`} code={`function draw() {
 	background(200);
 	rectMode(CENTER);
 	for (let row = 0; row < rows; row++) {
@@ -129,15 +115,11 @@ function draw() {
 			}
 		}
 	}
-}
-```
-
-![](/images/random-elements-in-a-grid/random-elements-in-a-grid-05.png)
+}`} lang="jsx" image="/images/random-elements-in-a-grid/random-elements-in-a-grid-05.png" alt="" />
 
 We can look at any combination of and `row` and `column`, and functions that combine them, to decide what to draw in a cell.
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={400} preamble={`let rows = 5;\nlet columns = 6;\nfunction setup() { createCanvas(windowWidth, windowHeight); }`} code={`function draw() {
 	background(200);
 	for (let row = 0; row < rows; row++) {
 		for (let column = 0; column < columns; column++) {
@@ -152,13 +134,9 @@ function draw() {
 			}
 		}
 	}
-}
-```
+}`} lang="jsx" image="/images/random-elements-in-a-grid/random-elements-in-a-grid-06.png" alt="" />
 
-![](/images/random-elements-in-a-grid/random-elements-in-a-grid-06.png)
-
-```jsx
-function draw() {
+<CodeExample live canvasHeight={400} preamble={`let rows = 5;\nlet columns = 6;\nfunction setup() { createCanvas(windowWidth, windowHeight); }`} code={`function draw() {
 	background(200);
 	for (let row = 0; row < rows; row++) {
 		for (let column = 0; column < columns; column++) {
@@ -173,15 +151,11 @@ function draw() {
 			}
 		}
 	}
-}
-```
-
-![](/images/random-elements-in-a-grid/random-elements-in-a-grid-07.png)
+}`} lang="jsx" image="/images/random-elements-in-a-grid/random-elements-in-a-grid-07.png" alt="" />
 
 Note: For the following code samples, the values of `rows` and `columns` have been changed to 20.
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={400} preamble={`let rows = 20;\nlet columns = 20;\nfunction setup() { createCanvas(windowWidth, windowHeight); }`} code={`function draw() {
 	background(200);
 	for (let row = 0; row < rows; row++) {
 		for (let column = 0; column < columns; column++) {
@@ -196,13 +170,9 @@ function draw() {
 			}
 		}
 	}
-}
-```
+}`} lang="jsx" image="/images/random-elements-in-a-grid/random-elements-in-a-grid-08.png" alt="" />
 
-![](/images/random-elements-in-a-grid/random-elements-in-a-grid-08.png)
-
-```jsx
-function draw() {
+<CodeExample live canvasHeight={400} preamble={`let rows = 20;\nlet columns = 20;\nfunction setup() { createCanvas(windowWidth, windowHeight); }`} code={`function draw() {
 	background(200);
 	for (let row = 0; row < rows; row++) {
 		for (let column = 0; column < columns; column++) {
@@ -219,13 +189,9 @@ function draw() {
 			}
 		}
 	}
-}
-```
+}`} lang="jsx" image="/images/random-elements-in-a-grid/random-elements-in-a-grid-09.png" alt="" />
 
-![](/images/random-elements-in-a-grid/random-elements-in-a-grid-09.png)
-
-```jsx
-function draw() {
+<CodeExample live canvasHeight={400} preamble={`let rows = 20;\nlet columns = 20;\nfunction setup() { createCanvas(windowWidth, windowHeight); }`} code={`function draw() {
 	background(200);
 	for (let row = 0; row < rows; row++) {
 		for (let column = 0; column < columns; column++) {
@@ -242,10 +208,7 @@ function draw() {
 			}
 		}
 	}
-}
-```
-
-![](/images/random-elements-in-a-grid/random-elements-in-a-grid-10.png)
+}`} lang="jsx" image="/images/random-elements-in-a-grid/random-elements-in-a-grid-10.png" alt="" />
 
 ## Draw some cells differently: using `random()`
 
@@ -253,8 +216,7 @@ Let's say we want a quarter of the cells to be circles, in no particular order.
 
 `random()` returns a number between 0 and 1, with a *uniform distribution*. This value will be less than 1/4 (`random() < 4`) about a quarter of the time, on average.
 
-```jsx
-function draw() {
+<CodeExample live animated canvasHeight={400} preamble={`let rows = 5;\nlet columns = 6;\nfunction setup() { createCanvas(windowWidth, windowHeight); }`} code={`function draw() {
 	background(200);
 	for (let row = 0; row < rows; row++) {
 		for (let column = 0; column < columns; column++) {
@@ -271,10 +233,7 @@ function draw() {
 			}
 		}
 	}
-}
-```
-
-![](/images/random-elements-in-a-grid/random-elements-in-a-grid-11.png)
+}`} lang="jsx" image="/images/random-elements-in-a-grid/random-elements-in-a-grid-11.png" alt="" />
 
 Note: We could also test for `random(4) <= 1`.
 
@@ -334,8 +293,7 @@ function mousePressed() {
 
 Third approach: use `noise()` instead of `random()`. `noise(x, y)` returns a different value for each different `x` and `y`, so `noise(row, column)` is a different value for each different grid position. Unlike `random()`, `noise()` with the same arguments always returns the same value. So for each position on the grid, `noise(row, column)` will always the same value. This eliminates the flicker.
 
-```jsx
-function setup() {
+<CodeExample live canvasHeight={400} preamble={`let rows = 20;\nlet columns = 20;`} code={`function setup() {
 	createCanvas(windowWidth, windowHeight);
 	rectMode(CENTER);
 }
@@ -357,13 +315,11 @@ function draw() {
 			}
 		}
 	}
-}
-```
+}`} lang="jsx" />
 
 This third approach allows us to keep animating.
 
-```jsx
-function draw() {
+<CodeExample live animated canvasHeight={400} preamble={`let rows = 20;\nlet columns = 20;\nfunction setup() { createCanvas(windowWidth, windowHeight); rectMode(CENTER); }`} code={`function draw() {
 	background(200);
 	for (let row = 0; row < rows; row++) {
 		for (let column = 0; column < columns; column++) {
@@ -380,12 +336,76 @@ function draw() {
 			}
 		}
 	}
-}
-```
+}`} lang="jsx" />
 
 ## Technique #4: Store the random values in an Array
 
-There is a fourth approach, which is to save the information about each cell in an Array. We will cover that later.
+Fourth approach: generate the random values once in `setup()`, and store them in an array. Then `draw()` reads from the array instead of calling `random()`. Since the array doesn't change between frames, the pattern stays the same.
+
+<CodeExample live canvasHeight={400} preamble={`let rows = 5;\nlet columns = 6;`} code={`let isCircle = [];
+
+function setup() {
+	createCanvas(windowWidth, windowHeight);
+	for (let row = 0; row < rows; row++) {
+		isCircle[row] = [];
+		for (let column = 0; column < columns; column++) {
+			isCircle[row][column] = random() < 1/4;
+		}
+	}
+}
+
+function draw() {
+	background(200);
+	for (let row = 0; row < rows; row++) {
+		for (let column = 0; column < columns; column++) {
+			let x = 30 + 50 * column;
+			let y = 40 + 50 * row;
+
+			let size = 30;
+			if (isCircle[row][column]) {
+				fill('blue');
+				circle(x, y, size);
+			} else {
+				fill('green');
+				square(x, y, size);
+			}
+		}
+	}
+}`} lang="jsx" />
+
+Like the `noise()` approach, this lets us keep animating without flicker, because `draw()` uses the stored values rather than generating new random ones each frame.
+
+<CodeExample live animated canvasHeight={400} preamble={`let rows = 20;\nlet columns = 20;`} code={`let isCircle = [];
+
+function setup() {
+	createCanvas(windowWidth, windowHeight);
+	rectMode(CENTER);
+	for (let row = 0; row < rows; row++) {
+		isCircle[row] = [];
+		for (let column = 0; column < columns; column++) {
+			isCircle[row][column] = random() < 1/4;
+		}
+	}
+}
+
+function draw() {
+	background(200);
+	for (let row = 0; row < rows; row++) {
+		for (let column = 0; column < columns; column++) {
+			let x = 30 + 50 * column;
+			let y = 40 + 50 * row;
+
+			let size = map(mouseX, 0, width, 10, 30);
+			if (isCircle[row][column]) {
+				fill('blue');
+				circle(x, y, size);
+			} else {
+				fill('green');
+				square(x, y, size);
+			}
+		}
+	}
+}`} lang="jsx" />
 
 ---
 

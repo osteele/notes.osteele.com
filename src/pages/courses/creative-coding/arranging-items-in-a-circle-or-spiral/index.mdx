@@ -87,24 +87,20 @@ The first problem can be addressed by changing the `50` in `50 * cos(i)` and `50
 
 By default, `sin` and `cos` repeat every $2\pi$. We need to ensure that the number that we are putting into them varies from 0 to $2\pi$ by the time the loop is done. Since `i` varies from 0 to (just under) 10, `i * TWO_PI / 10` varies from 0 to (one step under) `TWO_PI`.
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={500} code={`function draw() {
 	for (let i = 0; i < 10; i++) {
 		let angle = i * TWO_PI / 10;
 		let x = 250 + 150 * cos(angle);
 		let y = 300 + 150 * sin(angle);
 		circle(x, y, 50);
 	}
-}
-```
-Note: We could also have used `map(i, 0, 10, 0, TWO_PI)` instead of `i * TWO_PI / 10`.
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-07.png" alt="" />
 
-![](/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-07.png)
+Note: We could also have used `map(i, 0, 10, 0, TWO_PI)` instead of `i * TWO_PI / 10`.
 
 Here is another way of doing this. `angleMode(DEGREES)` causes `sin` and `cos` to repeat every 360, instead of every $2\pi$.
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={500} code={`function draw() {
 	angleMode(DEGREES);
 	for (let i = 0; i < 10; i++) {
 		let angle = i * 360 / 10;
@@ -112,11 +108,9 @@ function draw() {
 		let y = 300 + 150 * sin(angle);
 		circle(x, y, 50);
 	}
-}
-```
-Note: It is more standard to put `angleMode(DEGREES)` in `setup()`, because (1) it only needs to be done once, and (2) that way it will affect any calls to `sin` and `cos` that run in `setup()`. Here, we are putting it in `draw()` just because that’s the only part of the sketch that is shown in these examples.
+}`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-08.png" alt="" />
 
-![](/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-08.png)
+Note: It is more standard to put `angleMode(DEGREES)` in `setup()`, because (1) it only needs to be done once, and (2) that way it will affect any calls to `sin` and `cos` that run in `setup()`. Here, we are putting it in `draw()` just because that’s the only part of the sketch that is shown in these examples.
 
 Yet another way to do this is to increment the angle directly instead of computing it from the index position. This is useful if we know the number of degrees we want to leave between items, instead of the number of items.
 

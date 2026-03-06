@@ -2,13 +2,13 @@
 title: "Fruitful Functions (return)"
 layout: ../../../../layouts/CreativeCodingLayout.astro
 ---
+import CodeExample from "@/components/CodeExample.astro";
 
 # Review: Fruitless functions (for effect)
 
 Here's a couple of lines that draw a shape (a circle and a square).
 
-```jsx
-function setup() {
+<CodeExample live animated canvasHeight={200} code={`function setup() {
 	createCanvas(windowWidth, windowHeight);
 	background(100);
 }
@@ -16,36 +16,29 @@ function setup() {
 function draw() {
 	circle(mouseX, mouseY, 20);
 	square(mouseX, mouseY, 30);
-	
-}
-```
+}`} lang="jsx" />
 
 Extract them into a function.
 
-```jsx
-function draw() {
+<CodeExample live animated canvasHeight={200} preamble={`function setup() { createCanvas(windowWidth, windowHeight); background(100); }`} code={`function draw() {
 	squareAndCircle();
 }
 
 function squareAndCircle() {
 	circle(mouseX, mouseY, 20);
 	square(mouseX, mouseY, 30);
-}
-```
+}`} lang="jsx" />
 
 Parameterize the function.
 
-```jsx
-function draw() {
+<CodeExample live animated canvasHeight={200} preamble={`function setup() { createCanvas(windowWidth, windowHeight); background(100); }`} code={`function draw() {
 	squareAndCircle(mouseX, mouseY);
-
 }
 
 function squareAndCircle(x, y) {
 	circle(x, y, 20);
 	square(x, y, 30);
-}
-```
+}`} lang="jsx" />
 
 # Use `return` to exit the function early
 
@@ -84,28 +77,23 @@ function draw() {
 
 In order to use make use of `sin()`, we need to do something with the value that it returns.
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={200} code={`function draw() {
 	let d = sin(10);
 	circle(d, d, 10);
-}
-```
+}`} lang="jsx" />
 
 A sequence of statements that are executed for effect can be extracted into a fruitless function, that is called for effect. This is what we did with `circleAndSquare()`, above.
 
 An expression can be extracted into a fruitful function, that uses `return` to send a value back to the code that calls it. The following two codes have the same effect.
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={200} code={`function draw() {
 	for (let x = 0; x < width; x++) {
 		let y = map(sin(x / 100), -1, 1, 0, height);
 		square(x, y, 1);
 	}
-}
-```
+}`} lang="jsx" />
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={200} code={`function draw() {
 	for (let x = 0; x < width; x++) {
 		let y = computeY(x);
 		square(x, y, 1);
@@ -114,8 +102,7 @@ function draw() {
 
 function computeY(x) {
 	return map(sin(x / 100), -1, 1, 0, height);
-}
-```
+}`} lang="jsx" />
 
 A fruitful function can contain several statements (just like a fruitless function), that are run one after another in order to compute a value. All of these functions are equivalent:
 
@@ -144,8 +131,7 @@ You can also include `if` statements in a fruitful function (just like a fruitle
 
 Here are two ways of drawing rectangles that are small on the left side of the screen and large on the right side of the screen, that don't use a separate function:
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={200} code={`function draw() {
 	for (let x = 0; x < width; x++) {
 		if (x < 300) {
 			square(x, x, 1);
@@ -153,11 +139,9 @@ function draw() {
 			square(x, x, 10);
 		}
 	}
-}
-```
+}`} lang="jsx" />
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={200} code={`function draw() {
 	for (let x = 0; x < width; x++) {
 		let size;
 		if (x < 300) {
@@ -167,13 +151,11 @@ function draw() {
 		}
 		square(x, x, size);
 	}
-}
-```
+}`} lang="jsx" />
 
 And here are two ways to factor the size computation into a separate function:
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={200} code={`function draw() {
 	for (let x = 0; x < width; x++) {
 		square(x, x, computeSize(x));
 	}
@@ -185,11 +167,9 @@ function computeSize(x) {
 	} else {
 		return 10;
 	}
-}
-```
+}`} lang="jsx" />
 
-```jsx
-function draw() {
+<CodeExample live canvasHeight={200} code={`function draw() {
 	for (let x = 0; x < width; x++) {
 		square(x, x, computeSize(x));
 	}
@@ -203,8 +183,7 @@ function computeSize(x) {
 		size = 10;
 	}
 	return size;
-}
-```
+}`} lang="jsx" />
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: "Techniques for Exploring Parameter Spaces"
-layout: ../../../../layouts/BaseLayout.astro
+layout: ../../../../layouts/CreativeCodingLayout.astro
 ---
 
 When you create a sketch, you may need to choose some numbers to produce the effect that you want.

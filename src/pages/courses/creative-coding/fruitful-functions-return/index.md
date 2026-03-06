@@ -1,6 +1,6 @@
 ---
 title: "Fruitful Functions (return)"
-layout: ../../../../layouts/BaseLayout.astro
+layout: ../../../../layouts/CreativeCodingLayout.astro
 ---
 
 # Review: Fruitless functions (for effect)

@@ -1,0 +1,54 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  title?: string;
+  frontmatter?: { title?: string; breadcrumbs?: { label: string; href: string }[] };
+  breadcrumbs?: { label: string; href: string }[];
+}
+
+const props = Astro.props;
+const pathname = Astro.url.pathname;
+
+const topics = [
+  { href: "/courses/creative-coding/scope-and-shadowing/", label: "Scope and Shadowing" },
+  { href: "/courses/creative-coding/fruitful-functions-return/", label: "Fruitful Functions (return)" },
+  { href: "/courses/creative-coding/random-elements-in-a-grid/", label: "Making Exceptions in a Grid" },
+  { href: "/courses/creative-coding/techniques-for-exploring-parameter-spaces/", label: "Techniques for Exploring Parameter Spaces" },
+];
+
+const tutorials = [
+  { href: "/courses/creative-coding/iteration-notes/", label: "Iteration Notes" },
+  { href: "/courses/creative-coding/arranging-items-in-a-line/", label: "Arranging Items in a Line" },
+  { href: "/courses/creative-coding/arranging-items-in-a-circle-or-spiral/", label: "Arranging Items in a Circle or Spiral" },
+  { href: "/courses/creative-coding/arranging-items-in-a-grid/", label: "Arranging Items in a Grid" },
+  { href: "/courses/creative-coding/refactoring-into-functions/", label: "Refactoring into Functions" },
+];
+---
+
+<BaseLayout {...props}>
+  <nav class="sidebar">
+    <a class="sidebar-section-title" href="/courses/creative-coding/">Creative Coding</a>
+    <h3>Topics</h3>
+    <ul>
+      {topics.map((page) => (
+        <li>
+          <a href={page.href} class={pathname === page.href ? "active" : ""}>
+            {page.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+    <h3>Tutorials</h3>
+    <ul>
+      {tutorials.map((page) => (
+        <li>
+          <a href={page.href} class={pathname === page.href ? "active" : ""}>
+            {page.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+  <slot />
+</BaseLayout>

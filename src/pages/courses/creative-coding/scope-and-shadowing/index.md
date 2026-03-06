@@ -1,6 +1,6 @@
 ---
 title: "Scope and Shadowing"
-layout: ../../../../layouts/BaseLayout.astro
+layout: ../../../../layouts/CreativeCodingLayout.astro
 ---
 
 (This page just shows code similar to what was used in class. The lecture slides have a more systematic explanation of variable scope and shadowing.)

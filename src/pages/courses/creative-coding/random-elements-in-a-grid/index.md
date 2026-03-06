@@ -1,6 +1,6 @@
 ---
 title: "Making Exceptions in a Grid"
-layout: ../../../../layouts/BaseLayout.astro
+layout: ../../../../layouts/CreativeCodingLayout.astro
 ---
 
 # Review: Basic grid

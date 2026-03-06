@@ -9,10 +9,30 @@ interface Props {
 }
 
 const { code, lang = "javascript", image, alt = "" } = Astro.props;
+
+// Re-indent code based on brace nesting, since MDX strips leading whitespace
+// from template literal content in JSX expressions.
+function reindent(source: string, indent = "  "): string {
+  const lines = source.trim().split("\n");
+  let depth = 0;
+  return lines.map((line) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("}") || trimmed.startsWith("]") || trimmed.startsWith(")")) {
+      depth = Math.max(0, depth - 1);
+    }
+    const result = trimmed.length > 0 ? indent.repeat(depth) + trimmed : "";
+    if (trimmed.endsWith("{") || trimmed.endsWith("[") || trimmed.endsWith("(")) {
+      depth++;
+    }
+    return result;
+  }).join("\n");
+}
+
+const formattedCode = reindent(code);
 ---
 
 <div class="code-example">
-  <Code code={code.trim()} lang={lang} theme="github-light" />
+  <Code code={formattedCode} lang={lang} theme="github-light" />
   {image && (
     <div class="canvas-preview">
       <img src={image} alt={alt} />

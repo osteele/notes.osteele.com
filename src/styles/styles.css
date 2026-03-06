@@ -215,6 +215,35 @@ pre code {
   text-align: center;
 }
 
+pre .scrubbable-number {
+  cursor: ew-resize !important;
+  border-bottom: 1px dashed currentColor;
+}
+
+pre .scrubbable-number:hover {
+  background: rgba(50, 125, 169, 0.15);
+  border-radius: 2px;
+}
+
+.p5-reset {
+  position: absolute;
+  bottom: 8px;
+  right: 36px;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+
+.p5-reset:hover {
+  opacity: 1;
+}
+
 .p5-play-pause {
   position: absolute;
   bottom: 8px;

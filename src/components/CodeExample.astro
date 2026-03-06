@@ -64,7 +64,8 @@ const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8
   <Code code={formattedCode} lang={lang} theme="github-light" />
   {live && containerId && (
     <div class="canvas-preview">
-      <div id={containerId} class="p5-canvas" data-sketch={execCode} data-canvas-height={canvasHeight} data-animated={animated ? "true" : undefined}></div>
+      <div id={containerId} class="p5-canvas" data-sketch={execCode} data-code={code} data-preamble={preamble || ""} data-canvas-height={canvasHeight} data-animated={animated ? "true" : undefined}></div>
+      <button class="p5-reset" aria-label="Reset values" style="display:none">↺</button>
       {animated && <button class="p5-play-pause" aria-label="Pause">⏸</button>}
     </div>
   )}
@@ -90,43 +91,174 @@ const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8
         var CANVAS_HEIGHT = parseInt(container.dataset.canvasHeight) || 200;
         var isAnimated = container.dataset.animated === 'true';
         var noLoopCall = isAnimated ? '' : ' p.noLoop();';
+        var p5Instance = null;
 
-        var p5Instance = new p5(function(p) {
-          var modified = sketchCode
-            .replace(/windowWidth/g, String(CANVAS_WIDTH))
-            .replace(/windowHeight/g, String(CANVAS_HEIGHT));
+        function runSketch(code) {
+          if (p5Instance) { p5Instance.remove(); }
+          p5Instance = new p5(function(p) {
+            var modified = code
+              .replace(/windowWidth/g, String(CANVAS_WIDTH))
+              .replace(/windowHeight/g, String(CANVAS_HEIGHT));
+            var fn = new Function('p', 'with (p) {\n' +
+              modified + '\n' +
+              'if (typeof setup === "function") {\n' +
+              '  p.setup = function() { setup();' + noLoopCall + ' };\n' +
+              '} else {\n' +
+              '  p.setup = function() { createCanvas(' + CANVAS_WIDTH + ', ' + CANVAS_HEIGHT + '); background(100);' + noLoopCall + ' };\n' +
+              '}\n' +
+              'if (typeof draw === "function") {\n' +
+              '  p.draw = draw;\n' +
+              '}\n' +
+              '}');
+            fn(p);
+          }, container);
+          return p5Instance;
+        }
 
-          var fn = new Function('p', 'with (p) {\n' +
-            modified + '\n' +
-            'if (typeof setup === "function") {\n' +
-            '  p.setup = function() { setup();' + noLoopCall + ' };\n' +
-            '} else {\n' +
-            '  p.setup = function() { createCanvas(' + CANVAS_WIDTH + ', ' + CANVAS_HEIGHT + '); background(100);' + noLoopCall + ' };\n' +
-            '}\n' +
-            'if (typeof draw === "function") {\n' +
-            '  p.draw = draw;\n' +
-            '}\n' +
-            '}');
-          fn(p);
-        }, container);
+        runSketch(sketchCode);
 
+        // Play/pause for animated sketches
         if (isAnimated) {
-          var btn = container.parentElement.querySelector('.p5-play-pause');
-          if (btn) {
+          var playBtn = container.parentElement.querySelector('.p5-play-pause');
+          if (playBtn) {
             var running = true;
-            btn.addEventListener('click', function() {
+            playBtn.addEventListener('click', function() {
               if (running) {
                 p5Instance.noLoop();
-                btn.textContent = '▶';
-                btn.setAttribute('aria-label', 'Play');
+                playBtn.textContent = '▶';
+                playBtn.setAttribute('aria-label', 'Play');
               } else {
                 p5Instance.loop();
-                btn.textContent = '⏸';
-                btn.setAttribute('aria-label', 'Pause');
+                playBtn.textContent = '⏸';
+                playBtn.setAttribute('aria-label', 'Pause');
               }
               running = !running;
             });
           }
+        }
+
+        // Scrubbable numbers
+        var codeStr = container.dataset.code;
+        var preambleStr = container.dataset.preamble || '';
+        if (!codeStr) return;
+
+        var codeBlock = container.closest('.code-example').querySelector('pre code');
+        if (!codeBlock) return;
+
+        // Parse number positions in original code
+        var numRegex = /-?\d+(\.\d+)?/g;
+        var positions = [];
+        var match;
+        while ((match = numRegex.exec(codeStr)) !== null) {
+          positions.push({ start: match.index, end: match.index + match[0].length, original: match[0], current: match[0] });
+        }
+
+        // Find number spans in displayed code
+        var spans = codeBlock.querySelectorAll('span');
+        var numberSpans = [];
+        for (var i = 0; i < spans.length; i++) {
+          var span = spans[i];
+          if (span.style.color === 'rgb(0, 92, 197)' || span.style.color === '#005CC5') {
+            var text = span.textContent.trim();
+            if (/^-?\d+(\.\d+)?$/.test(text)) {
+              numberSpans.push(span);
+            }
+          }
+        }
+
+        // Map displayed spans to code positions sequentially
+        var posIndex = 0;
+        var mappings = [];
+        for (var j = 0; j < numberSpans.length; j++) {
+          var spanText = numberSpans[j].textContent.trim();
+          while (posIndex < positions.length) {
+            if (positions[posIndex].original === spanText) {
+              mappings.push({ span: numberSpans[j], posIdx: posIndex });
+              numberSpans[j].classList.add('scrubbable-number');
+              numberSpans[j].dataset.original = spanText;
+              posIndex++;
+              break;
+            }
+            posIndex++;
+          }
+        }
+
+        var resetBtn = container.parentElement.querySelector('.p5-reset');
+
+        function rebuildAndRun() {
+          var modified = codeStr;
+          // Splice from end to preserve offsets
+          for (var k = positions.length - 1; k >= 0; k--) {
+            modified = modified.substring(0, positions[k].start) + positions[k].current + modified.substring(positions[k].end);
+          }
+          var execCode = preambleStr ? preambleStr + '\n' + modified : modified;
+          runSketch(execCode);
+          // Show/hide reset button
+          var anyChanged = false;
+          for (var k = 0; k < mappings.length; k++) {
+            if (positions[mappings[k].posIdx].current !== positions[mappings[k].posIdx].original) {
+              anyChanged = true;
+              break;
+            }
+          }
+          if (resetBtn) resetBtn.style.display = anyChanged ? '' : 'none';
+        }
+
+        // Drag state
+        var dragging = null;
+
+        function onMouseDown(e) {
+          e.preventDefault();
+          var span = e.currentTarget;
+          var mapping = null;
+          for (var k = 0; k < mappings.length; k++) {
+            if (mappings[k].span === span) { mapping = mappings[k]; break; }
+          }
+          if (!mapping) return;
+          var pos = positions[mapping.posIdx];
+          var isFloat = pos.original.indexOf('.') !== -1;
+          dragging = { span: span, mapping: mapping, startX: e.clientX, startVal: parseFloat(pos.current), isFloat: isFloat };
+          document.body.style.cursor = 'ew-resize';
+          document.body.style.userSelect = 'none';
+        }
+
+        document.addEventListener('mousemove', function(e) {
+          if (!dragging) return;
+          var delta = e.clientX - dragging.startX;
+          var newVal;
+          if (dragging.isFloat) {
+            newVal = dragging.startVal + delta * 0.01;
+            newVal = Math.round(newVal * 100) / 100;
+            dragging.span.textContent = String(newVal);
+          } else {
+            newVal = Math.round(dragging.startVal + delta);
+            dragging.span.textContent = String(newVal);
+          }
+          positions[dragging.mapping.posIdx].current = String(newVal);
+          rebuildAndRun();
+        });
+
+        document.addEventListener('mouseup', function() {
+          if (!dragging) return;
+          dragging = null;
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+        });
+
+        for (var m = 0; m < mappings.length; m++) {
+          mappings[m].span.addEventListener('mousedown', onMouseDown);
+        }
+
+        // Reset button
+        if (resetBtn) {
+          resetBtn.addEventListener('click', function() {
+            for (var k = 0; k < mappings.length; k++) {
+              var pos = positions[mappings[k].posIdx];
+              pos.current = pos.original;
+              mappings[k].span.textContent = pos.original;
+            }
+            rebuildAndRun();
+          });
         }
       });
     });

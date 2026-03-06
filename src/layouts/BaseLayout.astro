@@ -1,10 +1,13 @@
 ---
 interface Props {
-  title: string;
+  title?: string;
+  frontmatter?: { title?: string; breadcrumbs?: { label: string; href: string }[] };
   breadcrumbs?: { label: string; href: string }[];
 }
 
-const { title, breadcrumbs: customBreadcrumbs } = Astro.props;
+const { frontmatter } = Astro.props;
+const title = Astro.props.title ?? frontmatter?.title ?? "";
+const customBreadcrumbs = Astro.props.breadcrumbs ?? frontmatter?.breadcrumbs;
 
 // Auto-generate breadcrumbs from URL path if not provided
 const pathname = Astro.url.pathname;
@@ -36,7 +39,7 @@ const pageTitle = segments.length > 0 ? `${title} - Oliver's Notes` : title;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{pageTitle}</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Nanum+Myeongjo:wght@400;700&display=swap"
       rel="stylesheet"
     />
   </head>
@@ -80,13 +83,12 @@ const pageTitle = segments.length > 0 ? `${title} - Oliver's Notes` : title;
 <style is:global>
   @import "../styles/styles.css";
 
-  /* Prevent Shiki from overriding our pre styles */
   .astro-code {
-    background: var(--code-bg) !important;
-    padding: 15px 20px;
-    border-radius: 5px;
-    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-    font-size: 0.9em;
+    background: hsl(230, 1%, 98%) !important;
+    padding: 1.4rem;
+    border-radius: 0.3em;
+    font-family: "Fira Code", "Fira Mono", "Monaco", "Menlo", monospace;
+    font-size: 0.85em;
     line-height: 1.5;
     margin: 1.5em 0;
   }

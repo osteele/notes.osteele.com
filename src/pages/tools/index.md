@@ -27,11 +27,11 @@ Take this table with a grain of salt. There's other tools, and other ways to div
 
 All hand tools in the shop, and all(?) hand tools that are still in use in the industrialized world, are portable.
 
-[Hand Tools](Tools/Hand%20Tools%201489abc5d0d281639466e02f9fae4cd4.csv)
+See [Hand Tools](/courses/woodworking-for-art-and-design/topics/tools/hand-tools/).
 
 ## Hand Tools – Measure and Marking
 
-[Hand Tools – Measure and Marking](Tools/Hand%20Tools%20%E2%80%93%20Measure%20and%20Marking%201489abc5d0d281fb9c79db32c6ae2347.csv)
+See [Measuring and Marking Tools](/courses/woodworking-for-art-and-design/topics/tools/hand-tools-measure-and-marking/).
 
 # Power Tools
 
@@ -43,10 +43,8 @@ Power tools can be divided into **portable tools**, that are brought to the work
 
 **Portable tools** are brought to the workpiece. They require that the workpiece be held in place, by a clamp or jig. Portable tools come in three categories: hand tools, corded (power) tools, and cordless (power) tools.
 
-[Untitled](Tools/Untitled%201489abc5d0d2813a8734d936bccd72bc.csv)
-
 ## Power Tools – Stationary
 
 **Stationary machines** are more powerful than portable tools. They provide a table or bed, that holds the workpiece in position. The workpiece is brought to the machine.
 
-[Power Tools ](Tools/Power%20Tools%201489abc5d0d2815aabd2df061d9af35d.csv)
+See [Power Tools](/courses/woodworking-for-art-and-design/topics/tools/power-tools/).

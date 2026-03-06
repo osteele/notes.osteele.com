@@ -27,11 +27,11 @@ layout: ../../../layouts/BaseLayout.astro
 
 [Iteration Notes](/courses/creative-coding/iteration-notes/)
 
-[Fruitful Functions (return)](Creative%20Coding%20with%20p5%20js/Fruitful%20Functions%20(return)%2032d42d1a350b4fd68a054305f321aecf.md)
+[Fruitful Functions (return)](/courses/creative-coding/fruitful-functions-return/)
 
 # Example and Tutorial Libraries
 
-[p5.js Tutorials](Creative%20Coding%20with%20p5%20js/p5%20js%20Tutorials%2055581dbef83f40e3a386ddc6be1bbee8.csv)
+[p5.js Tutorials](/p5js/tutorials/)
 
 [p5.js Examples](/p5js/examples/)
 

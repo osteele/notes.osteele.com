@@ -9,4 +9,4 @@ The Equipment Room has the following sensor boards. I believe that all of them h
 
 Also see [Properties of Electronic Components](/physical-computing/properties-of-electronic-components/) 
 
-[Sensors](IMUs%20and%20Accelerometers/Sensors%2037ac3752e410487db151d4ef26afb604.csv)
+[Sensors](/physical-computing/imus-and-accelerometers/sensors/)

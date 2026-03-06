@@ -3,7 +3,7 @@ title: "Visual Studio Code"
 layout: ../../../../layouts/BaseLayout.astro
 ---
 
-Visual Studio Code (“VSCode”) is a [Code Editor](Code%20Editors%202084976ee4e44e5484c0cab5471b374a.md), for editing code on your desktop/laptop computer.
+Visual Studio Code (“VSCode”) is a [Code Editor](/tools/code-editors/), for editing code on your desktop/laptop computer.
 
 [Visual Studio Code for P5.js](/p5js/vscode/)
 

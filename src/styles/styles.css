@@ -1,13 +1,13 @@
 /* Oliver's Notes - Static Site Styles */
 :root {
-  --primary-color: #333;
-  --secondary-color: #666;
-  --link-color: #0066cc;
-  --link-hover: #004499;
+  --primary-color: #37352F;
+  --secondary-color: #787774;
+  --link-color: #327DA9;
+  --link-hover: #2a6a91;
   --bg-color: #fff;
-  --code-bg: #f5f5f5;
-  --border-color: #e0e0e0;
-  --nav-bg: #fafafa;
+  --code-bg: rgba(135, 131, 120, 0.15);
+  --border-color: #E9E9E7;
+  --nav-bg: #fff;
 }
 
 * {
@@ -26,20 +26,25 @@ body {
 .container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 20px 40px;
+  padding: 20px 96px;
 }
 
 /* Navigation */
 nav {
   background: var(--nav-bg);
   border-bottom: 1px solid var(--border-color);
-  padding: 15px 0;
+  padding: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
 }
 
 nav .container {
   display: flex;
   gap: 30px;
-  padding: 0 40px;
+  padding: 0 96px;
+  align-items: center;
+  width: 100%;
 }
 
 nav a {
@@ -50,6 +55,10 @@ nav a {
 
 nav a:hover {
   color: var(--primary-color);
+  background: #f0f0f0;
+  border-radius: 3px;
+  padding: 2px 6px;
+  margin: -2px -6px;
 }
 
 nav a.active {
@@ -74,20 +83,20 @@ nav a.active {
 
 /* Typography */
 h1 {
-  font-size: 2.2em;
+  font-size: 2.5rem;
   margin-bottom: 0.5em;
   font-weight: 600;
 }
 
 h2 {
-  font-size: 1.6em;
+  font-size: 1.5rem;
   margin-top: 2em;
   margin-bottom: 0.8em;
   font-weight: 600;
 }
 
 h3 {
-  font-size: 1.3em;
+  font-size: 1.25rem;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
   font-weight: 600;
@@ -97,6 +106,11 @@ p {
   margin-bottom: 1.2em;
 }
 
+/* Tighten spacing for paragraphs that only contain a link */
+p:has(> a:only-child) {
+  margin-bottom: 0.3em;
+}
+
 a {
   color: var(--link-color);
   text-decoration: none;
@@ -104,6 +118,12 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+/* Content images */
+img {
+  max-width: 100%;
+  height: auto;
 }
 
 /* Lists */
@@ -118,38 +138,28 @@ li {
 
 /* Page Links List */
 .page-list {
-  list-style: none;
-  padding: 0;
+  padding-left: 1.5em;
 }
 
 .page-list li {
-  margin-bottom: 0.8em;
-  padding-left: 1.5em;
-  position: relative;
-}
-
-.page-list li::before {
-  content: "→";
-  position: absolute;
-  left: 0;
-  color: var(--secondary-color);
+  margin-bottom: 0.3em;
 }
 
 /* Code blocks */
 pre {
-  background: var(--code-bg);
-  padding: 15px 20px;
-  border-radius: 5px;
+  background: hsl(230, 1%, 98%);
+  padding: 1.4rem;
+  border-radius: 0.3em;
   overflow-x: auto;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.9em;
+  font-family: 'Fira Code', 'Fira Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.85em;
   line-height: 1.5;
   margin: 1.5em 0;
 }
 
 code {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.9em;
+  font-family: 'Fira Code', 'Fira Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.85em;
   background: var(--code-bg);
   padding: 2px 6px;
   border-radius: 3px;
@@ -224,6 +234,7 @@ pre code {
   border-left: 4px solid var(--link-color);
   padding: 15px 20px;
   margin: 1.5em 0;
+  border-radius: 2px;
 }
 
 .callout p:last-child {
@@ -283,7 +294,7 @@ th, td {
 }
 
 th {
-  background: var(--code-bg);
+  background: hsl(230, 1%, 98%);
   font-weight: 600;
 }
 
@@ -304,11 +315,11 @@ footer {
 /* Responsive */
 @media (max-width: 600px) {
   .container {
-    padding: 15px 20px;
+    padding: 15px 24px;
   }
 
   nav .container {
-    padding: 0 20px;
+    padding: 0 24px;
     gap: 20px;
   }
 

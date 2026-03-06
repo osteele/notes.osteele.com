@@ -93,10 +93,22 @@ const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8
         var noLoopCall = isAnimated ? '' : ' p.noLoop();';
         var p5Instance = null;
 
+        var MAX_LOOP_ITERATIONS = 10000;
+
+        // Inject loop guards to prevent infinite loops when scrubbing values.
+        // Declares a counter before each loop and checks it inside the body.
+        function addLoopGuards(code) {
+          var id = 0;
+          return code.replace(/(for\s*\([^)]*\)\s*\{|while\s*\([^)]*\)\s*\{)/g, function(match) {
+            var name = '__lc' + (id++);
+            return 'var ' + name + '=0; ' + match + ' if(++' + name + '>' + MAX_LOOP_ITERATIONS + ') break;';
+          });
+        }
+
         function runSketch(code) {
           if (p5Instance) { p5Instance.remove(); }
           p5Instance = new p5(function(p) {
-            var modified = code
+            var modified = addLoopGuards(code)
               .replace(/windowWidth/g, String(CANVAS_WIDTH))
               .replace(/windowHeight/g, String(CANVAS_HEIGHT));
             var fn = new Function('p', 'with (p) {\n' +

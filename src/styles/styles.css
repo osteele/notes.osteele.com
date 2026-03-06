@@ -294,6 +294,100 @@ pre .scrubbable-number:hover {
   }
 }
 
+/* Step-through tutorial */
+.step-tutorial {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: 1fr auto;
+  gap: 20px;
+  margin: 2em 0;
+  align-items: start;
+}
+
+.step-tutorial-left {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.step-tutorial-left pre {
+  margin: 0;
+}
+
+.step-description {
+  margin-bottom: 1em;
+}
+
+.step-description p:last-child {
+  margin-bottom: 0;
+}
+
+.step-tutorial-right {
+  grid-column: 2;
+  grid-row: 1;
+  position: sticky;
+  top: 70px;
+}
+
+.step-canvas-wrapper {
+  position: relative;
+  background: #f0f0f0;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 10px;
+  text-align: center;
+}
+
+.step-tutorial-nav {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.step-indicator {
+  font-size: 0.9em;
+  color: var(--secondary-color);
+  min-width: 100px;
+  text-align: center;
+}
+
+.step-btn {
+  background: #f0f0f0;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.step-btn:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.step-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+@media (max-width: 800px) {
+  .step-tutorial {
+    grid-template-columns: 1fr;
+  }
+  .step-tutorial-right {
+    grid-column: 1;
+    grid-row: 2;
+    position: static;
+  }
+  .step-tutorial-nav {
+    grid-row: 3;
+  }
+}
+
 /* Section cards */
 .section-card {
   border: 1px solid var(--border-color);

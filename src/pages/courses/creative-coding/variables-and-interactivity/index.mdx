@@ -1,0 +1,227 @@
+---
+title: "Variables and Interactivity"
+layout: ../../../../layouts/CreativeCodingLayout.astro
+---
+
+import StepThroughTutorial from "../../../../components/StepThroughTutorial.astro";
+
+export const steps = [
+  {
+    description: `<h3>Step 1: Create the canvas</h3>
+<p>Every p5.js sketch starts with a <code>setup()</code> function. Here we create a 300&times;300 canvas and set a light gray background.</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+background(220);
+}`
+  },
+  {
+    description: `<h3>Step 2: Draw the face outline</h3>
+<p>We draw a circle in the center of the canvas for the face. The <code>ellipse()</code> function takes x, y, width, and height.</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+background(220);
+ellipse(150, 150, 200, 200);
+}`
+  },
+  {
+    description: `<h3>Step 3: Add eyes</h3>
+<p>Two smaller circles for the eyes, placed symmetrically above the center of the face.</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+background(220);
+ellipse(150, 150, 200, 200);
+ellipse(120, 130, 20, 20);
+ellipse(180, 130, 20, 20);
+}`
+  },
+  {
+    description: `<h3>Step 4: Add a mouth</h3>
+<p>An <code>arc()</code> draws a curved mouth. The last two parameters set the start and end angles (in radians). <code>0</code> to <code>PI</code> draws the bottom half of a circle.</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+background(220);
+ellipse(150, 150, 200, 200);
+ellipse(120, 130, 20, 20);
+ellipse(180, 130, 20, 20);
+arc(150, 170, 80, 40, 0, PI);
+}`
+  },
+  {
+    description: `<h3>Step 5: Use variables for position</h3>
+<p>Instead of hard-coding the face center, we store it in variables <code>faceX</code> and <code>faceY</code>. This makes the code easier to modify &mdash; try dragging the numbers to move the face.</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+background(220);
+let faceX = 150;
+let faceY = 150;
+ellipse(faceX, faceY, 200, 200);
+ellipse(faceX - 30, faceY - 20, 20, 20);
+ellipse(faceX + 30, faceY - 20, 20, 20);
+arc(faceX, faceY + 20, 80, 40, 0, PI);
+}`
+  },
+  {
+    description: `<h3>Step 6: Use a variable for face size</h3>
+<p>A <code>faceSize</code> variable controls the diameter. The eyes and mouth are positioned and scaled relative to it. Now all features scale together when you change the size.</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+background(220);
+let faceX = 150;
+let faceY = 150;
+let faceSize = 200;
+ellipse(faceX, faceY, faceSize, faceSize);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+arc(faceX, faceY + faceSize * 0.1, faceSize * 0.4, faceSize * 0.2, 0, PI);
+}`
+  },
+  {
+    description: `<h3>Step 7: Add color</h3>
+<p>Use <code>fill()</code> to set a face color (yellow) before drawing the face, then switch to white for the eyes and dark red for the mouth.</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+background(220);
+let faceX = 150;
+let faceY = 150;
+let faceSize = 200;
+fill(255, 220, 100);
+ellipse(faceX, faceY, faceSize, faceSize);
+fill(255);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+fill(180, 60, 60);
+arc(faceX, faceY + faceSize * 0.1, faceSize * 0.4, faceSize * 0.2, 0, PI);
+}`
+  },
+  {
+    description: `<h3>Step 8: Add pupils</h3>
+<p>Smaller black circles inside the white eyes create pupils. Each pupil is centered within its eye.</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+background(220);
+let faceX = 150;
+let faceY = 150;
+let faceSize = 200;
+fill(255, 220, 100);
+ellipse(faceX, faceY, faceSize, faceSize);
+fill(255);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+fill(0);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.04, faceSize * 0.04);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.04, faceSize * 0.04);
+fill(180, 60, 60);
+arc(faceX, faceY + faceSize * 0.1, faceSize * 0.4, faceSize * 0.2, 0, PI);
+}`
+  },
+  {
+    description: `<h3>Step 9: Make it interactive with mouseX</h3>
+<p>Move the face position into <code>draw()</code> and replace <code>faceX</code> with <code>mouseX</code>. Now the face follows your mouse horizontally. The sketch redraws every frame because <code>draw()</code> loops automatically.</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+}
+function draw() {
+background(220);
+let faceX = mouseX;
+let faceY = 150;
+let faceSize = 200;
+fill(255, 220, 100);
+ellipse(faceX, faceY, faceSize, faceSize);
+fill(255);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+fill(0);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.04, faceSize * 0.04);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.04, faceSize * 0.04);
+fill(180, 60, 60);
+arc(faceX, faceY + faceSize * 0.1, faceSize * 0.4, faceSize * 0.2, 0, PI);
+}`
+  },
+  {
+    description: `<h3>Step 10: Follow the mouse in both axes</h3>
+<p>Replace <code>faceY</code> with <code>mouseY</code> too, so the face tracks the cursor in both directions. Move your mouse over the canvas to see.</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+}
+function draw() {
+background(220);
+let faceX = mouseX;
+let faceY = mouseY;
+let faceSize = 200;
+fill(255, 220, 100);
+ellipse(faceX, faceY, faceSize, faceSize);
+fill(255);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+fill(0);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.04, faceSize * 0.04);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.04, faceSize * 0.04);
+fill(180, 60, 60);
+arc(faceX, faceY + faceSize * 0.1, faceSize * 0.4, faceSize * 0.2, 0, PI);
+}`
+  },
+  {
+    description: `<h3>Step 11: Size reacts to mouse</h3>
+<p>Use <code>dist()</code> to compute the distance from the mouse to the canvas center. Map that distance to a face size, so the face shrinks as you move the mouse away from center. The <code>map()</code> function converts one range to another.</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+}
+function draw() {
+background(220);
+let faceX = mouseX;
+let faceY = mouseY;
+let d = dist(mouseX, mouseY, 150, 150);
+let faceSize = map(d, 0, 200, 200, 80);
+fill(255, 220, 100);
+ellipse(faceX, faceY, faceSize, faceSize);
+fill(255);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+fill(0);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.04, faceSize * 0.04);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.04, faceSize * 0.04);
+fill(180, 60, 60);
+arc(faceX, faceY + faceSize * 0.1, faceSize * 0.4, faceSize * 0.2, 0, PI);
+}`
+  },
+  {
+    description: `<h3>Step 12: Add a nose</h3>
+<p>A small triangle for the nose, placed between the eyes and mouth. The <code>triangle()</code> function takes six values: x1, y1, x2, y2, x3, y3.</p>
+<p>This is the final version of the interactive face. Try dragging the numbers in the code to experiment with different proportions!</p>`,
+    code: `function setup() {
+createCanvas(300, 300);
+}
+function draw() {
+background(220);
+let faceX = mouseX;
+let faceY = mouseY;
+let d = dist(mouseX, mouseY, 150, 150);
+let faceSize = map(d, 0, 200, 200, 80);
+fill(255, 220, 100);
+ellipse(faceX, faceY, faceSize, faceSize);
+fill(255);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.1, faceSize * 0.1);
+fill(0);
+ellipse(faceX - faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.04, faceSize * 0.04);
+ellipse(faceX + faceSize * 0.15, faceY - faceSize * 0.1, faceSize * 0.04, faceSize * 0.04);
+fill(220, 180, 80);
+triangle(faceX, faceY - faceSize * 0.02, faceX - faceSize * 0.04, faceY + faceSize * 0.05, faceX + faceSize * 0.04, faceY + faceSize * 0.05);
+fill(180, 60, 60);
+arc(faceX, faceY + faceSize * 0.1, faceSize * 0.4, faceSize * 0.2, 0, PI);
+}`
+  }
+];
+
+# Variables and Interactivity
+
+In this step-by-step tutorial, you'll build an interactive face drawing using p5.js.
+You'll learn how to use **variables** to organize your code, and **`mouseX`/`mouseY`** to add interactivity.
+
+Use the **◀ ▶ buttons** or **arrow keys** to step through the stages. **Drag any number** in the code to change it and see the result update live.
+
+<StepThroughTutorial steps={steps} canvasHeight={300} animated={true} />
+
+---
+
+**Try it on OpenProcessing:** [Interactive Face Sketch](https://openprocessing.org/sketch/1075965)

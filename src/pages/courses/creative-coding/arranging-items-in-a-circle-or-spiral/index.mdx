@@ -79,13 +79,13 @@ Combining `cos` for `x` with `sin` for `y` creates a circle.
 	}
 }`} lang="jsx" image="/images/arranging-items-in-a-circle-or-spiral/arranging-items-in-a-circle-or-spiral-04.png" alt="Screenshot of Notion (4-8-22, 12-00-13 AM).png" />
 
-There’s two things that may be wrong with this circle, depending on your design intent: (1) it is too small relative to the items that are placed along its edge; and, the items are wrapped around the circle more than once.
+There are two things that may be wrong with this circle, depending on your design intent: (1) it is too small relative to the items that are placed along its edge; and, the items are wrapped around the circle more than once.
 
 The first problem can be addressed by changing the `50` in `50 * cos(i)` and `50 * sin(i)` to a larger number. We will also change the `100` in `100 + 50 * cos(i)` to a larger number, to move the center of the arrangement circle *right* so that the whole circle stays on the screen.
 
 # Items in a circle
 
-By default, `sin` and `cos` repeat every $2\pi$. We need to insure that the number that we putting into them varies from 0 to $2\pi$ by the time the loop is done. Since `i` varies from 0 to (just under) 10, `i * TWO_PI / 10` varies from 0 to (one step under) `TWO_PI`.
+By default, `sin` and `cos` repeat every $2\pi$. We need to ensure that the number that we are putting into them varies from 0 to $2\pi$ by the time the loop is done. Since `i` varies from 0 to (just under) 10, `i * TWO_PI / 10` varies from 0 to (one step under) `TWO_PI`.
 
 ```jsx
 function draw() {
@@ -220,7 +220,7 @@ Incorporate the time (`millis()`) into the equation, in order to animate the cir
 
 # From circle to spiral
 
-The circle sketches place each object the same distance from the center. `sin` and `cos` are defined to produce x, y pairs that are all a distance of 1.0 from the origin; multiplying them both by 150 makes everything a distance of 150 pixels from the origin. Instead of multiplying each `sin` and `cos` by 150, multiple them by larger and larger numbers as the angle increases. This creates a spiral.
+The circle sketches place each object the same distance from the center. `sin` and `cos` are defined to produce x, y pairs that are all a distance of 1.0 from the origin; multiplying them both by 150 makes everything a distance of 150 pixels from the origin. Instead of multiplying each `sin` and `cos` by 150, multiply them by larger and larger numbers as the angle increases. This creates a spiral.
 
 <CodeExample live canvasHeight={500} code={`function draw() {
 	angleMode(DEGREES);

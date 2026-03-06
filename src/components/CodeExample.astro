@@ -173,7 +173,9 @@ const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8
           var spanText = numberSpans[j].textContent.trim();
           while (posIndex < positions.length) {
             if (positions[posIndex].original === spanText) {
-              mappings.push({ span: numberSpans[j], posIdx: posIndex });
+              var raw = numberSpans[j].textContent;
+              var prefix = raw.substring(0, raw.length - raw.trimStart().length);
+              mappings.push({ span: numberSpans[j], posIdx: posIndex, prefix: prefix });
               numberSpans[j].classList.add('scrubbable-number');
               numberSpans[j].dataset.original = spanText;
               posIndex++;
@@ -229,11 +231,10 @@ const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8
           if (dragging.isFloat) {
             newVal = dragging.startVal + delta * 0.01;
             newVal = Math.round(newVal * 100) / 100;
-            dragging.span.textContent = String(newVal);
           } else {
             newVal = Math.round(dragging.startVal + delta);
-            dragging.span.textContent = String(newVal);
           }
+          dragging.span.textContent = dragging.mapping.prefix + String(newVal);
           positions[dragging.mapping.posIdx].current = String(newVal);
           rebuildAndRun();
         });
@@ -255,7 +256,7 @@ const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8
             for (var k = 0; k < mappings.length; k++) {
               var pos = positions[mappings[k].posIdx];
               pos.current = pos.original;
-              mappings[k].span.textContent = pos.original;
+              mappings[k].span.textContent = mappings[k].prefix + pos.original;
             }
             rebuildAndRun();
           });

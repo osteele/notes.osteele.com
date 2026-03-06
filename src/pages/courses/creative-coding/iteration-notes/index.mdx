@@ -232,7 +232,7 @@ Now it's easy to change the *spacing* ( change `y += 50` to e.g. `y += 80`):
 	}
 }`} lang="jsx" image="/images/iteration-notes/iteration-notes-11.png" alt="" />
 
-Or the *termination* c*ondition* (change `y <= 200` to e.g. `y <= 400`).
+Or the *termination condition* (change `y <= 200` to e.g. `y <= 400`).
 
 <CodeExample live canvasHeight={400} code={`function draw() {
 	let y = 50;
@@ -291,7 +291,7 @@ This pattern of using a variable that changes value each time through the loop, 
 
 A `for` statement has the form `for (initialization; test; increment) { body }`.  This collects the code that has to do with controlling the loop into a single line.
 
-These two functions are equivalent. They each initial `y` to 50, increment it by 50 each time, draw circles while `y` is less or equal to 200.
+These two functions are equivalent. They each initialize `y` to 50, increment it by 50 each time, draw circles while `y` is less or equal to 200.
 
 ```jsx
 function draw() {
@@ -398,7 +398,7 @@ Notes:
 
 - Usually a `for` loop is used for this, rather than `while.`
 - Usually `i` is used as the *iteration variable*. If one loop is inside another one, `i` is used for the outer loop and `j` for the inner one.
-- It is common to count from 0 and using `<`, than to count from 1 and use `<=` or `==`. When we cover arrays, we will see why.
+- It is more common to count from 0 using `<` than to count from 1 and use `<=` or `==`. When we cover arrays, we will see why.
 - Just as `i += 1` is an abbreviation for `i = i + 1`, `i++` is an abbreviation for `i += 1`. The `for` line in the final sketch above could be written `for (let i = 0; i < 10; i++)`.
 
 # Unrolling the loop
@@ -513,7 +513,7 @@ function draw() {
 
 ## Counting
 
-This code, similar to the code above  increments `y` by a constant amount until it reaches the bottom of the screen:
+This code, similar to the code above, increments `y` by a constant amount until it reaches the bottom of the screen:
 
 <CodeExample live canvasHeight={400} code={`function draw() {
 	for (let y = 50; y < height; y += 80) {

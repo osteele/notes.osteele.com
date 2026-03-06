@@ -71,7 +71,7 @@ function draw() {
 	}
 }`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-10.png" alt="" />
 
-The *shape position* is derived from the *loop index*, using the function $x = 10 + 50i$ used here.
+The *shape position* is derived from the *loop index*, using the function $x = 20 + 50i$.
 
 Note: From here on, the definition of `setup()` is not shown. Each of the following code samples assumes that the sketch also contains a `setup()` function:
 
@@ -106,7 +106,7 @@ Instead of a diagonal line, where each x is greater than the previous x and each
 
 ![Screenshot of Safari (4-8-22, 12-44-58 AM).png](/images/arranging-items-in-a-grid/arranging-items-in-a-grid-08.png)
 
-We can use the modulo (remainder) operator `%` to chop it into pieces. For an input sequence i = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 etc., the modulo operator `i % 5` produces 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, etc. The sketch then multiples this by 50 to make the result more visible: 0, 50, 100, 150, 200, 0, 50, 100, 150, 200, 0, 50, etc.
+We can use the modulo (remainder) operator `%` to chop it into pieces. For an input sequence i = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 etc., the modulo operator `i % 5` produces 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, etc. The sketch then multiplies this by 50 to make the result more visible: 0, 50, 100, 150, 200, 0, 50, 100, 150, 200, 0, 50, etc.
 
 Note: A mnemonic for `%` is that it is like division `/` except that its value is what’s left over (the `°`s).
 
@@ -121,7 +121,7 @@ Note: A mnemonic for `%` is that it is like division `/` except that its value i
 
 ## Deriving the row (y position)
 
-Now let’s compute the y position. Since there are five items per row, the column is just the number of the item divided by five, and rounded down. For an input sequence i = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 etc., dividing by 5 produces 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, etc.  Rounding this down by using `floor()` produces 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, etc.
+Now let’s compute the y position. Since there are five items per row, the row is just the number of the item divided by five, and rounded down. For an input sequence i = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 etc., dividing by 5 produces 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, etc.  Rounding this down by using `floor()` produces 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, etc.
 
 <CodeExample live canvasHeight={350} code={`function draw() {
 	for (let i = 0; i < 20; i++) {
@@ -247,8 +247,9 @@ Or we can initialize it 0, and increment it each time through the (inner) loop, 
 			let x = 30 + 50 * column;
 			let y = 40 + 50 * row;
 
-			circle(x, y, row, 20);
+			circle(x, y, 20);
       text(i, x, y);
+			i++;
 		}
 	}
 }`} lang="jsx" image="/images/arranging-items-in-a-grid/arranging-items-in-a-grid-06.png" alt="Screenshot of Safari (4-8-22, 1-04-36 AM).png" />

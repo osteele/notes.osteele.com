@@ -8,7 +8,7 @@ import CodeExample from "@/components/CodeExample.astro";
 
 This code draws a line of items – as many as necessary to reach the edge of the canvas. In this case, the items are circles. The code can be adapted to draw squares, or more complicated figures composed of multiple shapes.
 
-The code draws shapes as will fit in the canvas width (`x <= width`), spaced 50 pixels apart (`x += 50`).
+The code draws as many shapes as will fit in the canvas width (`x <= width`), spaced 50 pixels apart (`x += 50`).
 
 <CodeExample code={`function setup() {
 	createCanvas(windowWidth, windowHeight);
@@ -113,7 +113,7 @@ Replace `10 * i` by `20 * i` (left) or `5 * i` (right) to increase or decrease t
 
 The payoff to using a function to compute the position is that we can use different functions, for different effects. For example, $y = 100 + 20 \sin(i)$.
 
-`sin()` returns a number between -1 and 1. Varying the y position by that much is barely detectable. (Try it.) This code multiples the output of `sin()` by 20, to produce a number between -20 and 20, for a more pronounced wiggle. (It is similar to `random(-20, 20)`, except that the change from one circle to the next is sinusoidal instead of random.)
+`sin()` returns a number between -1 and 1. Varying the y position by that much is barely detectable. (Try it.) This code multiplies the output of `sin()` by 20, to produce a number between -20 and 20, for a more pronounced wiggle. (It is similar to `random(-20, 20)`, except that the change from one circle to the next is sinusoidal instead of random.)
 
 <CodeExample code={`function draw() {
 	for (let i = 0; i < 20; i++) {
@@ -123,7 +123,7 @@ The payoff to using a function to compute the position is that we can use differ
 	}
 }`} lang="jsx" image="/images/arranging-items-in-a-line/arranging-items-in-a-line-07.png" alt="" live />
 
-Instead of using an equation $y = 100 + 20 \sin(i)$, we can use the `map()` function to do the same thing. Either `y = 100 + map(sin(i), -1, 1, -20, 20)` or `y = map(sin(i), -1, 1, 80, 120)` would work. The latter most clearly expresses the range of values (80 to 120) that wil be assigned to `y`.
+Instead of using an equation $y = 100 + 20 \sin(i)$, we can use the `map()` function to do the same thing. Either `y = 100 + map(sin(i), -1, 1, -20, 20)` or `y = map(sin(i), -1, 1, 80, 120)` would work. The latter most clearly expresses the range of values (80 to 120) that will be assigned to `y`.
 
 <CodeExample code={`function draw() {
 	for (let i = 0; i < 20; i++) {

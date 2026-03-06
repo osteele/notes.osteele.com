@@ -154,7 +154,7 @@ Randomness is good for organic or interesting patterns. Continuity and stability
 
 Another is to use the `noise()` function. Like `random()`, `noise()` returns values that don’t seem to have much to do with each other, at least when its arguments are far apart (as they are in the next sketch). Unlike `random()`, `noise()` returns the same values each time you call it with the same arguments.
 
-Here’s the sketch from the [Random section](/courses/creative-coding/arranging-items-in-a-line/) above, with `random()` replaced by `noise()`. Unlike the first sketch in Random, we don’t need `noLoop()` to keep the drawing from flickering: since for each circle `noise()` is called with the same input (`i`), its value is the same, and `draw()` draws the same thing from frame to frame.
+Here’s the sketch from the [Random section](#random) above, with `random()` replaced by `noise()`. Unlike the first sketch in Random, we don’t need `noLoop()` to keep the drawing from flickering: since for each circle `noise()` is called with the same input (`i`), its value is the same, and `draw()` draws the same thing from frame to frame.
 
 <CodeExample live canvasHeight={200} code={`function draw() {
 	background(100);
@@ -186,9 +186,9 @@ Note: `noise()` returns a value between 0 and 1, like `random()` with no argumen
 
 In order to draw a *different image each frame*, `draw()` needs access to something that has a *different value* each time `draw()` is called. Here are some possibilities:
 
-- ***Time***. In p5.js, the `frameCount` function and the `millis()` variable are the sources of time. We explored that in [Time-Based Animation](/creative-coding/creative-coding-with-p5js/animation-and-randomness/).
+- ***Time***. In p5.js, the `frameCount` variable and the `millis()` function are the sources of time. We explored that in [Time-Based Animation](/creative-coding/creative-coding-with-p5js/animation-and-randomness/).
 - A ***global variable***. You can define your own variable that has global scope (is defined outside of `setup()` and `draw()`), and use it to remember changes from one frame to the next. There was an example of this in [Update-Based Animation](/creative-coding/creative-coding-with-p5js/animation-and-randomness/).
-- ***Randomness***. The `random()` function returns a different number each time you use it. This will a frame that calls `random()` to draw differently each frame. There were an examples of this in [Random](/creative-coding/creative-coding-with-p5js/animation-and-randomness/) and [Noise](/creative-coding/creative-coding-with-p5js/animation-and-randomness/).
+- ***Randomness***. The `random()` function returns a different number each time you use it. This will cause a frame that calls `random()` to draw differently each frame. There were an examples of this in [Random](/creative-coding/creative-coding-with-p5js/animation-and-randomness/) and [Noise](/creative-coding/creative-coding-with-p5js/animation-and-randomness/).
 - ***Computer peripherals***. Input devices that are connected to or built into the computer include the mouse, keyboard, webcam, and microphone.
 - Other ***connections to the outside world***. These can come from an Arduino or other device connected on the USB serial port, or from the internet.
 

@@ -1,0 +1,291 @@
+---
+title: "Detecting Sequences"
+layout: ../../../../layouts/CreativeCodingLayout.astro
+---
+
+import StepThroughTutorial from "../../../../components/StepThroughTutorial.astro";
+
+export const steps = [
+  {
+    description: `<p>Detect whether the user has performed a set of actions in sequence.</p>
+<p>In this example, we will test whether the user is pressing a sequence of keys in order. The same logic can be used to detect other sequences, such as whether the user has clicked on a sequence of buttons, or moved the mouse into a sequence of regions of the canvas, or moved their hand in PoseNet through a sequence of positions.</p>
+<p>This step sets up a &ldquo;mode&rdquo; variable. Eventually this will be used to display information about whether the user has matched or failed to match the sequence. In this step, it simply displays the most recent key that is pressed.</p>`,
+    code: `let mode = "Initial state";
+
+function setup() {
+createCanvas(windowWidth, windowHeight);
+}
+
+function draw() {
+background(100);
+translate(width / 2, height / 2);
+textAlign(CENTER, CENTER);
+textSize(50);
+fill(200);
+text(mode, 0, 0);
+}
+
+function keyPressed() {
+mode = key;
+}`
+  },
+  {
+    description: `<p>The goal is to press the keys &ldquo;1&rdquo;, &ldquo;2&rdquo;, &ldquo;3&rdquo;, and &ldquo;4&rdquo;, in that order.</p>
+<p>Introduce a variable whose value is the next key that we are looking for.</p>`,
+    code: `let PLAYING_MODE = "Playing";
+let mode = PLAYING_MODE;
+let nextKey = "1";
+
+function setup() {
+createCanvas(windowWidth, windowHeight);
+}
+
+function draw() {
+background(100);
+translate(width / 2, height / 2);
+textAlign(CENTER, CENTER);
+textSize(50);
+fill(200);
+text(mode, 0, 0);
+
+textSize(25);
+text(\`Next: \${nextKey}\`, 0, 50);
+}
+
+function keyPressed() {
+if (mode !== PLAYING_MODE) { return; }
+if (key === nextKey) {
+if (key === "1") {
+nextKey = "2";
+} else if (key === "2") {
+nextKey = "3";
+} else if (key === "3") {
+nextKey = "4";
+} else if (key === "4") {
+mode = "Success! \u{1F389}";
+}
+} else {
+mode = "Sorry \u{1F61E}";
+}
+}`
+  },
+  {
+    description: `<p>The previous step had a cascade of if statements that all looked for a common value.</p>
+<p>This is a good use for a switch statement.</p>`,
+    code: `let PLAYING_MODE = "Playing";
+let mode = PLAYING_MODE;
+let nextKey = "1";
+
+function setup() {
+createCanvas(windowWidth, windowHeight);
+}
+
+function draw() {
+background(100);
+translate(width / 2, height / 2);
+textAlign(CENTER, CENTER);
+textSize(50);
+fill(200);
+text(mode, 0, 0);
+
+textSize(25);
+text(\`Next: \${nextKey}\`, 0, 50);
+}
+
+function keyPressed() {
+if (mode !== PLAYING_MODE) { return; }
+if (key === nextKey) {
+switch (key) {
+case "1":
+nextKey = "2";
+break;
+case "2":
+nextKey = "3";
+break;
+case "3":
+nextKey = "4";
+break;
+case "4":
+mode = "Success! \u{1F389}";
+break;
+}
+} else {
+mode = "Sorry \u{1F61E}";
+}
+}`
+  },
+  {
+    description: `<p>The previous step used different lines of code for each item in the sequence. There was a switch statement with a case clause for each item in the sequence.</p>
+<p>This step replaces that with an Array of target items, and an index to keep track of how many matching items have been entered.</p>
+<p>Note: <code>nextKey</code> is computed twice: once on line 21, and again on line 28. This would make it a good candidate for a global variable, or for a function that performs this computation.</p>`,
+    code: `let PLAYING_MODE = "Playing";
+let mode = PLAYING_MODE;
+
+let targetSequence = ["1", "2", "3", "4"];
+let matchCount = 0;
+
+function setup() {
+createCanvas(windowWidth, windowHeight);
+}
+
+function draw() {
+background(100);
+translate(width / 2, height / 2);
+textAlign(CENTER, CENTER);
+textSize(50);
+fill(200);
+text(mode, 0, 0);
+
+textSize(25);
+if (matchCount < targetSequence.length) {
+let nextKey = targetSequence[matchCount];
+text(\`Next: \${nextKey}\`, 0, 50);
+}
+}
+
+function keyPressed() {
+if (mode !== PLAYING_MODE) { return; }
+let nextKey = targetSequence[matchCount];
+if (key === nextKey) {
+matchCount++;
+if (matchCount === targetSequence.length) {
+mode = "Success! \u{1F389}";
+}
+} else {
+mode = "Sorry \u{1F61E}";
+}
+}`
+  },
+  {
+    description: `<p>This strategy makes it possible to match sequences that contain repeated items, for example &ldquo;1123&rdquo; or &ldquo;12112&rdquo;.</p>`,
+    code: `let PLAYING_MODE = "Playing";
+let mode = PLAYING_MODE;
+
+let targetSequence = ["1", "2", "1", "1", "2"];
+let matchCount = 0;
+
+function setup() {
+createCanvas(windowWidth, windowHeight);
+}
+
+function draw() {
+background(100);
+translate(width / 2, height / 2);
+textAlign(CENTER, CENTER);
+textSize(50);
+fill(200);
+text(mode, 0, 0);
+
+textSize(25);
+if (matchCount < targetSequence.length) {
+let nextKey = targetSequence[matchCount];
+text(\`Next: \${nextKey}\`, 0, 50);
+}
+}
+
+function keyPressed() {
+if (mode !== PLAYING_MODE) { return; }
+let nextKey = targetSequence[matchCount];
+if (key === nextKey) {
+matchCount++;
+if (matchCount === targetSequence.length) {
+mode = "Success! \u{1F389}";
+}
+} else {
+mode = "Sorry \u{1F61E}";
+}
+}`
+  },
+  {
+    description: `<p>Here&rsquo;s another approach. It uses a string to collect the sequence of events that has occurred so far. (It uses a string instead of an array, because the code is simpler to test whether one string is a prefix of another.)</p>`,
+    code: `let PLAYING_MODE = "Playing";
+let mode = PLAYING_MODE;
+
+let targetSequence = "1234";
+let observedSequence = "";
+
+function setup() {
+createCanvas(windowWidth, windowHeight);
+}
+
+function draw() {
+background(100);
+translate(width / 2, height / 2);
+textAlign(CENTER, CENTER);
+textSize(50);
+fill(200);
+text(mode, 0, 0);
+
+textSize(25);
+if (observedSequence.length < targetSequence.length) {
+let nextKey = targetSequence.charAt(observedSequence.length);
+text(\`Next: \${nextKey}\`, 0, 50);
+}
+}
+
+function keyPressed() {
+if (mode !== PLAYING_MODE) { return; }
+observedSequence += key;
+if (observedSequence === targetSequence) {
+mode = "Success! \u{1F389}";
+} else if (!targetSequence.startsWith(observedSequence)) {
+mode = "Sorry \u{1F61E}";
+}
+}`
+  },
+  {
+    description: `<p>This approach can be extended to match one of a number of sequences. Here the user can enter any of the strings &ldquo;1234&rdquo;, &ldquo;1221&rdquo;, or &ldquo;4321&rdquo;.</p>
+<p>This code makes use of the Array methods.</p>`,
+    code: `let PLAYING_MODE = "Playing";
+let mode = PLAYING_MODE;
+
+let targetSequences = ["1234", "1221", "4321"];
+let observedSequence = "";
+
+function setup() {
+createCanvas(windowWidth, windowHeight);
+}
+
+function draw() {
+background(100);
+translate(width / 2, height / 2);
+textAlign(CENTER, CENTER);
+textSize(50);
+fill(200);
+text(mode, 0, 0);
+
+textSize(25);
+let nextKeys = targetSequences
+.filter(seq => seq != observedSequence)
+.filter(seq => seq.startsWith(observedSequence))
+.map(seq => seq.charAt(observedSequence.length));
+if (nextKeys.length >= 0) {
+let sortedNextKeys = Array.from(new Set(nextKeys));
+sortedNextKeys.sort();
+text(\`Next: \${sortedNextKeys.join(" or ")}\`, 0, 50);
+}
+}
+
+function keyPressed() {
+if (mode !== PLAYING_MODE) { return; }
+observedSequence += key;
+if (targetSequences.includes(observedSequence)) {
+mode = "Success! \u{1F389}";
+} else if (!targetSequences.some(seq => seq.startsWith(observedSequence))) {
+mode = "Sorry \u{1F61E}";
+}
+}`
+  }
+];
+
+# Detecting Sequences
+
+This tutorial shows how to detect whether the user has performed a set of actions in sequence &mdash; starting with simple if/switch approaches and progressing to array and string-based strategies.
+
+Use the **◀ ▶ buttons** or **arrow keys** to step through the stages. **Press keys** inside the canvas to interact. **Drag any number** in the code to adjust it live.
+
+<StepThroughTutorial steps={steps} canvasHeight={400} animated={true} />
+
+---
+
+**Try it on OpenProcessing:** [Detecting Sequences](https://openprocessing.org/sketch/1039148)

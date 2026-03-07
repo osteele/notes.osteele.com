@@ -5,7 +5,7 @@ layout: ../../../../layouts/BaseLayout.astro
 
 # Review: Basic line
 
-This code from [Arranging a Line of Items](/courses/creative-coding/arranging-items-in-a-line/) draws a line of shapes. It uses the *derivation* strategy, to calculate a value for x directly from i each time through the loop.
+This code from [Arranging a Line of Items](https://creative-coding.osteele.com/arranging-items-in-a-line/) draws a line of shapes. It uses the *derivation* strategy, to calculate a value for x directly from i each time through the loop.
 
 ```java
 void setup() {

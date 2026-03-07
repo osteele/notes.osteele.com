@@ -11,7 +11,7 @@ layout: ../../layouts/BaseLayout.astro
 
 ## Arranging Items
 
-*Items in this section have p5.js versions in [Creative Coding with p5.js](/courses/creative-coding/)*  
+*Items in this section have p5.js versions in [Creative Coding with p5.js](https://creative-coding.osteele.com/)*  
 
 [Arranging a Line of Items (Processing)](Creative%20Coding%20with%20Processing/Arranging%20a%20Line%20of%20Items%20(Processing)%208be576c650734165b7e2b6cfeab604a8.md)
 

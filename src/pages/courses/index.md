@@ -3,7 +3,7 @@ title: "Course Notes"
 layout: ../../layouts/BaseLayout.astro
 ---
 
-[Creative Coding](/creative-coding/)
+[Creative Coding](https://creative-coding.osteele.com/)
 
 [Interaction Lab](/courses/interaction-lab/)
 

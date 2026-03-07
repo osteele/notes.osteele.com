@@ -1,0 +1,25 @@
+# Creative coding course pages -> new microsite
+/courses/creative-coding/ https://creative-coding.osteele.com/ 301
+/courses/creative-coding/animation-and-easing/ https://creative-coding.osteele.com/animation-and-easing/ 301
+/courses/creative-coding/animation-and-randomness/ https://creative-coding.osteele.com/animation-and-randomness/ 301
+/courses/creative-coding/arranging-items-in-a-circle-or-spiral/ https://creative-coding.osteele.com/arranging-items-in-a-circle-or-spiral/ 301
+/courses/creative-coding/arranging-items-in-a-grid/ https://creative-coding.osteele.com/arranging-items-in-a-grid/ 301
+/courses/creative-coding/arranging-items-in-a-line/ https://creative-coding.osteele.com/arranging-items-in-a-line/ 301
+/courses/creative-coding/cclab-example-codes/ https://creative-coding.osteele.com/cclab-example-codes/ 301
+/courses/creative-coding/cclab-example-codes/* https://creative-coding.osteele.com/cclab-example-codes/:splat 301
+/courses/creative-coding/detecting-sequences/ https://creative-coding.osteele.com/detecting-sequences/ 301
+/courses/creative-coding/detecting-transitions/ https://creative-coding.osteele.com/detecting-transitions/ 301
+/courses/creative-coding/fruitful-functions-return/ https://creative-coding.osteele.com/fruitful-functions-return/ 301
+/courses/creative-coding/iteration-notes/ https://creative-coding.osteele.com/iteration-notes/ 301
+/courses/creative-coding/pausing-part-of-a-sketch/ https://creative-coding.osteele.com/pausing-part-of-a-sketch/ 301
+/courses/creative-coding/random-elements-in-a-grid/ https://creative-coding.osteele.com/random-elements-in-a-grid/ 301
+/courses/creative-coding/refactoring-into-functions/ https://creative-coding.osteele.com/refactoring-into-functions/ 301
+/courses/creative-coding/scope-and-shadowing/ https://creative-coding.osteele.com/scope-and-shadowing/ 301
+/courses/creative-coding/sine/ https://creative-coding.osteele.com/sine/ 301
+/courses/creative-coding/techniques-for-exploring-parameter-spaces/ https://creative-coding.osteele.com/techniques-for-exploring-parameter-spaces/ 301
+/courses/creative-coding/variables-and-interactivity/ https://creative-coding.osteele.com/variables-and-interactivity/ 301
+
+# Creative coding hub redirects
+/creative-coding/sine/ https://creative-coding.osteele.com/sine/ 301
+/creative-coding/creative-coding-with-p5js/ https://creative-coding.osteele.com/ 301
+/creative-coding/creative-coding-with-p5js/animation-and-randomness/ https://creative-coding.osteele.com/animation-and-randomness/ 301

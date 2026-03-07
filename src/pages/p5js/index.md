@@ -39,4 +39,4 @@ Understanding p5.js doesn't mean memorizing everything. Use references while you
 
 ## p5.js Course Materials
 
-<ul class="page-list"><li><a href="/courses/creative-coding/">Creative Coding with p5.js</a> – Tutorials and techniques</li><li><a href="/p5js/examples/">p5.js Examples</a> – Example sketches</li></ul>
+<ul class="page-list"><li><a href="https://creative-coding.osteele.com/">Creative Coding with p5.js</a> – Tutorials and techniques</li><li><a href="/p5js/examples/">p5.js Examples</a> – Example sketches</li></ul>

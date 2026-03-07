@@ -1,0 +1,110 @@
+---
+---
+
+<button class="search-btn" aria-label="Search" type="button" id="search-open">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <path d="m21 21-4.3-4.3"></path>
+  </svg>
+</button>
+
+<div class="search-overlay" id="search-overlay" style="display:none">
+  <div class="search-modal">
+    <div id="search-container"></div>
+    <button class="search-close" id="search-close" aria-label="Close search">&times;</button>
+  </div>
+</div>
+
+<style>
+  .search-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 4px 6px;
+    color: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .search-btn:hover {
+    color: var(--primary-color);
+  }
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 100;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 15vh;
+  }
+  .search-modal {
+    background: var(--bg-color, #fff);
+    border-radius: 8px;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+  .search-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--secondary-color);
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    var overlay = document.getElementById('search-overlay');
+    var openBtn = document.getElementById('search-open');
+    var closeBtn = document.getElementById('search-close');
+    var loaded = false;
+
+    function openSearch() {
+      overlay.style.display = 'flex';
+      if (!loaded) {
+        loaded = true;
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '/pagefind/pagefind-ui.css';
+        document.head.appendChild(link);
+        var script = document.createElement('script');
+        script.src = '/pagefind/pagefind-ui.js';
+        script.onload = function() {
+          new PagefindUI({ element: '#search-container', showSubResults: true });
+          var input = document.querySelector('#search-container input');
+          if (input) input.focus();
+        };
+        document.body.appendChild(script);
+      } else {
+        var input = document.querySelector('#search-container input');
+        if (input) input.focus();
+      }
+    }
+
+    function closeSearch() {
+      overlay.style.display = 'none';
+    }
+
+    openBtn.addEventListener('click', openSearch);
+    closeBtn.addEventListener('click', closeSearch);
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closeSearch();
+    });
+    document.addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        overlay.style.display === 'flex' ? closeSearch() : openSearch();
+      }
+      if (e.key === 'Escape' && overlay.style.display === 'flex') closeSearch();
+    });
+  })();
+</script>

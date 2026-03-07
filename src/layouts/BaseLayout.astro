@@ -1,4 +1,7 @@
 ---
+import ThemeToggle from "../components/ThemeToggle.astro";
+import SearchWidget from "../components/SearchWidget.astro";
+
 interface Props {
   title?: string;
   frontmatter?: { title?: string; breadcrumbs?: { label: string; href: string }[] };
@@ -8,6 +11,28 @@ interface Props {
 const { frontmatter } = Astro.props;
 const title = Astro.props.title ?? frontmatter?.title ?? "";
 const customBreadcrumbs = Astro.props.breadcrumbs ?? frontmatter?.breadcrumbs;
+
+// Known slug-to-label mappings
+const slugLabels: Record<string, string> = {
+  'p5js': 'p5.js',
+  'nyush': 'NYUSH',
+  'vscode': 'VS Code',
+  'arduino': 'Arduino',
+  'raspberry-pi': 'Raspberry Pi',
+  'posenet': 'PoseNet',
+};
+
+// Acronyms to uppercase
+const acronyms = new Set(['css', 'html', 'js', 'api', 'svg', 'url', 'http', 'json', 'xml', 'sql']);
+
+function labelFromSlug(slug: string): string {
+  if (slugLabels[slug]) return slugLabels[slug];
+  return slug
+    .replace(/-/g, " ")
+    .replace(/\b\w+/g, (word) =>
+      acronyms.has(word.toLowerCase()) ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1)
+    );
+}
 
 // Auto-generate breadcrumbs from URL path if not provided
 const pathname = Astro.url.pathname;
@@ -20,9 +45,7 @@ if (customBreadcrumbs) {
   breadcrumbs = [{ label: "Oliver's Notes", href: "/" }];
   for (let i = 0; i < segments.length - 1; i++) {
     const href = "/" + segments.slice(0, i + 1).join("/") + "/";
-    const label = segments[i]
-      .replace(/-/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+    const label = labelFromSlug(segments[i]);
     breadcrumbs.push({ label, href });
   }
 } else {
@@ -38,6 +61,18 @@ const pageTitle = segments.length > 0 ? `${title} - Oliver's Notes` : title;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{pageTitle}</title>
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:site_name" content="Oliver's Notes" />
+    <meta name="twitter:card" content="summary" />
+    <script is:inline>
+      (function() {
+        var t = localStorage.getItem('theme');
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
     <link
       href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Nanum+Myeongjo:wght@400;700&display=swap"
       rel="stylesheet"
@@ -55,6 +90,8 @@ const pageTitle = segments.length > 0 ? `${title} - Oliver's Notes` : title;
         <a href="https://code.osteele.com/">Code</a>
         <a href="/" class="active">Notes</a>
         <a href="https://flickr.com/osteele/">Photos</a>
+        <SearchWidget />
+        <ThemeToggle />
       </div>
     </nav>
 
@@ -80,7 +117,20 @@ const pageTitle = segments.length > 0 ? `${title} - Oliver's Notes` : title;
     </main>
 
     <footer>
-      <div class="container">Oliver Steele</div>
+      <div class="container">
+        <div class="footer-links">
+          <a href="https://github.com/osteele" aria-label="GitHub" class="social-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          </a>
+          <a href="https://observablehq.com/@osteele" aria-label="Observable" class="social-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21c-1.108 0-2.068-.261-2.88-.783a5.137 5.137 0 0 1-1.867-2.126 11.821 11.821 0 0 1-1.005-2.81A19.77 19.77 0 0 1 5.88 12c0-1.2.123-2.341.368-3.282.246-1.04.576-1.906.997-2.774A5.137 5.137 0 0 1 9.112.818C9.924.296 10.892.035 12 .035s2.076.261 2.888.783a5.137 5.137 0 0 1 1.867 2.126c.421.868.759 1.734 1.005 2.81.245.941.368 2.082.368 3.282s-.123 2.341-.368 3.282a11.821 11.821 0 0 1-1.005 2.81 5.137 5.137 0 0 1-1.867 2.126c-.812.522-1.78.783-2.888.783zM12 16.2c.656 0 1.208-.386 1.656-1.158.448-.771.753-1.622.917-2.553A15.88 15.88 0 0 0 14.82 12c0-.581-.082-1.17-.247-1.489-.164-.93-.47-1.782-.917-2.553C13.208 7.186 12.656 6.8 12 6.8s-1.208.386-1.656 1.158c-.448.771-.753 1.622-.917 2.553A15.88 15.88 0 0 0 9.18 12c0 .581.082 1.17.247 1.489.164.93.47 1.782.917 2.553.448.772 1 1.158 1.656 1.158z"/></svg>
+          </a>
+          <a href="https://openprocessing.org/user/60893" aria-label="OpenProcessing" class="social-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12a4 4 0 1 0 8 0 4 4 0 1 0-8 0"/></svg>
+          </a>
+        </div>
+        <div>Oliver Steele</div>
+      </div>
     </footer>
   </body>
 </html>
@@ -98,3 +148,30 @@ const pageTitle = segments.length > 0 ? `${title} - Oliver's Notes` : title;
     margin: 1.5em 0;
   }
 </style>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('pre').forEach(function(pre) {
+      if (pre.closest('.code-example')) return;
+      var wrapper = document.createElement('div');
+      wrapper.className = 'code-block-wrapper';
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.appendChild(pre);
+      var btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.setAttribute('aria-label', 'Copy code');
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+      wrapper.appendChild(btn);
+      btn.addEventListener('click', function() {
+        var code = pre.querySelector('code');
+        var text = (code || pre).textContent;
+        navigator.clipboard.writeText(text).then(function() {
+          btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+          setTimeout(function() {
+            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+          }, 1500);
+        });
+      });
+    });
+  });
+</script>

@@ -3,22 +3,58 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout title="Oliver's Notes">
-  <div class="section-header blue">Creative Coding</div>
-  <ul class="page-list">
-    <li><a href="/creative-coding/">Creative Coding</a></li>
-    <li>
-      <a href="https://creative-coding.osteele.com/"
-        >Creative Coding with p5.js</a
-      >
-    </li>
-    <li>
-      <a href="/processing/">Creative Coding with Processing</a>
-    </li>
-  </ul>
+  <div class="home-grid">
+    <div class="home-card blue">
+      <h3>Creative Coding</h3>
+      <ul class="page-list">
+        <li><a href="/creative-coding/">Creative Coding</a></li>
+        <li>
+          <a href="https://creative-coding.osteele.com/"
+            >Creative Coding with p5.js</a
+          >
+        </li>
+        <li>
+          <a href="/processing/">Creative Coding with Processing</a>
+        </li>
+      </ul>
+      <h4>Tutorials</h4>
+      <ul class="page-list">
+        <li>
+          <a href="https://creative-coding.osteele.com/arranging-items-in-a-line/"
+            >Arranging Items in a Line</a>
+        </li>
+        <li>
+          <a href="https://creative-coding.osteele.com/arranging-items-in-a-circle-or-spiral/"
+            >Arranging Items in a Circle or Spiral</a>
+        </li>
+        <li>
+          <a href="https://creative-coding.osteele.com/arranging-items-in-a-grid/"
+            >Arranging Items in a Grid</a>
+        </li>
+        <li>
+          <a href="https://creative-coding.osteele.com/iteration-notes/">Iteration Notes</a>
+        </li>
+        <li>
+          <a href="https://creative-coding.osteele.com/refactoring-into-functions/"
+            >Refactoring into Functions</a>
+        </li>
+        <li>
+          <a href="https://creative-coding.osteele.com/animation-and-randomness/"
+            >Animation and Randomness</a>
+        </li>
+        <li>
+          <a href="/processing/processing-and-animation/"
+            >Processing and Animation</a>
+        </li>
+        <li>
+          <a href="/processing/processing-arrays-and-animation/"
+            >Processing Arrays and Animation</a>
+        </li>
+      </ul>
+    </div>
 
-  <div class="two-column">
-    <div>
-      <div class="section-header blue">JavaScript and P5.js</div>
+    <div class="home-card blue">
+      <h3>JavaScript &amp; p5.js</h3>
       <ul class="page-list">
         <li><a href="/javascript/">JavaScript Resources</a></li>
         <li><a href="/javascript/arrays/">JavaScript Arrays</a></li>
@@ -29,8 +65,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         <li><a href="/posenet/">PoseNet</a></li>
       </ul>
     </div>
-    <div>
-      <div class="section-header blue">Physical Computing</div>
+
+    <div class="home-card blue">
+      <h3>Physical Computing</h3>
       <ul class="page-list">
         <li>
           <a href="/physical-computing/">Physical Computing</a>
@@ -39,82 +76,33 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         <li><a href="/raspberry-pi/">Raspberry Pi</a></li>
       </ul>
     </div>
+
+    <div class="home-card purple">
+      <h3>Teaching</h3>
+      <ul class="page-list">
+        <li><a href="/courses/">Course Notes</a></li>
+        <li><a href="/nyush/">NYUSH</a></li>
+      </ul>
+    </div>
+
+    <div class="home-card gray">
+      <h3>Tools &amp; Reference</h3>
+      <ul class="page-list">
+        <li><a href="/tools/">Tools</a></li>
+        <li><a href="/reference/">Reference</a></li>
+        <li>
+          <a href="/education/">Education Tools and Materials</a>
+        </li>
+        <li><a href="/uses/">I Use</a></li>
+      </ul>
+    </div>
+
+    <div class="home-card gray">
+      <h3>Other</h3>
+      <ul class="page-list">
+        <li><a href="/woodworking/">Woodworking</a></li>
+      </ul>
+    </div>
   </div>
 
-  <div class="section-header purple">Teaching</div>
-  <ul class="page-list">
-    <li><a href="/courses/">Course Notes</a></li>
-    <li><a href="/nyush/">NYUSH</a></li>
-  </ul>
-
-  <div class="section-header gray">Miscellaneous</div>
-  <ul class="page-list">
-    <li><a href="/tools/">Tools</a></li>
-    <li><a href="/reference/">Reference</a></li>
-    <li>
-      <a href="/education/">Education Tools and Materials</a>
-    </li>
-    <li><a href="/woodworking/">Woodworking</a></li>
-    <li><a href="/uses/">I Use</a></li>
-  </ul>
-
-  <h2>Tutorials</h2>
-  <ul class="page-list">
-    <li>
-      <a href="https://creative-coding.osteele.com/arranging-items-in-a-line/"
-        >Arranging Items in a Line</a
-      >
-    </li>
-    <li>
-      <a href="https://creative-coding.osteele.com/arranging-items-in-a-circle-or-spiral/"
-        >Arranging Items in a Circle or Spiral</a
-      >
-    </li>
-    <li>
-      <a href="https://creative-coding.osteele.com/arranging-items-in-a-grid/"
-        >Arranging Items in a Grid</a
-      >
-    </li>
-    <li>
-      <a href="https://creative-coding.osteele.com/iteration-notes/">Iteration Notes</a>
-    </li>
-    <li>
-      <a href="https://creative-coding.osteele.com/refactoring-into-functions/"
-        >Refactoring into Functions</a
-      >
-    </li>
-    <li>
-      <a href="https://creative-coding.osteele.com/animation-and-randomness/"
-        >Animation and Randomness</a
-      >
-    </li>
-    <li>
-      <a href="/processing/processing-and-animation/"
-        >Processing and Animation</a
-      >
-    </li>
-    <li>
-      <a href="/processing/processing-arrays-and-animation/"
-        >Processing Arrays and Animation</a
-      >
-    </li>
-  </ul>
-
-  <h2>External Links</h2>
-  <ul class="page-list">
-    <li>
-      <a href="https://osteele.com/">osteele.com</a> &ndash; Main portfolio
-    </li>
-    <li>
-      <a href="https://code.osteele.com/">code.osteele.com</a> &ndash; Project
-      showcase
-    </li>
-    <li><a href="https://github.com/osteele">GitHub</a></li>
-    <li>
-      <a href="https://observablehq.com/@osteele">Observable</a>
-    </li>
-    <li>
-      <a href="https://openprocessing.org/user/60893">OpenProcessing</a>
-    </li>
-  </ul>
 </BaseLayout>

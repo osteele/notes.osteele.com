@@ -61,12 +61,12 @@ const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8
 ---
 
 <div class="code-example">
-  <Code code={formattedCode} lang={lang} theme="github-light" />
+  <Code code={formattedCode} lang={lang} themes={{ light: "github-light", dark: "github-dark" }} />
   {live && containerId && (
     <div class="canvas-preview">
       <div id={containerId} class="p5-canvas" data-sketch={execCode} data-code={code} data-preamble={preamble || ""} data-canvas-height={canvasHeight} data-animated={animated ? "true" : undefined}></div>
-      <button class="p5-reset" aria-label="Reset values" style="display:none">↺</button>
-      {animated && <button class="p5-play-pause" aria-label="Pause">⏸</button>}
+      <button class="p5-reset" aria-label="Reset values" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+      {animated && <button class="p5-play-pause" aria-label="Pause"><svg class="icon-pause" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg><svg class="icon-play" style="display:none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg></button>}
     </div>
   )}
   {!live && image && (
@@ -134,14 +134,18 @@ const containerId = live ? `p5-container-${Math.random().toString(36).slice(2, 8
           var playBtn = container.parentElement.querySelector('.p5-play-pause');
           if (playBtn) {
             var running = true;
+            var pauseIcon = playBtn.querySelector('.icon-pause');
+            var playIcon = playBtn.querySelector('.icon-play');
             playBtn.addEventListener('click', function() {
               if (running) {
                 p5Instance.noLoop();
-                playBtn.textContent = '▶';
+                pauseIcon.style.display = 'none';
+                playIcon.style.display = '';
                 playBtn.setAttribute('aria-label', 'Play');
               } else {
                 p5Instance.loop();
-                playBtn.textContent = '⏸';
+                pauseIcon.style.display = '';
+                playIcon.style.display = 'none';
                 playBtn.setAttribute('aria-label', 'Pause');
               }
               running = !running;

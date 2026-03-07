@@ -26,3 +26,52 @@
 
 # p5.js resources page -> new microsite
 /p5js/ https://creative-coding.osteele.com/p5js/ 301
+
+# p5.js tutorials -> new microsite
+/p5js/tutorials/ https://creative-coding.osteele.com/p5js/tutorials/ 301
+/p5js/tutorials/animation-and-easing/ https://creative-coding.osteele.com/animation-and-easing/ 301
+/p5js/tutorials/detecting-sequences/ https://creative-coding.osteele.com/detecting-sequences/ 301
+/p5js/tutorials/detecting-transitions/ https://creative-coding.osteele.com/detecting-transitions/ 301
+/p5js/tutorials/pausing-part-of-a-sketch-the-alternative-to-noloop/ https://creative-coding.osteele.com/pausing-part-of-a-sketch/ 301
+/p5js/tutorials/combining-sketches-by-renaming/ https://creative-coding.osteele.com/p5js/tutorials/combining-sketches-by-renaming/ 301
+/p5js/tutorials/combining-sketches-with-oop/ https://creative-coding.osteele.com/p5js/tutorials/combining-sketches-with-oop/ 301
+/p5js/tutorials/split-screen-sketches/ https://creative-coding.osteele.com/p5js/tutorials/split-screen-sketches/ 301
+/p5js/tutorials/drawing-modes/ https://creative-coding.osteele.com/p5js/tutorials/drawing-modes/ 301
+/p5js/tutorials/finding-the-maximum/ https://creative-coding.osteele.com/p5js/tutorials/finding-the-maximum/ 301
+/p5js/tutorials/html-modes/ https://creative-coding.osteele.com/p5js/tutorials/html-modes/ 301
+/p5js/tutorials/javascript-features/ https://creative-coding.osteele.com/p5js/tutorials/javascript-features/ 301
+/p5js/tutorials/from-objects-to-classes/ https://creative-coding.osteele.com/p5js/tutorials/from-objects-to-classes/ 301
+/p5js/tutorials/objects-arrays/ https://creative-coding.osteele.com/p5js/tutorials/objects-arrays/ 301
+/p5js/tutorials/objects-arrays-and-conditionals/ https://creative-coding.osteele.com/p5js/tutorials/objects-arrays-and-conditionals/ 301
+/p5js/tutorials/hover-effects/ https://creative-coding.osteele.com/p5js/tutorials/hover-effects/ 301
+/p5js/tutorials/periodic-actions/ https://creative-coding.osteele.com/p5js/tutorials/periodic-actions/ 301
+/p5js/tutorials/scheduled-events/ https://creative-coding.osteele.com/p5js/tutorials/scheduled-events/ 301
+/p5js/tutorials/sequencing/ https://creative-coding.osteele.com/p5js/tutorials/sequencing/ 301
+/p5js/tutorials/particles-1/ https://creative-coding.osteele.com/p5js/tutorials/particles-1/ 301
+/p5js/tutorials/particles-2/ https://creative-coding.osteele.com/p5js/tutorials/particles-2/ 301
+/p5js/tutorials/particles-3/ https://creative-coding.osteele.com/p5js/tutorials/particles-3/ 301
+/p5js/tutorials/particle-ports/ https://creative-coding.osteele.com/p5js/tutorials/particle-ports/ 301
+/p5js/tutorials/refactoring-to-an-array/ https://creative-coding.osteele.com/p5js/tutorials/refactoring-to-an-array/ 301
+/p5js/tutorials/retained-mode/ https://creative-coding.osteele.com/p5js/tutorials/retained-mode/ 301
+/p5js/tutorials/selective-trails-1-arrays/ https://creative-coding.osteele.com/p5js/tutorials/selective-trails-1-arrays/ 301
+/p5js/tutorials/selective-trails-2-creategraphics/ https://creative-coding.osteele.com/p5js/tutorials/selective-trails-2-creategraphics/ 301
+/p5js/tutorials/slice-effect/ https://creative-coding.osteele.com/p5js/tutorials/slice-effect/ 301
+/p5js/tutorials/two-point-transforms/ https://creative-coding.osteele.com/p5js/tutorials/two-point-transforms/ 301
+/p5js/tutorials/use-draw-as-your-loop/ https://creative-coding.osteele.com/p5js/tutorials/use-draw-as-your-loop/ 301
+/p5js/tutorials/iteration-activity-solution/ https://creative-coding.osteele.com/p5js/tutorials/ 301
+/p5js/tutorials/posenet-data-solution-set/ https://creative-coding.osteele.com/p5js/tutorials/ 301
+
+# p5.js examples -> new microsite
+/p5js/examples/ https://creative-coding.osteele.com/p5js/examples/ 301
+/p5js/examples/animated-gifs/ https://creative-coding.osteele.com/p5js/examples/animated-gifs/ 301
+/p5js/examples/cross-fade-between-songs/ https://creative-coding.osteele.com/p5js/examples/cross-fade-between-songs/ 301
+/p5js/examples/drawing-an-arrow/ https://creative-coding.osteele.com/p5js/examples/drawing-an-arrow/ 301
+/p5js/examples/rotate-about-a-point/ https://creative-coding.osteele.com/p5js/examples/rotate-about-a-point/ 301
+/p5js/examples/selective-trails-using-creategraphics/ https://creative-coding.osteele.com/p5js/examples/selective-trails-using-creategraphics/ 301
+/p5js/examples/selective-trails-with-arrays/ https://creative-coding.osteele.com/p5js/examples/selective-trails-with-arrays/ 301
+/p5js/examples/slicing/ https://creative-coding.osteele.com/p5js/examples/slicing/ 301
+/p5js/examples/trim-the-ends-of-a-line/ https://creative-coding.osteele.com/p5js/examples/trim-the-ends-of-a-line/ 301
+
+# p5.js setup guides -> new microsite
+/p5js/online-p5js-editors/ https://creative-coding.osteele.com/p5js/online-editors/ 301
+/p5js/vscode/ https://creative-coding.osteele.com/p5js/vscode/ 301

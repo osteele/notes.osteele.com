@@ -486,6 +486,79 @@ pre .scrubbable-number:hover {
   }
 }
 
+/* Wrong/Correct code block labels */
+.code-wrong, .code-correct {
+  position: relative;
+  min-width: 0;
+}
+
+.code-wrong::before, .code-correct::before {
+  display: inline-block;
+  font-size: 0.75em;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+  margin-bottom: 0.5em;
+}
+
+.code-wrong::before {
+  content: "Wrong";
+  background: #fde8e8;
+  color: #9b1c1c;
+}
+
+.code-correct::before {
+  content: "Correct";
+  background: #def7ec;
+  color: #03543f;
+}
+
+.code-wrong pre {
+  border-left: 3px solid #f87171;
+}
+
+.code-correct pre {
+  border-left: 3px solid #34d399;
+}
+
+.code-wrong pre, .code-correct pre {
+  margin-top: 0;
+}
+
+/* Hide redundant Mistake/Fix headings inside two-column wrong/correct blocks */
+.two-column .code-wrong > h2,
+.two-column .code-wrong > h3,
+.two-column .code-correct > h2,
+.two-column .code-correct > h3 {
+  display: none;
+}
+
+.two-column .code-wrong, .two-column .code-correct {
+  min-width: 0;
+}
+
+.two-column .code-wrong pre, .two-column .code-correct pre {
+  margin-bottom: 0;
+}
+
+[data-theme="dark"] .code-wrong::before {
+  background: #4a1c1c;
+  color: #f8a8a8;
+}
+
+[data-theme="dark"] .code-correct::before {
+  background: #0f3a2a;
+  color: #8aecc0;
+}
+
+[data-theme="dark"] .code-wrong pre {
+  border-left-color: #b91c1c;
+}
+
+[data-theme="dark"] .code-correct pre {
+  border-left-color: #059669;
+}
+
 /* Tables */
 table {
   width: 100%;

@@ -30,15 +30,13 @@ The distinction is similar to the distinction between a web document editor such
 
 Some online editors ([P5 Web Editor](https://editor.p5js.org/), [OpenProcessing.org](/p5js-resources/)) are specific to p5.js. They are easy to get started with. You don't have to create an HTML file, so you can focus on the code in your sketch.
 
-[Online P5.js Editors](/p5js/online-p5js-editors/)
-
 ## Using P5.js with Visual Studio Code
 
 You can also use a code editor, such as Visual Studio Code or Atom, that runs as an application on your own computer.
 
 You may find this preferable if you are already familiar with a code editor, if you have a slow internet connection, or if you prefer to manage your own files – especially if you want to connect these files in your own git repository.
 
-Follow these instructions [Visual Studio Code for P5.js](/p5js/vscode/)  to configure Visual Studio Code for p5.js development.
+Follow these instructions [Visual Studio Code for P5.js](/vscode/)  to configure Visual Studio Code for p5.js development.
 
 # References
 

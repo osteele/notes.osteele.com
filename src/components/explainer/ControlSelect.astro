@@ -1,0 +1,25 @@
+---
+interface Option {
+  value: string;
+  label: string;
+  selected?: boolean;
+}
+
+interface Props {
+  id?: string;
+  label: string;
+  valueId?: string;
+  dataParam?: string;
+  options: Option[];
+}
+
+const { id, label, valueId, dataParam, options } = Astro.props;
+const selected = options.find((option) => option.selected) ?? options[0];
+---
+
+<div class="control">
+  <label><span set:html={label} /> <span class="v" id={valueId}>{selected?.label}</span></label>
+  <select id={id} data-param={dataParam}>
+    {options.map((option) => <option value={option.value} selected={option.selected}>{option.label}</option>)}
+  </select>
+</div>

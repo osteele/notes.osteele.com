@@ -1,0 +1,374 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Attention" breadcrumb="Attention" section="machine-learning">
+<Hero title="Attention" subtitle="A weighted sum, three ways. The same operation read as a statistic, a kernel regressor, and a maximum-entropy retrieval rule." />
+
+<p>
+Attention is the operation that lets a transformer mix information across
+positions of a sequence: each output position pulls a weighted combination
+of all other positions, with weights that depend on the content at each
+position rather than its index. In a single line of math,
+$\operatorname&#123;Attn&#125;(q, K, V) = \sum_i \alpha_i(q)\, v_i$, with weights
+$\alpha_i(q) \propto \exp(q \cdot k_i / \tau)$.
+</p>
+
+<Aside>
+  <strong>The lens of this page.</strong> Most introductions to attention
+  approach it as an architectural component — queries, keys, values, heads,
+  layers. This page takes a different route. It treats the
+  $\sum_i \alpha_i(q)\, v_i$ formula as the latest member of a family that
+  begins with the classical idea of a <em>sufficient statistic</em> and
+  passes through kernel regression on the way. From that angle the design
+  choices stop looking arbitrary: <em>why a sum</em> is statistics, <em>why
+  softmax</em> is a maximum-entropy retrieval rule, and <em>why a cache of
+  raw vectors</em> is what kernel methods have always needed.
+  <br><br>
+  If you want the standard architecture overview — multi-head shapes, layer
+  composition, positional encodings, KV-cache memory in practice — see
+  <a href="https://viz.osteele.com/llm-visualizations/">LLM Inference</a>. This page complements
+  rather than replaces that material; it explains what attention <em>is</em>
+  in terms of older ideas, not how it is wired into a model.
+</Aside>
+
+<p>
+The page makes the equivalences concrete. We start with three forms side by
+side — the classical sufficient statistic $T(x) = \sum_i \phi(x_i)$,
+Nadaraya–Watson kernel regression $\hat f(q) = \sum_i w_i(q)\,y_i$, and
+attention $\sum_i \alpha_i(q)\,v_i$ — and show that they differ only in how
+the weights are chosen. From there: attention as kernel regression with a
+learned similarity (§2); softmax as the unique entropy-regularized retrieval
+rule (§3); a small zoo of alternative kernels (§4); multi-head as many
+statistics at once (§5); causal masking and the KV cache (§6). A reader
+arriving from <a href="/math/sufficient-statistics/">sufficient statistics</a> will
+recognize this as the adaptive cousin of $T(x)$; a reader arriving cold can
+read the chain forward without that background.
+</p>
+
+<h2>1. Three forms</h2>
+
+<p>
+Lay the three forms side by side. Only the weights change.
+</p>
+
+<div id="three-forms" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 18px 0 24px;">
+  <div style="background:#fff; border:1px solid var(--rule); border-left:3px solid #1f4a8c; border-radius:6px; padding:14px 16px;">
+    <div style="font-family:-apple-system,sans-serif; font-size:11px; font-weight:700; color:#1f4a8c; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Sufficient statistic</div>
+    <div style="font-family:'SF Mono', monospace; font-size:14px; color:#1f2733; line-height:1.6;">T(x) = Σᵢ φ(xᵢ)</div>
+    <div style="font-size:12px; color:#5a6577; margin-top:8px; line-height:1.5;">Fixed weights (all equal). The summary is a function of the data alone.</div>
+  </div>
+  <div style="background:#fff; border:1px solid var(--rule); border-left:3px solid #2d7a3e; border-radius:6px; padding:14px 16px;">
+    <div style="font-family:-apple-system,sans-serif; font-size:11px; font-weight:700; color:#2d7a3e; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Kernel regression</div>
+    <div style="font-family:'SF Mono', monospace; font-size:14px; color:#1f2733; line-height:1.6;">f̂(q) = Σᵢ wᵢ(q)·yᵢ</div>
+    <div style="font-size:12px; color:#5a6577; margin-top:8px; line-height:1.5;">Weights depend on a query point. Nearby data contributes more.</div>
+  </div>
+  <div style="background:#fff; border:1px solid var(--rule); border-left:3px solid #b8412a; border-radius:6px; padding:14px 16px;">
+    <div style="font-family:-apple-system,sans-serif; font-size:11px; font-weight:700; color:#b8412a; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Attention</div>
+    <div style="font-family:'SF Mono', monospace; font-size:14px; color:#1f2733; line-height:1.6;">Attn(q) = Σᵢ αᵢ(q)·vᵢ</div>
+    <div style="font-size:12px; color:#5a6577; margin-top:8px; line-height:1.5;">Weights are softmax over learned dot-product similarities.</div>
+  </div>
+</div>
+
+<p>
+The classical statistic compresses with fixed weights; kernel regression
+varies the weights with the query but uses a hand-chosen similarity; attention
+varies the weights with the query and <em>learns</em> the similarity. Each
+step adds one degree of adaptivity. The rest of this page makes the
+equivalences concrete.
+</p>
+
+<h2>2. Attention is Nadaraya–Watson kernel regression</h2>
+
+<p>
+The Nadaraya–Watson estimator
+$\hat f(q) = \sum_i K(q, x_i)\, y_i \;/\; \sum_j K(q, x_j)$ is a
+weighted average of $y$-values, with weights given by a kernel of distance
+from the query. Soft attention with a Gaussian-shaped softmax
+($\alpha_i \propto \exp(-\|q - k_i\|^2/2\sigma^2)$, up to a query-only
+normalization) is the same operation.
+</p>
+
+<Figure title="Figure 2 · Same operation, read two ways" canvasId="fig-nw" width="780" height="440" readoutId="nw-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>data $(x_i, y_i)$: tokens with key $k_i = x_i$, value $v_i = y_i$</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>kernel bump at query (kernel-regression view)</span>
+    <span><span class="swatch" style="background:#b8412a"></span>attention weights $\alpha_i$ (attention view)</span>
+    <span><span class="swatch" style="background:#6b4592"></span>predicted output $\hat f(q) = \sum_i \alpha_i y_i$</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="nw-q" label="query position $q$" valueId="nw-q-v" min="0" max="1" step="0.005" value="0.5" />
+  <ControlRange id="nw-logtau" label="log temperature (base 2): bandwidth" valueId="nw-logtau-v" min="-8" max="2" step="0.1" value="-5" />
+  <PresetRow>
+    <button data-nw-preset="sharp">sharp (τ small)</button>
+    <button data-nw-preset="medium">medium</button>
+    <button data-nw-preset="diffuse">diffuse (τ large)</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+
+
+<p>
+At small $\tau$ the kernel is sharp and the prediction at $q$ is essentially
+the $y$-value of the nearest data point. Attention puts all its mass on one
+token, the entropy of the weight distribution is near zero, and the smoothed
+curve becomes a jagged step function. At large $\tau$ the kernel spans the
+whole interval, the weight distribution is nearly uniform, and the prediction
+flattens toward the global mean. Everything in between is a tradeoff between
+fidelity and stability, the bias–variance dial you already know from
+non-parametric regression, wearing a softmax hat.
+</p>
+
+<Aside>
+  Real attention uses
+  $q \cdot k_i$ with $q = W_Q x_q$ and $k_i = W_K x_i$. After expanding,
+  $\exp(q \cdot k_i / \tau)$ is the exponential kernel in those learned
+  coordinates. Up to a query-only constant, that's a Gaussian RBF kernel
+  with bandwidth set by $\tau$. The projection matrices $W_Q, W_K$
+  are how the network <em>chooses what counts as "near."</em>
+</Aside>
+
+<h2>3. Softmax is the unique entropy-regularized retrieval rule</h2>
+
+<p>
+Why softmax? Because among all retrieval distributions $a$ over the memory
+items, the softmax is the one that maximizes
+$$\mathbb&#123;E&#125;_a[s] \;+\; \tau\, H(a) \;=\; \sum_i a_i s_i \;-\; \tau \sum_i a_i \log a_i$$
+subject to $\sum a_i = 1$. The unique balance between relevance (pick the
+high-score item) and spread (don't be overconfident). The temperature
+$\tau$ is the price you pay per nat of certainty.
+</p>
+
+<Figure title="Figure 3 · Scores → softmax retrieval, with the objective on display" canvasId="fig-maxent" width="780" height="420" readoutId="maxent-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#475569"></span>scores $s_i$: relevance of each memory item</span>
+    <span><span class="swatch" style="background:#b8412a"></span>retrieval distribution $a_i = \operatorname&#123;softmax&#125;(s/\tau)_i$</span>
+    <span><span class="swatch" style="background:#6b4592"></span>contributions $a_i s_i$ (signed)</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="me-logtau" label="log temperature (base 2)" valueId="me-logtau-v" min="-3" max="4" step="0.05" value="0" />
+  <ControlSelect id="me-pattern" label="score pattern" valueId="me-pattern-v" options={[
+    { value: "peaked", label: "single peak", selected: true },
+    { value: "two", label: "two peaks" },
+    { value: "ramp", label: "monotonic" },
+    { value: "noisy", label: "noisy / flat" },
+    { value: "tail", label: "long tail" },
+  ]} />
+  <PresetRow>
+    <button data-me-preset="argmax">τ → 0 (argmax)</button>
+    <button data-me-preset="balanced">balanced</button>
+    <button data-me-preset="uniform">τ → ∞ (uniform)</button>
+    <button id="me-energy">energy view</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+
+
+<p>
+Three regimes:
+</p>
+
+<ul>
+  <li><strong>$\tau \to 0$ (argmax).</strong> The total objective collapses to
+  $\max_i s_i$; the retrieval distribution puts all mass on the highest-scoring
+  item; entropy is zero. Brittle but maximally relevant.</li>
+  <li><strong>$\tau \to \infty$ (uniform).</strong> The objective is dominated
+  by the entropy term; the retrieval distribution is uniform; effective $k$ is
+  $N$. Maximally spread, scores don't matter.</li>
+  <li><strong>Intermediate $\tau$.</strong> The softmax interpolates. Multiple
+  items contribute; the "effective $k$" (i.e., $\exp H(a)$) tells you roughly
+  how many memory items you're actually pulling from.</li>
+</ul>
+
+<Aside>
+  The softmax
+  is the <em>unique</em> distribution maximizing
+  $\mathbb&#123;E&#125;_a[s] + \tau H(a)$. Setting up the Lagrangian with
+  $\sum a_i = 1$ and differentiating gives
+  $\log a_i = (s_i - \lambda)/\tau$, i.e. $a_i \propto e^&#123;s_i/\tau&#125;$. Equivalently:
+  among distributions with a fixed expected score $\mathbb&#123;E&#125;_a[s] = \mu$,
+  the maximum-entropy one is an exponential family with $s$ as the sufficient
+  statistic. That's the same algebra that gives Boltzmann distributions in
+  statistical mechanics and exponential families in §7 of the
+  <a href="/math/sufficient-statistics/">sufficient statistics page</a>: three
+  faces of one identity.
+</Aside>
+
+<h2>4. A small kernel zoo</h2>
+
+<p>
+The dot-product softmax isn't the only choice. Each attention variant in
+common use corresponds to a different kernel, and the kernel <em>shape</em>
+is what controls the retrieval behavior. The slider sets the bandwidth /
+temperature; the kernel curves show how weight falls off with distance from
+the query in their respective coordinate systems.
+</p>
+
+<Figure title="Figure 4 · Kernel shapes for common attention variants" canvasId="fig-kernels" width="780" height="320" readoutId="kernels-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>standard softmax: $\exp(q\cdot k / \tau)$, Gaussian-like</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>linear attention: $\phi(q)^\top\phi(k)$ via random features</span>
+    <span><span class="swatch" style="background:#b8412a"></span>local-window: indicator of $|i - j| \le w$</span>
+    <span><span class="swatch" style="background:#6b4592"></span>positional bias (ALiBi-style): linear decay</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="kz-bw" label="bandwidth / window" valueId="kz-bw-v" min="0.05" max="1.0" step="0.01" value="0.2" />
+</Fragment>
+</Figure>
+
+
+
+<p>
+Each kernel encodes a prior about which positions should be neighbors. The
+standard softmax gives smooth, global retrieval at $O(N^2)$ cost. Linear
+attention swaps the kernel for one with an explicit feature map
+$\phi$, which lets you rearrange
+$\sum_i \phi(q)^\top \phi(k_i) v_i = \phi(q)^\top \big(\sum_i \phi(k_i) v_i^\top\big)$
+and pre-aggregate to bring cost to $O(N)$. Local-window attention restricts
+the kernel to a sliding interval. Position-bias schemes like ALiBi and T5
+relative bias add a position-only decay before the softmax, equivalent to
+multiplying the kernel by a position prior, the KL-regularized form
+$a_i \propto r_i \exp(s_i/\tau)$ from the Aside in §3.
+</p>
+
+<h2>5. Multi-head: many statistics at once</h2>
+
+<p>
+A single attention head computes one weighted statistic of the sequence.
+A multi-head layer computes several in parallel, each with its own learned
+$W_Q, W_K, W_V$. Interpretability work has found that heads in trained
+transformers reliably specialize: some track syntactic dependencies, some
+track positional patterns, some attend to punctuation or sentence boundaries.
+The illustrations below are stylized patterns inspired by attested
+phenomena, not real model outputs, but they capture the qualitative shapes
+you actually see when probing GPT-2 or BERT.
+</p>
+
+<Figure title="Figure 5 · Four stylized heads over three sentences" canvasId="fig-mh" width="780" height="420" readoutId="mh-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:rgba(31,74,140,0.85)"></span>row $i$: how token $i$ distributes attention over the sequence</span>
+    <span><span class="swatch" style="background:#cbd5e1"></span>causal mask (greyed): attention to future positions</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlSelect id="mh-sent" label="sentence" valueId="mh-sent-v" options={[
+    { value: "0", label: "the cat sat on the mat", selected: true },
+    { value: "1", label: "she gave him a book" },
+    { value: "2", label: "birds fly over tall trees" },
+  ]} />
+  <ControlSelect id="mh-mode" label="display" valueId="mh-mode-v" options={[
+    { value: "all", label: "all four heads", selected: true },
+    { value: "single", label: "one head, large" },
+  ]} />
+  <ControlRange id="mh-head" label="head index" valueId="mh-head-v" min="0" max="3" step="1" value="0" />
+</Fragment>
+</Figure>
+
+
+
+<p>
+Heads decompose the problem. H1 implements a "look at the previous token"
+rule, a building block of the induction circuits that let transformers do
+in-context copying. H2 acts as a syntactic governor: each verb attends to its
+subject, each preposition to its head verb. H3 is purely positional: weights
+decay with distance regardless of content. H4 attends to determiners and
+modifiers. Each head computes a different summary statistic of the prefix;
+their outputs concatenate and pass through the next layer's matrices, where
+they can be combined into still higher-level statistics. <em>Multi-head =
+multiple sufficient statistics in parallel.</em>
+</p>
+
+<h2>6. Causal masking and the KV cache</h2>
+
+<p>
+At generation time a transformer consumes one token at a time. The attention
+operation $\sum_i \alpha_i(q_t) v_i$ needs every previous $(k_i, v_i)$, so an
+efficient decoder caches them as it goes. This is the famous "KV cache."
+The cache stores <em>raw</em> keys and values rather than an accumulated
+summary, because each new query reweights it differently.
+</p>
+
+<Figure title="Figure 6 · Token-by-token attention with a growing KV cache" canvasId="fig-kv" width="780" height="420" readoutId="kv-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>tokens already in the cache</span>
+    <span><span class="swatch" style="background:#b8412a"></span>current query attention weights $\alpha_i(q_t)$</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>output $\sum_i \alpha_i v_i$</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="kv-t" label="generation step $t$" valueId="kv-t-v" min="1" max="6" step="1" value="3" />
+  <ControlRange id="kv-tau" label="temperature tau" valueId="kv-tau-v" min="0.1" max="2" step="0.05" value="0.6" />
+  <ControlSelect id="kv-pattern" label="head pattern" valueId="kv-pattern-v" options={[
+    { value: "subject", label: "subject pointer", selected: true },
+    { value: "previous", label: "previous-token" },
+    { value: "uniform", label: "broadcast / uniform" },
+  ]} />
+</Fragment>
+</Figure>
+
+
+
+<p>
+The "broadcast / uniform" pattern is what an unconditional summary statistic
+would look like: the same weights regardless of the query, so the cache could
+be collapsed to one accumulated $\sum v_i$. The non-uniform patterns
+(subject-pointer, previous-token) reweight differently for each query, which
+is exactly why a real KV cache stores the raw vectors. Attention is a
+<em>family</em> of sufficient statistics, one per query, and the cache is
+the data structure that lets you compute any member of that family on
+demand. The
+<a href="https://viz.osteele.com/llm-visualizations/kv-cache-memory.html">KV cache memory page</a>
+explores the practical consequences (memory growth, paging, attention
+sinks).
+</p>
+
+<h2>7. Back to sufficiency</h2>
+
+<p>
+Read attention as an
+<a href="/math/sufficient-statistics/">adaptive sufficient statistic</a> and the
+weighted sum is just compression of the sequence into a summary chosen for
+the current prediction. Kernel regression makes the softmax Nadaraya–Watson
+with learned similarity. From the maximum-entropy side, the softmax is the
+unique solution to "be relevant, but don't be overconfident." Each view
+explains a different design choice: why a sum, why softmax, why a cache of
+raw vectors.
+</p>
+
+<Aside>
+  A transformer layer stacks attention with a feed-forward block; depth lets
+  later layers build sufficient statistics of the sufficient statistics from
+  earlier layers. The story of <em>what</em> those stacked summaries actually
+  compute belongs on its own page about representations, coming next.
+</Aside>
+
+<NextCards heading="What next" cards={[
+  { href: "/sufficient-statistics/", tag: "Foundations", title: "Sufficient Statistics", role: "Where the weighted-sum-as-summary intuition starts. Attention is the adaptive cousin of $T(x) = \\sum \\phi(x_i)$." },
+  { href: "https://viz.osteele.com/llm-visualizations/kv-cache-memory.html", tag: "Systems", title: "KV Cache Memory", role: "The practical consequences of caching keys and values: memory growth, paging, and the cost of long contexts." },
+  { href: "/fisher-information/", tag: "Likelihood", title: "Fisher Information", role: "Softmax-as-Gibbs and exponential families also drive the geometry of likelihood inference." },
+]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<script is:inline src="/math/attention/attention.js"></script>
+
+</ExplainerLayout>

@@ -4,22 +4,25 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && bunx pagefind --site dist",
+    "build": "bun run typecheck:public-scripts && astro build && bunx pagefind --site dist",
+    "typecheck:public-scripts": "tsc --project tsconfig.public.json --noEmit",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.3.13",
-    "@astrojs/sitemap": "^3.7.0",
-    "@pagefind/default-ui": "^1.4.0",
-    "astro": "^5.17.1",
+    "@astrojs/mdx": "^5",
+    "@astrojs/sitemap": "^3.7.3",
+    "@pagefind/default-ui": "^1.5.2",
+    "astro": "^6",
     "cheerio": "^1.2.0",
     "lucide-static": "^0.577.0",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
-    "turndown": "^7.2.2"
+    "turndown": "^7.2.4"
   },
   "devDependencies": {
-    "@types/turndown": "^5.0.6"
+    "@types/turndown": "^5.0.6",
+    "esbuild": "^0.28.0",
+    "typescript": "^6.0.3"
   }
 }

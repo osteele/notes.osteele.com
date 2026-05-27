@@ -1,0 +1,185 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+import NotationAside from "../../components/explainer/NotationAside.astro";
+---
+
+<ExplainerLayout title="Hypothesis Testing" breadcrumb="Hypothesis Testing" section="probability-and-statistics">
+<Hero title="Hypothesis Testing" subtitle="Overlapping null and alternative distributions, significance, power, and the cost of a decision threshold." />
+
+<OrientationNote>
+  <p>
+    This page treats hypothesis tests as comparisons between two probability
+    measures. The usual threshold, significance, power, and ROC diagrams are here,
+    but the organizing object is the likelihood ratio between the two laws.
+  </p>
+</OrientationNote>
+
+<p>
+Classical hypothesis testing compares a statistic against a threshold. Under the null
+hypothesis $H_0$, crossing the threshold is a false positive with probability
+$\alpha$. Under the alternative $H_1$, failing to cross is a false negative with
+probability $\beta$, and the power is $1-\beta$. Below the surface, every panel on
+this page is a different view of the same pair of distributions $(P_0, P_1)$.
+</p>
+
+<h2 id="overlap">1. The α/β overlap</h2>
+
+<Figure title="Figure 1 · The α/β overlap diagram" canvasId="fig-alpha-beta" width="780" height="380" readoutId="alpha-beta-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>null $H_0$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>alternative $H_1$</span>
+      <span><span class="swatch" style="background:rgba(31,74,140,0.35)"></span>type-I error $\alpha$</span>
+      <span><span class="swatch" style="background:rgba(184,65,42,0.35)"></span>type-II error $\beta$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="ab-effect" label="effect size" valueId="ab-effect-v" min="0" max="4" step="0.05" value="1.4" />
+      <ControlRange id="ab-threshold" label="decision threshold" valueId="ab-threshold-v" min="-2" max="6" step="0.05" value="1.64" />
+      <PresetRow>
+        <button data-ab-preset="five">α ≈ 0.05</button>
+        <button data-ab-preset="strict">stricter threshold</button>
+        <button data-ab-preset="weak">weak effect</button>
+        <button data-ab-preset="strong">strong effect</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+Moving the threshold right reduces $\alpha$ but increases $\beta$. Increasing the
+effect size separates the curves and improves power without changing the threshold.
+This is the core visual tradeoff behind p-values, power analysis, and sample-size
+planning.
+</p>
+
+<h2 id="lr">2. The likelihood-ratio view</h2>
+
+<p>
+Underneath the overlap diagram is the <em>likelihood ratio</em>
+$\Lambda(x) = p_1(x)/p_0(x)$. The Neyman–Pearson lemma says that for testing simple
+$H_0$ vs.\ simple $H_1$, the most powerful test at level $\alpha$ rejects when
+$\Lambda(x) > k$. For two unit-variance normals with means $0$ and $\mu$,
+$\log\Lambda(x) = \mu x - \mu^2/2$ — a straight line. Sliding the threshold
+horizontally on the log-ratio plot is equivalent to sliding the threshold on $x$;
+the rejection region $\&#123;x : \Lambda(x) > k\&#125;$ is recovered by inversion.
+This view makes the measure-theoretic story explicit: the rule depends on the data
+only through $\Lambda$, which is a Radon–Nikodym derivative $dP_1/dP_0$.
+</p>
+
+<NotationAside label="Why this matters">
+  <p>
+    Writing $\Lambda = dP_1/dP_0$ rather than $p_1/p_0$ is not just notation.
+    The Radon–Nikodym derivative is well-defined whenever $P_1 \ll P_0$, with
+    no separate definitions for discrete, continuous, mixed, or
+    infinite-dimensional laws. Neyman–Pearson, Stein's lemma, sequential
+    likelihood-ratio tests, and Bayes factors all pivot on this same object.
+    For two laws with densities, $dP_1/dP_0$ reduces to the ratio above; for
+    laws without densities (point masses, path-space laws on a Wiener filter,
+    discrete sequences), it still works. See the
+    <a href="/math/notation/#kl">notation page</a>.
+  </p>
+</NotationAside>
+
+<Figure title="Figure 2 · Likelihood ratio Λ(x)" canvasId="fig-lr" width="780" height="380" readoutId="lr-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#6b4592"></span>$\log\Lambda(x)$</span>
+    <span><span class="swatch" style="background:#111827"></span>threshold $\log k$</span>
+    <span><span class="swatch" style="background:rgba(31,74,140,0.35)"></span>$\alpha$ (over $P_0$)</span>
+    <span><span class="swatch" style="background:rgba(184,65,42,0.35)"></span>$\beta$ (over $P_1$)</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="lr-effect" label="effect size μ" valueId="lr-effect-v" min="0.2" max="3.5" step="0.05" value="1.4" />
+  <ControlRange id="lr-logk" label="threshold log k" valueId="lr-logk-v" min="-4" max="6" step="0.05" value="0.18" />
+</Fragment>
+</Figure>
+
+<p>
+Two asymptotic facts about $\log\Lambda$ are worth naming, because they connect this
+view to other pages without needing their own figures. Under $H_0$ the mean of
+$\log\Lambda$ is $-D(P_0\|P_1)$ and under $H_1$ it is $+D(P_1\|P_0)$, so accumulating
+$\log\Lambda$ across $n$ independent samples gives <em>Stein's lemma</em>:
+holding $\alpha$ fixed, the optimal type-II error decays as
+$\beta_n \approx e^&#123;-n\,D(P_0\|P_1)&#125;$ — KL is the exponent of power
+(<a href="/math/kl-divergence/">KL divergence</a>). And <em>Wilks' theorem</em> gives the
+null distribution of the test statistic itself: $-2\log\Lambda_n \xrightarrow&#123;d&#125;
+\chi^2_k$ under $H_0$, which is why $\chi^2$ tables turn up everywhere in practice
+(<a href="/math/modes-of-convergence/">modes of convergence</a>).
+</p>
+
+<h2 id="roc">3. The ROC curve</h2>
+
+<p>
+Sweeping the threshold traces out the <em>ROC curve</em>: every operating point is a
+pair $(\alpha,\,1-\beta)$. The curve is a measure-theoretic invariant of the pair
+$(P_0, P_1)$ — any monotone reparametrization of the test statistic gives the same
+curve. The diagonal is the no-information baseline (a random coin flip). The area
+under the curve, $\mathrm&#123;AUC&#125; = P(\Lambda(X_1) > \Lambda(X_0))$, is a single
+number summarizing separability. For two unit-variance Gaussians with mean gap
+$\mu$, $\mathrm&#123;AUC&#125; = \Phi(\mu/\sqrt&#123;2&#125;)$.
+</p>
+
+<Figure title="Figure 3 · ROC curve" canvasId="fig-roc" width="780" height="380" readoutId="roc-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#2d7a3e"></span>ROC curve</span>
+    <span><span class="swatch" style="background:#9aa3b2"></span>chance diagonal</span>
+    <span><span class="swatch" style="background:#b8412a"></span>operating point</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="roc-effect" label="effect size μ" valueId="roc-effect-v" min="0" max="3.5" step="0.05" value="1.4" />
+  <ControlRange id="roc-threshold" label="threshold" valueId="roc-threshold-v" min="-3" max="6" step="0.05" value="1.64" />
+</Fragment>
+</Figure>
+
+<h2 id="bayes">4. Bayes risk and the optimal threshold</h2>
+
+<p>
+Hand the test a prior $\pi_1$ on $H_1$ and a loss ratio $c_I/c_&#123;II&#125;$ (the cost
+of a false alarm relative to a missed detection) and the right thing to minimize is
+the <em>Bayes risk</em>
+$\;R(t) = \pi_0\,c_I\,\alpha(t) + \pi_1\,c_&#123;II&#125;\,\beta(t)$.
+Setting $dR/dt = 0$ gives the optimum:
+$\Lambda(x^\ast) = (\pi_0 c_I)/(\pi_1 c_&#123;II&#125;)$ — the optimal Bayes threshold is
+a likelihood-ratio cut at the prior-weighted loss ratio. Frequentist Neyman–Pearson
+and Bayesian decision theory pick out the same rule, with the threshold set by
+either $\alpha$ or by prior+loss.
+</p>
+
+<Figure title="Figure 4 · Bayes risk vs. threshold" canvasId="fig-bayes" width="780" height="380" readoutId="bayes-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#6b4592"></span>$R(t)$</span>
+    <span><span class="swatch" style="background:#111827"></span>current threshold</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>Bayes optimum $t^\ast$</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="bayes-effect" label="effect size μ" valueId="bayes-effect-v" min="0.2" max="3.5" step="0.05" value="1.4" />
+  <ControlRange id="bayes-prior" label="prior π₁" valueId="bayes-prior-v" min="0.05" max="0.95" step="0.01" value="0.5" />
+  <ControlRange id="bayes-loss" label="loss ratio c_I / c_II" valueId="bayes-loss-v" min="0.1" max="10" step="0.05" value="1" />
+  <ControlRange id="bayes-threshold" label="threshold" valueId="bayes-threshold-v" min="-3" max="6" step="0.05" value="1.64" />
+</Fragment>
+</Figure>
+
+<NextCards heading="What next" cards={[
+  { href: "/sufficient-statistics/", tag: "Likelihood", title: "Sufficient Statistics", role: "Neyman–Pearson tests depend on the data only through the likelihood ratio — itself a sufficient statistic for {H₀, H₁}." },
+  { href: "/kl-divergence/", tag: "Divergence", title: "KL Divergence", role: "Stein's lemma: the optimal type-II error decays as exp(−n·D(P₀‖P₁)). KL is the exponent of power." },
+  { href: "/measure-theory/", tag: "Foundations", title: "Measure Theory", role: "The likelihood ratio is a Radon–Nikodym derivative; the rejection region is a measurable set under both hypotheses." },
+  { href: "/modes-of-convergence/", tag: "Asymptotics", title: "Modes of Convergence", role: "Wilks' theorem and the asymptotic null distributions of LR / Wald / score tests are convergence-in-distribution statements." },
+]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<script is:inline src="/math/hypothesis-testing/hypothesis-testing.js"></script>
+</ExplainerLayout>

@@ -1,0 +1,353 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import Legend from "../../components/explainer/Legend.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import PresetButton from "../../components/explainer/PresetButton.astro";
+import Readout from "../../components/explainer/Readout.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+import VizCard from "../../components/explainer/VizCard.astro";
+import VizCardGrid from "../../components/explainer/VizCardGrid.astro";
+import NotationAside from "../../components/explainer/NotationAside.astro";
+---
+
+<ExplainerLayout title="KL Divergence" breadcrumb="KL Divergence" section="information-theory">
+
+<Hero title="KL Divergence" subtitle="A directed measure of the extra cost of using one distribution in place of another." />
+
+<OrientationNote>
+  <p>
+    Most introductions define KL with finite sums or densities. This page starts
+    one level higher, with probability measures, so support mismatch and density
+    ratios are visible from the beginning. The familiar formulas appear as special
+    cases.
+  </p>
+</OrientationNote>
+
+<p>
+The Kullback-Leibler divergence compares two probability measures on the same
+measurable space. If $Q$ is absolutely continuous with respect to $P$, written
+$Q\ll P$, then
+</p>
+
+$$
+\mathrm&#123;KL&#125;[Q\Vert P]
+= \int \log\frac&#123;dQ&#125;&#123;dP&#125;\,dQ
+= \mathbb&#123;E&#125;_Q\!\left[\log\frac&#123;dQ&#125;&#123;dP&#125;\right].
+$$
+
+<p>
+Equivalently, by changing the integrating measure back to $P$,
+$\mathrm&#123;KL&#125;[Q\Vert P]=\int \frac&#123;dQ&#125;&#123;dP&#125;\log\frac&#123;dQ&#125;&#123;dP&#125;\,dP$. When both measures
+have densities $q$ and $p$ with respect to a common base measure, this reduces to the
+familiar formula $\int q(x)\log(q(x)/p(x))\,dx$.
+These are Lebesgue integrals; the compact form integrates $\log(dQ/dP)$ with respect
+to the probability measure $Q$.
+</p>
+
+<p>
+Read KL as an expectation under the left-hand measure: samples are drawn from $Q$,
+and each sample charges the log Radon-Nikodym derivative between what $Q$ expects and
+what $P$ assigned. That is why KL is directed. The distribution on the left decides
+where the comparison spends its attention.
+</p>
+
+<Aside>
+  <strong>One sentence:</strong> $\mathrm&#123;KL&#125;[q\Vert p]$ is the average extra log-cost
+  of pretending the data-generating distribution is $p$ when it is actually $q$.
+</Aside>
+
+<h2>1. The Radon-Nikodym derivative inside KL</h2>
+
+<p>
+The figure below keeps the base space ordinary, so $dQ/dP$ is just the density ratio
+$q(x)/p(x)$. The top panel shows the two probability densities, the middle panel
+shows the Radon-Nikodym derivative, and the bottom panel shows the KL integrand
+$q(x)\log(q(x)/p(x))$. In the fully measure-theoretic formula, the middle curve is
+the object being logged.
+</p>
+
+<Figure title={String.raw`Figure 1 · $\mathrm{KL}[Q\Vert P] = \int \log(dQ/dP)\,dQ$`} canvasId="fig-rn" width="760" height="420" readoutId="fig-rn-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>$Q$ / $q(x)$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>$P$ / $p(x)$</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>$dQ/dP = q/p$</span>
+      <span><span class="swatch" style="background:rgba(107,69,146,0.55)"></span>$q\log(q/p)$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig-rn-mq" label={String.raw`$\mu_Q$`} valueId="fig-rn-mq-v" min="-3" max="3" step="0.05" value="0.8" />
+      <ControlRange id="fig-rn-sq" label={String.raw`$\sigma_Q$`} valueId="fig-rn-sq-v" min="0.3" max="3" step="0.05" value="1.1" />
+      <PresetRow>
+        <button data-fig-rn-preset="match">Match</button>
+        <button data-fig-rn-preset="shift">Mean shift</button>
+        <button data-fig-rn-preset="wide">Wide $Q$</button>
+        <button data-fig-rn-preset="narrow">Narrow $Q$</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+If $Q\not\ll P$, the derivative $dQ/dP$ does not exist as a finite density on all the
+places $Q$ needs it, and $\mathrm&#123;KL&#125;[Q\Vert P]=+\infty$. This is the
+measure-theoretic version of the discrete rule that putting positive $q_i$ where
+$p_i=0$ gives infinite KL.
+</p>
+
+<NotationAside label="Density form">
+  <p>
+    For laws with densities on $\mathbb R$ (Lebesgue) or on a countable space
+    (counting), the same definition reads
+    $\mathrm&#123;KL&#125;[Q \Vert P] = \int q(x)\log(q(x)/p(x))\,dx$ or
+    $\sum_i q_i\log(q_i/p_i)$. The absolute-continuity condition $Q \ll P$
+    becomes "$q_i = 0$ wherever $p_i = 0$" — division-by-zero in the density
+    form is the structural condition in the measure-theoretic form. See the
+    <a href="/math/notation/#kl">notation page</a>.
+  </p>
+</NotationAside>
+
+<h2>2. Direction matters</h2>
+
+<p>
+KL is zero only when the two distributions match, but it is not a distance. Usually
+$\mathrm&#123;KL&#125;[q\Vert p] \neq \mathrm&#123;KL&#125;[p\Vert q]$. The figure below uses Gaussians
+because the exact value is available in closed form, while the lower plot shows the
+pointwise contribution $q(x)\log(q(x)/p(x))$.
+</p>
+
+<Figure title={String.raw`Figure 2 · $\mathrm{KL}[q\Vert p]$ between two Gaussians`} canvasId="fig1" width="760" height="340" readoutId="fig1-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>$q(x)$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>$p(x)$</span>
+      <span><span class="swatch" style="background:rgba(107,69,146,0.4)"></span>integrand</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig1-mq" label={String.raw`$\mu_q$`} valueId="fig1-mq-v" min="-3" max="3" step="0.05" value="0" />
+      <ControlRange id="fig1-sq" label={String.raw`$\sigma_q$`} valueId="fig1-sq-v" min="0.2" max="3" step="0.05" value="1" />
+      <ControlRange id="fig1-mp" label={String.raw`$\mu_p$`} valueId="fig1-mp-v" min="-3" max="3" step="0.05" value="1" />
+      <ControlRange id="fig1-sp" label={String.raw`$\sigma_p$`} valueId="fig1-sp-v" min="0.2" max="3" step="0.05" value="1" />
+      <PresetRow>
+        <button data-fig1-preset="match">Match</button>
+        <button data-fig1-preset="shift">Mean shift</button>
+        <button data-fig1-preset="wide">Wide $p$</button>
+        <button data-fig1-preset="narrow">Narrow $p$</button>
+      </PresetRow>
+      <PresetRow>
+        <button id="fig1-swap">Swap $q \leftrightarrow p$</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>3. The left distribution chooses the bill</h2>
+
+<p>
+The discrete case makes the accounting visible. Each outcome contributes
+$q_i\log(q_i/p_i)$. If $q_i=0$, that outcome contributes nothing, no matter how large
+$p_i$ is. If $q_i>0$ and $p_i=0$, the KL is infinite: $p$ says an event that actually
+happens is impossible.
+</p>
+
+<Figure title="Figure 3 · Per-outcome KL contributions" canvasId="fig2" width="760" height="320" readoutId="fig2-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>$q_i$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>$p_i$</span>
+      <span><span class="swatch" style="background:rgba(107,69,146,0.75)"></span>$q_i\log(q_i/p_i)$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig2-q0" label="$q_1$" valueId="fig2-q0-v" min="0" max="1" step="0.01" value="0.55" />
+      <ControlRange id="fig2-q1" label="$q_2$" valueId="fig2-q1-v" min="0" max="1" step="0.01" value="0.30" />
+      <ControlRange id="fig2-p0" label="$p_1$" valueId="fig2-p0-v" min="0" max="1" step="0.01" value="0.25" />
+      <ControlRange id="fig2-p1" label="$p_2$" valueId="fig2-p1-v" min="0" max="1" step="0.01" value="0.50" />
+      <PresetRow>
+        <button data-fig2-preset="match">Match</button>
+        <button data-fig2-preset="surprise">Bad surprise</button>
+        <button data-fig2-preset="zero-q">Zero in q</button>
+        <button data-fig2-preset="zero-p">Zero in p</button>
+        <button id="fig2-zero-p-one">Shift p₁ to zero</button>
+      </PresetRow>
+      <PresetRow>
+        <button id="fig2-swap">Swap $q \leftrightarrow p$</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>4. Forward KL covers; reverse KL chooses</h2>
+
+<p>
+When a simple distribution approximates a multi-modal target, the direction changes
+the qualitative behavior. Minimizing $\mathrm&#123;KL&#125;[p\Vert q]$ tends to cover all mass
+that $p$ might generate. Minimizing $\mathrm&#123;KL&#125;[q\Vert p]$ tends to place $q$ where
+it can be confident, often inside one mode.
+</p>
+
+<Figure title="Figure 4 · Forward vs. reverse KL on a bimodal target" canvasId="fig3" width="760" height="340" readoutId="fig3-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>target $p(x)$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>single Gaussian $q(x)$</span>
+      <span><span class="swatch" style="background:rgba(107,69,146,0.55)"></span>selected objective</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig3-mq" label={String.raw`$\mu_q$`} valueId="fig3-mq-v" min="-4" max="4" step="0.05" value="-2" />
+      <ControlRange id="fig3-sq" label={String.raw`$\sigma_q$`} valueId="fig3-sq-v" min="0.25" max="4" step="0.05" value="0.8" />
+      <PresetRow>
+        <button data-fig3-preset="reverse-left">Reverse KL: left mode</button>
+        <button data-fig3-preset="reverse-right">Reverse KL: right mode</button>
+        <button data-fig3-preset="forward">Forward KL: cover both</button>
+        <button data-fig3-preset="bad">Bad fit</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 4b · Optimize forward and reverse KL from the same starting q" canvasId="fig3-opt" width="760" height="360" readoutId="fig3-opt-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>bimodal target $p$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>reverse KL path</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>forward KL path</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <button id="fig3-opt-run">Optimize</button>
+        <button id="fig3-opt-reset">Reset</button>
+      </PresetRow>
+      <ControlRange id="fig3-opt-start" label={String.raw`initial $\sigma_q$`} valueId="fig3-opt-start-v" min="0.4" max="3.5" step="0.05" value="1.0" />
+</Fragment>
+</Figure>
+
+<h2 id="local-fisher">5. KL is locally quadratic, and Fisher is the curvature</h2>
+
+<p>
+Globally, KL is asymmetric and unbounded. Locally, it is neither. Expand
+$\mathrm&#123;KL&#125;[p_\theta\Vert p_&#123;\theta+\Delta\theta&#125;]$ in $\Delta\theta$. The score
+$s_\theta = \partial_\theta\log p_\theta$ has mean zero under $p_\theta$, so the
+linear term vanishes; the second-order term is the Fisher information:
+</p>
+
+$$
+\mathrm&#123;KL&#125;\bigl[p_\theta \,\Vert\, p_&#123;\theta+\Delta\theta&#125;\bigr]
+\;\approx\;
+\tfrac&#123;1&#125;&#123;2&#125;\, \Delta\theta^\top I(\theta)\,\Delta\theta.
+$$
+
+<p>
+This is the bridge between this page and
+<a href="/math/fisher-information/#local-fisher">Fisher information</a>: KL's asymmetry
+disappears at second order, and the symmetric quadratic that remains is exactly the
+Fisher metric on the parameter manifold. So statements like "the model is locally
+sensitive to $\theta$" (Fisher information), "nearby parameters are easy to
+distinguish" (KL local quadratic), and "the MLE concentrates at rate $1/(nI)$"
+(Cramér–Rao) are three views of the same curvature.
+</p>
+
+<Aside>
+<strong>Why is KL symmetric to second order?</strong> Because in the expansion
+$\mathrm&#123;KL&#125;[p_\theta\Vert p_&#123;\theta+\Delta\theta&#125;]$ vs
+$\mathrm&#123;KL&#125;[p_&#123;\theta+\Delta\theta&#125;\Vert p_\theta]$, the linear terms differ in sign
+but both vanish (zero-mean score), and the quadratic terms agree
+($\tfrac&#123;1&#125;&#123;2&#125;\Delta\theta^\top I\Delta\theta$ in both directions). Asymmetry is a
+third-order phenomenon.
+</Aside>
+
+<p>
+The figure below makes this concrete on a one-parameter Bernoulli family. Forward and
+reverse KL leave the origin tangent to the same parabola $\tfrac12 I(\theta)\,\Delta\theta^2$;
+shrink the displacement range and all three curves collapse together — KL really is
+locally quadratic. Widen it, or push $\theta$ toward an edge where $I(\theta)$ grows
+large, and the two KL curves peel away from the parabola in opposite directions.
+</p>
+
+<Figure title="Figure 5 · KL versus its quadratic Fisher approximation" canvasId="fig-local-quad" width="760" height="420" readoutId="fig-local-quad-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>forward KL</span>
+      <span><span class="swatch" style="background:#b8412a"></span>reverse KL</span>
+      <span><span class="swatch" style="background:#6b4592"></span>quadratic ½ I(θ) Δθ²</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig-local-quad-theta" label="base point θ" valueId="fig-local-quad-theta-v" min="0.1" max="0.9" step="0.01" value="0.5" />
+      <ControlRange id="fig-local-quad-range" label="displacement range Δθ" valueId="fig-local-quad-range-v" min="0.05" max="0.45" step="0.01" value="0.3" />
+</Fragment>
+</Figure>
+
+<Aside>
+  <strong>In two parameters this is a tangent paraboloid.</strong> The figure above is the one-parameter slice of a more general picture: when $\theta$ is two-dimensional, the KL bowl $D_&#123;\mathrm&#123;KL&#125;&#125;(\theta_0 \,\Vert\, \theta)$ is a surface and its second-order Fisher approximation is a tangent paraboloid. See <a href="/math/information-geometry/#kl-landscape">Information Geometry · Figure 3</a> for an interactive 3D view of both surfaces and how they peel apart toward the boundary.
+</Aside>
+
+<h2>6. KL in Machine Learning: MLE and VI</h2>
+
+<p>
+The direction of KL dictates its use in machine learning algorithms. The choice between
+Forward KL and Reverse KL determines whether we are doing <strong>Maximum Likelihood Estimation (MLE)</strong> or <strong>Variational Inference (VI)</strong>.
+</p>
+
+<h3>Maximum Likelihood Estimation (Forward KL)</h3>
+<p>
+In MLE, we have an unknown true data-generating distribution $P_\text&#123;data&#125;$ and a model family $P_\theta$. We want to find the parameter $\theta$ that makes our model best match the data. This is equivalent to minimizing the Forward KL divergence:
+</p>
+$$
+\min_\theta \mathrm&#123;KL&#125;[P_\text&#123;data&#125; \Vert P_\theta] = \min_\theta \mathbb&#123;E&#125;_&#123;x \sim P_\text&#123;data&#125;&#125; \left[ \log \frac&#123;P_\text&#123;data&#125;(x)&#125;&#123;P_\theta(x)&#125; \right]
+$$
+<p>
+Because $P_\text&#123;data&#125;$ is fixed, we can ignore the $\mathbb&#123;E&#125;[\log P_\text&#123;data&#125;]$ term (which is just the negative entropy of the data). This leaves us with:
+</p>
+$$
+\min_\theta -\mathbb&#123;E&#125;_&#123;x \sim P_\text&#123;data&#125;&#125; [\log P_\theta(x)]
+$$
+<p>
+This is exactly the objective of Maximum Likelihood: maximize the expected log-likelihood of the data under the model. Forward KL forces the model $P_\theta$ to "cover" all the modes of $P_\text&#123;data&#125;$ because if the model assigns near-zero probability to any region where the data has mass, the KL penalty explodes.
+</p>
+
+<h3>Variational Inference (Reverse KL)</h3>
+<p>
+In Bayesian inference, we want to approximate a complex posterior $P(z|x)$ with a simpler, tractable distribution $Q_\phi(z)$. Here, we minimize the Reverse KL divergence:
+</p>
+$$
+\min_\phi \mathrm&#123;KL&#125;[Q_\phi(z) \Vert P(z|x)] = \min_\phi \mathbb&#123;E&#125;_&#123;z \sim Q_\phi&#125; \left[ \log \frac&#123;Q_\phi(z)&#125;&#123;P(z|x)&#125; \right]
+$$
+<p>
+This objective is tractable because we take the expectation over our simple approximation $Q_\phi$, from which we can easily draw samples. Reverse KL encourages $Q_\phi$ to "seek" a single mode of the true posterior. If $Q_\phi$ puts mass where $P(z|x)$ is near zero, it pays a huge penalty. Thus, $Q_\phi$ prefers to stay safely within areas of high probability, often underestimating the true variance. This is the foundation of <a href="/math/variational-inference/">Variational Inference</a>.
+</p>
+
+<h2>7. How KL relates to nearby concepts</h2>
+
+<div class="compare">
+  <a href="/math/entropy-mutual-information/#entropy"><strong>Entropy</strong>Average surprise under one distribution: $\mathrm&#123;H&#125;[q]=-\mathbb&#123;E&#125;_q[\log q]$.</a>
+  <div><strong>Cross-entropy</strong>Average coding cost when events come from $q$ but are coded with $p$: $\mathrm&#123;H&#125;(q,p)=-\mathbb&#123;E&#125;_q[\log p]=\mathrm&#123;H&#125;[q]+\mathrm&#123;KL&#125;[q\Vert p]$.</div>
+  <a href="/math/measure-theory/#rn-derivative"><strong>Radon-Nikodym</strong>The measure-theoretic ratio: $dQ/dP$, whose log is averaged by KL.</a>
+  <a href="/math/variational-inference/"><strong>ELBO / free energy</strong>A tractable objective whose gap to log evidence is a KL term.</a>
+</div>
+
+<p>
+Use KL when the question is which distribution is responsible for the samples and
+which approximation is being charged. Support errors that KL refuses to ignore are
+the other reason to reach for it. For the underlying measure machinery, see
+<a href="/math/measure-theory/#rn-derivative">Radon-Nikodym derivatives</a>.
+In variational inference, this directed gap becomes the optimization target; see
+<a href="/math/variational-inference/">Free Energy &amp; Variational Inference</a>.
+</p>
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Related:
+  <a href="/math/entropy-mutual-information/">Entropy &amp; Mutual Information</a>,
+  <a href="/math/measure-theory/">Measure Theory &amp; Random Variables</a>,
+  <a href="/math/fisher-information/">Uninformative Priors, Fisher Information &amp; MLE</a>,
+  <a href="/math/variational-inference/">Free Energy &amp; Variational Inference</a>.
+</div>
+
+  <script is:inline src="/math/kl-divergence/kl.js"></script>
+</ExplainerLayout>

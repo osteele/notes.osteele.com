@@ -1,0 +1,1465 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+import NotationAside from "../../components/explainer/NotationAside.astro";
+---
+
+<ExplainerLayout title="Sufficient Statistics" breadcrumb="Sufficient Statistics" section="probability-and-statistics">
+<Hero title="Sufficient Statistics" subtitle="When a statistic preserves all information about the parameter under a model." />
+
+<p>
+A <strong>sufficient statistic</strong> $T(X)$ for a parameter $\theta$
+is a function of the sample that preserves all information about $\theta$
+under the model. Once you know $T(X)$, the remaining variation in the data
+does not depend on $\theta$.
+</p>
+
+<Aside>
+  $T(X)$ is sufficient for $\theta$ if the
+  conditional distribution $p(X \mid T(X), \theta)$ doesn't depend on $\theta$.
+  The parameter has finished doing its job by the time you reach $T$.
+</Aside>
+
+<Aside>
+  There is also a Bayesian version: $T$ is sufficient iff
+  $p(\theta \mid X) = p(\theta \mid T(X))$ for every prior. Posterior inference
+  from the raw sample equals posterior inference from the summary.
+  Conditional independence ($X \perp \theta \mid T$), Fisher–Neyman
+  factorization, and posterior equivalence all pick out the same maps $T$.
+</Aside>
+
+<h2>1. The compression hook</h2>
+
+<p>
+Twenty samples from $\mathcal&#123;N&#125;(\theta, 1)$ on the left, just the
+sample mean $\bar x$ on the right. Two very different-looking pictures.
+The <em>likelihood</em> curves they produce (the only thing inference about
+$\theta$ depends on) are identical, up to a constant.
+</p>
+
+<Figure title="Figure 1 · The same likelihood from very different data" canvasId="fig-hook" width="760" height="380" readoutId="hook-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>raw samples</span>
+    <span><span class="swatch" style="background:#b8412a"></span>sample mean $\bar x$ (sufficient summary)</span>
+    <span><span class="swatch" style="background:#6b4592"></span>likelihood from raw data</span>
+    <span><span class="swatch" style="background:rgba(184,65,42,0.6)"></span>likelihood from $\bar x$ alone</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="hook-theta" label={String.raw`true $\theta$`} valueId="hook-theta-v" min="-2" max="2" step="0.05" value="0.6" />
+  <ControlRange id="hook-n" label="sample size $n$" valueId="hook-n-v" min="3" max="60" step="1" value="20" />
+  <PresetRow>
+    <button id="hook-resample">Resample</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<script is:inline>
+(() => {
+  const canvas = document.getElementById("fig-hook");
+  const thetaIn = document.getElementById("hook-theta");
+  const nIn = document.getElementById("hook-n");
+  const thetaV = document.getElementById("hook-theta-v");
+  const nV = document.getElementById("hook-n-v");
+  const readout = document.getElementById("hook-readout");
+  const resample = document.getElementById("hook-resample");
+
+  let seed = 1;
+  function rng() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  function randn() { const u = Math.max(rng(), 1e-12), v = rng(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+  let samples = [];
+  function regen() {
+    const n = +nIn.value, theta = +thetaIn.value;
+    samples = []; for (let i = 0; i < n; i++) samples.push(theta + randn());
+  }
+
+  function setupCanvas(c) {
+    const ratio = window.devicePixelRatio || 1;
+    const iw = +c.getAttribute("width"), ih = +c.getAttribute("height");
+    c.style.width = "100%"; c.style.height = `${c.getBoundingClientRect().width * ih / iw}px`;
+    const r = c.getBoundingClientRect();
+    c.width = r.width * ratio; c.height = r.height * ratio;
+    const ctx = c.getContext("2d"); ctx.scale(ratio, ratio);
+    return { ctx, w: r.width, h: r.height };
+  }
+
+  function draw() {
+    const { ctx, w, h } = setupCanvas(canvas);
+    const theta = +thetaIn.value, n = +nIn.value;
+    thetaV.textContent = theta.toFixed(2); nV.textContent = n;
+    if (samples.length !== n) regen();
+    const xbar = samples.reduce((a, b) => a + b, 0) / n;
+
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    const padL = 50, padR = 20, padT = 18, padB = 38, gap = 16;
+    const colW = (w - padL - padR - gap) / 2;
+    const topH = (h - padT - padB) * 0.42, botH = (h - padT - padB) * 0.5;
+    const topY0 = padT, botY0 = padT + topH + ((h - padT - padB) * 0.08);
+    const xMin = -3.2, xMax = 3.2;
+
+    function xS(x, x0, x1, c0, cw) { return c0 + ((x - x0) / (x1 - x0)) * cw; }
+
+    // top-left: raw samples
+    ctx.strokeStyle = "#e3ddd0"; ctx.lineWidth = 1;
+    [0, 1].forEach(j => {
+      const c0 = padL + j * (colW + gap);
+      ctx.strokeRect(c0, topY0, colW, topH);
+      ctx.beginPath(); ctx.moveTo(c0, topY0 + topH * 0.55); ctx.lineTo(c0 + colW, topY0 + topH * 0.55); ctx.stroke();
+      // x-axis ticks
+      ctx.fillStyle = "#8892a3"; ctx.font = "10px -apple-system, sans-serif"; ctx.textAlign = "center";
+      [-3, -2, -1, 0, 1, 2, 3].forEach(t => {
+        const px = xS(t, xMin, xMax, c0, colW);
+        ctx.fillText(t.toString(), px, topY0 + topH * 0.55 + 13);
+      });
+      // theta tick
+      const ptheta = xS(theta, xMin, xMax, c0, colW);
+      ctx.strokeStyle = "#94a3b8"; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(ptheta, topY0); ctx.lineTo(ptheta, topY0 + topH * 0.55); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#475569"; ctx.fillText("θ", ptheta, topY0 + 10);
+    });
+
+    // left panel: scatter of samples (jittered y)
+    const c0L = padL;
+    samples.forEach((x, i) => {
+      const px = xS(x, xMin, xMax, c0L, colW);
+      const py = topY0 + 8 + ((i % 5) * 5) + Math.sin(i) * 2;
+      ctx.fillStyle = "rgba(31,74,140,0.7)";
+      ctx.beginPath(); ctx.arc(px, py, 3.2, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.fillStyle = "#1f4a8c"; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "left";
+    ctx.fillText(`n = ${n} samples`, c0L + 6, topY0 + topH * 0.55 - 6);
+
+    // right panel: just xbar
+    const c0R = padL + colW + gap;
+    const pxbar = xS(xbar, xMin, xMax, c0R, colW);
+    ctx.fillStyle = "#b8412a";
+    ctx.beginPath(); ctx.arc(pxbar, topY0 + topH * 0.35, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#b8412a"; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "left";
+    ctx.fillText(`x̄ = ${xbar.toFixed(3)}`, c0R + 6, topY0 + topH * 0.55 - 6);
+
+    // bottom: likelihood curves, both panels share x axis (θ)
+    const tMin = -2.5, tMax = 2.5;
+    const c0B = padL + 30, cwB = w - padL - padR - 30;
+    ctx.strokeStyle = "#e3ddd0"; ctx.strokeRect(c0B, botY0, cwB, botH);
+    // x ticks
+    ctx.fillStyle = "#8892a3"; ctx.textAlign = "center"; ctx.font = "10px -apple-system, sans-serif";
+    [-2, -1, 0, 1, 2].forEach(t => {
+      const px = c0B + ((t - tMin) / (tMax - tMin)) * cwB;
+      ctx.beginPath(); ctx.moveTo(px, botY0 + botH - 4); ctx.lineTo(px, botY0 + botH); ctx.stroke();
+      ctx.fillText(t.toString(), px, botY0 + botH + 12);
+    });
+    ctx.fillStyle = "#475569"; ctx.fillText("parameter θ", c0B + cwB / 2, botY0 + botH + 26);
+
+    // likelihood from full data: ∝ exp(-n(x̄ - θ)²/2)
+    // likelihood from x̄ alone (using known dist of x̄): same kernel
+    const logLikRaw = (t) => -0.5 * samples.reduce((acc, x) => acc + (x - t) * (x - t), 0);
+    const logLikSummary = (t) => -0.5 * n * (xbar - t) * (xbar - t);
+
+    // normalize both to peak at 1 for display
+    let maxR = -Infinity, maxS = -Infinity;
+    for (let i = 0; i <= 200; i++) {
+      const t = tMin + i / 200 * (tMax - tMin);
+      maxR = Math.max(maxR, logLikRaw(t)); maxS = Math.max(maxS, logLikSummary(t));
+    }
+    function plot(fn, maxV, color, lw, dash) {
+      ctx.strokeStyle = color; ctx.lineWidth = lw; if (dash) ctx.setLineDash(dash);
+      ctx.beginPath();
+      for (let i = 0; i <= 300; i++) {
+        const t = tMin + i / 300 * (tMax - tMin);
+        const y = Math.exp(fn(t) - maxV);
+        const px = c0B + (i / 300) * cwB;
+        const py = botY0 + botH - 8 - y * (botH - 18);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+    plot(logLikRaw, maxR, "#6b4592", 3, null);
+    plot(logLikSummary, maxS, "rgba(184,65,42,0.85)", 2, [6, 4]);
+
+    // mark θ-hat = x̄ at peak
+    const ptheta_hat = c0B + ((xbar - tMin) / (tMax - tMin)) * cwB;
+    ctx.strokeStyle = "#b8412a"; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(ptheta_hat, botY0 + 6); ctx.lineTo(ptheta_hat, botY0 + botH - 8); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = "#0f172a"; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "left";
+    ctx.fillText("likelihood L(θ): identical from both panels", c0B + 6, botY0 + 14);
+
+    const fisherInfo = n; // for σ=1
+    readout.innerHTML =
+      `<div class="row"><span class="lbl">x̄ (sufficient for μ)</span><span>${xbar.toFixed(3)}</span></div>` +
+      `<div class="row"><span class="lbl">data discarded</span><span>${n - 1} dimensions of residuals</span></div>` +
+      `<div class="row"><span class="lbl">information kept</span><span>nI(θ) = ${fisherInfo.toFixed(1)} (100%)</span></div>`;
+  }
+
+  [thetaIn, nIn].forEach(i => i.addEventListener("input", () => { regen(); draw(); }));
+  resample.addEventListener("click", () => { regen(); draw(); });
+  window.addEventListener("resize", draw);
+  regen(); draw();
+})();
+</script>
+
+<p>
+The blue and dashed-red curves don't drift apart as you move the slider, because
+the full sample and the sample mean carry the same information about $\theta$.
+You can throw away $n-1$ residual dimensions and the likelihood doesn't notice.
+The rest of the page is about <em>why</em> that works, and when it doesn't.
+</p>
+
+<h2>2. The Fisher–Neyman factorization criterion</h2>
+
+<p>
+The operational test for sufficiency: $T$ is sufficient for $\theta$ if and
+only if the joint density factors as
+$$p(x_&#123;1:n&#125; \mid \theta) \;=\; g\bigl(T(x); \theta\bigr) \cdot h(x).$$
+The $\theta$-dependent factor $g$ talks to the data only through $T(x)$; the
+residual $h(x)$ talks about the data but knows nothing about $\theta$.
+</p>
+
+<NotationAside label="Doob–Dynkin form">
+  <p>
+    Without densities, the same definition reads: $T$ is sufficient for
+    $\theta$ if the conditional distribution
+    $\pi(X \mid T(X) = t)$ does not depend on $\theta$, or equivalently if
+    $\theta$ and $X$ are conditionally independent given $\sigma(T(X))$. The
+    factorization above is the density-form equivalent, useful when $X$ has
+    a density, indispensable when it does not (mixed laws, point processes,
+    laws on infinite-dimensional spaces). See the
+    <a href="/math/notation/#sufficient">notation page</a>.
+  </p>
+</NotationAside>
+
+<Figure title="Figure 2 · Color-coded factorization for several families" canvasId="fig-fn" width="760" height="280" readoutId="fn-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#b8412a"></span>$g(T(x); \theta)$: depends on $\theta$</span>
+    <span><span class="swatch" style="background:#94a3b8"></span>$h(x)$: $\theta$-free residual</span>
+    <span><span class="swatch" style="background:#d4690a"></span>$\theta$-dependence that won't factor through any $T$</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlSelect id="fn-family" label="family" valueId="fn-family-v" options={[
+    { value: "bernoulli", label: "Bernoulli(θ)", selected: true },
+    { value: "normal-mean", label: "Normal(μ, 1)" },
+    { value: "normal-both", label: "Normal(μ, σ²)" },
+    { value: "poisson", label: "Poisson(λ)" },
+    { value: "uniform", label: "Uniform(0, θ)" },
+    { value: "exponential", label: "Exponential(λ)" },
+    { value: "cauchy", label: "Cauchy(θ, 1)" },
+  ]} />
+  <ControlRange id="fn-theta" label="parameter" valueId="fn-theta-v" min="0.1" max="3" step="0.02" value="1" />
+</Fragment>
+</Figure>
+
+<div id="fn-display" style="margin: -8px 0 18px; padding: 18px 22px; background:#fff; border:1px solid var(--rule); border-radius:6px; font-family: 'SF Mono', Consolas, monospace; line-height: 2.1; min-height: 100px;"></div>
+
+<script is:inline>
+(() => {
+  const familyIn = document.getElementById("fn-family");
+  const thetaIn = document.getElementById("fn-theta");
+  const familyV = document.getElementById("fn-family-v");
+  const thetaV = document.getElementById("fn-theta-v");
+  const display = document.getElementById("fn-display");
+  const canvas = document.getElementById("fig-fn");
+  const readout = document.getElementById("fn-readout");
+
+  const FAMILIES = {
+    "bernoulli": {
+      label: "Bernoulli(θ)",
+      sufficient: "T(x) = Σxᵢ",
+      formula: (theta) => `
+        <div style="font-size:15px; color:#1f2733">
+          p(x | θ) = <span style="color:#b8412a; font-weight:700">θ<sup>Σxᵢ</sup>(1−θ)<sup>n−Σxᵢ</sup></span>
+          <span style="color:#94a3b8"> · 1</span>
+        </div>
+        <div style="font-size:12px; color:#5a6577; margin-top:8px">
+          g(T; θ) = θ<sup>T</sup>(1−θ)<sup>n−T</sup>, &nbsp; h(x) = 1, &nbsp; T = Σxᵢ &nbsp;✓ sufficient
+        </div>`,
+      gOfTheta: (theta, t, n) => Math.pow(theta, t) * Math.pow(1 - theta, n - t),
+      thetaRange: [0.02, 0.98], tDefault: 12, nDefault: 20, isSufficient: true,
+    },
+    "normal-mean": {
+      label: "Normal(μ, 1)",
+      sufficient: "T(x) = x̄ = (1/n)Σxᵢ",
+      formula: (theta) => `
+        <div style="font-size:15px; color:#1f2733">
+          p(x | μ) = <span style="color:#b8412a; font-weight:700">(2π)<sup>−n/2</sup> exp[−n(x̄ − μ)²/2]</span>
+          <span style="color:#94a3b8"> · exp[−Σ(xᵢ − x̄)²/2]</span>
+        </div>
+        <div style="font-size:12px; color:#5a6577; margin-top:8px">
+          g(T; μ) = exp[−n(T − μ)²/2], &nbsp; h(x) = exp[−Σ(xᵢ − x̄)²/2], &nbsp; T = x̄ &nbsp;✓ sufficient
+        </div>`,
+      gOfTheta: (mu) => Math.exp(-10 * (0.5 - mu) * (0.5 - mu)),
+      thetaRange: [-2, 2], thetaDefault: 0.5, isSufficient: true,
+    },
+    "normal-both": {
+      label: "Normal(μ, σ²)",
+      sufficient: "T(x) = (Σxᵢ, Σxᵢ²), 2-dimensional",
+      formula: (theta) => `
+        <div style="font-size:15px; color:#1f2733">
+          p(x | μ, σ²) = <span style="color:#b8412a; font-weight:700">(2πσ²)<sup>−n/2</sup> exp[−(Σxᵢ² − 2μ·Σxᵢ + nμ²)/(2σ²)]</span>
+          <span style="color:#94a3b8"> · 1</span>
+        </div>
+        <div style="font-size:12px; color:#5a6577; margin-top:8px">
+          T = (Σxᵢ, Σxᵢ²): both moments needed when σ² is also unknown &nbsp;✓ sufficient
+        </div>`,
+      gOfTheta: (theta) => Math.exp(-5 * (theta - 1) * (theta - 1)) / theta,
+      thetaRange: [0.3, 3], thetaDefault: 1, isSufficient: true,
+    },
+    "poisson": {
+      label: "Poisson(λ)",
+      sufficient: "T(x) = Σxᵢ",
+      formula: (theta) => `
+        <div style="font-size:15px; color:#1f2733">
+          p(x | λ) = <span style="color:#b8412a; font-weight:700">λ<sup>Σxᵢ</sup> e<sup>−nλ</sup></span>
+          <span style="color:#94a3b8"> · (Πxᵢ!)<sup>−1</sup></span>
+        </div>
+        <div style="font-size:12px; color:#5a6577; margin-top:8px">
+          g(T; λ) = λ<sup>T</sup>e<sup>−nλ</sup>, &nbsp; T = Σxᵢ &nbsp;✓ sufficient
+        </div>`,
+      gOfTheta: (lam, t, n) => Math.pow(lam, t) * Math.exp(-n * lam),
+      thetaRange: [0.1, 5], tDefault: 14, nDefault: 10, isSufficient: true,
+    },
+    "uniform": {
+      label: "Uniform(0, θ)",
+      sufficient: "T(x) = max(xᵢ)",
+      formula: (theta) => `
+        <div style="font-size:15px; color:#1f2733">
+          p(x | θ) = <span style="color:#b8412a; font-weight:700">θ<sup>−n</sup> · 𝟙[max(xᵢ) ≤ θ]</span>
+          <span style="color:#94a3b8"> · 𝟙[min(xᵢ) ≥ 0]</span>
+        </div>
+        <div style="font-size:12px; color:#5a6577; margin-top:8px">
+          g(T; θ) = θ<sup>−n</sup>·𝟙[T ≤ θ], &nbsp; T = max(xᵢ) &nbsp;✓ sufficient (note: support depends on θ)
+        </div>`,
+      gOfTheta: (theta, t, n) => (t <= theta ? Math.pow(theta, -n) : 0),
+      thetaRange: [0.5, 3], tDefault: 0.85, nDefault: 10, isSufficient: true,
+    },
+    "exponential": {
+      label: "Exponential(λ)",
+      sufficient: "T(x) = Σxᵢ",
+      formula: (theta) => `
+        <div style="font-size:15px; color:#1f2733">
+          p(x | λ) = <span style="color:#b8412a; font-weight:700">λ<sup>n</sup> exp[−λ Σxᵢ]</span>
+          <span style="color:#94a3b8"> · 𝟙[xᵢ ≥ 0]</span>
+        </div>
+        <div style="font-size:12px; color:#5a6577; margin-top:8px">
+          g(T; λ) = λ<sup>n</sup>e<sup>−λT</sup>, &nbsp; T = Σxᵢ &nbsp;✓ sufficient
+        </div>`,
+      gOfTheta: (lam, t, n) => Math.pow(lam, n) * Math.exp(-lam * t),
+      thetaRange: [0.2, 3], tDefault: 6, nDefault: 5, isSufficient: true,
+    },
+    "cauchy": {
+      label: "Cauchy(θ, 1)",
+      sufficient: "no finite-dimensional T exists",
+      formula: (theta) => `
+        <div style="font-size:15px; color:#1f2733">
+          p(x | θ) = <span style="color:#d4690a; font-weight:700">π<sup>−n</sup> Π<sub>i</sub> [1 + (xᵢ − θ)²]<sup>−1</sup></span>
+        </div>
+        <div style="font-size:12px; color:#5a6577; margin-top:8px">
+          The θ-dependence is woven through every factor; there is no way to push it through a single summary.
+          The order statistic (x<sub>(1)</sub>, …, x<sub>(n)</sub>) is sufficient but no smaller statistic is. &nbsp;✗ no compression
+        </div>`,
+      gOfTheta: (theta, t) => 1 / (1 + Math.pow(t - theta, 2)),
+      thetaRange: [-2, 2], tDefault: 0.5, nDefault: 1, isSufficient: false,
+    },
+  };
+
+  function setup(c) {
+    const ratio = window.devicePixelRatio || 1;
+    const iw = +c.getAttribute("width"), ih = +c.getAttribute("height");
+    c.style.width = "100%"; c.style.height = `${c.getBoundingClientRect().width * ih / iw}px`;
+    const r = c.getBoundingClientRect();
+    c.width = r.width * ratio; c.height = r.height * ratio;
+    const ctx = c.getContext("2d"); ctx.scale(ratio, ratio);
+    return { ctx, w: r.width, h: r.height };
+  }
+
+  function draw() {
+    const family = FAMILIES[familyIn.value];
+    familyV.textContent = family.label;
+    const theta = +thetaIn.value;
+    thetaV.textContent = theta.toFixed(2);
+
+    display.innerHTML = family.formula(theta);
+
+    const { ctx, w, h } = setup(canvas);
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    const padL = 60, padR = 22, padT = 26, padB = 36;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+    ctx.strokeStyle = "#e3ddd0"; ctx.strokeRect(padL, padT, plotW, plotH);
+    ctx.fillStyle = "#475569"; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("g(T̂ ; θ) as a function of θ: the θ-channel of the joint density", padL + plotW / 2, padT - 10);
+
+    // sample g over thetaRange
+    const [tMin, tMax] = family.thetaRange;
+    const t = family.tDefault, n = family.nDefault;
+    let vals = [];
+    for (let i = 0; i <= 200; i++) {
+      const th = tMin + i / 200 * (tMax - tMin);
+      vals.push(family.gOfTheta(th, t, n));
+    }
+    const mx = Math.max(...vals.filter(v => isFinite(v) && !isNaN(v))) || 1;
+    ctx.strokeStyle = family.isSufficient ? "#b8412a" : "#d4690a";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    vals.forEach((v, i) => {
+      const px = padL + (i / 200) * plotW;
+      const y = (v / mx);
+      const py = padT + plotH - 6 - y * (plotH - 18);
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+
+    // ticks
+    ctx.fillStyle = "#8892a3"; ctx.textAlign = "center"; ctx.font = "10px -apple-system, sans-serif";
+    for (let k = 0; k <= 4; k++) {
+      const v = tMin + k / 4 * (tMax - tMin);
+      const px = padL + k / 4 * plotW;
+      ctx.fillText(v.toFixed(2), px, padT + plotH + 14);
+    }
+
+    // current θ marker
+    const pxTheta = padL + ((theta - tMin) / (tMax - tMin)) * plotW;
+    ctx.strokeStyle = "#0f172a"; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(pxTheta, padT); ctx.lineTo(pxTheta, padT + plotH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#0f172a"; ctx.textAlign = "left"; ctx.font = "11px -apple-system, sans-serif";
+    ctx.fillText(`θ = ${theta.toFixed(2)}`, pxTheta + 6, padT + 14);
+
+    readout.innerHTML = family.isSufficient
+      ? `<div class="row"><span class="lbl">sufficient statistic</span><span>${family.sufficient}</span></div>` +
+        `<div class="row"><span class="lbl">factorization</span><span>g(T; θ) · h(x); clean split</span></div>`
+      : `<div class="row"><span class="lbl">finite sufficient statistic</span><span style="color:#d4690a">none</span></div>` +
+        `<div class="row"><span class="lbl">factorization</span><span style="color:#d4690a">no way to push θ through any single summary</span></div>`;
+  }
+
+  [familyIn, thetaIn].forEach(i => i.addEventListener("input", draw));
+  window.addEventListener("resize", draw);
+  draw();
+})();
+</script>
+
+<p>
+For most named families, $T$ pops out cleanly. For Cauchy(θ, 1) (a location
+family with heavy tails) there is no $g$/$h$ split at all. The order statistic
+is sufficient, but it has the same dimension as the data: no compression. That
+is not bad luck. §7 explains why.
+</p>
+
+<h2>3. The fiber picture</h2>
+
+<p>
+Sufficiency has a geometric content. Each value of
+$T$ defines a <strong>fiber</strong> in sample space: the set of samples that
+share that $T$-value. Sufficiency says: <em>along each fiber, the conditional
+density is the same shape regardless of $\theta$</em>. Moving $\theta$ slides
+the cloud of probability mass from fiber to fiber, but never reshapes any one
+fiber.
+</p>
+
+<p>
+The discrete version is easy to see: Bernoulli samples $(1,0,1,1,0)$ and
+$(0,1,1,0,1)$ both have $T = \sum x_i = 3$. Their likelihoods are
+identical ($\theta^3(1-\theta)^2$ either way), so for inference about $\theta$
+they're indistinguishable. Together with $\binom&#123;5&#125;&#123;3&#125; - 2 = 8$ other length-5
+sequences with three 1s, they form one fiber: the equivalence class of all
+samples that produce the same likelihood curve. The statistic $T$ is the label
+on that class. The figure below shows the continuous analogue.
+</p>
+
+<Figure title="Figure 3 · Two samples, level sets of T = x₁ + x₂, and the θ-free conditional" canvasId="fig-fiber" width="760" height="420" readoutId="fiber-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:rgba(31,74,140,0.5)"></span>samples (x₁, x₂)</span>
+    <span><span class="swatch" style="background:#94a3b8"></span>fibers: x₁ + x₂ = const</span>
+    <span><span class="swatch" style="background:#b8412a"></span>highlighted fiber</span>
+    <span><span class="swatch" style="background:#6b4592"></span>conditional density of (x₁−x₂)/√2 (θ-free)</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fiber-theta" label={String.raw`$\theta$ (true mean)`} valueId="fiber-theta-v" min="-2" max="2" step="0.05" value="0.5" />
+  <ControlRange id="fiber-fiber" label="highlighted fiber $T = c$" valueId="fiber-fiber-v" min="-3" max="3" step="0.1" value="1" />
+</Fragment>
+</Figure>
+
+<script is:inline>
+(() => {
+  const canvas = document.getElementById("fig-fiber");
+  const thetaIn = document.getElementById("fiber-theta");
+  const fiberIn = document.getElementById("fiber-fiber");
+  const thetaV = document.getElementById("fiber-theta-v");
+  const fiberV = document.getElementById("fiber-fiber-v");
+  const readout = document.getElementById("fiber-readout");
+
+  let seed = 7;
+  function rng() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  function randn() { const u = Math.max(rng(), 1e-12), v = rng(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+  function setup(c) {
+    const ratio = window.devicePixelRatio || 1;
+    const iw = +c.getAttribute("width"), ih = +c.getAttribute("height");
+    c.style.width = "100%"; c.style.height = `${c.getBoundingClientRect().width * ih / iw}px`;
+    const r = c.getBoundingClientRect();
+    c.width = r.width * ratio; c.height = r.height * ratio;
+    const ctx = c.getContext("2d"); ctx.scale(ratio, ratio);
+    return { ctx, w: r.width, h: r.height };
+  }
+
+  function draw() {
+    const { ctx, w, h } = setup(canvas);
+    const theta = +thetaIn.value, fiberC = +fiberIn.value;
+    thetaV.textContent = theta.toFixed(2); fiberV.textContent = fiberC.toFixed(2);
+
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    const padL = 50, padR = 20, padT = 24, padB = 40, gap = 24;
+    const plotW = (w - padL - padR - gap) * 0.68, plotH = h - padT - padB;
+    const stripW = (w - padL - padR - gap) * 0.32;
+    const xMin = -4, xMax = 4;
+    const xS = (x) => padL + ((x - xMin) / (xMax - xMin)) * plotW;
+    const yS = (x) => padT + plotH - ((x - xMin) / (xMax - xMin)) * plotH;
+
+    // axes box
+    ctx.strokeStyle = "#e3ddd0"; ctx.strokeRect(padL, padT, plotW, plotH);
+    // gridlines + ticks
+    ctx.fillStyle = "#8892a3"; ctx.font = "10px -apple-system, sans-serif"; ctx.textAlign = "center";
+    [-3, -2, -1, 0, 1, 2, 3].forEach(t => {
+      const px = xS(t), py = yS(t);
+      ctx.strokeStyle = "#f1ede2"; ctx.beginPath(); ctx.moveTo(px, padT); ctx.lineTo(px, padT + plotH); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, py); ctx.lineTo(padL + plotW, py); ctx.stroke();
+      ctx.fillText(t.toString(), px, padT + plotH + 12);
+      ctx.textAlign = "right"; ctx.fillText(t.toString(), padL - 4, py + 3); ctx.textAlign = "center";
+    });
+    ctx.fillStyle = "#475569"; ctx.font = "11px -apple-system, sans-serif";
+    ctx.fillText("x₁", padL + plotW / 2, padT + plotH + 26);
+    ctx.save(); ctx.translate(padL - 28, padT + plotH / 2); ctx.rotate(-Math.PI / 2);
+    ctx.fillText("x₂", 0, 0); ctx.restore();
+
+    // fibers: lines x1 + x2 = c
+    ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1;
+    for (let c = -6; c <= 6; c += 0.5) {
+      ctx.beginPath();
+      // x1 from xMin to xMax, x2 = c - x1
+      const x1a = xMin, x2a = c - xMin;
+      const x1b = xMax, x2b = c - xMax;
+      // clip to plot box
+      const pts = [];
+      [[x1a, x2a], [x1b, x2b]].forEach(([x, y]) => {
+        if (y >= xMin && y <= xMax) pts.push([x, y]);
+      });
+      // also check intersections with x2 = xMin / xMax
+      [[c - xMin, xMin], [c - xMax, xMax]].forEach(([x, y]) => {
+        if (x >= xMin && x <= xMax && pts.length < 2) pts.push([x, y]);
+      });
+      if (pts.length >= 2) {
+        ctx.moveTo(xS(pts[0][0]), yS(pts[0][1]));
+        ctx.lineTo(xS(pts[1][0]), yS(pts[1][1]));
+        ctx.stroke();
+      }
+    }
+
+    // samples
+    seed = 7;
+    const n = 280;
+    const pts = [];
+    for (let i = 0; i < n; i++) pts.push([theta + randn(), theta + randn()]);
+    pts.forEach(([x1, x2]) => {
+      const px = xS(x1), py = yS(x2);
+      if (px < padL || px > padL + plotW || py < padT || py > padT + plotH) return;
+      ctx.fillStyle = "rgba(31,74,140,0.45)";
+      ctx.beginPath(); ctx.arc(px, py, 2.4, 0, Math.PI * 2); ctx.fill();
+    });
+
+    // highlighted fiber x1+x2 = fiberC
+    ctx.strokeStyle = "#b8412a"; ctx.lineWidth = 2.6;
+    const fpts = [];
+    [[xMin, fiberC - xMin], [xMax, fiberC - xMax]].forEach(([x, y]) => {
+      if (y >= xMin && y <= xMax) fpts.push([x, y]);
+    });
+    [[fiberC - xMin, xMin], [fiberC - xMax, xMax]].forEach(([x, y]) => {
+      if (x >= xMin && x <= xMax && fpts.length < 2) fpts.push([x, y]);
+    });
+    if (fpts.length >= 2) {
+      ctx.beginPath();
+      ctx.moveTo(xS(fpts[0][0]), yS(fpts[0][1]));
+      ctx.lineTo(xS(fpts[1][0]), yS(fpts[1][1]));
+      ctx.stroke();
+    }
+    ctx.fillStyle = "#b8412a"; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "left";
+    if (fpts.length >= 2) {
+      const mx = (xS(fpts[0][0]) + xS(fpts[1][0])) / 2;
+      const my = (yS(fpts[0][1]) + yS(fpts[1][1])) / 2;
+      ctx.fillText(`T = ${fiberC.toFixed(2)}`, mx + 10, my - 8);
+    }
+
+    // θ mean point
+    const ptx = xS(theta), pty = yS(theta);
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath(); ctx.arc(ptx, pty, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#0f172a"; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.arc(ptx, pty, 28, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(ptx, pty, 56, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillText(`(θ, θ)`, ptx + 6, pty - 6);
+
+    // right strip: density of (x1 - x2)/√2 conditional on T = fiberC
+    // this is N(0, 1) regardless of θ — that's the punchline
+    const sX = padL + plotW + gap;
+    ctx.strokeStyle = "#e3ddd0"; ctx.strokeRect(sX, padT, stripW, plotH);
+    ctx.fillStyle = "#475569"; ctx.font = "10px -apple-system, sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("conditional density along fiber:", sX + stripW / 2, padT - 12);
+    ctx.fillText("p((x₁−x₂)/√2 | T) = N(0, 1)", sX + stripW / 2, padT - 2);
+
+    // y-axis: u = (x1-x2)/√2 from -3 to 3 (vertical)
+    const uMin = -3.5, uMax = 3.5;
+    ctx.strokeStyle = "#6b4592"; ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    for (let i = 0; i <= 100; i++) {
+      const u = uMin + i / 100 * (uMax - uMin);
+      const p = Math.exp(-0.5 * u * u) / Math.sqrt(2 * Math.PI);
+      const py = padT + plotH * (1 - (u - uMin) / (uMax - uMin));
+      const px = sX + 10 + p / 0.42 * (stripW - 20);
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    // baseline
+    ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sX + 10, padT); ctx.lineTo(sX + 10, padT + plotH); ctx.stroke();
+
+    // tick markers
+    ctx.fillStyle = "#8892a3"; ctx.textAlign = "left"; ctx.font = "10px -apple-system, sans-serif";
+    [-3, -2, -1, 0, 1, 2, 3].forEach(u => {
+      const py = padT + plotH * (1 - (u - uMin) / (uMax - uMin));
+      ctx.fillText(u.toString(), sX + 12, py + 3);
+    });
+
+    // overlay: as θ moves, the cloud shifts, but the strip is unchanged
+    ctx.fillStyle = "#0f172a"; ctx.font = "italic 10px -apple-system, sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("(unchanged by θ)", sX + stripW / 2, padT + plotH + 14);
+
+    // count samples near the highlighted fiber
+    let near = 0;
+    pts.forEach(([x1, x2]) => { if (Math.abs(x1 + x2 - fiberC) < 0.15) near++; });
+    readout.innerHTML =
+      `<div class="row"><span class="lbl">cloud center</span><span>(θ, θ) = (${theta.toFixed(2)}, ${theta.toFixed(2)})</span></div>` +
+      `<div class="row"><span class="lbl">samples near highlighted fiber</span><span>${near} / ${n}</span></div>` +
+      `<div class="row"><span class="lbl">conditional density shape</span><span>N(0, 1); doesn't depend on θ</span></div>`;
+  }
+
+  [thetaIn, fiberIn].forEach(i => i.addEventListener("input", draw));
+  window.addEventListener("resize", draw);
+  draw();
+})();
+</script>
+
+<p>
+Move $\theta$: the blue cloud slides along the diagonal $x_1 = x_2$, raising
+the probability mass on some fibers and lowering it on others. Move the
+highlighted fiber to a different value of $T$: you pick a different slice
+through the cloud. But the conditional density of the residual
+$(x_1 - x_2)/\sqrt 2$ <em>along</em> any fiber is $\mathcal&#123;N&#125;(0, 1)$,
+no matter what $\theta$ is. The fibers are the orbits of an action that
+absorbs every trace of $\theta$.
+</p>
+
+<h2>4. The operational test: does the conditional move?</h2>
+
+<p>
+The defining property is that $p(X \mid T(X), \theta)$ doesn't depend on
+$\theta$. One way to check: generate many samples, condition on
+$T(X) = t$, and see whether the resulting empirical distribution shifts when
+we change $\theta$. For a sufficient statistic it doesn't. For an insufficient
+one, it does. The visible drift <em>is</em> the information leak.
+</p>
+
+<Figure title="Figure 4 · Conditional distribution of the residual under two candidates" canvasId="fig-cond" width="760" height="360" readoutId="cond-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>conditional p(x₁ | T(x) = t, θ) for θ low</span>
+    <span><span class="swatch" style="background:#b8412a"></span>same conditional for θ high</span>
+    <span><span class="swatch" style="background:#94a3b8"></span>aggregated samples after conditioning</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlSelect id="cond-stat" label="candidate $T(x)$" valueId="cond-stat-v" options={[
+    { value: "sum", label: "sum  Σxᵢ  (sufficient ✓)", selected: true },
+    { value: "first", label: "first observation  x₁  (insufficient ✗)" },
+    { value: "max", label: "max(xᵢ)  (insufficient for Bernoulli ✗)" },
+  ]} />
+  <ControlRange id="cond-tlow" label="low θ" valueId="cond-tlow-v" min="0.1" max="0.5" step="0.02" value="0.2" />
+  <ControlRange id="cond-thigh" label="high θ" valueId="cond-thigh-v" min="0.5" max="0.9" step="0.02" value="0.7" />
+  <ControlRange id="cond-target" label="condition on $T = t$ near" valueId="cond-target-v" min="2" max="8" step="1" value="5" />
+</Fragment>
+</Figure>
+
+<script is:inline>
+(() => {
+  const canvas = document.getElementById("fig-cond");
+  const statIn = document.getElementById("cond-stat");
+  const tlowIn = document.getElementById("cond-tlow");
+  const thighIn = document.getElementById("cond-thigh");
+  const targetIn = document.getElementById("cond-target");
+  const statV = document.getElementById("cond-stat-v");
+  const tlowV = document.getElementById("cond-tlow-v");
+  const thighV = document.getElementById("cond-thigh-v");
+  const targetV = document.getElementById("cond-target-v");
+  const readout = document.getElementById("cond-readout");
+
+  let seed = 23;
+  function rng() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  const N = 10000, n = 10;
+
+  function gen(theta) {
+    const data = [];
+    for (let i = 0; i < N; i++) {
+      const row = [];
+      for (let j = 0; j < n; j++) row.push(rng() < theta ? 1 : 0);
+      data.push(row);
+    }
+    return data;
+  }
+  function Tof(row, stat) {
+    if (stat === "sum") return row.reduce((a, b) => a + b, 0);
+    if (stat === "first") return row[0];
+    if (stat === "max") return Math.max(...row);
+    return 0;
+  }
+
+  function setup(c) {
+    const ratio = window.devicePixelRatio || 1;
+    const iw = +c.getAttribute("width"), ih = +c.getAttribute("height");
+    c.style.width = "100%"; c.style.height = `${c.getBoundingClientRect().width * ih / iw}px`;
+    const r = c.getBoundingClientRect();
+    c.width = r.width * ratio; c.height = r.height * ratio;
+    const ctx = c.getContext("2d"); ctx.scale(ratio, ratio);
+    return { ctx, w: r.width, h: r.height };
+  }
+
+  function draw() {
+    const stat = statIn.value;
+    const tlow = +tlowIn.value, thigh = +thighIn.value;
+    let target = Math.round(+targetIn.value);
+    statV.textContent = statIn.options[statIn.selectedIndex].text;
+    tlowV.textContent = tlow.toFixed(2);
+    thighV.textContent = thigh.toFixed(2);
+
+    // adjust target range per stat
+    if (stat === "first" || stat === "max") target = (target >= 1) ? 1 : 0;
+    targetV.textContent = (stat === "sum") ? target.toString() : (target === 1 ? "1" : "0");
+
+    seed = 23; const dataLow = gen(tlow);
+    seed = 23; const dataHigh = gen(thigh);
+
+    // condition on T = target; compute distribution of x_2 ... x_n (residual)
+    // we'll plot histogram of (number of 1s in positions 2..n) — i.e. residual sum
+    function condResidual(data, stat, target) {
+      const residuals = [];
+      data.forEach(row => {
+        if (Tof(row, stat) !== target) return;
+        // residual: sum over positions other than the one(s) defining T
+        let r;
+        if (stat === "sum") r = row.slice(1).reduce((a, b) => a + b, 0); // sum of rest
+        else if (stat === "first") r = row.slice(1).reduce((a, b) => a + b, 0); // sum of x_2..x_n
+        else if (stat === "max") r = row.slice(1).reduce((a, b) => a + b, 0);
+        residuals.push(r);
+      });
+      return residuals;
+    }
+    const rLow = condResidual(dataLow, stat, target);
+    const rHigh = condResidual(dataHigh, stat, target);
+
+    function histogram(arr, kMax) {
+      const h = new Array(kMax + 1).fill(0);
+      arr.forEach(v => { if (v >= 0 && v <= kMax) h[v]++; });
+      const tot = arr.length || 1;
+      return h.map(c => c / tot);
+    }
+    const kMax = n - 1;
+    const histLow = histogram(rLow, kMax);
+    const histHigh = histogram(rHigh, kMax);
+
+    const { ctx, w, h } = setup(canvas);
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    const padL = 50, padR = 22, padT = 30, padB = 50;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+    ctx.strokeStyle = "#e3ddd0"; ctx.strokeRect(padL, padT, plotW, plotH);
+
+    // bars side by side
+    const groupW = plotW / (kMax + 1);
+    const barW = groupW * 0.36;
+    const mx = Math.max(...histLow, ...histHigh, 0.1);
+    function drawBars(hist, color, offset) {
+      hist.forEach((p, k) => {
+        const cx = padL + (k + 0.5) * groupW;
+        const x0 = cx - barW + offset;
+        const bh = (p / mx) * (plotH - 16);
+        ctx.fillStyle = color;
+        ctx.fillRect(x0, padT + plotH - bh, barW, bh);
+      });
+    }
+    drawBars(histLow, "rgba(31,74,140,0.75)", -2);
+    drawBars(histHigh, "rgba(184,65,42,0.75)", barW + 2);
+
+    // x labels
+    ctx.fillStyle = "#8892a3"; ctx.font = "10px -apple-system, sans-serif"; ctx.textAlign = "center";
+    for (let k = 0; k <= kMax; k++) {
+      const cx = padL + (k + 0.5) * groupW;
+      ctx.fillText(k.toString(), cx, padT + plotH + 14);
+    }
+    ctx.fillStyle = "#475569"; ctx.font = "11px -apple-system, sans-serif";
+    ctx.fillText("residual: number of 1s in x₂, …, x_n", padL + plotW / 2, padT + plotH + 30);
+
+    ctx.fillStyle = "#0f172a"; ctx.font = "12px -apple-system, sans-serif"; ctx.textAlign = "left";
+    const conditionStr = (stat === "sum")
+      ? `condition on Σxᵢ = ${target}`
+      : (stat === "first" ? `condition on x₁ = ${target}` : `condition on max(xᵢ) = ${target}`);
+    ctx.fillText(conditionStr, padL + 8, padT - 14);
+
+    // distance between histograms
+    let tv = 0; for (let k = 0; k <= kMax; k++) tv += Math.abs(histLow[k] - histHigh[k]); tv /= 2;
+    const verdict = tv < 0.04
+      ? `<span style="color:#2d7a3e">✓ no drift (TV ≈ ${tv.toFixed(3)}); conditional is θ-free, T is sufficient here</span>`
+      : `<span style="color:#d4690a">✗ drift detected (TV ≈ ${tv.toFixed(3)}); conditional depends on θ, T is insufficient</span>`;
+    readout.innerHTML =
+      `<div class="row"><span class="lbl">samples kept at low θ</span><span>${rLow.length} / ${N}</span></div>` +
+      `<div class="row"><span class="lbl">samples kept at high θ</span><span>${rHigh.length} / ${N}</span></div>` +
+      `<div class="row"><span class="lbl">total variation distance between conditionals</span><span>${verdict}</span></div>`;
+  }
+
+  [statIn, tlowIn, thighIn, targetIn].forEach(i => i.addEventListener("input", draw));
+  window.addEventListener("resize", draw);
+  draw();
+})();
+</script>
+
+<p>
+For $T = \sum x_i$ the blue and red bars sit on top of each other no matter how
+far apart you push the two $\theta$ values: the conditional distribution of the
+residual is purely combinatorial (uniform over bit configurations with the
+given sum) and has no $\theta$ left. For $T = x_1$ or $T = \max(x_i)$, the
+conditional shifts as $\theta$ moves: those statistics are insufficient.
+</p>
+
+<h2>5. Compression ratio and minimal sufficiency</h2>
+
+<p>
+Sufficient statistics can be wasteful: the entire sample is trivially
+sufficient for itself. The interesting question is <em>minimal</em>
+sufficiency: the coarsest summary that still preserves the likelihood. Below,
+the compression ratio $n \to \dim(T)$ for several named families.
+</p>
+
+<Figure title="Figure 5 · How much each family compresses n samples" canvasId="fig-compress" width="760" height="380" readoutId="compress-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>raw sample dimension $n$</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>dimension of minimal sufficient $T$</span>
+    <span><span class="swatch" style="background:#d4690a"></span>no finite reduction</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="comp-n" label="sample size $n$" valueId="comp-n-v" min="2" max="200" step="1" value="40" />
+</Fragment>
+</Figure>
+
+<script is:inline>
+(() => {
+  const canvas = document.getElementById("fig-compress");
+  const nIn = document.getElementById("comp-n");
+  const nV = document.getElementById("comp-n-v");
+  const readout = document.getElementById("compress-readout");
+
+  const FAMS = [
+    { name: "Bernoulli(p)", T: "Σxᵢ", dim: 1, ok: true },
+    { name: "Poisson(λ)", T: "Σxᵢ", dim: 1, ok: true },
+    { name: "Exponential(λ)", T: "Σxᵢ", dim: 1, ok: true },
+    { name: "Normal(μ, 1)", T: "x̄", dim: 1, ok: true },
+    { name: "Uniform(0, θ)", T: "max(xᵢ)", dim: 1, ok: true },
+    { name: "Normal(μ, σ²)", T: "(Σxᵢ, Σxᵢ²)", dim: 2, ok: true },
+    { name: "Gamma(α, β)", T: "(Σxᵢ, Σlog xᵢ)", dim: 2, ok: true },
+    { name: "Cauchy(θ, 1)", T: "order statistic", dim: null, ok: false },
+    { name: "Mixture of 2 Gaussians", T: "order statistic", dim: null, ok: false },
+  ];
+
+  function setup(c) {
+    const ratio = window.devicePixelRatio || 1;
+    const iw = +c.getAttribute("width"), ih = +c.getAttribute("height");
+    c.style.width = "100%"; c.style.height = `${c.getBoundingClientRect().width * ih / iw}px`;
+    const r = c.getBoundingClientRect();
+    c.width = r.width * ratio; c.height = r.height * ratio;
+    const ctx = c.getContext("2d"); ctx.scale(ratio, ratio);
+    return { ctx, w: r.width, h: r.height };
+  }
+
+  function draw() {
+    const { ctx, w, h } = setup(canvas);
+    const n = +nIn.value;
+    nV.textContent = n;
+
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    const padL = 160, padR = 32, padT = 22, padB = 28;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+    const rowH = plotH / FAMS.length;
+    const xMax = Math.max(n, 20);
+    const xS = (x) => padL + (x / xMax) * plotW;
+
+    FAMS.forEach((f, i) => {
+      const y0 = padT + i * rowH + rowH * 0.18;
+      const bh = rowH * 0.34;
+      // label
+      ctx.fillStyle = "#1f2733"; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "right";
+      ctx.fillText(f.name, padL - 8, y0 + bh + 4);
+      ctx.fillStyle = "#94a3b8"; ctx.font = "10px 'SF Mono', monospace";
+      ctx.fillText(`T = ${f.T}`, padL - 8, y0 + bh + 17);
+
+      // raw bar
+      ctx.fillStyle = "#1f4a8c"; ctx.fillRect(padL, y0, xS(n) - padL, bh);
+      ctx.fillStyle = "#fff"; ctx.font = "10px -apple-system, sans-serif"; ctx.textAlign = "right";
+      ctx.fillText(`n = ${n}`, xS(n) - 4, y0 + bh - 3);
+
+      // T bar
+      const ty = y0 + bh + 3;
+      if (f.ok) {
+        ctx.fillStyle = "#2d7a3e"; ctx.fillRect(padL, ty, xS(f.dim) - padL, bh);
+        ctx.fillStyle = "#fff"; ctx.textAlign = "left";
+        ctx.fillText(`dim = ${f.dim}`, padL + 4, ty + bh - 3);
+      } else {
+        ctx.fillStyle = "#d4690a"; ctx.fillRect(padL, ty, xS(n) - padL, bh);
+        ctx.fillStyle = "#fff"; ctx.textAlign = "left";
+        ctx.fillText(`dim = n; no compression`, padL + 4, ty + bh - 3);
+      }
+    });
+
+    // x axis ticks at top of last row + below
+    ctx.fillStyle = "#8892a3"; ctx.font = "10px -apple-system, sans-serif"; ctx.textAlign = "center";
+    for (let k = 0; k <= 4; k++) {
+      const v = Math.round(k / 4 * xMax);
+      ctx.fillText(v.toString(), xS(v), padT + plotH + 14);
+    }
+
+    readout.innerHTML =
+      `<div class="row"><span class="lbl">most exponential-family models compress</span><span>n samples → 1 or 2 numbers</span></div>` +
+      `<div class="row"><span class="lbl">Cauchy and Gaussian mixtures</span><span>n samples → n numbers (no reduction)</span></div>` +
+      `<div class="row"><span class="lbl">Pitman–Koopman–Darmois</span><span>finite-dim sufficient T ⇔ exponential family</span></div>`;
+  }
+
+  nIn.addEventListener("input", draw);
+  window.addEventListener("resize", draw);
+  draw();
+})();
+</script>
+
+<Aside>
+  <strong>Pitman–Koopman–Darmois.</strong> Under regularity conditions (the
+  support doesn't depend on $\theta$, and the family is suitably smooth), a
+  finite-dimensional sufficient statistic exists for all $n$ <em>only</em> for
+  exponential families. So the Cauchy row above is a structural impossibility,
+  not an oversight. The Uniform$(0,\theta)$ row is the opposite kind
+  of edge case: it does compress to $\max(x_i)$, but the support depends on
+  $\theta$, which violates the theorem's regularity. PKD applies cleanly only
+  to the exponential-family rows. §7 makes the converse direction visible.
+</Aside>
+
+<h2>6. Rao–Blackwell: variance collapse</h2>
+
+<p>
+Rao–Blackwell says: take any unbiased estimator $\hat\theta(X)$, replace it
+with its conditional expectation given a sufficient statistic, and the result
+is unbiased and has lower (or equal) variance. The variance decomposition
+$$\operatorname&#123;Var&#125;(\hat\theta) \;=\; \mathbb&#123;E&#125;[\operatorname&#123;Var&#125;(\hat\theta \mid T)] + \operatorname&#123;Var&#125;(\mathbb&#123;E&#125;[\hat\theta \mid T])$$
+splits the variance into what conditioning on $T$ discards and what it keeps.
+The first piece is gone for free.
+</p>
+
+<Figure title="Figure 6 · Bad estimator → Rao–Blackwellized estimator" canvasId="fig-rao" width="760" height="360" readoutId="rao-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:rgba(31,74,140,0.55)"></span>samples of $\hat p = x_1$</span>
+    <span><span class="swatch" style="background:rgba(184,65,42,0.7)"></span>samples of $\mathbb&#123;E&#125;[x_1 \mid \sum x_i] = \bar x$</span>
+    <span><span class="swatch" style="background:#0f172a"></span>true $p$</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="rao-p" label="true $p$" valueId="rao-p-v" min="0.05" max="0.95" step="0.01" value="0.4" />
+  <ControlRange id="rao-n" label="sample size $n$" valueId="rao-n-v" min="2" max="80" step="1" value="20" />
+  <PresetRow>
+    <button id="rao-resample">Resample</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<script is:inline>
+(() => {
+  const canvas = document.getElementById("fig-rao");
+  const pIn = document.getElementById("rao-p");
+  const nIn = document.getElementById("rao-n");
+  const pV = document.getElementById("rao-p-v");
+  const nV = document.getElementById("rao-n-v");
+  const readout = document.getElementById("rao-readout");
+  const resampleBtn = document.getElementById("rao-resample");
+
+  let seed = 41;
+  function rng() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  const M = 2000;
+  function trial(p, n) {
+    const out = { bad: [], rb: [] };
+    for (let i = 0; i < M; i++) {
+      let s = 0, first = 0;
+      for (let j = 0; j < n; j++) { const b = rng() < p ? 1 : 0; if (j === 0) first = b; s += b; }
+      out.bad.push(first);
+      out.rb.push(s / n);
+    }
+    return out;
+  }
+  let cur = null;
+  function regen() { cur = trial(+pIn.value, +nIn.value); }
+
+  function setup(c) {
+    const ratio = window.devicePixelRatio || 1;
+    const iw = +c.getAttribute("width"), ih = +c.getAttribute("height");
+    c.style.width = "100%"; c.style.height = `${c.getBoundingClientRect().width * ih / iw}px`;
+    const r = c.getBoundingClientRect();
+    c.width = r.width * ratio; c.height = r.height * ratio;
+    const ctx = c.getContext("2d"); ctx.scale(ratio, ratio);
+    return { ctx, w: r.width, h: r.height };
+  }
+
+  function draw() {
+    if (!cur) regen();
+    const { ctx, w, h } = setup(canvas);
+    const p = +pIn.value, n = +nIn.value;
+    pV.textContent = p.toFixed(2); nV.textContent = n;
+
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    const padL = 60, padR = 24, padT = 30, padB = 60;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+    ctx.strokeStyle = "#e3ddd0"; ctx.strokeRect(padL, padT, plotW, plotH);
+
+    const xMin = 0, xMax = 1;
+    const xS = (x) => padL + (x - xMin) / (xMax - xMin) * plotW;
+
+    // histograms
+    const bins = 40;
+    const hBad = new Array(bins).fill(0), hRB = new Array(bins).fill(0);
+    cur.bad.forEach(v => { const k = Math.min(bins - 1, Math.floor(v * bins)); hBad[k]++; });
+    cur.rb.forEach(v => { const k = Math.min(bins - 1, Math.floor(v * bins)); hRB[k]++; });
+    const mx = Math.max(...hBad, ...hRB);
+    const drawHist = (h0, color) => {
+      ctx.fillStyle = color;
+      for (let k = 0; k < bins; k++) {
+        const x0 = xS(k / bins), x1 = xS((k + 1) / bins);
+        const bh = (h0[k] / mx) * (plotH - 30);
+        ctx.fillRect(x0, padT + plotH - bh, x1 - x0, bh);
+      }
+    };
+    drawHist(hBad, "rgba(31,74,140,0.45)");
+    drawHist(hRB, "rgba(184,65,42,0.65)");
+
+    // true p marker
+    ctx.strokeStyle = "#0f172a"; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(xS(p), padT); ctx.lineTo(xS(p), padT + plotH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#0f172a"; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(`true p = ${p.toFixed(2)}`, xS(p), padT - 6);
+
+    // x ticks
+    ctx.fillStyle = "#8892a3"; ctx.font = "10px -apple-system, sans-serif"; ctx.textAlign = "center";
+    for (let k = 0; k <= 5; k++) {
+      const v = k / 5;
+      ctx.fillText(v.toFixed(1), xS(v), padT + plotH + 14);
+    }
+    ctx.fillStyle = "#475569"; ctx.font = "11px -apple-system, sans-serif";
+    ctx.fillText("estimator value", padL + plotW / 2, padT + plotH + 30);
+
+    // variance bars at bottom
+    const meanBad = cur.bad.reduce((a, b) => a + b, 0) / M;
+    const meanRB = cur.rb.reduce((a, b) => a + b, 0) / M;
+    const varBad = cur.bad.reduce((a, b) => a + (b - meanBad) ** 2, 0) / M;
+    const varRB = cur.rb.reduce((a, b) => a + (b - meanRB) ** 2, 0) / M;
+    const ratio = varRB / Math.max(varBad, 1e-9);
+
+    readout.innerHTML =
+      `<div class="row"><span class="lbl">Var(x₁) (bad estimator)</span><span>${varBad.toFixed(4)}</span></div>` +
+      `<div class="row"><span class="lbl">Var(x̄) = Var(E[x₁|T]) (Rao–Blackwellized)</span><span>${varRB.toFixed(4)}</span></div>` +
+      `<div class="row"><span class="lbl">variance ratio</span><span>${ratio.toFixed(3)} ≈ 1/n = ${(1/n).toFixed(3)}</span></div>`;
+  }
+
+  [pIn, nIn].forEach(i => i.addEventListener("input", () => { regen(); draw(); }));
+  resampleBtn.addEventListener("click", () => { regen(); draw(); });
+  window.addEventListener("resize", draw);
+  draw();
+})();
+</script>
+
+<p>
+Both estimators are unbiased for $p$; their histograms sit over the same true
+value. But the bad estimator (which discards $n - 1$ samples) has variance
+$p(1-p)$ regardless of $n$, while the Rao–Blackwellized one has variance
+$p(1-p)/n$. The factor $n$ is the variance you got back by
+conditioning on a sufficient statistic.
+</p>
+
+<h2>7. The exponential family: where sufficiency comes from</h2>
+
+<p>
+Every family in §5 with finite-dimensional $T$ is an <strong>exponential
+family</strong>: it can be written as
+</p>
+
+$$
+p(x \mid \eta) \;=\; h(x)\,\exp\!\Bigl[\eta^\top T(x) - A(\eta)\Bigr].
+$$
+
+<p>
+The factorization theorem is built in — $T(x)$ is staring at you in the
+exponent. <strong>Pitman–Koopman–Darmois</strong> is the converse: under
+regularity (fixed support, smooth densities), this is the <em>only</em> way a
+finite-dimensional sufficient statistic exists for every sample size $n$.
+Conjugate priors with finite-dimensional hyperparameters are therefore
+restricted to this case; outside it, the posterior's complexity grows with $n$.
+</p>
+
+<p>
+The <a href="/math/exponential-family/">exponential family</a> page covers what
+$\eta$, $T(x)$, $h(x)$, and $A(\eta)$ are called and why (the log-partition
+borrows from statistical physics, $A$'s derivatives give the cumulants of
+$T(X)$, the Fisher metric is its Hessian, the logit and log link in GLMs are
+the canonical link for the Bernoulli and Poisson members), and includes an
+interactive picker stepping through six standard members.
+</p>
+
+<h2>8. The flow diagram: one picture, three currencies</h2>
+
+<OrientationNote>
+  <p>
+    The next section is a more structural view than most introductions use. It
+    recasts sufficiency through conditional independence, data processing, Fisher
+    information, and mutual information instead of only through factorization.
+  </p>
+</OrientationNote>
+
+<p>
+The generative model is always a Markov chain $\theta \to X \to T(X)$:
+$\theta$ generates the data, and $T$ is a deterministic function of the data.
+The data-processing inequality then says $I(\theta;T) \le I(\theta;X)$ no
+matter what $T$ you pick. A summary can never carry more information about
+the parameter than the raw sample.
+</p>
+
+<p>
+Sufficiency is exactly the case where that inequality is tight. Equivalently:
+the reverse chain $\theta \to T \to X$ also holds, because $X \perp \theta
+\mid T$. Both chains running at once force $I(\theta;T) = I(\theta;X)$.
+$I$ is the strongest currency, since Fisher information is its local
+($\Delta\theta \to 0$) limit and the likelihood and variance statements both
+follow.
+</p>
+
+<p>
+Factorization, Rao–Blackwell, and the data-processing inequality are three
+readings of that one tightness condition. The sparklines on each edge of the
+diagram tell you which currency you're spending.
+</p>
+
+<Figure title="Figure 7 · X → T(X) → inference, in three flavors" canvasId="fig-flow" width="760" height="440" readoutId="flow-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>full data path</span>
+    <span><span class="swatch" style="background:#b8412a"></span>via $T$ path</span>
+    <span><span class="swatch" style="background:#94a3b8"></span>$\theta$-free residual</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>edge content (sparkline)</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+    <label>currency</label>
+    <PresetRow>
+      <button class="flow-mode active" data-mode="likelihood">likelihood</button>
+      <button class="flow-mode" data-mode="variance">variance</button>
+      <button class="flow-mode" data-mode="info">Fisher info</button>
+    </PresetRow>
+  </div>
+  <div class="control">
+    <label>candidate $T$</label>
+    <PresetRow>
+      <button class="flow-suff active" data-suff="yes">sufficient (x̄)</button>
+      <button class="flow-suff" data-suff="no">insufficient (x₁)</button>
+    </PresetRow>
+  </div>
+  <ControlRange id="flow-theta" label={String.raw`$\theta$`} valueId="flow-theta-v" min="-1.5" max="1.5" step="0.05" value="0.4" />
+  <ControlRange id="flow-n" label="$n$" valueId="flow-n-v" min="2" max="40" step="1" value="12" />
+</Fragment>
+</Figure>
+
+<script is:inline>
+(() => {
+  const canvas = document.getElementById("fig-flow");
+  const thetaIn = document.getElementById("flow-theta");
+  const nIn = document.getElementById("flow-n");
+  const thetaV = document.getElementById("flow-theta-v");
+  const nV = document.getElementById("flow-n-v");
+  const readout = document.getElementById("flow-readout");
+  let mode = "likelihood", suff = "yes";
+
+  document.querySelectorAll(".flow-mode").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".flow-mode").forEach(x => x.classList.remove("active"));
+    b.classList.add("active"); mode = b.dataset.mode; draw();
+  }));
+  document.querySelectorAll(".flow-suff").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".flow-suff").forEach(x => x.classList.remove("active"));
+    b.classList.add("active"); suff = b.dataset.suff; draw();
+  }));
+
+  function setup(c) {
+    const ratio = window.devicePixelRatio || 1;
+    const iw = +c.getAttribute("width"), ih = +c.getAttribute("height");
+    c.style.width = "100%"; c.style.height = `${c.getBoundingClientRect().width * ih / iw}px`;
+    const r = c.getBoundingClientRect();
+    c.width = r.width * ratio; c.height = r.height * ratio;
+    const ctx = c.getContext("2d"); ctx.scale(ratio, ratio);
+    return { ctx, w: r.width, h: r.height };
+  }
+
+  function drawNode(ctx, x, y, r, label, sublabel, fill) {
+    ctx.fillStyle = fill || "#fff";
+    ctx.strokeStyle = "#1f2733"; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#0f172a"; ctx.font = "bold 14px -apple-system, sans-serif"; ctx.textAlign = "center";
+    ctx.fillText(label, x, y + 4);
+    if (sublabel) {
+      ctx.fillStyle = "#475569"; ctx.font = "10px -apple-system, sans-serif";
+      ctx.fillText(sublabel, x, y + r + 14);
+    }
+  }
+
+  function drawArrow(ctx, x1, y1, x2, y2, color, label, lw) {
+    ctx.strokeStyle = color; ctx.lineWidth = lw || 2;
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+    const ux = dx / len, uy = dy / len;
+    const off = 24;
+    const sx = x1 + ux * off, sy = y1 + uy * off;
+    const ex = x2 - ux * off, ey = y2 - uy * off;
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+    // arrowhead
+    const ah = 8;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - ux * ah - uy * ah * 0.5, ey - uy * ah + ux * ah * 0.5);
+    ctx.lineTo(ex - ux * ah + uy * ah * 0.5, ey - uy * ah - ux * ah * 0.5);
+    ctx.closePath(); ctx.fill();
+    // label
+    if (label) {
+      ctx.fillStyle = color; ctx.font = "bold 11px -apple-system, sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(label, (sx + ex) / 2 + uy * 12, (sy + ey) / 2 - ux * 12);
+    }
+  }
+
+  function drawSparkline(ctx, x, y, w, h, fn, color, lw) {
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 0.5; ctx.strokeRect(x, y, w, h);
+    ctx.strokeStyle = color; ctx.lineWidth = lw || 1.6;
+    ctx.beginPath();
+    const N = 80;
+    let maxV = -Infinity, minV = Infinity;
+    const samples = [];
+    for (let i = 0; i <= N; i++) { const v = fn(i / N); samples.push(v); maxV = Math.max(maxV, v); minV = Math.min(minV, v); }
+    const r = maxV - minV || 1;
+    samples.forEach((v, i) => {
+      const px = x + (i / N) * w;
+      const py = y + h - 3 - ((v - minV) / r) * (h - 6);
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawDualSpark(ctx, x, y, w, h, fnA, fnB, colorA, colorB, labelA, labelB) {
+    ctx.fillStyle = "rgba(255,255,255,0.92)"; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 0.5; ctx.strokeRect(x, y, w, h);
+    const N = 80;
+    const sA = [], sB = [];
+    let mx = -Infinity, mn = Infinity;
+    for (let i = 0; i <= N; i++) {
+      const a = fnA(i / N), b = fnB(i / N);
+      sA.push(a); sB.push(b);
+      mx = Math.max(mx, a, b); mn = Math.min(mn, a, b);
+    }
+    const r = mx - mn || 1;
+    [[sA, colorA, 1.8], [sB, colorB, 1.6]].forEach(([s, c, lw], idx) => {
+      ctx.strokeStyle = c; ctx.lineWidth = lw;
+      if (idx === 1) ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      s.forEach((v, i) => {
+        const px = x + (i / N) * w;
+        const py = y + h - 3 - ((v - mn) / r) * (h - 6);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+    if (labelA) {
+      ctx.fillStyle = colorA; ctx.font = "9px -apple-system, sans-serif"; ctx.textAlign = "left";
+      ctx.fillText(labelA, x + 3, y + 9);
+      ctx.fillStyle = colorB; ctx.fillText(labelB, x + 3, y + 20);
+    }
+  }
+
+  function drawBars(ctx, x, y, w, h, values, colors, labels) {
+    ctx.fillStyle = "rgba(255,255,255,0.92)"; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 0.5; ctx.strokeRect(x, y, w, h);
+    const mx = Math.max(...values) || 1;
+    const k = values.length;
+    const slot = (w - 8) / k;
+    values.forEach((v, i) => {
+      const bh = (v / mx) * (h - 18);
+      const bx = x + 4 + i * slot + slot * 0.18;
+      ctx.fillStyle = colors[i];
+      ctx.fillRect(bx, y + h - 4 - bh, slot * 0.64, bh);
+      ctx.fillStyle = "#475569"; ctx.font = "9px -apple-system, sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(labels[i], bx + slot * 0.32, y + h - 4 + 10);
+    });
+  }
+
+  function draw() {
+    const { ctx, w, h } = setup(canvas);
+    const theta = +thetaIn.value, n = +nIn.value;
+    thetaV.textContent = theta.toFixed(2); nV.textContent = n;
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+
+    // node positions
+    const nX = w * 0.14, nY = h * 0.18;          // θ
+    const xX = w * 0.35, xY = h * 0.45;          // X
+    const tX = w * 0.62, tY = h * 0.28;          // T(X)
+    const lX = w * 0.86, lY = h * 0.55;          // inference target (L, est, info)
+    const hX = w * 0.58, hY = h * 0.78;          // h(X) residual
+
+    // edges
+    drawArrow(ctx, nX, nY, xX, xY, "#0f172a", "generates", 1.4);
+    drawArrow(ctx, xX, xY, tX, tY, "#b8412a", "T", 2.4);
+    drawArrow(ctx, xX, xY, hX, hY, "#94a3b8", "h", 1.6);
+    drawArrow(ctx, xX, xY, lX, lY, "#1f4a8c", "direct", 1.6);
+    drawArrow(ctx, tX, tY, lX, lY, "#b8412a", "g", 2.4);
+
+    // sparklines on edges
+    const sparkW = 110, sparkH = 38;
+    // X → T: distribution of T(X) under θ
+    drawSparkline(ctx, (xX + tX) / 2 - sparkW / 2 + 30, (xY + tY) / 2 - sparkH - 10, sparkW, sparkH,
+      (u) => {
+        const t = -3 + u * 6;
+        return Math.exp(-0.5 * n * (t - theta) * (t - theta));
+      }, "#b8412a");
+
+    // X → h: θ-free residual (flat under θ)
+    drawSparkline(ctx, (xX + hX) / 2 - sparkW / 2 + 10, (xY + hY) / 2 + 4, sparkW, sparkH,
+      (u) => {
+        const t = -3 + u * 6;
+        return Math.exp(-0.5 * t * t);
+      }, "#94a3b8");
+
+    // X → L (direct) and T → L:  two sparklines, one per mode
+    function lik(u, fromT) {
+      // likelihood as function of θ
+      const t = -2 + u * 4;
+      const xbar = theta + 0.08 * (suff === "yes" ? 0 : 1);
+      const xbarFromT = theta;
+      const m = fromT ? xbarFromT : xbar;
+      // for insufficient, T = x_1 has noise that makes the implied likelihood narrower or noisier
+      const sd = fromT && suff === "no" ? 1.5 : 1 / Math.sqrt(n);
+      return Math.exp(-0.5 * ((t - m) / sd) * ((t - m) / sd));
+    }
+    function fisher(u, fromT) {
+      const t = -1.5 + u * 3;
+      const I_X = n;
+      const I_T = suff === "yes" ? n : 1; // bad statistic captures only one sample's worth of info
+      return fromT ? I_T : I_X;
+    }
+    function varSpark(u, key) {
+      // "kept" vs "discarded" bars handled separately
+      return 0;
+    }
+
+    if (mode === "likelihood") {
+      drawDualSpark(ctx, (xX + lX) / 2 - sparkW / 2 + 50, (xY + lY) / 2 - sparkH - 6, sparkW, sparkH,
+        (u) => lik(u, false), (u) => lik(u, true), "#1f4a8c", "#b8412a", "L from X", "L from T");
+    } else if (mode === "info") {
+      drawDualSpark(ctx, (xX + lX) / 2 - sparkW / 2 + 50, (xY + lY) / 2 - sparkH - 6, sparkW, sparkH,
+        (u) => fisher(u, false), (u) => fisher(u, true), "#1f4a8c", "#b8412a", "I_X(θ)", "I_T(θ)");
+    } else {
+      // variance: bars
+      const varBad = 1.0;
+      const varRB = suff === "yes" ? 1.0 / n : 1.0;
+      const varDiscarded = varBad - varRB;
+      drawBars(ctx, (xX + lX) / 2 - sparkW / 2 + 50, (xY + lY) / 2 - sparkH - 6, sparkW, sparkH,
+        [varBad, varRB, varDiscarded], ["#1f4a8c", "#b8412a", "#94a3b8"], ["raw", "via T", "lost"]);
+    }
+
+    // nodes (drawn last so they sit on top of edges)
+    drawNode(ctx, nX, nY, 22, "θ", "parameter", "#f1ede2");
+    drawNode(ctx, xX, xY, 26, "X", "sample", "#fff");
+    drawNode(ctx, tX, tY, 26, "T(X)", suff === "yes" ? "sufficient" : "insufficient", suff === "yes" ? "#fdf2ee" : "#fff7ed");
+    drawNode(ctx, hX, hY, 22, "h", "θ-free", "#f1f5f9");
+    const targetLabel = mode === "likelihood" ? "L(θ)" : (mode === "variance" ? "est." : "I(θ)");
+    drawNode(ctx, lX, lY, 26, targetLabel, "inference", "#fff");
+
+    // commutativity badge
+    ctx.fillStyle = suff === "yes" ? "#2d7a3e" : "#d4690a";
+    ctx.font = "bold 11px -apple-system, sans-serif"; ctx.textAlign = "right";
+    ctx.fillText(suff === "yes" ? "diagram commutes ✓" : "leak in T projection ✗", w - 12, h - 12);
+
+    let msg = "";
+    if (mode === "likelihood") {
+      msg = suff === "yes"
+        ? "Both paths from X to L(θ) give the same likelihood curve. T = x̄ preserves the full likelihood."
+        : "L derived from T = x₁ alone is much wider than L from the full sample. Information was lost.";
+    } else if (mode === "variance") {
+      msg = suff === "yes"
+        ? `Var(via T) = ${(1/n).toFixed(3)} ≈ Var(raw)/n. The discarded variance is gone for free.`
+        : "Conditioning on x₁ doesn't reduce variance; there's nothing extra to integrate out.";
+    } else {
+      msg = suff === "yes"
+        ? `I_T(θ) = I_X(θ) = ${n}. Sufficiency saturates the data-processing inequality.`
+        : `I_T(θ) ≈ 1 ≪ I_X(θ) = ${n}. The data-processing inequality is strict.`;
+    }
+    readout.innerHTML =
+      `<div class="row"><span class="lbl">currency</span><span>${mode}</span></div>` +
+      `<div class="row"><span class="lbl">verdict</span><span>${msg}</span></div>`;
+  }
+
+  [thetaIn, nIn].forEach(i => i.addEventListener("input", draw));
+  window.addEventListener("resize", draw);
+  draw();
+})();
+</script>
+
+<p>
+<strong>Likelihood:</strong> the two paths $X \to L$ and $X \to T \to L$
+produce the same curve. <strong>Variance:</strong> the path through $T$ keeps
+only the part of the variance that depends on $\theta$; the rest is in $h$,
+gone for free, Rao–Blackwell. <strong>Fisher information:</strong>
+$I_T(\theta) \le I_X(\theta)$ with equality iff $T$ is sufficient. This is
+the data-processing inequality, and sufficiency is the case where it's tight.
+One commuting square; whether it commutes is the theorem.
+</p>
+
+<NextCards heading="What next" cards={[
+  { href: "/fisher-information/", tag: "Likelihood", title: "Fisher Information", role: "Sufficient T saturates the data-processing inequality for I(θ); the variance / Fisher-information sparkline made formal." },
+  { href: "/kl-divergence/", tag: "Divergence", title: "KL Divergence", role: "Sufficiency = KL[p_θ ∥ p_θ'] from data equals KL between the two distributions of T(X). The fiber picture, in divergence." },
+  { href: "/hypothesis-testing/", tag: "Decisions", title: "Hypothesis Testing", role: "Neyman–Pearson tests for simple H₀ vs H₁ depend on the data only through the likelihood ratio, itself a sufficient statistic." },
+]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+
+</ExplainerLayout>

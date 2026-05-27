@@ -1,0 +1,300 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+---
+
+<ExplainerLayout title="Hierarchical Bayes" breadcrumb="Hierarchical Bayes" section="bayesian-inference">
+<Hero title="Hierarchical Bayes" subtitle="When many similar groups share a hyperprior, the posterior estimate of each one borrows strength from the rest by an amount the data itself determines." />
+
+<OrientationNote>
+  <p>
+    Hierarchical models treat the parameters of one level as random variables with
+    a prior controlled at the level above. The flat version
+    ($y_&#123;ij&#125; \mid \theta_j$, $\theta_j \mid \mu, \tau$) is enough to make
+    the point: estimates of similar groups <em>shrink</em> toward each other by an
+    amount the data itself tells you.
+  </p>
+</OrientationNote>
+
+<p>
+Suppose you have $J$ groups (eight coaching programs, twenty hospitals, sixty
+players), and from each you collect $n_j$ observations. You want a point estimate
+$\hat\theta_j$ of each group's true mean. Two obvious estimators stake out the
+extremes:
+</p>
+
+<ul>
+  <li><strong>No pooling.</strong> Estimate each group on its own data:
+      $\hat\theta_j^&#123;\text&#123;np&#125;&#125; = \bar y_j$.
+      Unbiased for $\theta_j$, but high-variance when $n_j$ is small.</li>
+  <li><strong>Complete pooling.</strong> Ignore group membership and use the grand mean
+      $\hat\theta_j^&#123;\text&#123;cp&#125;&#125; = \bar y$. Low-variance, but biased
+      whenever groups actually differ.</li>
+</ul>
+
+<p>
+Both are wrong in opposite directions. <strong>Partial pooling</strong>
+interpolates: each group's estimate is pulled toward the grand mean by an
+amount that depends on how much the groups appear to vary. Doing Bayes on a
+hierarchical model is the way to get it.
+</p>
+
+<h2 id="structures">1. Three model structures, and how to choose</h2>
+
+<p>
+Before writing down the math, decide what you actually believe about the
+parameters. Three structural options, drawn as graphs of the dependence
+between the $\theta_j$'s:
+</p>
+
+<div class="summary-table-wrap">
+  <table class="summary-table">
+    <thead>
+      <tr><th>Structure</th><th>Graph</th><th>Appropriate when</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Separate</strong> (no pooling)</td>
+        <td>$\theta_1 \to y_1$, $\theta_2 \to y_2$, ..., $\theta_J \to y_J$ &nbsp;<em>(no link between $\theta_j$'s)</em></td>
+        <td>The $\theta_j$'s are causally unrelated: different experiments, different populations, no common source of variation.</td>
+      </tr>
+      <tr>
+        <td><strong>Pooled</strong> (complete pooling)</td>
+        <td>$\theta \to y_1, y_2, \ldots, y_J$ &nbsp;<em>(one $\theta$ for all)</em></td>
+        <td>The groups share an identical underlying mean.</td>
+      </tr>
+      <tr>
+        <td><strong>Hierarchical</strong> (partial pooling)</td>
+        <td>$\tau \to \theta_j \to y_j$ &nbsp;<em>($\theta_j$'s share a common cause $\tau$)</em></td>
+        <td>The $\theta_j$'s are drawn from a common <em>population</em> but are not identical. Knowing one tells you something about the others through their shared hyperparameter.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>The decision turns on what you know:</p>
+
+<ul>
+  <li><strong>Strict independence</strong> requires positive information that
+      the $\theta_j$'s share no common cause (measurements of unrelated
+      physical constants, parameters of disjoint physical systems). Use the
+      separate model.</li>
+  <li><strong>Exchangeability</strong> is the natural default when you have
+      <em>no</em> information distinguishing one $\theta_j$ from another a
+      priori. The group indices are interchangeable labels. Use the
+      hierarchical model (de&nbsp;Finetti, below, is why).</li>
+  <li><strong>Identity</strong> requires positive information that the
+      groups share a single $\theta$ (same population, same protocol, no
+      between-group variation). Use the pooled model.</li>
+</ul>
+
+<p>
+<strong>Exchangeability is weaker than independence.</strong> Exchangeable
+$\theta_j$'s are <em>not</em> independent in general: knowing $\theta_1$
+updates your belief about $\theta_2$ through the shared hyperparameter
+$\tau$. A common parent $\tau$ creates dependence between the children
+$\theta_j$, even though the children look like iid draws conditional on
+$\tau$. The hierarchical model is the right choice whenever you can neither
+defend strict independence nor strict identity.
+</p>
+
+<p>
+<em>Measure-theory aside (de&nbsp;Finetti).</em> If the groups are
+exchangeable (their order carries no information), then de&nbsp;Finetti's
+theorem says the joint distribution of $(\theta_1, \ldots, \theta_J)$
+<em>must</em> be a mixture of iid sequences. The mixing measure over the
+population distribution is exactly the hyperprior $p(\mu, \tau^2)$ of the
+hierarchical model. Hierarchical Bayes is therefore the
+<a href="/math/measure-theory/">measure-theoretic representation</a> of any
+exchangeable collection of groups. Empirical Bayes plugs in a point estimate
+for that mixing measure rather than integrating over it.
+</p>
+
+<h2 id="model">2. The two-level model</h2>
+
+<p>
+The simplest hierarchical model puts a Gaussian prior on the group means and treats
+its parameters as unknown:
+</p>
+
+$$
+\begin&#123;aligned&#125;
+y_&#123;ij&#125; \mid \theta_j      &\sim \mathcal N(\theta_j,\, \sigma^2), \quad i = 1,\ldots, n_j, \\
+\theta_j \mid \mu, \tau^2 &\sim \mathcal N(\mu,\, \tau^2), \quad j = 1,\ldots, J, \\
+(\mu, \tau^2)              &\sim p(\mu, \tau^2). \\
+\end&#123;aligned&#125;
+$$
+
+<p>
+The hyperparameters $\mu$ and $\tau^2$ describe the population of group means.
+$\tau^2$ is the one that matters: it controls how far groups can plausibly
+differ from one another, and therefore how much each group is allowed to
+disagree with the others.
+</p>
+
+<p>
+The DAG factorization is $p(y, \theta, \mu, \tau^2) = p(\mu, \tau^2)\,\prod_j p(\theta_j\mid\mu,\tau^2)\,\prod_&#123;i,j&#125; p(y_&#123;ij&#125;\mid\theta_j)$,
+a plate diagram with three nested layers (hyperparameters, group means,
+observations).
+</p>
+
+<h2 id="shrinkage">3. The posterior formula</h2>
+
+<p>
+With $\sigma^2$ and $(\mu, \tau^2)$ held fixed, each group's posterior is conjugate
+Normal–Normal. Writing $\sigma_j^2 = \sigma^2/n_j$ for the standard error of the
+raw group mean,
+</p>
+
+$$
+\theta_j \mid y, \mu, \tau^2 \;\sim\; \mathcal N\!\bigl(\hat\theta_j,\; V_j\bigr),
+$$
+
+<p>
+with
+</p>
+
+$$
+\hat\theta_j \;=\; \frac&#123;\tau^2\,\bar y_j \;+\; \sigma_j^2\,\mu&#125;
+                   &#123;\tau^2 + \sigma_j^2&#125;
+              \;=\; \bar y_j \;+\; B_j\,(\mu - \bar y_j),
+\qquad B_j = \frac&#123;\sigma_j^2&#125;&#123;\sigma_j^2 + \tau^2&#125;.
+$$
+
+<p>
+$B_j \in [0, 1]$ controls how far group $j$'s estimate is pulled toward $\mu$.
+</p>
+
+<ul>
+  <li>$\tau \to 0$ (groups indistinguishable) gives $B_j \to 1$: complete pooling.</li>
+  <li>$\tau \to \infty$ (groups completely separate) gives $B_j \to 0$: no pooling.</li>
+  <li>Smaller groups (larger $\sigma_j^2 = \sigma^2/n_j$) get pulled harder. Larger
+      groups speak more clearly for themselves.</li>
+</ul>
+
+<p>
+The posterior variance contracts too: $V_j = \sigma_j^2\,(1 - B_j)$. The
+posterior estimate is tighter and less noisy than the raw group mean, at the
+cost of a small bias toward the grand mean.
+</p>
+
+<h3 id="hyperparam">Estimating $\tau$ from the data</h3>
+
+<p>
+A full Bayesian treatment puts a hyperprior on $(\mu, \tau^2)$ and integrates. A
+practical alternative, <em>empirical Bayes</em>, plugs in point estimates. Method
+of moments: the variance of the group means decomposes as
+</p>
+
+$$
+\operatorname&#123;Var&#125;(\bar y_j) \;=\; \tau^2 + \mathbb E[\sigma_j^2],
+$$
+
+<p>
+so $\hat\tau^2 = \max\!\bigl(0,\; S^2_&#123;\bar y&#125; - \overline&#123;\sigma_j^2&#125;\bigr)$
+where $S^2_&#123;\bar y&#125;$ is the sample variance of the group means. If observed
+between-group scatter is no larger than what within-group noise would produce on
+its own, the data are consistent with $\tau = 0$ and the model collapses to
+complete pooling.
+</p>
+
+<h2 id="figure">4. The simulation</h2>
+
+<p>
+Figure 1 shows $J$ simulated groups. Each row is one group: the small dots are the
+$n_j$ raw observations, the blue ✕ is the no-pooling estimate $\bar y_j$, the green
+○ is the partial-pooling estimate $\hat\theta_j$, and the gold ▲ marks the true
+$\theta_j$ for reference. The dashed black line is the grand mean.
+</p>
+
+<p>
+Drag the <em>between-group spread</em> $\tau$: as it shrinks, every green ○
+slides toward the grand mean; as it grows, the ○'s converge onto the ✕'s.
+"Fit $\tau$ from data" runs the empirical-Bayes step above. The readout reports
+the mean-squared error of each estimator against the true means $\theta_j$.
+The hierarchical estimate typically wins.
+</p>
+
+<Figure title="Figure 1 · No pooling vs. partial pooling vs. complete pooling" canvasId="fig-shrink" width="780" height="480" readoutId="shrink-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#9aa3b2;border-radius:50%"></span>raw $y_&#123;ij&#125;$</span>
+    <span><span class="swatch" style="background:#fbbf24"></span>true $\theta_j$</span>
+    <span><span class="swatch" style="background:#1f4a8c"></span>no-pool $\bar y_j$</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>partial-pool $\hat\theta_j$</span>
+    <span><span class="swatch" style="background:#111827"></span>grand mean</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="hb-J" label="number of groups $J$" valueId="hb-J-v" min="3" max="20" step="1" value="10" />
+  <ControlRange id="hb-n" label="observations per group $n$" valueId="hb-n-v" min="2" max="30" step="1" value="6" />
+  <ControlRange id="hb-sigma" label="within-group noise $\sigma$" valueId="hb-sigma-v" min="0.2" max="3" step="0.05" value="1" />
+  <ControlRange id="hb-tau-true" label="true between-group spread $\tau_&#123;\text&#123;true&#125;&#125;$" valueId="hb-tau-true-v" min="0" max="3" step="0.05" value="1.2" />
+  <ControlRange id="hb-tau" label="modelled $\tau$" valueId="hb-tau-v" min="0" max="5" step="0.05" value="1.2" />
+  <PresetRow>
+    <button id="hb-fit" type="button">fit τ from data (empirical Bayes)</button>
+    <button id="hb-resample" type="button">resample data</button>
+    <button id="hb-pull-zero" type="button">τ → 0 (complete pool)</button>
+    <button id="hb-pull-large" type="button">τ → ∞ (no pool)</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+Things to look for:
+</p>
+
+<ul>
+  <li>When $\tau_&#123;\text&#123;true&#125;&#125;$ is small (groups truly similar), the empirical-Bayes
+      fit picks $\hat\tau$ near zero and almost all groups collapse to the grand mean.
+      No-pooling estimates wander; the hierarchical estimates cluster cleanly around the truth.</li>
+  <li>When $\tau_&#123;\text&#123;true&#125;&#125;$ is large (groups truly different), $\hat\tau$
+      is large and the hierarchical estimates barely move. Both estimators perform similarly.</li>
+  <li>Small groups (lower $n$) get pulled much harder than large groups: their raw means are
+      less trustworthy, and the model knows it.</li>
+  <li>The hierarchical MSE is almost always lower than the no-pool MSE. Complete pooling
+      wins only when groups really do share a mean.</li>
+</ul>
+
+<h2 id="practice">5. In practice</h2>
+
+<ul>
+  <li><strong>Mixed-effects / multilevel models</strong> (lme4, brms, PyMC,
+      Stan): these are hierarchical Bayes by another name. The "random effects"
+      are the $\theta_j$; the "variance components" are $\sigma^2$ and $\tau^2$.</li>
+  <li><strong>Regularization</strong>: ridge regression is a hierarchical model
+      with $\beta_k \sim \mathcal N(0, \tau^2)$. The ridge penalty $\lambda
+      \lVert\beta\rVert^2$ corresponds to $\tau^2 = \sigma^2/\lambda$. Lasso is
+      the same picture with a Laplace prior. See
+      <a href="/math/bayesian-regression/">Bayesian regression</a> for the full
+      penalty-as-prior dictionary, including the $\ell_0$ / spike-and-slab case.</li>
+  <li><strong>Connection to Stein's 1956 result</strong>: for $J \ge 3$
+      independent $y_j \sim \mathcal N(\theta_j, 1)$ under total squared-error
+      loss, the James–Stein estimator $\hat\theta_j = \bigl(1 - (J-2)/\sum_k y_k^2\bigr)\,y_j$
+      dominates the naive $\hat\theta_j = y_j$ strictly and everywhere, even
+      when the groups are unrelated. Same multiplicative shape as the formula
+      in §2; the hierarchical-Bayes derivation explains why.</li>
+  <li><strong>Limitations</strong>: pulling toward a common mean helps the
+      average but can mislead on outlier groups, which the model treats as
+      draws from the same Gaussian population. For heavy-tailed group means,
+      replace the $\mathcal N(\mu, \tau^2)$ prior with a Student-$t$.</li>
+</ul>
+
+<NextCards heading="What next" cards={[
+  { href: "/conjugate-priors/", tag: "Updates", title: "Conjugate Priors & the Exponential Family", role: "Each level of a hierarchical model is a conjugate update if the prior shapes are chosen well." },
+  { href: "/posterior-summaries/", tag: "Decision", title: "Posterior Summaries & Bayes Risk", role: "Hierarchical estimates are posterior means under the model in §2, Bayes-optimal under squared loss." },
+  { href: "/monte-carlo/", tag: "Computation", title: "Monte Carlo & MCMC", role: "Real hierarchical posteriors aren't conjugate end-to-end; Gibbs and HMC handle the joint update." },
+  { href: "/bayesian-neural-networks/", tag: "Regularization", title: "Bayesian Neural Networks", role: "Layer-wise priors with shared variance hyperparameters are hierarchical Bayes for weights." },
+]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<script is:inline src="/math/hierarchical-bayes/hierarchical-bayes.js"></script>
+</ExplainerLayout>

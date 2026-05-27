@@ -1,0 +1,24 @@
+---
+import Readout from "./Readout.astro";
+
+interface Props {
+  title: string;
+  canvasId?: string;
+  width?: string | number;
+  height?: string | number;
+  readoutId?: string;
+  readoutText?: string;
+}
+
+const { title, canvasId, width, height, readoutId, readoutText } = Astro.props;
+---
+
+<div class="figure">
+  <div class="figure-title" set:html={title}></div>
+  <div class="figure-body">
+    {canvasId ? <canvas id={canvasId} width={width} height={height}></canvas> : <slot />}
+  </div>
+  {Astro.slots.has("legend") && <slot name="legend" />}
+  {readoutId !== undefined && <Readout id={readoutId}>{readoutText}</Readout>}
+  {Astro.slots.has("controls") && <div class="figure-controls"><slot name="controls" /></div>}
+</div>

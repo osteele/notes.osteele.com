@@ -1,0 +1,184 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Information Geometry" breadcrumb="Information Geometry" section="information-theory">
+
+<Hero title="Information Geometry" subtitle="Probability distributions as points on a Riemannian manifold." />
+
+<p>
+A family of probability distributions $p(x; \theta)$ can be viewed as a <strong>manifold</strong> where each point corresponds to a distribution and the parameters $\theta$ are the coordinates. <strong>Information Geometry</strong> uses differential geometry to study the intrinsic shape of these manifolds.
+</p>
+
+<p>
+The key insight is that the "distance" between distributions should be based on their information content, not the Euclidean distance of their parameters. This distance is defined by the <strong>Fisher Information Metric</strong> — the expected outer product of the score, written in coordinates $\theta$ as:
+</p>
+
+$$
+g_&#123;ij&#125;(\theta) = \mathbb&#123;E&#125;_&#123;p_\theta&#125;\!\left[ \frac&#123;\partial \log p_\theta&#125;&#123;\partial \theta^i&#125; \, \frac&#123;\partial \log p_\theta&#125;&#123;\partial \theta^j&#125; \right]
+$$
+
+<p>
+Two distributions are far apart when a sample easily tells them apart; they are close when it does not. The metric $g_&#123;ij&#125;$ turns that statement into a length.
+</p>
+
+<Aside>
+  <strong>One sentence:</strong> Information geometry treats statistical models as curved surfaces where the "straightest" paths (geodesics) follow the flow of information.
+</Aside>
+
+<h2>1. The Probability Simplex and Geodesics</h2>
+
+<p>
+The simplest statistical manifold is the <strong>probability simplex</strong>: the set of all categorical distributions over $n$ outcomes. For $n=3$, this is a triangle where each point $(p_1, p_2, p_3)$ satisfies $p_i \ge 0$ and $\sum p_i = 1$.
+</p>
+
+<p>
+Under the Fisher metric, the simplex is not flat—it is a portion of a hypersphere. The shortest paths (geodesics) between two distributions are great circles on this sphere.
+</p>
+
+<p>
+Concretely, the map $p_i \mapsto 2\sqrt&#123;p_i&#125;$ sends each distribution onto the positive orthant of a sphere of radius 2. Distance along the manifold is then the great-circle distance — the <strong>Fisher-Rao distance</strong>:
+</p>
+
+$$
+d_&#123;\mathrm&#123;FR&#125;&#125;(p, q) = 2 \arccos\!\left( \sum_i \sqrt&#123;p_i \, q_i&#125; \right)
+$$
+
+<Figure title="Figure 1 · Geodesics on the 3-outcome Simplex" canvasId="fig-ig-simplex" width="760" height="420" readoutId="fig-ig-simplex-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>Euclidean path (mixture)</span>
+      <span><span class="swatch" style="background:#b8412a"></span>Fisher-Rao geodesic</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div style="font-size:11px; color:var(--text-dim);">Drag the two endpoints (A and B) on the triangle. Compare the "straight" mixture path to the curved information-theoretic geodesic.</div>
+</Fragment>
+</Figure>
+
+<p>
+A "straight line" in Euclidean space corresponds to a <strong>mixture</strong>: $(1-t)P + tQ$. A Fisher-Rao geodesic corresponds to a path that changes the "surprise" at a constant rate.
+</p>
+
+<h2>2. Dual Flatness: e-projections and m-projections</h2>
+
+<p>
+Exponential families (like the Gaussian, Poisson, or Bernoulli) have a special geometric structure called <strong>dual flatness</strong>. They can be described by two sets of coordinates: <strong>natural parameters</strong> ($\eta$) and <strong>expectation parameters</strong> ($\mu$).
+</p>
+
+<p>
+Such a family has density
+</p>
+
+$$
+p(x; \eta) = h(x) \, \exp\!\left( \eta^\top T(x) - A(\eta) \right),
+$$
+
+<p>
+and the log-partition function $A(\eta)$ ties the two coordinate systems together: its gradient carries natural parameters to expectation parameters, $\mu = \nabla A(\eta)$.
+</p>
+
+<p>This duality gives us two types of "straight lines":</p>
+<ul>
+  <li><strong>e-geodesics:</strong> Straight lines in natural parameters (log-linear mixtures).</li>
+  <li><strong>m-geodesics:</strong> Straight lines in expectation parameters (standard mixtures).</li>
+</ul>
+
+<Figure title="Figure 2 · Dual Projections: e-projection vs. m-projection" canvasId="fig-ig-dual" width="760" height="400" readoutId="fig-ig-dual-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>m-projection (Forward KL / MLE)</span>
+      <span><span class="swatch" style="background:#b8412a"></span>e-projection (Reverse KL / VI)</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div style="font-size:11px; color:var(--text-dim);">The chart shows the parameter space of a Bernoulli distribution. Drag the target point $P$ and the constraint line.</div>
+</Fragment>
+</Figure>
+
+<p>
+For two members of the family, KL divergence is the <strong>Bregman divergence</strong> generated by the log-partition function:
+</p>
+
+$$
+D_&#123;\mathrm&#123;KL&#125;&#125;\!\left[\, p_&#123;\eta_1&#125; \,\Vert\, p_&#123;\eta_2&#125; \,\right] = A(\eta_2) - A(\eta_1) - \nabla A(\eta_1)^\top (\eta_2 - \eta_1)
+$$
+
+<p>
+Minimizing Forward KL divergence is an <strong>m-projection</strong> (finding the point in a sub-family that has the same average statistics). Minimizing Reverse KL divergence is an <strong>e-projection</strong>. This explains why MLE and VI behave so differently: they are "dropping perpendiculars" in different geometries.
+</p>
+
+<h2 id="kl-landscape">3. The KL Landscape and its Tangent Quadratic</h2>
+
+<p>
+The previous figures show parameter space from above. Lifting a divergence into a third dimension — using KL as a height — exposes structure that the flat views hide: how the bowl steepens toward the boundary of the simplex, where the Fisher quadratic approximation peels away from the true KL, and how the two dual geodesics of §2 actually trace through the landscape.
+</p>
+
+<p>
+Consider two independent Bernoulli variables with means $(\mu_1, \mu_2) \in (0,1)^2$. The KL divergence from a fixed anchor $\theta_0 = (\mu_&#123;0,1&#125;, \mu_&#123;0,2&#125;)$ to a varying point $\theta = (\mu_1, \mu_2)$ is a sum over coordinates:
+</p>
+
+$$
+D_&#123;\mathrm&#123;KL&#125;&#125;(\theta_0 \,\Vert\, \theta) = \sum_&#123;i=1&#125;^&#123;2&#125; \mu_&#123;0,i&#125; \log \frac&#123;\mu_&#123;0,i&#125;&#125;&#123;\mu_i&#125; + (1 - \mu_&#123;0,i&#125;) \log \frac&#123;1 - \mu_&#123;0,i&#125;&#125;&#123;1 - \mu_i&#125;
+$$
+
+<p>
+The Fisher quadratic — the second-order Taylor expansion of KL at the anchor — uses the inverse of the Fisher information metric:
+</p>
+
+$$
+\hat D(\theta) = \tfrac&#123;1&#125;&#123;2&#125; \sum_&#123;i&#125; \frac&#123;(\mu_i - \mu_&#123;0,i&#125;)^2&#125;&#123;\mu_&#123;0,i&#125;(1 - \mu_&#123;0,i&#125;)&#125;
+$$
+
+<p>
+At the anchor, surface and paraboloid agree to second order. Move away and they diverge — and the asymmetry of the bowl (true KL grows much faster as $\theta$ approaches the boundary than as it moves toward the centre) is precisely what makes KL non-symmetric.
+</p>
+
+<Figure title="Figure 3 · The KL Bowl, its Fisher Quadratic, and Two Geodesics" canvasId="fig-ig-klsurface" width="780" height="460" readoutId="fig-ig-klsurface-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:linear-gradient(90deg,#1f4a8c,#b8412a)"></span>KL bowl (height = divergence)</span>
+      <span><span class="swatch" style="background:repeating-linear-gradient(90deg,#ed9e2e 0 2px,transparent 2px 6px),repeating-linear-gradient(0deg,#ed9e2e 0 2px,transparent 2px 6px); background-color:#fff;"></span>Fisher quadratic (wireframe)</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>m-geodesic</span>
+      <span><span class="swatch" style="background:#b8412a"></span>e-geodesic</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div style="display:flex; flex-wrap:wrap; gap:14px 22px; align-items:center; font-size:11px; color:var(--text-dim);">
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <span style="font-weight:600; color:var(--text);">Anchor θ₀</span>
+      <label style="display:flex; gap:6px; align-items:center;">μ₀₁ <input type="range" id="fig-ig-klsurface-mu0a" min="0.05" max="0.95" step="0.01" value="0.4" style="width:120px;" /><span id="fig-ig-klsurface-mu0a-v" style="font-variant-numeric:tabular-nums; width:32px;">0.40</span></label>
+      <label style="display:flex; gap:6px; align-items:center;">μ₀₂ <input type="range" id="fig-ig-klsurface-mu0b" min="0.05" max="0.95" step="0.01" value="0.6" style="width:120px;" /><span id="fig-ig-klsurface-mu0b-v" style="font-variant-numeric:tabular-nums; width:32px;">0.60</span></label>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <span style="font-weight:600; color:var(--text);">Endpoint θ₁</span>
+      <label style="display:flex; gap:6px; align-items:center;">μ₁₁ <input type="range" id="fig-ig-klsurface-mu1a" min="0.05" max="0.95" step="0.01" value="0.85" style="width:120px;" /><span id="fig-ig-klsurface-mu1a-v" style="font-variant-numeric:tabular-nums; width:32px;">0.85</span></label>
+      <label style="display:flex; gap:6px; align-items:center;">μ₁₂ <input type="range" id="fig-ig-klsurface-mu1b" min="0.05" max="0.95" step="0.01" value="0.15" style="width:120px;" /><span id="fig-ig-klsurface-mu1b-v" style="font-variant-numeric:tabular-nums; width:32px;">0.15</span></label>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <span style="font-weight:600; color:var(--text);">Layers</span>
+      <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" id="fig-ig-klsurface-show-quad" checked /> Fisher quadratic</label>
+      <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" id="fig-ig-klsurface-show-m" checked /> m-geodesic</label>
+      <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" id="fig-ig-klsurface-show-e" checked /> e-geodesic</label>
+    </div>
+  </div>
+  <div style="font-size:11px; color:var(--text-dim); margin-top:8px;">Drag the canvas to rotate. The bowl is capped at a finite height so its boundary behaviour stays legible.</div>
+</Fragment>
+</Figure>
+
+<p>
+The two geodesics agree at the endpoints but otherwise trace different curves over the bowl. The <strong>m-geodesic</strong> ($\mu$ linear in $t$) is the chord of the base square. The <strong>e-geodesic</strong> ($\eta = \log(\mu / (1-\mu))$ linear in $t$) bows toward the interior, where the Fisher metric stretches less. Lift either curve onto the surface and you see why KL projections in §2 land on different points: the two connections traverse different paths between the same two distributions.
+</p>
+
+<NextCards heading="What next" intro="Revisit the foundations." cards={[{"href":"/fisher-information/","tag":"Geometry","title":"Uninformative Priors, Fisher Information & MLE","role":"Review the Fisher information metric and its role in defining the geometry of statistical models."}]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>.
+</div>
+
+  <script is:inline src="/math/information-geometry/ig.js"></script>
+</ExplainerLayout>

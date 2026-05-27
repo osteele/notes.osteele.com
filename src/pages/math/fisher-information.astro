@@ -1,0 +1,572 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import Legend from "../../components/explainer/Legend.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import PresetButton from "../../components/explainer/PresetButton.astro";
+import Readout from "../../components/explainer/Readout.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+import VizCard from "../../components/explainer/VizCard.astro";
+import VizCardGrid from "../../components/explainer/VizCardGrid.astro";
+---
+
+<ExplainerLayout title="Fisher Information" breadcrumb="Fisher Information" section="probability-and-statistics">
+
+<Hero title="Fisher Information" subtitle="Likelihood geometry, score functions, Fisher information, exponential families, and two routes to uninformative priors." />
+
+<OrientationNote>
+  <p>
+    This page emphasizes the geometric reading of Fisher information: local KL
+    curvature, coordinate changes, and Jeffreys priors. For the standard estimator
+    variance story, start with Sections 1-3; the later sections lean into the
+    information-geometric lens.
+  </p>
+</OrientationNote>
+
+<p>
+An "uninformative" prior is not a prior with no assumptions. It is an attempt to avoid
+privileging one coordinate system for the parameter over another. The usual route to
+that idea runs through likelihood geometry: the score tells which direction the
+likelihood rises, Fisher information measures local distinguishability, and Jeffreys
+prior uses that information as the volume element on parameter space.
+</p>
+
+<Aside>
+  <strong>One sentence:</strong> Fisher information says how much the model changes
+  when the parameter moves; Jeffreys prior puts prior mass proportional to the square
+  root of that local information.
+</Aside>
+
+<h2>1. Likelihood and MLE</h2>
+
+<p>
+For a model $p(x\mid\theta)$ and data $x_&#123;1:n&#125;$, the likelihood is
+$L(\theta)=p(x_&#123;1:n&#125;\mid\theta)$ and the log-likelihood is
+$\ell(\theta)=\log L(\theta)$. The maximum likelihood estimate is the parameter value
+that makes the observed data most probable under the model.
+</p>
+
+<Figure title="Figure 1 · Likelihood geometry and the MLE" canvasId="fig1" width="760" height="380" readoutId="fig1-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>log-likelihood</span>
+      <span><span class="swatch" style="background:#b8412a"></span>MLE</span>
+      <span><span class="swatch" style="background:#6b4592"></span>score</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+        <label>model</label>
+        <select id="fig1-model">
+          <option value="bernoulli">Bernoulli probability p</option>
+          <option value="normal">Normal mean μ, known σ</option>
+        </select>
+      </div>
+      <ControlRange id="fig1-n" label="sample size n" valueId="fig1-n-v" min="2" max="100" step="1" value="20" />
+      <ControlRange id="fig1-k" label="successes k" valueId="fig1-k-v" min="0" max="20" step="1" value="12" />
+      <ControlRange id="fig1-xbar" label="sample mean x̄" valueId="fig1-xbar-v" min="-3" max="3" step="0.05" value="0.8" />
+      <ControlRange id="fig1-sigma" label="known σ" valueId="fig1-sigma-v" min="0.35" max="2.5" step="0.05" value="1" />
+</Fragment>
+</Figure>
+
+<h2>2. The score</h2>
+
+<p>
+The <strong>score</strong> is the derivative of the log-likelihood:
+$s(\theta)=\partial_\theta\ell(\theta)$. Positive score means the likelihood rises as
+$\theta$ increases; negative score means it falls. Interior MLEs occur where the score
+crosses zero.
+</p>
+
+<Figure title="Figure 2 · The score points uphill toward the MLE" canvasId="fig2" width="760" height="330" readoutId="fig2-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#6b4592"></span>score $s(p)$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>zero score / MLE</span>
+      <span><span class="swatch" style="background:#d4690a"></span>uphill direction</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig2-n" label="trials n" valueId="fig2-n-v" min="2" max="80" step="1" value="24" />
+      <ControlRange id="fig2-k" label="successes k" valueId="fig2-k-v" min="0" max="24" step="1" value="15" />
+      <PresetRow>
+        <button data-fig2-preset="balanced">Balanced</button>
+        <button data-fig2-preset="few">Few successes</button>
+        <button data-fig2-preset="many">Many successes</button>
+        <button data-fig2-preset="boundary">Boundary MLE</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 2b · Likelihood landscape with score-arrow field" canvasId="fig2-score-field" width="760" height="340" readoutId="fig2-score-field-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>log-likelihood height</span>
+      <span><span class="swatch" style="background:#6b4592"></span>score arrows</span>
+      <span><span class="swatch" style="background:#b8412a"></span>MLE</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig2-field-n" label="trials n" valueId="fig2-field-n-v" min="2" max="120" step="1" value="28" />
+      <ControlRange id="fig2-field-k" label="successes k" valueId="fig2-field-k-v" min="0" max="28" step="1" value="17" />
+</Fragment>
+</Figure>
+
+<h2>3. Fisher information</h2>
+
+<p>
+Fisher information is the expected squared score,
+$I(\theta)=\mathbb&#123;E&#125;_\theta[s_\theta(X)^2]$. Under regularity conditions it also
+equals the expected negative curvature,
+$I(\theta)=-\mathbb&#123;E&#125;_\theta[\partial_\theta^2\log p(X\mid\theta)]$. Large
+information means nearby parameter values are easier to distinguish.
+</p>
+
+<Figure title="Figure 3 · Fisher information as curvature and precision" canvasId="fig3" width="760" height="340" readoutId="fig3-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>$nI(p)$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>selected $p$</span>
+      <span><span class="swatch" style="background:rgba(107,69,146,0.45)"></span>quadratic likelihood approximation</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig3-p" label="probability p" valueId="fig3-p-v" min="0.05" max="0.95" step="0.01" value="0.5" />
+      <ControlRange id="fig3-n" label="sample size n" valueId="fig3-n-v" min="1" max="200" step="1" value="25" />
+</Fragment>
+</Figure>
+
+<Aside>
+  <strong>Fisher information is the curvature of <a href="/math/kl-divergence/">KL divergence</a>.</strong>
+  Expand $\mathrm&#123;KL&#125;[p_\theta \,\|\, p_&#123;\theta+\Delta\theta&#125;]$ in $\Delta\theta$. The
+  score has zero mean under $p_\theta$, so the linear term vanishes; the second-order
+  term is the Fisher information:
+  $$
+  \mathrm&#123;KL&#125;\bigl[p_\theta \,\|\, p_&#123;\theta+\Delta\theta&#125;\bigr]
+  \;\approx\; \tfrac&#123;1&#125;&#123;2&#125;\, I(\theta)\,(\Delta\theta)^2.
+  $$
+  KL is asymmetric; its second-order local form is the <em>symmetric</em> quadratic
+  $\tfrac&#123;1&#125;&#123;2&#125; \Delta\theta^\top I(\theta) \Delta\theta$. In coordinates, this
+  positive-definite quadratic is exactly a Riemannian metric tensor
+  $g_\theta(u,v) = u^\top I(\theta)\, v$ on the manifold of distributions. This is the
+  starting point of information geometry. Fisher's role as "precision of the MLE,"
+  "expected squared score," "expected negative curvature of $\log p$," and "local
+  KL distinguishability" are four views of one object.
+</Aside>
+
+<Figure title="Figure 3c · KL ≈ ½·I·(Δθ)² — Fisher as the curvature of KL" canvasId="fig3-kl-quad" width="760" height="340" readoutId="fig3-kl-quad-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>$\mathrm&#123;KL&#125;[p_\theta \,\|\, p_&#123;\theta+\Delta\theta&#125;]$</span>
+      <span><span class="swatch" style="background:#6b4592"></span>quadratic $\tfrac&#123;1&#125;&#123;2&#125; I(\theta)(\Delta\theta)^2$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>selected $\Delta\theta$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+        <label>model</label>
+        <select id="fig3-kl-quad-model">
+          <option value="bernoulli">Bernoulli probability $p$</option>
+          <option value="normal-mean">Normal mean $\mu$ (known $\sigma$)</option>
+          <option value="normal-var">Normal variance $\sigma^2$ (known $\mu$)</option>
+        </select>
+      </div>
+      <ControlRange id="fig3-kl-quad-theta" label={String.raw`base $\theta$`} valueId="fig3-kl-quad-theta-v" min="0.05" max="0.95" step="0.01" value="0.4" />
+      <ControlRange id="fig3-kl-quad-delta" label={String.raw`$|\Delta\theta|$ shown`} valueId="fig3-kl-quad-delta-v" min="0.01" max="0.5" step="0.01" value="0.2" />
+      <div style="font-size:11px; color:var(--text-dim);">Small $\Delta\theta$: the two curves coincide. Large $\Delta\theta$: the quadratic underestimates the asymmetry of KL.</div>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 3b · MLE sampling spread and the Cramér-Rao scale" canvasId="fig3-crlb" width="760" height="350" readoutId="fig3-crlb-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>simulated MLEs</span>
+      <span><span class="swatch" style="background:#b8412a"></span>true parameter</span>
+      <span><span class="swatch" style="background:#6b4592"></span>$\mathcal N(\theta, 1/(nI(\theta)))$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig3-crlb-p" label="true probability $p$" valueId="fig3-crlb-p-v" min="0.05" max="0.95" step="0.01" value="0.35" />
+      <ControlRange id="fig3-crlb-n" label="sample size n" valueId="fig3-crlb-n-v" min="5" max="300" step="5" value="50" />
+      <PresetRow>
+        <button id="fig3-crlb-resample">Resample experiments</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="score-as-tilt">4. Score as infinitesimal tilting; exponential families</h2>
+
+<p>
+The Radon–Nikodym derivative
+$\frac&#123;d p_&#123;\theta+\Delta\theta&#125;&#125;&#123;d p_\theta&#125; = \exp\!\bigl(\Delta\theta\cdot s_\theta(x)\bigr) + O(\Delta\theta^2)$
+says that the score is the <em>direction of infinitesimal tilting</em>: changing
+$\theta$ a little reweights the measure by a factor that is linear in the score. Fisher
+information measures how much that tilt varies under $p_\theta$: $I(\theta) = \mathrm&#123;Var&#125;_\theta\bigl[s_\theta(X)\bigr]$.
+Models where the tilt has a closed-form structure are the <strong>exponential
+families</strong>:
+</p>
+
+$$
+p(x\mid\theta) \;=\; h(x)\,\exp\!\bigl(\eta(\theta)\,T(x) - A(\theta)\bigr).
+$$
+
+<p>
+Here $T(x)$ is the <strong>sufficient statistic</strong>, the only function of the
+data the likelihood depends on. The score becomes
+$s_\theta(x) = \eta'(\theta)\bigl(T(x) - \mathbb&#123;E&#125;_\theta T\bigr)$, and Fisher
+information collapses to a variance:
+$I(\theta) = \eta'(\theta)^2 \,\mathrm&#123;Var&#125;_\theta T(X)$. Updating on data tilts the
+measure by $\eta(\theta) T(x)$; a posterior built on a <em>conjugate</em> prior stays
+in the same exponential family (its natural parameter just shifts).
+<a href="/math/named-distributions/">Conjugate pairs</a> exist for this reason.
+</p>
+
+<Figure title="Figure 3d · Score reweights samples; Fisher info = variance of the tilt" canvasId="fig3-score-tilt" width="760" height="340" readoutId="fig3-score-tilt-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>$p_\theta$ (baseline)</span>
+      <span><span class="swatch" style="background:#b8412a"></span>tilted $p_&#123;\theta+\Delta\theta&#125;$</span>
+      <span><span class="swatch" style="background:#6b4592"></span>score $s_\theta(x)$ (tilt direction)</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+        <label>family</label>
+        <select id="fig3-score-tilt-model">
+          <option value="normal-mean">Normal mean ($T(x)=x$)</option>
+          <option value="poisson">Poisson rate ($T(x)=x$)</option>
+          <option value="exponential">Exponential rate ($T(x)=x$)</option>
+        </select>
+      </div>
+      <ControlRange id="fig3-score-tilt-theta" label={String.raw`base $\theta$`} valueId="fig3-score-tilt-theta-v" min="0.3" max="3" step="0.05" value="1" />
+      <ControlRange id="fig3-score-tilt-delta" label={String.raw`$\Delta\theta$`} valueId="fig3-score-tilt-delta-v" min="-0.6" max="0.6" step="0.01" value="0.3" />
+      <div style="font-size:11px; color:var(--text-dim);">The tilted density equals baseline times $\exp(\Delta\theta\cdot s_\theta)$ (to first order). Where the score is positive, samples are upweighted; where negative, downweighted.</div>
+</Fragment>
+</Figure>
+
+<Aside>
+<strong>The log-partition function does triple duty.</strong> Inside the exponential
+family $p(x\mid\eta) = h(x)\exp(\eta^\top T(x) - A(\eta))$, the normalizer
+$A(\eta) = \log\int h(x)\exp(\eta^\top T(x))\,dx$, the <em>log-partition function</em>,
+is a single object that encodes the whole geometry of the family in natural
+coordinates:
+$$
+\nabla A(\eta) = \mathbb&#123;E&#125;_\eta[T(X)], \qquad
+\nabla^2 A(\eta) = \mathrm&#123;Cov&#125;_\eta(T(X)) = I(\eta).
+$$
+$A$ is convex (its Hessian is a covariance matrix, hence positive semidefinite). Its
+first derivative gives the mean of the sufficient statistic; its second derivative
+gives the Fisher information in natural coordinates. The Legendre dual of $A$ is
+(negative) <a href="/math/entropy-mutual-information/">entropy</a>, which is the
+foundation of <a href="/math/variational-inference/">variational inference</a>.
+</Aside>
+
+<Figure title={String.raw`Figure 3e · Log-partition $A(\eta)$: slope = mean, curvature = Fisher info`} canvasId="fig3-logpartition" width="760" height="380" readoutId="fig3-logpartition-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>$A(\eta)$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>$A'(\eta) = \mathbb&#123;E&#125;_\eta[T]$</span>
+      <span><span class="swatch" style="background:#6b4592"></span>$A''(\eta) = \mathrm&#123;Var&#125;_\eta(T) = I(\eta)$</span>
+      <span><span class="swatch" style="background:#d4690a"></span>tangent at selected $\eta$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+        <label>family</label>
+        <select id="fig3-logpartition-model">
+          <option value="bernoulli">Bernoulli (η = log-odds)</option>
+          <option value="poisson">Poisson (η = log λ)</option>
+          <option value="exponential">Exponential (η = −λ)</option>
+          <option value="normal-mean">Normal mean (η = μ, σ=1)</option>
+        </select>
+      </div>
+      <ControlRange id="fig3-logpartition-eta" label={String.raw`natural parameter $\eta$`} valueId="fig3-logpartition-eta-v" min="-3" max="3" step="0.05" value="0" />
+      <div style="font-size:11px; color:var(--text-dim);">Tangent slope at $\eta$ is $\mathbb&#123;E&#125;_\eta[T]$ (red dot); convex curvature is $I(\eta)$ (purple curve). Convexity of $A$ is just "covariance is positive."</div>
+</Fragment>
+</Figure>
+
+<h2>5. Jeffreys prior</h2>
+
+<p>
+A flat prior is only flat in the coordinate you chose. For Bernoulli $p$, a flat prior
+on $p$ is not flat on the log-odds $\phi=\log(p/(1-p))$. Jeffreys prior avoids that
+coordinate dependence by using Fisher information:
+</p>
+
+$$ \pi_J(\theta) \propto \sqrt&#123;I(\theta)&#125;. $$
+
+<p>
+For Bernoulli data, $I(p)=1/[p(1-p)]$, so
+$\pi_J(p)\propto[p(1-p)]^&#123;-1/2&#125;$: the Beta$(1/2,1/2)$ prior. It is not flat in $p$,
+but it is the same prior after a smooth reparameterization.
+</p>
+
+<Figure title="Figure 4 · Flat priors depend on coordinates; Jeffreys prior transforms" canvasId="fig4" width="760" height="350" readoutId="fig4-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>flat in p</span>
+      <span><span class="swatch" style="background:#d4690a"></span>flat in transformed coordinate, mapped back</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>Jeffreys prior</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+        <label>transformation</label>
+        <select id="fig4-transform">
+          <option value="logit">logit</option>
+          <option value="probit">probit</option>
+          <option value="arcsine">arcsine</option>
+          <option value="boxcox">Box-Cox odds</option>
+        </select>
+      </div>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 4b · Jeffreys prior survives a change of coordinate" canvasId="fig4-pushforward" width="760" height="330" readoutId="fig4-pushforward-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#2d7a3e"></span>Jeffreys density in $p$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>pushforward to chosen coordinate and back</span>
+      <span><span class="swatch" style="background:#d4690a"></span>flat coordinate prior mapped back</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+        <label>coordinate</label>
+        <select id="fig4-pushforward-transform">
+          <option value="logit">logit</option>
+          <option value="arcsine">arcsine</option>
+          <option value="sqrt">sqrt</option>
+        </select>
+      </div>
+</Fragment>
+</Figure>
+
+<h2 id="fisher-metric">6. The Fisher metric: Jeffreys in multiple parameters</h2>
+
+<p>
+With one parameter, $\sqrt&#123;I(\theta)&#125;$ looks like just a square root. With two or
+more, $I(\theta)$ is a positive-definite matrix — the <strong>Fisher information
+metric</strong> on the parameter space — and Jeffreys' prior is
+</p>
+
+$$ \pi_J(\theta) \;\propto\; \sqrt&#123;\det I(\theta)&#125;, $$
+
+<p>
+the volume element of that metric. The square root is no longer cosmetic: it is
+the same factor that turns a length into an area on a curved surface. For the
+Normal family $\mathcal&#123;N&#125;(\mu, \sigma^2)$,
+</p>
+
+$$ I(\mu, \sigma) \;=\; \begin&#123;pmatrix&#125; 1/\sigma^2 & 0 \\ 0 & 2/\sigma^2 \end&#123;pmatrix&#125;,
+   \qquad \sqrt&#123;\det I(\mu, \sigma)&#125; \;=\; \frac&#123;\sqrt 2&#125;&#123;\sigma^2&#125;. $$
+
+<p>
+So Jeffreys on $(\mu, \sigma)$ is $\propto 1/\sigma^2$: flat in $\mu$, blowing up
+as $\sigma \to 0$. It is improper, but it transforms covariantly under
+reparameterization — and the figure below makes that visible. The "Fisher
+ellipses" mode draws the unit ball of $I$ at a grid of $(\mu, \sigma)$ values
+(the Cramér–Rao ellipse for a unit-sample estimator, up to scale); the
+"Jeffreys density" mode is a heatmap of $\sqrt&#123;\det I&#125;$; and the
+"coordinate warp" mode overlays the $(\mu, \log \sigma)$ grid on the
+$(\mu, \sigma)$ grid.
+</p>
+
+<Figure title={String.raw`Figure 4d · Fisher metric on the $(\mu, \sigma)$ plane`} canvasId="fig-fisher-metric" width="760" height="400" readoutId="fig-fisher-metric-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>Fisher unit-ball ellipse field</span>
+      <span><span class="swatch" style="background:#6b4592"></span>$\sqrt&#123;\det I&#125;$ density (Jeffreys)</span>
+      <span><span class="swatch" style="background:#d4690a"></span>$(\mu, \log\sigma)$ grid (warp)</span>
+      <span><span class="swatch" style="background:#b8412a"></span>focus point and CRLB ellipse</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>Fisher geodesic (3D view)</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <strong style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-right:4px;">mode</strong>
+        <button data-fig-fm-mode="ellipses">Fisher ellipses</button>
+        <button data-fig-fm-mode="jeffreys">Jeffreys density</button>
+        <button data-fig-fm-mode="warp">Coordinate warp</button>
+      </PresetRow>
+      <label style="font-size:12px; color:var(--text-dim); display:inline-flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="fig-fm-sample"> show CRLB at sample size n =
+        <input type="range" id="fig-fm-n" min="2" max="100" step="1" value="25" style="width:120px; vertical-align:middle;">
+        <span id="fig-fm-n-v">25</span>
+      </label>
+      <label style="font-size:12px; color:var(--text-dim); display:inline-flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="fig-fm-3d"> show as surface (3D)
+      </label>
+      <div style="font-size:11px; color:var(--text-dim);">Click in the plane to move the focus point. In 3D mode, drag to orbit the camera.</div>
+</Fragment>
+</Figure>
+
+<Aside>
+<strong>Why $\sqrt 2$, and why σ rather than σ²?</strong> The ratio of the
+$\mu$- and $\sigma$-precisions in $I(\mu, \sigma)$ is exactly $2$, so the
+Fisher ellipses are not circular — they are taller (along $\mu$) than wide
+(along $\sigma$) by $\sqrt 2$ everywhere. The same family parameterized by
+$(\mu, \sigma^2)$ has a different Fisher matrix and different ellipses, but
+Jeffreys' prior on the family is the same set of probabilities — that
+invariance is the point.
+</Aside>
+
+<p>
+With the metric in hand, three downstream constructions become geometric. The
+KL divergence between two nearby normals is, to leading order,
+$\mathrm&#123;KL&#125;(p_\theta \,\|\, p_&#123;\theta+\delta&#125;) \approx \tfrac12 \delta^\top I(\theta)\, \delta$:
+half the squared Fisher length of $\delta$. The natural gradient of a loss
+$\mathcal L(\theta)$ is $I(\theta)^&#123;-1&#125; \nabla \mathcal L(\theta)$ — the
+Riemannian gradient under this metric, not the Euclidean one. And for
+exponential families, the canonical and expectation parameters give the same
+manifold a pair of dually flat affine structures whose Bregman geometry is
+governed by the log-partition function $A(\eta)$ and its Legendre dual.
+Subsequent figures will build on these helpers.
+</p>
+
+<h2 id="max-entropy">7. Maximum-entropy priors</h2>
+
+<p>
+Jeffreys' answer to "uninformative" is geometric: pick the prior that is invariant
+under smooth reparameterization. There is a second answer, due to Jaynes, that is
+constraint-based: pick the prior that <em>commits the least</em> given what you
+explicitly know. Formally, maximize the
+<a href="/math/entropy-mutual-information/">entropy</a> of $\pi(\theta)$ subject to
+constraints like fixed support, mean, or variance. Lagrange multipliers turn the
+optimization into an exponential family: the multipliers are the natural parameters,
+and the constraint functions are the sufficient statistics.
+</p>
+
+<p>
+The two recipes answer different questions and often disagree. Jeffreys on an
+exponential rate gives $\pi_J(\lambda)\propto 1/\lambda$; max-entropy on $[0,\infty)$
+with fixed mean gives the exponential distribution itself, not a prior on its
+rate. The choice depends on whether you want invariance to coordinate change
+(Jeffreys) or minimal commitment beyond stated facts (max-entropy).
+</p>
+
+<Aside>
+<strong>Why max-entropy keeps producing exponential families.</strong> The Lagrangian
+$\mathcal&#123;L&#125;[q] = -\int q\log q - \sum_i \lambda_i\bigl(\int T_i q - c_i\bigr)$
+has a stationary point at $q(x)\propto \exp\bigl(\sum_i \lambda_i T_i(x)\bigr)$,
+exactly the exponential-family form. The multipliers $\lambda_i$ are the natural
+parameters; the constraint functions $T_i$ are the sufficient statistics; the
+log-partition $A(\lambda)$ enforces normalization. This is one half of the
+<a href="/math/entropy-mutual-information/">Legendre duality</a> between entropy and
+log-sum-exp.
+</Aside>
+
+<Figure title="Figure 4c · Maximum-entropy distributions from explicit constraints" canvasId="fig-maxent" width="760" height="400" readoutId="fig-maxent-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>max-entropy density</span>
+      <span><span class="swatch" style="background:#b8412a"></span>constraint targets</span>
+      <span><span class="swatch" style="background:#6b4592"></span>natural parameters (Lagrange multipliers)</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+        <label>support & constraints</label>
+        <select id="fig-maxent-case">
+          <option value="bounded">[a, b], normalization only → Uniform</option>
+          <option value="halfline">[0, ∞), fixed mean → Exponential</option>
+          <option value="real">ℝ, fixed mean & variance → Normal</option>
+          <option value="discrete">&#123;0,1,…,N&#125;, fixed mean → discrete exp-family</option>
+          <option value="nonneg-int">&#123;0,1,2,…&#125;, fixed mean → Geometric</option>
+        </select>
+      </div>
+      <ControlRange id="fig-maxent-mean" label="target mean μ" valueId="fig-maxent-mean-v" min="0.2" max="5" step="0.05" value="1.5" />
+      <ControlRange id="fig-maxent-var" label="target variance σ² (Normal only)" valueId="fig-maxent-var-v" min="0.1" max="4" step="0.05" value="1" />
+      <div style="font-size:11px; color:var(--text-dim);">Constraints in, exponential-family member out. The natural parameters are the Lagrange multipliers; the sufficient statistics are the constraint functions ($1$, $x$, $x^2$).</div>
+</Fragment>
+</Figure>
+
+<h2>8. Priors, posteriors, and MLE</h2>
+
+<p>
+MLE uses only the likelihood. Bayesian updating multiplies the likelihood by a prior.
+With Bernoulli data, a Beta$(a,b)$ prior gives a Beta$(a+k,b+n-k)$ posterior. The
+flat prior, Jeffreys prior, and a weakly informative prior agree more as $n$ grows,
+but they behave differently near boundaries.
+</p>
+
+<Figure title="Figure 5 · MLE versus posterior under flat, Jeffreys, and weak priors" canvasId="fig5" width="760" height="350" readoutId="fig5-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>likelihood</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>posterior</span>
+      <span><span class="swatch" style="background:#b8412a"></span>MLE</span>
+      <span><span class="swatch" style="background:#6b4592"></span>posterior mean</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig5-n" label="trials n" valueId="fig5-n-v" min="1" max="120" step="1" value="20" />
+      <ControlRange id="fig5-k" label="successes k" valueId="fig5-k-v" min="0" max="20" step="1" value="12" />
+      <div class="control">
+        <label>prior</label>
+        <select id="fig5-prior">
+          <option value="jeffreys">Jeffreys Beta(1/2, 1/2)</option>
+          <option value="flat">Flat Beta(1, 1)</option>
+          <option value="weak">Weakly informative Beta(2, 2)</option>
+        </select>
+      </div>
+      <PresetRow>
+        <button data-fig5-preset="moderate">Moderate data</button>
+        <button data-fig5-preset="small">Small sample</button>
+        <button data-fig5-preset="all-success">All successes</button>
+        <button data-fig5-preset="all-failure">All failures</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 5b · Prior to posterior shrinkage as samples arrive" canvasId="fig5-shrinkage" width="760" height="350" readoutId="fig5-shrinkage-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#bfb9aa"></span>prior</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>early posterior</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>later posterior</span>
+      <span><span class="swatch" style="background:#b8412a"></span>data-generating $p$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig5-shrink-p" label="true $p$" valueId="fig5-shrink-p-v" min="0.05" max="0.95" step="0.02" value="0.62" />
+      <ControlRange id="fig5-shrink-n" label="observations shown" valueId="fig5-shrink-n-v" min="0" max="120" step="5" value="45" />
+      <PresetRow>
+        <button id="fig5-shrink-resample">New data stream</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>What to remember</h2>
+
+<div class="compare">
+  <div data-target-figure="fig1"><strong>Likelihood</strong>How plausible the observed data are as a function of the parameter.</div>
+  <div data-target-figure="fig2"><strong>Score</strong>The local slope of log-likelihood; zero at an interior MLE.</div>
+  <div data-target-figure="fig3" data-hint-control="fig3-p"><strong>Fisher information</strong>The model's local sensitivity to the parameter.</div>
+  <div data-target-figure="fig4" data-hint-control="fig4-transform"><strong>Jeffreys prior</strong>The prior density proportional to $\sqrt&#123;I(\theta)&#125;$, invariant under smooth reparameterization.</div>
+  <div data-target-figure="fig5"><strong>MLE</strong>The likelihood maximizer, recovered as posterior mode in large samples under mild priors.</div>
+</div>
+
+<p>
+This page is the local geometry view of Bayesian modeling. For the global
+distributional mismatch view, see <a href="/math/kl-divergence/">KL Divergence</a>.
+For posterior approximation, see
+<a href="/math/variational-inference/">Free Energy &amp; Variational Inference</a>.
+</p>
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Related:
+  <a href="/math/kl-divergence/">KL Divergence</a>,
+  <a href="/math/variational-inference/">Free Energy &amp; Variational Inference</a>,
+  <a href="/math/monte-carlo/">Monte Carlo &amp; MCMC</a>.
+</div>
+
+  <script is:inline src="/math/fisher-information/fisher.js"></script>
+  <script is:inline src="/math/fisher-information/fisher-metric.js"></script>
+</ExplainerLayout>

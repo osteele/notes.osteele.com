@@ -1,0 +1,491 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+---
+
+<ExplainerLayout title="Choosing a Prior" breadcrumb="Choosing a Prior" section="bayesian-inference">
+<Hero title="Choosing a Prior" subtitle="Principles for prior selection: use real prior information when you have it; otherwise group invariance, maximum entropy, or Jeffreys — and the trade-offs between them." />
+
+<OrientationNote>
+  <p>
+    The framing here: prior selection is mostly a question of how much you
+    actually know. The default is to <em>use what you
+    know</em>; "uninformative" priors are a fallback when you genuinely don't, and
+    each construction (group invariance, max entropy, Jeffreys) answers a slightly
+    different question. The
+    <a href="/math/fisher-information/">Fisher information</a> page covers the geometry
+    of Jeffreys priors in depth; this page is the decision guide that sits above it.
+  </p>
+</OrientationNote>
+
+<h2 id="first-principle">1. The first principle</h2>
+
+<p>
+The most important principle of prior selection is that <strong>your prior should
+represent the best knowledge you have about the parameters before you look at the
+data</strong>. Usually some information is at your disposal:
+</p>
+
+<ul>
+  <li>A candidate's vote share is in $[0, 1]$ by definition, so any prior on it
+    lives on the unit interval — a Beta is the natural family.</li>
+  <li>In the <strong>German Tank Problem</strong> (the WWII estimation of German
+    tank production from serial numbers on captured equipment), the total
+    number of tanks $N$ must be at least the largest serial number observed.
+    The prior reflects that lower bound: zero mass below it.<sup><a href="#fn-tank">1</a></sup></li>
+  <li>A treatment effect cannot plausibly be more than a few standard deviations of
+    the outcome.</li>
+</ul>
+
+<p id="fn-tank" class="footnote">
+  <sup>1</sup> Ruggles &amp; Brodie, "An Empirical Approach to Economic Intelligence
+  in World War II," <em>Journal of the American Statistical Association</em> 42:237
+  (1947), 72–91. The problem is also covered in
+  <a href="https://en.wikipedia.org/wiki/German_tank_problem">Wikipedia's "German
+  tank problem"</a>.
+</p>
+
+<p>
+It is <em>unjustified</em> to use default, ignorance, or other automatic priors if
+you have substantial information that can affect the answer. Reaching for a
+non-informative prior is a real choice — it says "I want my conclusions to be
+visible to a reader who shares no prior beliefs with me" — but the choice has
+costs (wider credible intervals, sensitivity to parameterization), and you should
+make it only when the cost is worth paying.
+</p>
+
+<Aside>
+  <strong>One sentence:</strong> If you have prior information, use it; if you
+  don't, pick the "uninformative" prior whose justification matches the question
+  you care about — symmetry, ignorance under constraints, or reparameterization
+  invariance.
+</Aside>
+
+<h2 id="uninformative">2. Three routes to "uninformative"</h2>
+
+<p>
+A number of principles have been used to construct non-informative priors. The
+three with logical justification — and with results that broadly reproduce a
+corresponding frequentist analysis — are:
+</p>
+
+<ol>
+  <li><strong>Group invariance arguments.</strong> Choose the prior to respect a
+    symmetry the problem has — permutation symmetry on a die, translation symmetry
+    on a location parameter, scale invariance on a positive parameter.</li>
+  <li><strong>Maximum entropy arguments.</strong> Choose the prior with the largest
+    information entropy subject to whatever constraints you do know (mean, variance,
+    moments, support).</li>
+  <li><strong>Arguments from the Fisher information matrix.</strong> Take Jeffreys'
+    prior, $\pi_J(\theta)\propto\sqrt&#123;\det I(\theta)&#125;$, which is invariant under
+    smooth reparameterizations.</li>
+</ol>
+
+<p>
+None of the three is canonical. They answer different questions, and they
+sometimes disagree (a flat prior in $p$ is not flat in $\log p/(1-p)$; the
+Bernoulli MaxEnt prior under no constraint is Beta$(1,1)$, but Jeffreys is
+Beta$(1/2,1/2)$). The point of having three routes is that <em>which one is right
+depends on what you mean by "uninformative."</em>
+</p>
+
+<h2 id="group">3. Group invariance</h2>
+
+<p>
+If our prior knowledge is invariant under the action of some group $G$ acting on
+the parameter space — i.e., if applying any $g\in G$ doesn't change what we
+believe — then a defensible prior is one that is also invariant under $G$. The
+prior is determined (up to scale) by the requirement that $\pi(g\cdot\theta)=\pi(\theta)$ for all $g$.
+</p>
+
+<table class="prior-table">
+  <thead>
+    <tr><th>Setting</th><th>Symmetry group</th><th>Invariant prior</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Die or coin, no side favored</td>
+      <td>Permutations of faces</td>
+      <td>Uniform on faces, $\pi=1/k$</td>
+    </tr>
+    <tr>
+      <td>Location parameter $\mu\in\mathbb&#123;R&#125;$, translation-invariant</td>
+      <td>$\mu\mapsto\mu+c$</td>
+      <td>Flat (improper), $\pi(\mu)\propto 1$</td>
+    </tr>
+    <tr>
+      <td>Angle $\theta\in[0,2\pi)$, rotation-invariant</td>
+      <td>$\theta\mapsto\theta+c$</td>
+      <td>Uniform on the circle</td>
+    </tr>
+    <tr>
+      <td>Direction $(\varphi,\theta)$ on the sphere</td>
+      <td>$O(3)$</td>
+      <td>Uniform on solid angle, $d\Omega = \cos\varphi\,d\varphi\,d\theta$</td>
+    </tr>
+    <tr>
+      <td>Scale parameter $\sigma&gt;0$, scale-invariant</td>
+      <td>$\sigma\mapsto c\sigma$</td>
+      <td>$\pi(\sigma)\propto 1/\sigma$ (improper); equivalently flat on $\log\sigma$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+The scale case is the prototype. If we're measuring a positive quantity and want
+the prior to be invariant to the choice of unit (graduations of the ruler in
+inches vs. centimeters), then $\pi(c\sigma)=\pi(\sigma)$ for all $c&gt;0$.
+Equivalently $\pi(\omega)$ on $\omega=\log\sigma$ is invariant to translations of
+$\omega$, so it is flat in $\omega$. Pushing back to $\sigma$ picks up the
+Jacobian $1/\sigma$, and the prior on $\sigma$ is the <em>Jeffreys prior for a
+scale parameter</em>, $\pi(\sigma)\propto 1/\sigma$.
+</p>
+
+<p>
+Group-invariance arguments are the most secure from a logical point of view, but
+they need a natural symmetry in the problem to begin with. They are great when
+they apply and silent when they don't.
+</p>
+
+<h2 id="maxent">4. Maximum entropy</h2>
+
+<p>
+Maximum entropy (E.T. Jaynes) chooses the prior with the largest information
+entropy subject to known constraints. The intuition: entropy measures how much
+information we <em>lack</em>, so picking the maximum-entropy density commits the
+least beyond the stated constraints. The recipe is a Lagrangian:
+</p>
+
+$$
+\mathcal&#123;L&#125;[p] \;=\; -\!\int p(x)\log p(x)\,dx
+\;-\; \lambda_0\!\Bigl(\int p - 1\Bigr)
+\;-\; \sum_j \lambda_j\!\Bigl(\int g_j(x)\,p(x)\,dx - c_j\Bigr).
+$$
+
+<p>
+Stationarity in $p$ gives $-\log p(x) - 1 - \lambda_0 - \sum_j\lambda_j g_j(x)=0$,
+i.e.,
+</p>
+
+$$
+p(x) \;\propto\; \exp\!\Bigl(\sum_j \lambda_j g_j(x)\Bigr).
+$$
+
+<p>
+The MaxEnt density is an <em>exponential family</em> whose sufficient statistics
+are exactly the constraint functions $g_j$ and whose natural parameters $\lambda_j$
+are the Lagrange multipliers. Solving the constraint equations $\int g_j p =c_j$
+fixes the $\lambda_j$.
+</p>
+
+<p>
+The MaxEnt outputs for the standard constraints are exactly the named "default"
+distributions:
+</p>
+
+<table class="prior-table">
+  <thead>
+    <tr><th>Support</th><th>Constraints</th><th>MaxEnt density</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Finite set $\&#123;1,\dots,n\&#125;$</td><td>None (just normalization)</td><td>Uniform $p_k=1/n$</td></tr>
+    <tr><td>Interval $[a,b]\subset\mathbb&#123;R&#125;$</td><td>None</td><td>Uniform on $[a,b]$</td></tr>
+    <tr><td>$\&#123;0,1,2,\dots\&#125;$</td><td>Mean $\mu$</td><td>Geometric$(p=1/(1+\mu))$</td></tr>
+    <tr><td>$[0,\infty)$</td><td>Mean $\mu$</td><td>Exponential$(1/\mu)$</td></tr>
+    <tr><td>$\mathbb&#123;R&#125;$</td><td>Mean $\mu$, variance $\sigma^2$</td><td>Normal$(\mu,\sigma^2)$</td></tr>
+    <tr><td>$[0,\infty)$</td><td>$\mathbb&#123;E&#125;[\log x]$ and $\mathbb&#123;E&#125;[x]$ both fixed</td><td>Gamma$(\alpha,\beta)$</td></tr>
+    <tr><td>$(0,1)$</td><td>$\mathbb&#123;E&#125;[\log x]$ and $\mathbb&#123;E&#125;[\log(1-x)]$ both fixed</td><td>Beta$(\alpha,\beta)$</td></tr>
+  </tbody>
+</table>
+
+<p>
+This is the rule-of-thumb you reach for in practice: <em>say what you know, and
+the MaxEnt prior is whichever named distribution turns those facts into sufficient
+statistics</em>. If all you know is that a quantity is positive and has a finite
+mean, the exponential is the prior with the least extra commitment. If you also
+know the variance, Gaussian. If the support is bounded and you know nothing else,
+uniform.
+</p>
+
+<p>
+But MaxEnt has a flaw, which is why Jeffreys is also worth knowing: its output
+depends on the choice of base measure and on which coordinates you write the
+entropy in. The continuous "differential entropy" is not invariant under smooth
+reparameterizations — if you change coordinates $x\mapsto\phi(x)$, the entropy
+shifts by $\mathbb&#123;E&#125;[\log|\phi'(x)|]$ and so does the answer. So MaxEnt
+implicitly commits to a natural parameterization. When that parameterization is
+obvious (Cartesian coordinates on space, time on $[0,\infty)$), MaxEnt is sharp.
+When it isn't, the answer is parameterization-dependent.
+</p>
+
+<h2 id="jeffreys">5. Jeffreys' priors</h2>
+
+<p>
+Harold Jeffreys' construction sidesteps the coordinate issue by defining the prior
+through the Fisher information of the <em>likelihood</em>:
+</p>
+
+$$
+\pi_J(\theta) \;\propto\; \sqrt&#123;\det I(\theta)&#125;,
+\qquad I(\theta)\;=\; -\mathbb&#123;E&#125;\!\left[\frac&#123;\partial^2 \log p(x\mid\theta)&#125;&#123;\partial\theta\,\partial\theta^\top&#125;\right].
+$$
+
+<p>
+This is automatically invariant under reparameterizations: if $\theta=h^&#123;-1&#125;(\phi)$,
+then $I(\phi)=I(\theta)\,(d\theta/d\phi)^2$, so $\sqrt&#123;I(\phi)&#125;=\sqrt&#123;I(\theta)&#125;\,|d\theta/d\phi|$, which is precisely the Jacobian factor needed for the prior density to push forward to itself in the new coordinate. Two analysts using different
+parameterizations end up with the same prior on the underlying probability model.
+</p>
+
+<p>
+Worked examples:
+</p>
+
+<ul>
+  <li><strong>Normal mean, $\sigma$ known.</strong> $I(\mu)=n/\sigma^2$ is constant
+    in $\mu$, so $\pi_J(\mu)\propto 1$ — flat. Matches the location-translation
+    group argument.</li>
+  <li><strong>Normal scale, $\mu$ known.</strong> $I(\sigma)\propto 1/\sigma^2$, so
+    $\pi_J(\sigma)\propto 1/\sigma$. Matches the scale-invariance group argument.</li>
+  <li><strong>Bernoulli bias $p$.</strong> $I(p)=1/[p(1-p)]$, so
+    $\pi_J(p)\propto[p(1-p)]^&#123;-1/2&#125;$ — the Beta$(1/2,1/2)$ prior. Unlike a flat
+    prior, this is invariant when reparameterized in log-odds.</li>
+</ul>
+
+<p>
+Jeffreys is often improper (the integral diverges), as in the location and scale
+cases above. That's not by itself a problem for Bayesian inference — the
+posterior is usually proper as soon as you have any data. The
+<a href="/math/fisher-information/">Fisher information page</a> develops Jeffreys in
+detail, including the multi-parameter version through the Fisher metric and
+several worked transformations.
+</p>
+
+<h2 id="comparison">6. The routes can disagree</h2>
+
+<p>
+The three routes don't always pick the same prior, because they answer different
+questions:
+</p>
+
+<ul>
+  <li><strong>Group invariance</strong> asks: <em>which prior respects the natural
+    symmetry of the problem?</em></li>
+  <li><strong>Max entropy</strong> asks: <em>given these constraints, which prior
+    commits the least?</em></li>
+  <li><strong>Jeffreys</strong> asks: <em>which prior gives the same answer in any
+    coordinate system?</em></li>
+</ul>
+
+<p>
+For some classes of problems the answers coincide (location and scale parameters
+under translation/rescaling symmetry). For others they diverge. A Bernoulli with
+no constraints has MaxEnt prior Beta$(1,1)$ (uniform on $p$); Jeffreys gives
+Beta$(1/2,1/2)$; a group-invariance argument doesn't directly apply because
+there's no natural group symmetry on $[0,1]$ unless you posit one. Which to use
+depends on the question: do you want a uniform-in-$p$ analysis (MaxEnt), or one
+that survives a switch to log-odds (Jeffreys)?
+</p>
+
+<Figure title="Figure 1 · Three 'uninformative' priors on the Bernoulli bias p" canvasId="fig-three-priors" width="780" height="360" readoutId="fig-three-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>Flat / MaxEnt: Beta(1, 1)</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>Jeffreys: Beta(½, ½)</span>
+    <span><span class="swatch" style="background:#b8412a"></span>Haldane: Beta(0⁺, 0⁺)</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+    <label>show coordinate</label>
+    <select id="fig-three-coord">
+      <option value="p">density on p</option>
+      <option value="logit">density on logit p (log-odds)</option>
+    </select>
+  </div>
+  <ControlRange id="fig-three-n" label="observed trials n" valueId="fig-three-n-v" min="0" max="60" step="1" value="0" />
+  <ControlRange id="fig-three-k" label="observed successes k" valueId="fig-three-k-v" min="0" max="60" step="1" value="0" />
+  <PresetRow>
+    <button data-fig-three-preset="none">No data (n=0)</button>
+    <button data-fig-three-preset="small">Small (n=4, k=3)</button>
+    <button data-fig-three-preset="boundary">All successes (n=8, k=8)</button>
+    <button data-fig-three-preset="large">Large (n=40, k=22)</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+At $n=0$ the three priors look different: flat is uniform on $p$, Jeffreys is
+U-shaped with mass pushed toward the boundaries, and Haldane (the limit $\alpha,\beta\to 0$) is fully concentrated on $\&#123;0,1\&#125;$. Switch the readout to log-odds: the
+flat prior on $p$ becomes peaked around $p=1/2$, Jeffreys becomes flat in log-odds
+(another reading of its invariance), and Haldane becomes flat over all
+$\mathbb&#123;R&#125;$. As $n$ grows the posteriors converge — for moderate $n$ the
+disagreement only matters near the boundary $p\approx 0$ or $p\approx 1$, where
+the prior dominates because the likelihood goes to zero.
+</p>
+
+<h2 id="critique">7. Pitfalls and the "ignorance" warning</h2>
+
+<p>
+Non-informative priors are <em>not</em> priors with no assumptions. They are
+attempts to avoid privileging one coordinate system or one set of facts over
+another, and each construction makes a specific choice:
+</p>
+
+<ul>
+  <li><strong>Flat priors are coordinate-dependent.</strong> A prior that is uniform
+    in $p$ is not uniform in $\log p/(1-p)$. Saying "let's just use a flat prior"
+    answers <em>which</em> flat prior with the parameterization you happened to be
+    using.</li>
+  <li><strong>MaxEnt depends on the base measure.</strong> Maximum-entropy priors
+    over continuous spaces are not parameterization-invariant unless you carry a
+    reference measure along (the relative-entropy formulation), and writing down a
+    natural reference measure is itself a modeling assumption.</li>
+  <li><strong>Improper priors are not always safe.</strong> Jeffreys and group
+    priors are often improper. The posterior usually becomes proper after any data,
+    but not always — for hierarchical models you should check.</li>
+  <li><strong>"Uninformative" can be very informative on derived quantities.</strong>
+    A flat prior on the variance $\sigma^2$ puts most of its mass on huge values; a
+    flat prior on $\log\sigma$ is dramatically different. Either is "uninformative"
+    on its own coordinate but informative on the other.</li>
+</ul>
+
+<p>
+The standard caution bears repeating: use of "uninformative" or "automatic"
+priors does not incorporate any real prior information you may have. If you
+do have such information, use it.
+</p>
+
+<h2 id="decision">8. A short decision guide</h2>
+
+<table class="prior-table">
+  <thead>
+    <tr><th>Situation</th><th>First choice</th><th>Why</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>You have a calibrated estimate from previous data or theory</td>
+      <td>Informative prior matching that estimate</td>
+      <td>Don't waste the information; show it explicitly in the prior</td>
+    </tr>
+    <tr>
+      <td>You have soft beliefs ("plausibly $\pm 2\sigma$ around 0")</td>
+      <td>Weakly-informative prior at that scale (e.g. Normal$(0, 2.5^2)$ on a standardized coefficient)</td>
+      <td>Regularizes near the boundary, agrees with data when there's enough of it</td>
+    </tr>
+    <tr>
+      <td>Closed-form posterior matters; soft beliefs OK</td>
+      <td>Conjugate prior with hyperparameters interpretable as pseudo-counts (<a href="/math/conjugate-priors/">see here</a>)</td>
+      <td>Fast updates, transparent strength, often a reasonable approximation</td>
+    </tr>
+    <tr>
+      <td>Location parameter, no information</td>
+      <td>Flat on $\theta$ (translation-invariant)</td>
+      <td>All three routes agree</td>
+    </tr>
+    <tr>
+      <td>Scale or rate parameter, no information</td>
+      <td>$\pi(\sigma)\propto 1/\sigma$ (Jeffreys / scale-invariant)</td>
+      <td>All three routes agree</td>
+    </tr>
+    <tr>
+      <td>Probabilities or rates with possible boundary cases</td>
+      <td>Beta$(1/2,1/2)$ (Jeffreys)</td>
+      <td>Coordinate-invariant; better near $p\approx 0, 1$ than flat</td>
+    </tr>
+    <tr>
+      <td>Discrete outcomes, no preference between them</td>
+      <td>Symmetric Dirichlet, e.g. $\alpha=1$ (uniform on simplex) or $\alpha=1/2$ (Jeffreys)</td>
+      <td>Group invariance under permutation of categories</td>
+    </tr>
+    <tr>
+      <td>Positive quantity with known mean only</td>
+      <td>Exponential$(1/\mu)$ (MaxEnt)</td>
+      <td>The least committal positive distribution with that mean</td>
+    </tr>
+    <tr>
+      <td>Real-valued quantity with known mean and variance</td>
+      <td>Normal (MaxEnt)</td>
+      <td>The least committal distribution on $\mathbb&#123;R&#125;$ with those moments</td>
+    </tr>
+    <tr>
+      <td>Posterior is sensitive to the prior choice</td>
+      <td>Report results under multiple priors, or collect more data</td>
+      <td>If the answer depends on the prior in a way you can't defend, the data isn't doing enough work yet</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="elicit">9. Practical elicitation: turn beliefs into pseudo-counts</h2>
+
+<p>
+For prior beliefs that you can articulate but not immediately write as a density,
+the <em>pseudo-count</em> reading from the conjugate-prior page is often the most
+practical conversion:
+</p>
+
+<ul>
+  <li>"I'd guess this coin's bias is around 0.6, and I'm about as sure as if I'd
+    seen 10 trials" → Beta$(7, 5)$. Mean 0.58, effective sample size 10.</li>
+  <li>"I'd estimate the event rate at ≈ 2 per year, with about 5 years of indirect
+    experience" → Gamma$(\alpha=10, \beta=5)$ on the rate. Mean 2, effective
+    observation 5 years.</li>
+  <li>"I think the parameter is near 0, on the scale of 0.5" →
+    Normal$(0, 0.5^2)$. Worth one observation of precision-4 data.</li>
+</ul>
+
+<p>
+The discipline this enforces is useful: every conjugate hyperparameter has units
+of either pseudo-events or pseudo-observations, and writing them down forces you
+to check that your prior isn't accidentally worth a thousand observations on a
+hundred-observation problem.
+</p>
+
+<NextCards heading="What next" cards={[
+  { href: "/conjugate-priors/", tag: "Bayes", title: "Conjugate Priors & the Exponential Family", role: "The other route to a workable prior: conjugacy. Hyperparameters as pseudo-counts, closed-form posteriors, standard pairs." },
+  { href: "/fisher-information/", tag: "Geometry", title: "Fisher Information & Jeffreys Priors", role: "The interactive treatment of Jeffreys' construction, coordinate transforms, and the Fisher metric." },
+  { href: "/named-distributions/", tag: "Reference", title: "Named Distributions", role: "Where Beta, Dirichlet, Gamma, Normal, and the rest sit relative to each other — useful when picking an informative prior." },
+  { href: "/monte-carlo/", tag: "Computation", title: "Monte Carlo & MCMC", role: "When the prior is not conjugate and the posterior has no closed form, sample from it." },
+]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<style>
+.prior-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 12px 0 20px 0;
+}
+.prior-table th, .prior-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  vertical-align: top;
+}
+.prior-table th {
+  font-weight: 600;
+  background: rgba(2, 132, 199, 0.06);
+  border-bottom: 2px solid rgba(2, 132, 199, 0.25);
+}
+.footnote {
+  font-size: 12px;
+  color: var(--text-dim, #5a6577);
+  margin: 6px 0 14px;
+  padding-left: 16px;
+  text-indent: -16px;
+  line-height: 1.5;
+}
+.footnote sup { margin-right: 4px; }
+</style>
+
+<script is:inline src="/math/choosing-a-prior/choosing-a-prior.js"></script>
+</ExplainerLayout>

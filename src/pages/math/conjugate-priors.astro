@@ -1,0 +1,635 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+import NotationAside from "../../components/explainer/NotationAside.astro";
+---
+
+<ExplainerLayout title="Conjugate Priors & the Exponential Family" breadcrumb="Conjugate Priors" section="bayesian-inference">
+<Hero title="Conjugate Priors & the Exponential Family" subtitle="Why some prior–likelihood pairs update in closed form, what the hyperparameters mean as pseudo-data, and the standard conjugate pairs." />
+
+<OrientationNote>
+  <p>
+    A <em>conjugate</em> prior is one that keeps its functional form after Bayesian
+    updating: if the prior is in family $P$ and the likelihood is in family $F$, the
+    posterior is again in $P$. This page explains when that happens (whenever the
+    likelihood is exponential-family with a finite-dimensional sufficient statistic),
+    why the hyperparameters read as <em>pseudo-counts</em> of prior observations, and
+    how to update them by simple arithmetic.
+  </p>
+</OrientationNote>
+
+<p>
+Conjugate priors are useful for two reasons. First, computational convenience —
+posterior arithmetic reduces to adding sufficient statistics. Second, the
+hyperparameters of the conjugate prior have a clean interpretation as <em>prior
+data</em>: a Beta$(\alpha,\beta)$ prior on a coin's bias acts like $\alpha-1$ prior
+heads and $\beta-1$ prior tails; a Normal-Gamma prior on $(\mu,\sigma^2)$ acts like
+$\kappa_0$ prior observations of the mean and $2\alpha_0$ prior observations of the
+variance. The same arithmetic that turns the posterior back into a member of the
+family also turns each hyperparameter into an effective sample size.
+</p>
+
+<Aside>
+  <strong>One sentence:</strong> Whenever the likelihood is an exponential family
+  $p(x\mid\eta)=h(x)\exp(\eta^\top T(x)-A(\eta))$, the conjugate prior has the form
+  $\pi(\eta\mid\tau,\nu)\propto\exp(\eta^\top\tau-\nu A(\eta))$, and Bayesian updating
+  is just $\tau\mapsto\tau+\sum_i T(x_i)$, $\nu\mapsto\nu+n$.
+</Aside>
+
+<h2 id="exp-family">1. The exponential family (recap)</h2>
+
+<p>
+Conjugacy lives inside the <strong>exponential family</strong> — distributions
+of the canonical form
+</p>
+
+$$
+p(x\mid\eta) \;=\; h(x)\,\exp\!\bigl(\eta^\top T(x) \;-\; A(\eta)\bigr),
+$$
+
+<p>
+where $\eta$ is the natural parameter, $T(x)$ the sufficient statistic, $h(x)$
+the base measure, and $A(\eta)$ the log-partition function. The
+<a href="/math/exponential-family/">exponential-family page</a> covers what each
+piece is called and why, why the log-partition borrows its name from
+statistical physics, how derivatives of $A$ give the moments of $T(X)$, the
+canonical-link / mean-function pair behind logistic and Poisson regression,
+and an interactive picker stepping through six standard members.
+</p>
+
+<p>
+The one fact the conjugacy argument below needs: the natural parameter $\eta$
+and sufficient statistic $T(x)$ meet only in an inner product
+$\eta^\top T(x)$, so $n$ i.i.d. observations summarize themselves into a
+fixed-size pair $(\sum_i T(x_i), n)$.
+</p>
+
+<p>
+The <em>Pitman–Koopman–Darmois theorem</em> is the converse: for a family
+with fixed support, a $k$-dimensional sufficient statistic exists for every
+sample size $n$ if and only if the family is exponential of dimension at most
+$k$. Conjugate priors with finite-dimensional hyperparameters are therefore
+essentially restricted to this case; outside the exponential family, the
+posterior's complexity grows with $n$.
+</p>
+
+<h2 id="why-conjugacy">2. Why conjugate priors exist</h2>
+
+<p>
+With $n$ i.i.d. observations $x_&#123;1:n&#125;$ from an exponential family, the joint
+likelihood is
+</p>
+
+$$
+p(x_&#123;1:n&#125;\mid\eta) \;=\; \Bigl[\prod_i h(x_i)\Bigr]\,
+\exp\!\Bigl(\eta^\top \!\sum_i T(x_i) \;-\; n\,A(\eta)\Bigr).
+$$
+
+<p>
+Read off two numbers from the data: the <em>total sufficient statistic</em>
+$S=\sum_i T(x_i)$ and the <em>sample size</em> $n$. As a function of $\eta$, the
+likelihood depends only on $(S, n)$.
+</p>
+
+<p>
+Now pick a prior with the same functional form in $\eta$ — that is, a density
+proportional to $\exp(\eta^\top\tau_0 - \nu_0 A(\eta))$ on the natural-parameter
+space:
+</p>
+
+$$
+\pi(\eta\mid\tau_0,\nu_0) \;\propto\; \exp\!\bigl(\eta^\top\tau_0 - \nu_0\,A(\eta)\bigr).
+$$
+
+<p>
+The posterior is the product, and the product is again in this family:
+</p>
+
+$$
+p(\eta\mid x_&#123;1:n&#125;) \;\propto\; \exp\!\Bigl(\eta^\top(\tau_0+S) - (\nu_0+n)\,A(\eta)\Bigr)
+\;=\; \pi\!\bigl(\eta\mid\tau_0+S,\;\nu_0+n\bigr).
+$$
+
+<p>
+Updating is the arithmetic
+</p>
+
+$$
+\boxed&#123;\;\tau \;\mapsto\; \tau_0 + \sum_i T(x_i),\qquad \nu \;\mapsto\; \nu_0 + n.\;&#125;
+$$
+
+<Aside>
+  <strong>Pseudo-count reading:</strong> $\nu_0$ is the number of pseudo-observations
+  the prior is worth, and $\tau_0$ is their pseudo-total of sufficient statistics. A
+  Beta$(\alpha,\beta)$ prior on a Bernoulli has $\nu_0=\alpha+\beta-2$ pseudo-trials
+  with $\alpha-1$ pseudo-heads. Choosing the prior is choosing how much pretend data
+  to start with.
+</Aside>
+
+<NotationAside>
+  <p>
+    The density-form expressions above are shorthand for an update on
+    measures: the posterior measure $\pi(\cdot\mid y)$ has density with
+    respect to any dominating $\mu$ (Lebesgue for continuous parameters,
+    counting for discrete) equal to prior density × likelihood, up to
+    normalization. The choice of dominating measure cancels in the
+    posterior. See the <a href="/math/notation/">notation page</a>.
+  </p>
+</NotationAside>
+
+<h2 id="beta-bernoulli">3. Worked example: Beta–Bernoulli</h2>
+
+<p>
+The Bernoulli likelihood is $p(x\mid p) = p^&#123;x&#125;(1-p)^&#123;1-x&#125;$ for $x\in\&#123;0,1\&#125;$. In
+exponential-family form,
+</p>
+
+$$
+p(x\mid p) \;=\; \exp\!\Bigl(x\,\underbrace&#123;\log\tfrac&#123;p&#125;&#123;1-p&#125;&#125;_&#123;\eta&#125; \;-\;
+\underbrace&#123;(-\log(1-p))&#125;_&#123;A(\eta)&#125;\Bigr),
+$$
+
+<p>
+so $T(x)=x$ and the natural parameter $\eta$ is the log-odds (the
+<em>logit</em>). The conjugate prior in canonical form has density
+$\propto\exp(\eta\tau_0 - \nu_0 A(\eta))$; transformed back to the bias $p$, this is
+the <em>Beta distribution</em>:
+</p>
+
+$$
+p \;\sim\; \mathrm&#123;Beta&#125;(\alpha,\beta)
+\;\propto\; p^&#123;\alpha-1&#125;(1-p)^&#123;\beta-1&#125;,
+$$
+
+<p>
+where $\alpha = \tau_0+1$ and $\beta=\nu_0-\tau_0+1$. After observing $k$ successes
+and $n-k$ failures, $S=k$ and the posterior is
+</p>
+
+$$
+p \mid x_&#123;1:n&#125; \;\sim\; \mathrm&#123;Beta&#125;(\alpha+k,\;\beta+n-k).
+$$
+
+<p>
+Each prior heads $\alpha-1$ adds to observed heads $k$; each prior tails $\beta-1$
+adds to observed tails $n-k$. The prior is literally a pretend dataset. The
+<em>posterior mean</em>
+</p>
+
+$$
+\mathbb&#123;E&#125;[p\mid x_&#123;1:n&#125;] \;=\; \frac&#123;\alpha+k&#125;&#123;\alpha+\beta+n&#125;
+\;=\; \frac&#123;n&#125;&#123;\alpha+\beta+n&#125;\,\hat p_&#123;\mathrm&#123;ML&#125;&#125; \;+\;
+\frac&#123;\alpha+\beta&#125;&#123;\alpha+\beta+n&#125;\,\mathbb&#123;E&#125;[p]
+$$
+
+<p>
+is a convex combination of the maximum-likelihood estimate $\hat p_&#123;\mathrm&#123;ML&#125;&#125;=k/n$
+and the prior mean $\mathbb&#123;E&#125;[p]=\alpha/(\alpha+\beta)$, weighted by the sample
+size against the prior strength $\alpha+\beta$. The flat prior Beta$(1,1)$, the
+Jeffreys prior Beta$(1/2,1/2)$, and the Haldane prior Beta$(0,0)$ are all conjugate
+— they differ only in how much pseudo-data they contribute and where the mass sits
+near the boundary $p\in\&#123;0,1\&#125;$.
+</p>
+
+<Figure title="Figure 1 · Beta–Bernoulli updating as adding pseudo-counts" canvasId="fig-beta-bernoulli" width="780" height="380" readoutId="fig-beta-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#bfb9aa"></span>prior Beta$(\alpha,\beta)$</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>posterior Beta$(\alpha+k,\beta+n-k)$</span>
+    <span><span class="swatch" style="background:#1f4a8c"></span>likelihood (normalized)</span>
+    <span><span class="swatch" style="background:#b8412a"></span>MLE $k/n$</span>
+    <span><span class="swatch" style="background:#6b4592"></span>posterior mean</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig-beta-alpha" label="prior pseudo-heads (α)" valueId="fig-beta-alpha-v" min="0.5" max="20" step="0.5" value="2" />
+  <ControlRange id="fig-beta-beta" label="prior pseudo-tails (β)" valueId="fig-beta-beta-v" min="0.5" max="20" step="0.5" value="2" />
+  <ControlRange id="fig-beta-n" label="trials n" valueId="fig-beta-n-v" min="0" max="200" step="1" value="20" />
+  <ControlRange id="fig-beta-k" label="successes k" valueId="fig-beta-k-v" min="0" max="20" step="1" value="13" />
+  <PresetRow>
+    <button data-fig-beta-preset="flat">Flat prior</button>
+    <button data-fig-beta-preset="jeffreys">Jeffreys Beta(½,½)</button>
+    <button data-fig-beta-preset="haldane">Haldane Beta(0⁺,0⁺)</button>
+    <button data-fig-beta-preset="strong-fair">Strong fair (10,10)</button>
+    <button data-fig-beta-preset="strong-biased">Strong biased (1,10)</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+The readout shows the posterior mean's weighting between the prior mean and the
+MLE. The strong-prior preset makes visible how the posterior <em>resists</em> a
+small contradicting sample — the prior is acting like extra trials.
+</p>
+
+<h2 id="normal-normal">4. Worked example: Normal–Normal (known variance)</h2>
+
+<p>
+With known variance $\sigma^2$, the Gaussian likelihood depends on the data only
+through $\bar x$ and $n$. The conjugate prior on the mean is Gaussian:
+</p>
+
+$$
+\mu \sim \mathcal&#123;N&#125;(\mu_0,\sigma_0^2),\qquad
+x_&#123;1:n&#125;\mid\mu \sim \mathcal&#123;N&#125;(\mu,\sigma^2).
+$$
+
+<p>
+Working in precision $\lambda = 1/\sigma^2$, the update rule is precision addition:
+</p>
+
+$$
+\lambda_n \;=\; \lambda_0 + n\lambda,\qquad
+\mu_n \;=\; \frac&#123;\lambda_0 \mu_0 + n\lambda\,\bar x&#125;&#123;\lambda_n&#125;
+\;=\; w\,\bar x + (1-w)\mu_0,
+$$
+
+<p>
+with $w = n\lambda/\lambda_n$. Prior precision and data precision simply add; the
+prior precision $\lambda_0$ is the equivalent of $\lambda_0/\lambda$ extra
+observations. The posterior mean is a precision-weighted blend, pulled toward
+whichever side is more precise.
+</p>
+
+<p>
+The <em>posterior predictive</em> for a new observation $x_*$ is
+</p>
+
+$$
+x_* \mid x_&#123;1:n&#125; \;\sim\; \mathcal&#123;N&#125;\!\bigl(\mu_n,\;\sigma^2+\sigma_n^2\bigr).
+$$
+
+<p>
+The predictive variance is the observation noise plus the residual uncertainty
+about $\mu$. It is wider than the likelihood and narrower than the prior
+predictive; as $n\to\infty$, $\sigma_n^2\to 0$ and the predictive collapses onto
+$\mathcal&#123;N&#125;(\mu_n,\sigma^2)$.
+</p>
+
+<h2 id="normal-gamma">5. Worked example: Normal–Gamma (unknown mean and variance)</h2>
+
+<p>
+When both $\mu$ and the precision $\lambda=1/\sigma^2$ are unknown, the conjugate
+prior is the <em>Normal–Gamma</em>:
+</p>
+
+$$
+\mathrm&#123;NG&#125;(\mu,\lambda\mid\mu_0,\kappa_0,\alpha_0,\beta_0)
+\;=\; \mathcal&#123;N&#125;\!\bigl(\mu\mid\mu_0,(\kappa_0\lambda)^&#123;-1&#125;\bigr)\,
+\mathrm&#123;Gamma&#125;(\lambda\mid\alpha_0,\beta_0).
+$$
+
+<p>
+Parametrized on the variance $\sigma^2$ instead of the precision $\lambda$, the
+same prior is called the <em>Normal–scaled-Inverse-χ²</em>. Gamma on
+$\lambda = 1/\sigma^2$ is Inv-χ² on $\sigma^2$ — the
+<a href="/math/named-distributions/#family">family-map</a> $1/X$ edge between Chi² and
+Inv-χ². Bayesian texts vary in which they use; the posterior predictive below
+(Student-$t$) is the same either way. Many treatments (e.g. Gelman et al.) prefer
+the Inv-χ² form because $\nu_0 = 2\alpha_0$ has the direct interpretation of
+"prior effective sample size on the variance."
+</p>
+
+<p>
+The mean's prior variance is tied to the unknown precision through $\kappa_0$: a
+prior on the mean is only meaningful up to scale. After data with sample mean
+$\bar x$ and sample sum-of-squares $s^2=\sum_i(x_i-\bar x)^2$, the four
+hyperparameters update as
+</p>
+
+$$
+\kappa_n = \kappa_0 + n,\qquad
+\mu_n = \frac&#123;\kappa_0\mu_0 + n\bar x&#125;&#123;\kappa_n&#125;,
+$$
+
+$$
+\alpha_n = \alpha_0 + \tfrac&#123;n&#125;&#123;2&#125;,\qquad
+\beta_n = \beta_0 + \tfrac&#123;1&#125;&#123;2&#125;s^2 + \frac&#123;\kappa_0\,n\,(\bar x-\mu_0)^2&#125;&#123;2\kappa_n&#125;.
+$$
+
+<p>
+Read off the pseudo-counts: $\kappa_0$ is the prior's number of effective
+observations of the mean, $2\alpha_0$ is its number of effective observations of
+the variance. The extra term in $\beta_n$ penalizes the prior's mean for
+disagreeing with the data mean — prior–data conflict shows up as added scale on
+the precision.
+</p>
+
+<p>
+Marginalizing out the precision gives the <em>posterior predictive</em> for a new
+$x_*$:
+</p>
+
+$$
+x_* \mid x_&#123;1:n&#125; \;\sim\; t_&#123;2\alpha_n&#125;\!\Bigl(\mu_n,\;\frac&#123;\beta_n(\kappa_n+1)&#125;&#123;\alpha_n\,\kappa_n&#125;\Bigr).
+$$
+
+<p>
+A Student-$t$, with degrees of freedom equal to twice the posterior shape — small
+$n$ gives heavy tails reflecting variance uncertainty, large $n$ recovers the
+Gaussian predictive of the known-variance case.
+</p>
+
+<h3 id="gaussian-priors">5a. Gaussian priors at a glance</h3>
+
+<p>
+The three Gaussian cases above, lined up. Each row corresponds to which
+parameter is unknown; each column gives the canonical non-informative choice
+and the conjugate choice.
+</p>
+
+<div class="gaussian-priors-wrap">
+  <table class="gaussian-priors">
+    <thead>
+      <tr>
+        <th>Unknown parameter</th>
+        <th>Non-informative</th>
+        <th>Conjugate</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>$\mu$ &nbsp;<span class="muted">(variance $\sigma^2$ known)</span></td>
+        <td><strong>Uniform</strong> on $\mathbb R$ &nbsp;<span class="muted">(improper; limit $\tau^2 \to \infty$ of the conjugate prior)</span></td>
+        <td><strong>Gaussian</strong> $\mathcal N(\mu_0, \sigma_0^2)$ &nbsp;<span class="muted">(§4 above)</span></td>
+      </tr>
+      <tr>
+        <td>$\sigma^2$ &nbsp;<span class="muted">(mean $\mu$ known)</span></td>
+        <td><strong>Jeffreys</strong> $p(\sigma^2) \propto 1/\sigma^2$ &nbsp;<span class="muted">(improper)</span></td>
+        <td><strong>Inverse-$\chi^2$</strong> / <strong>Inverse-Gamma</strong> &nbsp;<span class="muted">(equivalent: $\mathrm&#123;Inv&#125;\text&#123;-&#125;\chi^2_\nu = \mathrm&#123;Inv&#125;\text&#123;-&#125;\mathrm&#123;Gamma&#125;(\nu/2, 1/2)$)</span></td>
+      </tr>
+      <tr>
+        <td>$(\mu, \sigma^2)$ &nbsp;<span class="muted">(both unknown)</span></td>
+        <td>Joint <strong>Jeffreys</strong> $p(\mu, \sigma^2) \propto 1/\sigma^2$ &nbsp;<span class="muted">(see <a href="/math/fisher-information/">Fisher information</a>)</span></td>
+        <td><strong>Normal–Gamma</strong> on $(\mu, \tau)$ where $\tau = 1/\sigma^2$ &nbsp;<span class="muted">(§5 above; aka Normal–scaled-Inverse-$\chi^2$ in the $\sigma^2$ parametrization)</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+Naming: the Inverse-$\chi^2$ and Inverse-Gamma names refer to the same
+distribution under different parametrizations. Bayesian texts in the
+Gelman/BDA tradition use Inverse-$\chi^2$; the standard-pairs table below
+uses the more general Inverse-Gamma form. The scaled-Inverse-$\chi^2$ card
+on <a href="/math/named-distributions/#inverse-chi-square">named distributions</a>
+has the density formulas. The Normal–Gamma case has a sibling name
+"Normal–scaled-Inverse-$\chi^2$" when the variance is parametrized directly
+rather than through precision; same prior, different label.
+</p>
+
+<h2 id="table">6. Standard conjugate pairs</h2>
+
+<p>
+For most named likelihoods, the conjugate prior is also named. The hyperparameter
+update is always "add sufficient statistic to $\tau$ and $n$ to $\nu$" — the table
+below just unpacks the convention each row.
+</p>
+
+<p>
+Bernoulli↔Binomial and Categorical↔Multinomial share their conjugate prior;
+they differ only in whether the likelihood is written as $n$ i.i.d. trials or
+as one aggregate count. The first form is the primitive sampling model, the
+second is its repeated-trial summary, with the same sufficient statistic
+either way and therefore the same Beta or Dirichlet conjugate.
+</p>
+
+<div class="conjugate-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Likelihood</th><th>Sufficient stat</th><th>Conjugate prior</th><th>Posterior update</th><th>Pseudo-count</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Bernoulli$(p)$ / Binomial</td>
+        <td>$\sum x_i,\;n$</td>
+        <td>Beta$(\alpha,\beta)$</td>
+        <td>$\alpha\!+\!\sum x_i,\;\beta\!+\!n\!-\!\sum x_i$</td>
+        <td>$\alpha\!-\!1$ heads, $\beta\!-\!1$ tails</td>
+      </tr>
+      <tr>
+        <td>Categorical / Multinomial</td>
+        <td>counts $n_k$</td>
+        <td>Dirichlet$(\boldsymbol\alpha)$</td>
+        <td>$\alpha_k + n_k$</td>
+        <td>$\alpha_k-1$ pseudo-observations of class $k$</td>
+      </tr>
+      <tr>
+        <td>Poisson$(\lambda)$</td>
+        <td>$\sum x_i,\;n$</td>
+        <td>Gamma$(\alpha,\beta)$ <span class="muted">(rate)</span></td>
+        <td>$\alpha\!+\!\sum x_i,\;\beta\!+\!n$</td>
+        <td>$\beta$ pseudo-intervals, $\alpha$ pseudo-events</td>
+      </tr>
+      <tr>
+        <td>Exponential$(\lambda)$</td>
+        <td>$\sum x_i,\;n$</td>
+        <td>Gamma$(\alpha,\beta)$</td>
+        <td>$\alpha\!+\!n,\;\beta\!+\!\sum x_i$</td>
+        <td>$\alpha$ pseudo-arrivals over time $\beta$</td>
+      </tr>
+      <tr>
+        <td>Geometric$(p)$</td>
+        <td>$\sum x_i,\;n$</td>
+        <td>Beta$(\alpha,\beta)$</td>
+        <td>$\alpha\!+\!n,\;\beta\!+\!\sum x_i$</td>
+        <td>$\alpha$ pseudo-trials with $\beta$ pseudo-failures before each success</td>
+      </tr>
+      <tr>
+        <td>Normal$(\mu,\sigma^2)$, $\sigma$ known</td>
+        <td>$\bar x,\;n$</td>
+        <td>Normal$(\mu_0,\sigma_0^2)$</td>
+        <td>$\lambda_n\!=\!\lambda_0\!+\!n\lambda$; $\mu_n$ precision-weighted</td>
+        <td>$\sigma^2/\sigma_0^2$ pseudo-observations</td>
+      </tr>
+      <tr>
+        <td>Normal$(\mu,\sigma^2)$, $\mu$ known</td>
+        <td>$\sum(x_i\!-\!\mu)^2,\;n$</td>
+        <td>Inverse-Gamma$(\alpha,\beta)$</td>
+        <td>$\alpha\!+\!n/2,\;\beta\!+\!\tfrac12\sum(x_i\!-\!\mu)^2$</td>
+        <td>$2\alpha$ pseudo-observations of variance</td>
+      </tr>
+      <tr>
+        <td>Normal$(\mu,\sigma^2)$, both unknown</td>
+        <td>$\bar x,\;s^2,\;n$</td>
+        <td>Normal–Gamma$(\mu_0,\kappa_0,\alpha_0,\beta_0)$</td>
+        <td>see §5</td>
+        <td>$\kappa_0$ for mean, $2\alpha_0$ for variance</td>
+      </tr>
+      <tr>
+        <td>Multivariate normal, $\Sigma$ known</td>
+        <td>$\bar x,\;n$</td>
+        <td>Normal$(\boldsymbol\mu_0,\Lambda_0^&#123;-1&#125;)$</td>
+        <td>$\Lambda_n\!=\!\Lambda_0\!+\!n\Sigma^&#123;-1&#125;$</td>
+        <td>precision matrices add</td>
+      </tr>
+      <tr>
+        <td>Multivariate normal, both unknown</td>
+        <td>$\bar&#123;\mathbf x&#125;,\;\mathbf S,\;n$</td>
+        <td>Normal-inverse-Wishart</td>
+        <td>(matrix analogue of Normal–Gamma)</td>
+        <td>$\kappa_0$ for mean, $\nu_0$ for covariance</td>
+      </tr>
+      <tr>
+        <td>Gamma$(\alpha,\beta)$, $\alpha$ known</td>
+        <td>$\sum x_i,\;n$</td>
+        <td>Gamma$(\alpha_0,\beta_0)$ on rate</td>
+        <td>$\alpha_0\!+\!n\alpha,\;\beta_0\!+\!\sum x_i$</td>
+        <td>$n\alpha$-equivalent of arrivals</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+The same pseudo-count reading shows what a "weakly informative" prior means
+quantitatively. A Beta$(2,2)$ prior is a pretend dataset of two heads and two
+tails: it nudges estimates of small samples back toward $1/2$ but is overwhelmed
+by $n=50$. A Normal$(0,10^2)$ prior on a regression coefficient with data
+precision near 1 is worth about $1/100$ of one observation: it constrains almost
+nothing.
+</p>
+
+<h2 id="predictive">7. Posterior-predictive distributions</h2>
+
+<p>
+For prediction, integrate the likelihood against the posterior on $\eta$:
+</p>
+
+$$
+p(x_*\mid x_&#123;1:n&#125;) \;=\; \int p(x_*\mid\eta)\,p(\eta\mid x_&#123;1:n&#125;)\,d\eta.
+$$
+
+<p>
+For conjugate pairs the integral is closed-form and gives a named distribution:
+</p>
+
+<ul>
+  <li><strong>Beta–Bernoulli</strong>: Beta-Binomial predictive,
+    $\Pr(x_*=1\mid x_&#123;1:n&#125;) = (\alpha+k)/(\alpha+\beta+n)$. Always uses both prior
+    pseudo-counts and the data.</li>
+  <li><strong>Dirichlet–Categorical</strong>: predictive $\Pr(x_*=k) = (\alpha_k+n_k)/(\sum_j \alpha_j + n)$. This is the additive-smoothing rule.</li>
+  <li><strong>Gamma–Poisson</strong>: Negative-Binomial predictive over counts. The
+    overdispersion comes from posterior uncertainty about the Poisson rate.</li>
+  <li><strong>Normal–Normal</strong> ($\sigma$ known): Gaussian predictive
+    $\mathcal&#123;N&#125;(\mu_n,\sigma^2+\sigma_n^2)$.</li>
+  <li><strong>Normal–Gamma</strong>: Student-$t$ predictive with $2\alpha_n$
+    degrees of freedom — heavy-tailed for small $n$, Gaussian asymptotically.</li>
+</ul>
+
+<p>
+Notice that the predictive distributions for finite $n$ are never the original
+likelihood family. The Beta-Binomial is not a Binomial; the predictive for a
+Normal–Gamma is Student-$t$, not Gaussian. The likelihood family is only recovered
+in the $n\to\infty$ limit when the posterior on $\eta$ becomes a point mass.
+</p>
+
+<h2 id="caveats">8. When conjugate priors are appropriate</h2>
+
+<p>
+Conjugate priors are computationally cheap and have a clean pseudo-count
+interpretation, but they are <strong>only a parametric family</strong> — not
+all beliefs fit. Use them when the conjugate shape adequately approximates the
+prior you would otherwise have specified; when it doesn't, do the integrals
+some other way — numerically, by analytical approximation, or by simulation.
+</p>
+
+<p>
+A few practical signals that the conjugate prior is the wrong tool:
+</p>
+
+<ul>
+  <li><strong>Bimodal or skewed prior beliefs</strong>. The conjugate Beta family is
+    unimodal except for the U-shaped Beta$(\alpha,\beta)$ with both parameters
+    $&lt;1$. If you have genuine prior mass at $p=0.2$ and $p=0.8$, a Beta won't
+    capture it.</li>
+  <li><strong>Hard prior bounds or hierarchical structure</strong>. A Beta prior on
+    $p$ can't impose $p\in[0.4,0.6]$. A hierarchical or truncated prior may be
+    closer to your belief, at the cost of closed-form posteriors.</li>
+  <li><strong>Sparsity or shrinkage targets</strong>. Conjugate priors put zero mass
+    at zero. For sparse regression coefficients use a horseshoe, spike-and-slab, or
+    Laplace prior (none of which are conjugate to Gaussian likelihood).</li>
+  <li><strong>The likelihood is not exponential family</strong>. Cauchy, mixture
+    models, Student-$t$ with unknown degrees of freedom, and most neural-network
+    likelihoods have no useful conjugate prior. Fall back to MCMC or VI — see the
+    <a href="/math/monte-carlo/">Monte Carlo &amp; MCMC</a> and
+    <a href="/math/variational-inference/">variational inference</a> pages.</li>
+</ul>
+
+<p>
+The pseudo-count interpretation is also a diagnostic for prior strength. A
+hyperparameter that translates to "1000 pretend observations" on a dataset of 100
+real observations is doing nearly all the work. If you wrote it down without
+thinking of the prior as data, you may not have meant that.
+</p>
+
+<NextCards heading="What next" cards={[
+  { href: "/choosing-a-prior/", tag: "Bayes", title: "Choosing a Prior", role: "Conjugacy is one route to a workable prior; this page covers the others — group invariance, max entropy, Jeffreys — and when to reach for each." },
+  { href: "/fisher-information/", tag: "Geometry", title: "Fisher Information & Jeffreys Priors", role: "The geometric story behind one of the canonical 'uninformative' priors, with interactive coordinate transforms." },
+  { href: "/exponential-family/", tag: "Foundation", title: "The Exponential Family", role: "Why conjugate priors only have finite-dimensional hyperparameter updates inside the exponential family — and what η, T, h, A each mean." },
+  { href: "/named-distributions/", tag: "Reference", title: "Named Distributions", role: "Where the named likelihoods and their conjugate partners sit in the broader distribution zoo." },
+]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<style>
+.conjugate-table {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+.conjugate-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.conjugate-table th, .conjugate-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  vertical-align: top;
+}
+.conjugate-table th {
+  font-weight: 600;
+  background: rgba(2, 132, 199, 0.06);
+  border-bottom: 2px solid rgba(2, 132, 199, 0.25);
+}
+.conjugate-table .muted { color: var(--text-dim); font-size: 11px; }
+
+.gaussian-priors-wrap { overflow-x: auto; margin: 16px 0 22px; }
+.gaussian-priors {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.gaussian-priors th, .gaussian-priors td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  vertical-align: top;
+}
+.gaussian-priors th {
+  font-weight: 600;
+  background: rgba(2, 132, 199, 0.06);
+  border-bottom: 2px solid rgba(2, 132, 199, 0.25);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim, #5a6577);
+}
+.gaussian-priors td:first-child { font-weight: 600; white-space: nowrap; }
+.gaussian-priors .muted { color: var(--text-dim); font-size: 11.5px; }
+
+</style>
+
+<script is:inline src="/math/conjugate-priors/conjugate-priors.js"></script>
+</ExplainerLayout>

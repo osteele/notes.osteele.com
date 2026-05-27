@@ -1,0 +1,145 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Optimal Transport" breadcrumb="Optimal Transport" section="information-theory">
+
+<Hero title="Optimal Transport" subtitle="The Earth Mover's Distance and moving probability mass." />
+
+<p>
+How far apart are two probability distributions? Information-theoretic measures like <a href="/math/kl-divergence/">KL divergence</a> compare densities point-by-point. But if two distributions don't overlap, KL divergence is infinite and its gradient is zero.
+</p>
+
+<p>
+<strong>Optimal Transport (OT)</strong> takes a different approach. It asks: what is the minimum cost to "move" the mass of one distribution to match the other? This cost is known as the <strong>Wasserstein distance</strong> or the <strong>Earth Mover's Distance</strong>.
+</p>
+
+<Aside>
+  <strong>One sentence:</strong> Optimal transport treats distributions as "piles of dirt" and measures the work required to shovel one pile into the shape of another.
+</Aside>
+
+<h2>1. The Transport Plan</h2>
+
+<p>
+Given two distributions $p$ and $q$, we look for a <strong>transport plan</strong> $\pi(x, y)$ that describes how much mass to move from location $x$ to location $y$. The total cost is the integral of the distance moved times the mass moved:
+</p>
+
+$$ W(p, q) = \inf_&#123;\pi \in \Pi(p, q)&#125; \int d(x, y) \, d\pi(x, y) $$
+
+<p>
+The figure below shows the optimal transport plan between two 1D histograms. Drag the bars to change the distributions. The 2D grid shows the plan $\pi$, and the lines show the mass being transported.
+</p>
+
+<Figure title="Figure 1 · Optimal Transport Plan (Sinkhorn Iteration)" canvasId="fig-ot-plan" width="760" height="480" readoutId="fig-ot-plan-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>source distribution $p$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>target distribution $q$</span>
+      <span><span class="swatch" style="background:rgba(107,69,146,0.5)"></span>transport matrix $\pi$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig-ot-reg" label="regularization λ" valueId="fig-ot-reg-v" min="0.01" max="0.5" step="0.01" value="0.05" />
+      <PresetRow>
+        <button id="fig-ot-reset">Reset Histograms</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+We use <strong>Entropic Regularization</strong> (the Sinkhorn algorithm) to find the plan. As the regularization $\lambda$ decreases, the plan becomes more "sparse" and focused on the exact shortest distances.
+</p>
+
+<h2>2. Brenier's Theorem: the Map is a Gradient</h2>
+
+<p>
+When the source and target are absolutely continuous and the cost is squared Euclidean distance, the transport plan collapses to a deterministic <strong>map</strong>: every source point $x$ goes to a single destination $T(x)$. <strong>Brenier's theorem</strong> says more — that map is the gradient of a convex function:
+</p>
+
+$$ T(x) = \nabla \varphi(x), \qquad \varphi : \mathbb&#123;R&#125;^d \to \mathbb&#123;R&#125; \text&#123; convex&#125;. $$
+
+<p>
+For two Gaussians $p = \mathcal&#123;N&#125;(\mu_p, \sigma_p^2 I)$ and $q = \mathcal&#123;N&#125;(\mu_q, \sigma_q^2 I)$ in the plane, the potential has a closed form:
+</p>
+
+$$ \varphi(x) = \frac&#123;\sigma_q&#125;&#123;2\sigma_p&#125; \|x - \mu_p\|^2 + (\mu_q - \tfrac&#123;\sigma_q&#125;&#123;\sigma_p&#125;\mu_p) \cdot x. $$
+
+<p>
+The figure plots $\varphi$ as a 3D paraboloid. Its slope at any source point gives the displacement to the corresponding target point — the gradient field on the base plane is precisely the optimal map $T$.
+</p>
+
+<Figure title="Figure 2 · Brenier Potential and its Gradient Map" canvasId="fig-ot-brenier" width="780" height="460" readoutId="fig-ot-brenier-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:linear-gradient(90deg,#1f4a8c,#b8412a)"></span>Brenier potential $\varphi$</span>
+      <span><span class="swatch" style="background:rgba(31,74,140,0.35); border:1px solid #1f4a8c"></span>source $p$</span>
+      <span><span class="swatch" style="background:rgba(184,65,42,0.35); border:1px solid #b8412a"></span>target $q$</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>gradient $\nabla \varphi$ (transport map)</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div style="display:flex; flex-wrap:wrap; gap:14px 22px; align-items:center; font-size:11px; color:var(--text-dim);">
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <span style="font-weight:600; color:var(--text);">Source $p$</span>
+      <label style="display:flex; gap:6px; align-items:center;">σ <input type="range" id="fig-ot-brenier-sp" min="0.4" max="1.6" step="0.05" value="1.0" style="width:120px;" /><span id="fig-ot-brenier-sp-v" style="font-variant-numeric:tabular-nums; width:32px;">1.00</span></label>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <span style="font-weight:600; color:var(--text);">Target $q$</span>
+      <label style="display:flex; gap:6px; align-items:center;">σ <input type="range" id="fig-ot-brenier-sq" min="0.4" max="1.6" step="0.05" value="0.7" style="width:120px;" /><span id="fig-ot-brenier-sq-v" style="font-variant-numeric:tabular-nums; width:32px;">0.70</span></label>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <span style="font-weight:600; color:var(--text);">Separation $\mu_q - \mu_p$</span>
+      <label style="display:flex; gap:6px; align-items:center;">Δx <input type="range" id="fig-ot-brenier-dx" min="-2.5" max="2.5" step="0.05" value="2.0" style="width:120px;" /><span id="fig-ot-brenier-dx-v" style="font-variant-numeric:tabular-nums; width:36px;">2.00</span></label>
+      <label style="display:flex; gap:6px; align-items:center;">Δy <input type="range" id="fig-ot-brenier-dy" min="-2.5" max="2.5" step="0.05" value="0.6" style="width:120px;" /><span id="fig-ot-brenier-dy-v" style="font-variant-numeric:tabular-nums; width:36px;">0.60</span></label>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <span style="font-weight:600; color:var(--text);">Layers</span>
+      <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" id="fig-ot-brenier-show-disks" checked /> source &amp; target disks</label>
+      <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" id="fig-ot-brenier-show-arrows" checked /> gradient arrows</label>
+      <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" id="fig-ot-brenier-show-tangent" checked /> tangent plane at $\mu_p$</label>
+    </div>
+  </div>
+  <div style="font-size:11px; color:var(--text-dim); margin-top:8px;">Drag the canvas to rotate. The potential height is rescaled for legibility — only its <em>slope</em> is physically meaningful.</div>
+</Fragment>
+</Figure>
+
+<p>
+Because $\varphi$ is convex, its gradient is monotone: nearby source points stay near each other after transport, and the map never "crosses itself." That convexity is what makes optimal transport well-posed where pointwise comparisons of densities (next section) break down.
+</p>
+
+<h2>3. Wasserstein vs. KL Divergence</h2>
+
+<p>
+The main advantage of the Wasserstein distance is that it stays well-behaved even when distributions have non-overlapping support. KL divergence only "sees" the overlap; Wasserstein "sees" the distance between the masses.
+</p>
+
+<Figure title="Figure 2 · Gradients: Wasserstein distance vs. KL Divergence" canvasId="fig-ot-compare" width="760" height="380" readoutId="fig-ot-compare-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>fixed distribution</span>
+      <span><span class="swatch" style="background:#b8412a"></span>draggable distribution</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div style="font-size:11px; color:var(--text-dim);">Drag the red bump. Observe how KL flatlines when they don't overlap, while Wasserstein changes linearly.</div>
+</Fragment>
+</Figure>
+
+<p>
+This property is why Wasserstein distances are used in training <strong>Generative Adversarial Networks (WGANs)</strong>. It provides a useful gradient for the generator even if its current output is completely different from the real data.
+</p>
+
+<NextCards heading="What next" intro="Compare optimal transport with other divergence measures." cards={[{"href":"/kl-divergence/","tag":"Divergence","title":"KL Divergence","role":"Contrast the geometric approach of optimal transport with the information-theoretic approach of KL divergence."}]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>.
+</div>
+
+  <script is:inline src="/math/optimal-transport/ot.js"></script>
+</ExplainerLayout>

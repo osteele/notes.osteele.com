@@ -1,0 +1,268 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import Legend from "../../components/explainer/Legend.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import PresetButton from "../../components/explainer/PresetButton.astro";
+import Readout from "../../components/explainer/Readout.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import VizCard from "../../components/explainer/VizCard.astro";
+import VizCardGrid from "../../components/explainer/VizCardGrid.astro";
+---
+
+<ExplainerLayout title="LTI Systems on Random Inputs" breadcrumb="LTI Systems on Random Inputs" section="random-processes">
+
+<Hero title="LTI Systems on Random Inputs" subtitle="Convolution, correlation propagation, spectra, and stationarity through linear filters." />
+
+<p>
+The <a href="/math/psd-wiener-khinchin/">PSD page</a> asks what a stationary
+process looks like in frequency. This page asks what a system does to such a
+process. The same filter has two faces: convolution in time and multiplication in
+frequency.
+</p>
+
+<h2 id="recap">1. Impulse response and convolution</h2>
+
+<p>
+An LTI system is determined by its impulse response $h(t)$. For an input random
+process $X(t)$, each realization is filtered by convolution:
+</p>
+
+$$
+Y(t) = (X*h)(t)=\int X(u)h(t-u)\,du.
+$$
+
+<p>
+The equation is deterministic for each waveform, but the input waveform is random.
+That is the basic trick: filter every realization the same way, then ask what happens
+to means, correlations, and spectra.
+</p>
+
+<Figure title="Figure 1 · Sample-path filtering" canvasId="fig1" width="780" height="380" readoutId="fig1-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>input $x[n]$</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>impulse response $h[n]$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>output $y[n]$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+        <label>input process</label>
+        <select id="fig1-input">
+          <option value="white">white noise</option>
+          <option value="ar">AR drift</option>
+          <option value="tone">sinusoid + noise</option>
+          <option value="walk">random walk</option>
+        </select>
+      </div>
+      <div class="control">
+        <label>filter</label>
+        <select id="fig1-filter">
+          <option value="impulse">impulse</option>
+          <option value="exp">exponential decay</option>
+          <option value="box">rectangular smoother</option>
+          <option value="lowpass">ideal low-pass</option>
+        </select>
+      </div>
+      <div class="preset-row">
+        <button id="fig1-resample">Regenerate</button>
+        <button id="fig1-audio-in">Hear input</button>
+        <button id="fig1-audio-out">Hear output</button>
+      </div>
+</Fragment>
+</Figure>
+
+<h2 id="correlation">2. Mean and correlation propagation</h2>
+
+<p>
+Means and correlations propagate through the same impulse response. In discrete-time
+notation,
+</p>
+
+$$
+\mu_y = \mu_x*h,\qquad
+R_&#123;xy&#125;=R_&#123;xx&#125;*\tilde h,\qquad
+R_&#123;yy&#125;=R_&#123;xx&#125;*h*\tilde h,
+$$
+
+<p>
+where $\tilde h[n]=h[-n]$. The output autocorrelation is the input autocorrelation
+blurred by the filter and its time reverse. This is the time-domain version of the
+PSD rule.
+</p>
+
+<Figure title="Figure 1b · Correlation propagation in the time domain" canvasId="fig-corr" width="780" height="380" readoutId="fig-corr-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>$R_&#123;xx&#125;$</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>$h * \tilde h$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>$R_&#123;yy&#125;$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="preset-row">
+        <button data-fig-corr-preset="narrow">Narrow impulse</button>
+        <button data-fig-corr-preset="wide">Wide smoother</button>
+        <button data-fig-corr-preset="two-lobe">Two-lobe filter</button>
+      </div>
+      <div style="font-size:11px; color:var(--text-dim);">Drag the green impulse-response handles in the middle panel.</div>
+</Fragment>
+</Figure>
+
+<h2 id="dual">3. Time and frequency dual views</h2>
+
+<p>
+In frequency, the same statement is shorter:
+</p>
+
+$$
+S_&#123;yy&#125;(\omega)=|H(\omega)|^2S_&#123;xx&#125;(\omega).
+$$
+
+<p>
+The figure below shows both versions at once: spectra on top, correlations on the
+bottom. The middle column is the system; the right column is what happens after the
+system.
+</p>
+
+<Figure title="Figure 2 · Same filter, two views" canvasId="fig2" width="780" height="430" readoutId="fig2-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>input</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>system</span>
+      <span><span class="swatch" style="background:#b8412a"></span>output</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+        <label>filter strength" valueId="fig2-strength-v" min="0.15" max="1.5" step="0.01" value="0.7" />
+      <PresetRow>
+        <button data-fig2-filter="low">Low-pass</button>
+        <button data-fig2-filter="high">High-pass</button>
+        <button data-fig2-filter="band">Band-pass</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="ar1">4. AR(1) as a leaky integrator</h2>
+
+<p>
+The AR(1) process
+</p>
+
+$$
+X[n]=aX[n-1]+W[n],\qquad |a|\lt 1,
+$$
+
+<p>
+is white noise passed through the causal filter
+</p>
+
+$$
+H(z)=\frac&#123;1&#125;&#123;1-az^&#123;-1&#125;&#125;.
+$$
+
+<p>
+Positive $a$ makes smooth persistence. Negative $a$ makes alternating signs. Near
+zero, the filter barely remembers the past.
+</p>
+
+<Figure title="Figure 3 · AR(1) sample path, autocorrelation, and PSD" canvasId="fig3" width="780" height="380" readoutId="fig3-readout">
+<Fragment slot="controls">
+  <ControlRange id="fig3-a" label="$a$" valueId="fig3-a-v" min="-0.95" max="0.95" step="0.01" value="0.7" />
+      <PresetRow>
+        <button data-fig3-a="0">white-ish</button>
+        <button data-fig3-a="0.85">persistent</button>
+        <button data-fig3-a="-0.75">alternating</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="stationarity">5. Stationarity and nonlinearities</h2>
+
+<p>
+An LTI filter preserves wide-sense stationarity: if $X$ is W.S.S., then $Y=X*h$ has
+constant mean and lag-only autocorrelation. A nonlinear transformation can still be
+stationary in special cases, but it no longer obeys the LTI propagation rules. The
+simple formulas above stop applying.
+</p>
+
+<Aside>
+  <strong>Does WSS suffice?</strong> An LTI filter only needs the input's first two moments to
+  compute the output's first two moments, so W.S.S. in $\rightarrow$ W.S.S. out is automatic.
+  <em>Strict-sense</em> stationarity is generally <em>not</em> preserved by nonlinear maps, but it
+  <em>is</em> preserved by LTI filters when the input is Gaussian, because a filtered Gaussian
+  process is still Gaussian and Gaussians are determined by their second-order structure. See the
+  <a href="/math/psd-wiener-khinchin/#wss">WSS vs SSS</a> aside on the PSD page.
+</Aside>
+
+<Figure title="Figure 4 · LTI propagation vs. a memoryless nonlinearity" canvasId="fig4" width="780" height="360" readoutId="fig4-readout">
+<Fragment slot="controls">
+  <PresetRow>
+        <button data-fig4-mode="linear">LTI output</button>
+        <button data-fig4-mode="tanh">tanh output</button>
+        <button data-fig4-mode="square">square output</button>
+        <button id="fig4-resample">Regenerate</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 4b · Running summaries reveal when W.S.S. propagation stops applying" canvasId="fig4-wss" width="780" height="340" readoutId="fig4-wss-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>linear output running mean/variance</span>
+      <span><span class="swatch" style="background:#b8412a"></span>nonlinear output running mean/variance</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <button data-fig4-wss-mode="linear" class="active">LTI</button>
+        <button data-fig4-wss-mode="square">square</button>
+        <button data-fig4-wss-mode="threshold">threshold</button>
+        <button id="fig4-wss-resample">Regenerate</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>What to remember</h2>
+
+<DecisionTable headers={["Question","LTI answer","Where to look"]}>
+<tr data-target-figure="fig1" data-hint-control="fig1-filter">
+      <td>What happens to a waveform?</td>
+      <td>Convolution: $y=x*h$.</td>
+      <td>Sample paths and impulse responses.</td>
+    </tr>
+    <tr data-target-figure="fig4" data-hint-control="fig4-resample">
+      <td>What happens to mean?</td>
+      <td>$\mu_y=\mu_x*h$.</td>
+      <td>DC gain and running averages.</td>
+    </tr>
+    <tr data-target-figure="fig-corr" data-preset="wide">
+      <td>What happens to correlation?</td>
+      <td>$R_&#123;yy&#125;=R_&#123;xx&#125;*h*\tilde h$.</td>
+      <td>Lag-domain smoothing by the filter autocorrelation.</td>
+    </tr>
+    <tr data-target-figure="fig2" data-preset="band" data-hint-control="fig2-strength">
+      <td>What happens to PSD?</td>
+      <td>$S_&#123;yy&#125;=|H|^2S_&#123;xx&#125;$.</td>
+      <td>Frequency-domain spectrum shaping.</td>
+    </tr>
+</DecisionTable>
+
+<NextCards heading="What next" intro="The LTI page is the system view; the PSD page is the representation view." cards={[{"href":"/psd-wiener-khinchin/","tag":"Spectrum","title":"PSD &amp; Wiener-Khinchin","role":"Back up to the Fourier-pair identity that makes the frequency-domain rule possible."},{"href":"/state-space-filtering/","tag":"State space","title":"Kalman &amp; Particle Filters","role":"See filtering used in the probabilistic inference sense: Kalman and particle filters."},{"href":"/entropy-mutual-information/","tag":"Random variables","title":"Entropy &amp; Mutual Information","role":"Switch from second-order structure to uncertainty and dependence."}]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Companion to
+  <a href="/math/psd-wiener-khinchin/">Power Spectral Density &amp; Wiener-Khinchin</a>.
+  Math typeset with KaTeX.
+</div>
+
+
+  <script is:inline src="/math/lti-random-inputs/lti.js"></script>
+</ExplainerLayout>

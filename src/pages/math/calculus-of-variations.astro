@@ -1,0 +1,181 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Calculus of Variations" breadcrumb="Calculus of Variations" section="probability-and-statistics">
+
+<Hero title="Calculus of Variations" subtitle="Stationarity, Euler-Lagrange residuals, and the brachistochrone as things you can touch." />
+
+<p>
+Calculus of variations optimizes over functions instead of numbers. A curve $y(x)$
+is plugged into a functional
+</p>
+
+$$
+J[y] = \int_a^b L(x,y,y')\,dx,
+$$
+
+<p>
+and the question is whether small perturbations of the whole curve make $J$ go up,
+down, or stay flat to first order. The widgets below put three views next
+to each other: the global perturbation test $\delta J=0$, the local
+Euler-Lagrange residual, and a physical race where the optimum is a cycloid.
+</p>
+
+<Aside>
+  <strong>One sentence:</strong> a stationary curve is not necessarily the lowest,
+  shortest, or steepest descent; it is one whose first-order change in the
+  functional vanishes for every allowed perturbation.
+</Aside>
+
+<h2>1. First variation microscope</h2>
+
+<p>
+The base curve is a sine-series path with fixed endpoints. The perturbation
+$\eta(x)$ also vanishes at the endpoints, so $y_\epsilon(x)=y(x)+\epsilon\eta(x)$
+respects the boundary conditions. The functional is a loaded string energy,
+</p>
+
+$$
+J[y] = \int_0^1 \left(\frac12 y'(x)^2 - 4y(x)\right)dx.
+$$
+
+<p>
+The stationary curve satisfies $y''=-4$, hence $y^\star(x)=2x(1-x)$. The right panel
+plots $J[y+\epsilon\eta]$ against $\epsilon$. If the tangent at zero is not flat,
+the current curve still has a first-order way to improve.
+</p>
+
+<Aside>
+  <strong>What this functional is.</strong> $J[y] = \int_0^1 \bigl(\tfrac12 y'^2 - 4y\bigr)dx$
+  is the small-deflection elastic energy of a string pinned at both ends under a uniform
+  downward load of intensity $4$. The $\tfrac12 y'^2$ term is elastic stretch energy,
+  and $-4y$ is the work done by gravity as the string sags into shape $y(x)$.
+  The Euler-Lagrange equation $y''=-4$ is exactly the static balance: curvature
+  opposing load. So a stationary curve here is a string in equilibrium, and
+  &quot;dropping&quot; toward the optimum (Figure 1's <em>Relax</em> button) is what
+  the physical string would do under damping.
+</Aside>
+
+<p>
+A second perspective: <em>stationary means flat in every direction at once</em>.
+The readout lists $dJ/d\epsilon|_0$ for all four perturbation modes simultaneously.
+A non-stationary curve will show at least one mode with a non-zero slope; the
+stationary curve flattens all of them together.
+</p>
+
+<p>
+Drag a point on the left panel to deform the curve at that $x$, or drag horizontally
+on the right panel to scrub $\epsilon$.
+</p>
+
+<Figure title="Figure 1 · First variation: J[y + epsilon eta]" canvasId="fig-first-variation" width="760" height="390" readoutId="fig-first-variation-readout">
+<Fragment slot="controls">
+  <ControlRange id="fv-c1" label="curve coefficient c1" valueId="fv-c1-v" min="-1.0" max="1.8" step="0.01" value="0.25" />
+  <ControlRange id="fv-c2" label="curve coefficient c2" valueId="fv-c2-v" min="-0.9" max="0.9" step="0.01" value="0.42" />
+  <ControlRange id="fv-c3" label="curve coefficient c3" valueId="fv-c3-v" min="-0.6" max="0.6" step="0.01" value="-0.25" />
+  <ControlRange id="fv-eps" label="perturbation epsilon" valueId="fv-eps-v" min="-1.2" max="1.2" step="0.01" value="0.45" />
+  <ControlRange id="fv-eta" label="perturbation mode" valueId="fv-eta-v" min="1" max="4" step="1" value="2" />
+  <PresetRow>
+    <button id="fv-relax">Relax toward stationary curve</button>
+    <button id="fv-stationary">Set to stationary curve</button>
+    <button id="fv-reset">Reset</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>2. Euler-Lagrange residual heatmap</h2>
+
+<p>
+For the same functional, the Euler-Lagrange residual is
+</p>
+
+$$
+R(x) = \frac&#123;\partial L&#125;&#123;\partial y&#125; - \frac&#123;d&#125;&#123;dx&#125;\frac&#123;\partial L&#125;&#123;\partial y'&#125;
+     = -4 - y''(x).
+$$
+
+<p>
+A stationary curve has $R(x)=0$ at every interior point. This is the local diagnostic
+version of the first-variation test above: red means that piece of the curve is
+still violating the Euler-Lagrange equation. Drag a point on the curve to deform it
+at that $x$ and watch the residual color shift in response.
+</p>
+
+<Figure title="Figure 2 · Local Euler-Lagrange residual along the curve" canvasId="fig-el-residual" width="760" height="360" readoutId="fig-el-residual-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#b8412a"></span>large residual</span>
+    <span><span class="swatch" style="background:#f7f3ea"></span>near zero residual</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>Euler-Lagrange solution</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+    <button id="el-relax">Run residual descent</button>
+    <button id="el-stop">Stop</button>
+    <button id="el-load-from-fv">Use curve from Figure 1</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>3. Brachistochrone race</h2>
+
+<p>
+The brachistochrone asks for the fastest frictionless track between two points under
+gravity. The shortest path is not fastest: an initially steep curve lets the bead
+build speed early. The time functional is
+</p>
+
+$$
+T[y] = \int_&#123;x_A&#125;^&#123;x_B&#125; \sqrt&#123;\frac&#123;1+y'(x)^2&#125;&#123;2g\,y(x)&#125;&#125;\,dx,
+$$
+
+<p>
+where $y$ is the vertical drop below the start. Drag the two control points. The
+bead races your cubic Bezier track against the cycloid with the same endpoints, and
+the histogram records every curve you try.
+</p>
+
+<Figure title="Figure 3 · Race your curve against the cycloid" canvasId="fig-brachistochrone" width="760" height="430" readoutId="fig-brachistochrone-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#b8412a"></span>user curve</span>
+    <span><span class="swatch" style="background:#1f4a8c"></span>cycloid optimum</span>
+    <span><span class="swatch" style="background:#6b4592"></span>tried curve times</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+    <button id="br-race">Race</button>
+    <button id="br-cycloidish">Start steep</button>
+    <button id="br-line">Straight line controls</button>
+    <button id="br-clear">Clear histogram</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>What these three views share</h2>
+
+<p>
+The first-variation plot asks whether $J[y+\epsilon\eta]$ has a flat tangent at
+$\epsilon=0$. The residual heatmap asks whether the Euler-Lagrange expression
+vanishes point by point. The brachistochrone shows the same variational logic in a
+physical system: among all admissible tracks, the cycloid is the curve where the
+time functional is stationary.
+</p>
+
+<NextCards heading="What next" intro="Variational ideas reappear in probability as optimization over distributions." cards={[{"href":"/variational-inference/","tag":"Bayesian inference","title":"Free Energy &amp; Variational Inference","role":"See the ELBO identity that turns posterior approximation into a variational optimization problem."},{"href":"/variational-inference/#mean-field-regression","tag":"Mean-field VI","title":"Mean-Field VI in Bayesian Regression","role":"Watch factorized variational Bayes underestimate uncertainty in Bayesian linear regression."},{"href":"/kl-divergence/","tag":"Information","title":"KL Divergence","role":"Study the directed mismatch measure that drives variational Bayes."}]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<script is:inline src="/math/calculus-of-variations/cov.js"></script>
+</ExplainerLayout>

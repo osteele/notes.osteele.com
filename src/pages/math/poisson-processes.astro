@@ -1,0 +1,183 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import Legend from "../../components/explainer/Legend.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import PresetButton from "../../components/explainer/PresetButton.astro";
+import Readout from "../../components/explainer/Readout.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import VizCard from "../../components/explainer/VizCard.astro";
+import VizCardGrid from "../../components/explainer/VizCardGrid.astro";
+---
+
+<ExplainerLayout title="Poisson Processes — An Interactive Explainer" breadcrumb="Poisson Processes" section="random-processes">
+
+<Hero title="Poisson Processes" subtitle="Independent arrivals in continuous time, modeled by counts, waiting times, and rate operations." />
+
+<p>
+A Poisson process is the continuous-time version of the rare-event story from
+<a href="/math/named-distributions/#poisson">the Poisson distribution</a>. It says
+that events arrive independently over disjoint time intervals, at a constant average
+rate $\lambda$. The same object can be described by exponential waiting times, Poisson
+counts, or infinitesimal Bernoulli trials.
+</p>
+
+<h2 id="timeline">1. Arrival timeline and the two distributions</h2>
+
+<p>
+If interarrival times are iid $T_i\sim\mathrm&#123;Exp&#125;(\lambda)$, then arrivals occur at
+$S_i=T_1+\cdots+T_i$. The count in a window obeys $N(t)\sim\mathrm&#123;Poisson&#125;(\lambda t)$.
+This first figure keeps both views visible at once.
+</p>
+
+<Figure title="Figure 1 · Timeline, interarrival histogram, and count histogram" canvasId="fig-timeline" width="820" height="430" readoutId="timeline-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>events</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>exponential fit</span>
+      <span><span class="swatch" style="background:#6b4592"></span>Poisson fit</span>
+    </div>
+</Fragment>
+
+<Fragment slot="controls">
+  <ControlRange id="lambda" label="rate lambda" valueId="lambda-v" min="0.2" max="8" step="0.1" value="2" />
+      <ControlRange id="window" label="window T" valueId="window-v" min="1" max="12" step="0.5" value="5" />
+      <ControlRange id="reps" label="replicates" valueId="reps-v" min="50" max="2000" step="50" value="400" />
+      <button id="reroll">Re-roll arrivals</button>
+</Fragment>
+</Figure>
+
+<Figure title="Process gallery · Five fresh Poisson sample paths" canvasId="fig-gallery" width="820" height="180" readoutId="gallery-readout">
+<Fragment slot="controls">
+  <PresetRow>
+        <button id="gallery-reroll">Five fresh paths</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="memoryless">2. Memorylessness</h2>
+
+<p>
+The exponential distribution is memoryless:
+$P(T>s+t\mid T>s)=P(T>t)$. If no event has arrived by time $s$, the additional wait
+has the same distribution as a fresh wait. This is the only continuous distribution
+with that property.
+</p>
+
+<Figure title="Figure 2 · Residual wait after surviving s" canvasId="fig-memoryless" width="820" height="300" readoutId="memoryless-readout" >
+<Fragment slot="controls">
+  <ControlRange id="mem-lambda" label="rate lambda" valueId="mem-lambda-v" min="0.2" max="8" step="0.1" value="2" />
+      <ControlRange id="mem-s" label="already waited s" valueId="mem-s-v" min="0" max="5" step="0.1" value="1" />
+</Fragment>
+</Figure>
+
+<h2 id="definitions">3. Three equivalent definitions</h2>
+
+<p>
+These are three ways to specify the same process:
+</p>
+
+<ol>
+  <li><strong>Axiomatic.</strong> $N(t)\sim\mathrm&#123;Poisson&#125;(\lambda t)$ with stationary independent increments.</li>
+  <li><strong>Infinitesimal.</strong> $P(N(h)=1)=\lambda h+o(h)$ and $P(N(h)>1)=o(h)$.</li>
+  <li><strong>Time-centric.</strong> iid $T_i\sim\mathrm&#123;Exp&#125;(\lambda)$ and arrival times $S_i=\sum_&#123;k\le i&#125;T_k$.</li>
+</ol>
+
+<Figure title="Figure 3 · One realization, three descriptions" canvasId="fig-definitions" width="820" height="360" readoutId="definitions-readout" >
+<Fragment slot="controls">
+  <ControlRange id="def-lambda" label="rate lambda" valueId="def-lambda-v" min="0.2" max="8" step="0.1" value="2" />
+      <ControlRange id="def-h" label="grid h" valueId="def-h-v" min="0.02" max="0.5" step="0.02" value="0.2" />
+      <button id="def-reroll">Re-roll</button>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 3b · Nonhomogeneous Poisson process with draggable rate" canvasId="fig-nhpp" width="820" height="360" readoutId="nhpp-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>$\lambda(t)$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>events</span>
+      <span><span class="swatch" style="background:#6b4592"></span>cumulative intensity $\Lambda(t)$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="nhpp-a" label="early rate" valueId="nhpp-a-v" min="0.1" max="8" step="0.1" value="1.0" />
+      <ControlRange id="nhpp-b" label="middle rate" valueId="nhpp-b-v" min="0.1" max="8" step="0.1" value="5.0" />
+      <ControlRange id="nhpp-c" label="late rate" valueId="nhpp-c-v" min="0.1" max="8" step="0.1" value="2.0" />
+      <PresetRow>
+        <button id="nhpp-reroll">Reroll events</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="operations">4. Superposition, thinning, splitting</h2>
+
+<p>
+Poisson processes are stable under simple rate operations. Independent streams merge
+by adding rates. Keeping each event with probability $p$ thins the rate to $p\lambda$.
+Splitting events into categories creates independent Poisson streams with category
+rates.
+</p>
+
+<Figure title="Figure 4 · Rate operations on event streams" canvasId="fig-operations" width="820" height="380" readoutId="operations-readout" >
+<Fragment slot="controls">
+  <ControlRange id="op-l1" label="lambda 1" valueId="op-l1-v" min="0.2" max="6" step="0.1" value="1.5" />
+      <ControlRange id="op-l2" label="lambda 2" valueId="op-l2-v" min="0.2" max="6" step="0.1" value="2" />
+      <ControlRange id="op-p" label="keep p" valueId="op-p-v" min="0.05" max="0.95" step="0.05" value="0.45" />
+      <button id="op-reroll">Re-roll</button>
+</Fragment>
+</Figure>
+
+<h2 id="diagnostics">5. Is your data Poisson?</h2>
+
+<p>
+A Poisson-process model needs more than Poisson-looking totals. The rate should scale
+with exposure length, and disjoint intervals should behave independently. The
+dispersion index $\mathrm&#123;Var&#125;(N)/\mathbb&#123;E&#125;N$ is a fast count diagnostic: it should
+be near 1 for equal windows.
+</p>
+
+<Figure title="Figure 5 · Interarrival Q-Q and count dispersion" canvasId="fig-diagnostics" width="820" height="360" readoutId="diagnostics-readout" >
+<Fragment slot="controls">
+  <ControlSelect id="diag-scenario" label="scenario" valueId="diag-scenario-v" options={[{"value":"poisson","label":"Poisson"},{"value":"bursty","label":"bursty mixture"},{"value":"regular","label":"too regular"}]} />
+      <ControlRange id="diag-lambda" label="mean rate" valueId="diag-lambda-v" min="0.4" max="8" step="0.1" value="2" />
+      <button id="diag-reroll">Re-roll sample</button>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 6 · Conditional uniformity of event times given the count" canvasId="fig-uniformity" width="820" height="330" readoutId="uniformity-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>ordered arrival times</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>uniform order-statistic reference</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="uniformity-n" label="condition on $N(T)=n$" valueId="uniformity-n-v" min="1" max="20" step="1" value="7" />
+      <ControlRange id="uniformity-reps" label="replicates" valueId="uniformity-reps-v" min="50" max="1000" step="50" value="300" />
+      <PresetRow>
+        <button id="uniformity-reroll">Reroll conditioned samples</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Aside>
+<strong>Connection back to distributions.</strong> A Poisson process is the process-level
+story behind <a href="/math/named-distributions/#poisson">Poisson counts</a> and
+<a href="/math/named-distributions/#exponential">exponential waiting times</a>.
+The distributions are the one-window shadows of the process.
+</Aside>
+
+<NextCards heading="What next" cards={[{"href":"/named-distributions/#poisson","tag":"Distributions","title":"Named Distributions","role":"Review the Poisson count distribution and the exponential waiting-time distribution."},{"href":"/markov-chains/","tag":"Processes","title":"Markov Chains","role":"Poisson processes are continuous-time counting processes; Markov chains are the discrete-state companion."},{"href":"/psd-wiener-khinchin/","tag":"Random processes","title":"Power Spectral Density","role":"Another process-level view: what stationary randomness looks like in frequency."}]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+
+  <script is:inline src="/math/poisson-processes/poisson.js"></script>
+</ExplainerLayout>

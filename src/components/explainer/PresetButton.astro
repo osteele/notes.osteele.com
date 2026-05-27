@@ -1,0 +1,12 @@
+---
+interface Props {
+  id?: string;
+  active?: boolean;
+}
+
+const { id, active = false, ...attrs } = Astro.props;
+---
+
+<button id={id} class:list={[{ active }]} {...attrs}>
+  <slot />
+</button>

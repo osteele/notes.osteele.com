@@ -1,0 +1,263 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+---
+
+<ExplainerLayout title="Notation: density form vs. measure-theoretic form" breadcrumb="Notation" section="probability-and-statistics">
+<Hero title="Notation: density form vs. measure-theoretic form" subtitle="A bilingual dictionary for the two ways probability is written on this site, and a short tour of the places where they diverge." />
+
+<OrientationNote>
+  <p>
+    Most pages on this site use <em>density form</em>:
+    write $p(\theta)$, integrate $\int f(\theta)\,p(\theta)\,d\theta$. A few
+    pages — and a handful of asides on others — use
+    <em>measure-theoretic form</em>: write the probability measure $\pi$
+    directly, integrate $\int f\,d\pi$, and reach for the Radon–Nikodym
+    derivative $d\pi/d\nu$ when a density is needed.
+  </p>
+  <p>
+    Almost everything is the same in both languages. This page is for the
+    cases where they are not.
+  </p>
+</OrientationNote>
+
+<h2 id="why">1. Why both notations exist</h2>
+
+<p>
+A density $p(\theta)$ is not an absolute object — it depends on a
+<em>reference measure</em>. The same probability law $\pi$ on $\mathbb R$ has
+density $p(\theta)$ with respect to Lebesgue measure $\lambda$, density
+$p(\theta)/e^&#123;-\theta^2/2&#125;$ with respect to the standard Gaussian, and
+no density at all with respect to (say) a sum of Dirac masses on the
+integers. The expression $p(\theta)\,d\theta$ silently assumes Lebesgue.
+</p>
+
+<p>
+Measure-theoretic notation makes the reference explicit. You write $d\pi$ when
+you mean "integrate against the probability law itself" and
+$d\pi/d\nu$ when you specifically want a density — naming both the law and the
+yardstick.
+</p>
+
+<p>
+For most calculations the difference is cosmetic: read $p(\theta)\,d\theta$
+as a shorthand for $d\pi(\theta)$ and you've translated. The cases where the
+difference is <em>not</em> cosmetic are catalogued in §4.
+</p>
+
+<h2 id="dictionary">2. The dictionary</h2>
+
+<div class="notation-table-wrap">
+  <table class="notation-table">
+    <thead>
+      <tr><th>Concept</th><th>Density form</th><th>Measure-theoretic form</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Probability law</td>
+        <td>$p(\theta)$ &nbsp;(density)</td>
+        <td>$\pi$ &nbsp;(measure on a space $(\Omega, \mathcal F)$)</td>
+      </tr>
+      <tr>
+        <td>Probability of a set $A$</td>
+        <td>$\int_A p(\theta)\,d\theta$</td>
+        <td>$\pi(A)$</td>
+      </tr>
+      <tr>
+        <td>Expectation</td>
+        <td>$\int f(\theta)\,p(\theta)\,d\theta$</td>
+        <td>$\int f\,d\pi$ &nbsp; or &nbsp; $\mathbb E_\pi[f]$</td>
+      </tr>
+      <tr>
+        <td>Density (when one exists)</td>
+        <td>$p(\theta)$</td>
+        <td>$\dfrac&#123;d\pi&#125;&#123;d\nu&#125;$ &nbsp;(Radon–Nikodym derivative w.r.t. dominating measure $\nu$)</td>
+      </tr>
+      <tr>
+        <td>Joint law</td>
+        <td>$p(x, y)$</td>
+        <td>$\pi$ on the product space $(\mathcal X \times \mathcal Y, \mathcal F_X \otimes \mathcal F_Y)$</td>
+      </tr>
+      <tr>
+        <td>Conditional</td>
+        <td>$p(\theta \mid y) = p(\theta, y)/p(y)$</td>
+        <td>$\pi(\cdot \mid y)$ &nbsp;(regular conditional probability)</td>
+      </tr>
+      <tr>
+        <td>Independence</td>
+        <td>$p(x, y) = p(x)\,p(y)$</td>
+        <td>$\pi_&#123;X,Y&#125; = \pi_X \otimes \pi_Y$ &nbsp;(product measure)</td>
+      </tr>
+      <tr>
+        <td>Pushforward</td>
+        <td>change of variables: $p_Y(y) = p_X(\phi^&#123;-1&#125;(y))\,|J|$</td>
+        <td>$\phi_\ast \pi$, defined by $(\phi_\ast \pi)(B) = \pi(\phi^&#123;-1&#125;(B))$</td>
+      </tr>
+      <tr>
+        <td>KL divergence</td>
+        <td>$D(p \,\Vert\, q) = \int p\,\log(p/q)\,d\theta$</td>
+        <td>$D(\pi \,\Vert\, \nu) = \int \log\!\bigl(d\pi/d\nu\bigr)\,d\pi$</td>
+      </tr>
+      <tr>
+        <td>Sufficient statistic</td>
+        <td>Fisher–Neyman: $p(x \mid \theta) = g(T(x), \theta)\,h(x)$</td>
+        <td>Doob–Dynkin: $T$ measurable, $\sigma(T)$ makes $\theta$ conditionally independent of $X$ given $T(X)$</td>
+      </tr>
+      <tr>
+        <td>Convergence</td>
+        <td>$p_n \to p$ &nbsp;(typically pointwise)</td>
+        <td>$\pi_n \to \pi$ &nbsp;weakly, in total variation, in distribution, etc.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="agree">3. Where they agree</h2>
+
+<p>
+For laws absolutely continuous with respect to Lebesgue measure on $\mathbb R^d$
+(or with respect to counting measure on a countable space), the two languages
+compute the same numbers from the same inputs. Bayes' rule
+$\pi(\theta \mid y) \propto \pi(y \mid \theta)\,\pi(\theta)$ reads identically
+in both. The standard derivations of conjugate posteriors, MCMC acceptance
+ratios, ELBO decompositions, and Gaussian-process kernels go through with
+$p(\theta)\,d\theta$ replaced verbatim by $d\pi(\theta)$.
+</p>
+
+<p>
+The pages on this site that use density form throughout
+(<a href="/math/conjugate-priors/">conjugate-priors</a>,
+<a href="/math/monte-carlo/">monte-carlo</a>,
+<a href="/math/vb-gaussian-mixture/">vb-gaussian-mixture</a>) lose nothing by
+doing so. They could be reprinted in measure-theoretic form without changing
+a result.
+</p>
+
+<h2 id="disagree">4. Where they disagree</h2>
+
+<p>
+The four places on this site where the language choice matters substantively:
+</p>
+
+<h3 id="mode">The mode requires a reference measure</h3>
+
+<p>
+The mean and median of a probability law are properties of the
+<em>measure</em>: $\mathbb E_\pi[X]$ and $F_\pi^&#123;-1&#125;(1/2)$ depend only
+on $\pi$, not on a chosen yardstick. The <em>mode</em>, $\arg\max p(\theta)$,
+depends on the density's reference measure. Under a smooth bijection
+$\phi$ the density transforms as $p_Y(y) = p_X(\phi^&#123;-1&#125;(y))\,
+|J_&#123;\phi^&#123;-1&#125;&#125;(y)|$ and the argmax moves with the
+Jacobian. So a MAP estimate of $\log\sigma^2$ and of $\sigma^2$ disagree, but
+their means and medians agree.
+</p>
+
+<p>
+This is the same reparametrization-invariance issue that motivates
+<a href="/math/choosing-a-prior/#jeffreys">Jeffreys priors</a> and that is flagged
+on <a href="/math/posterior-summaries/#zero-one">Posterior Summaries</a>.
+</p>
+
+<h3 id="kl">KL is a Radon–Nikodym derivative, not a density ratio</h3>
+
+<p>
+The definition $D(\pi \,\Vert\, \nu) = \int \log\!\bigl(d\pi/d\nu\bigr)\,d\pi$
+is finite only when $\pi \ll \nu$ (the support of $\pi$ is contained in that
+of $\nu$); otherwise $D = \infty$. Density form
+$D(p\,\Vert\,q) = \int p \log(p/q)\,d\theta$ hides this — division by zero
+appears as an algebraic accident rather than a structural condition. The
+measure-theoretic form also generalises to discrete laws, mixed laws, and
+laws on infinite-dimensional spaces (Gaussian processes, path spaces) without
+needing separate definitions. See <a href="/math/kl-divergence/">KL divergence</a>.
+</p>
+
+<h3 id="sufficient">Sufficient statistics via σ-algebras</h3>
+
+<p>
+Fisher–Neyman factorization is a useful test for sufficiency
+($p(x \mid \theta) = g(T(x), \theta) h(x)$), but it presumes a density. The
+underlying definition is measure-theoretic: $T$ is sufficient if for every
+$\theta$, the conditional distribution of $X$ given $T(X)$ does not depend on
+$\theta$. Equivalently, $\theta$ is conditionally independent of $X$ given
+$T(X)$. This formulation handles cases with no density (continuous-discrete
+mixtures, point masses) and connects directly to information theory through
+the data-processing inequality. See
+<a href="/math/sufficient-statistics/">Sufficient Statistics</a>.
+</p>
+
+<h3 id="convergence">Modes of convergence are measure-theoretic by nature</h3>
+
+<p>
+Convergence in probability, almost surely, in $L^p$, and in distribution are
+each defined as conditions on a sequence of measures or a sequence of
+random variables on a common probability space. Density-form translations
+exist for absolutely continuous cases (convergence of densities, pointwise
+or in $L^1$) but the underlying notions are not density notions —
+random variables that have no density (e.g. point masses, mixed laws) still
+converge in measure. See
+<a href="/math/modes-of-convergence/">Modes of Convergence</a>.
+</p>
+
+<h2 id="when">5. When to reach for which</h2>
+
+<ul>
+  <li><strong>Default to density form.</strong> Conjugate updates, sampling-method
+      derivations, MCMC accept ratios, ELBO bookkeeping, GP kernels — these
+      work fine in density form and density form is the form most readers
+      bring with them.</li>
+  <li><strong>Reach for measure-theoretic form when the result is
+      reparametrization-dependent</strong> (anything involving a mode or a MAP),
+      <strong>when absolute continuity matters</strong> (KL, Bayes factors near
+      $q = 0$), <strong>when you're working on an unfamiliar space</strong>
+      (path spaces, infinite product spaces, point processes), or
+      <strong>when you need a definition that doesn't presume a density</strong>
+      (sufficient statistics, convergence).</li>
+  <li><strong>Translation should be cheap.</strong> Any time the density form
+      reads "p(θ) dθ", read "dπ(θ)" instead and the rest of the page still
+      works. The cases above are the ones where translation alone isn't
+      enough; the measure-theoretic form carries content the density form
+      cannot.</li>
+</ul>
+
+<NextCards heading="Where the distinction shows up" cards={[
+  { href: "/measure-theory/", tag: "Foundations", title: "Measure Theory & Random Variables", role: "The full measure-theoretic treatment, with pushforwards, Radon–Nikodym, and importance sampling." },
+  { href: "/kl-divergence/", tag: "Divergence", title: "KL Divergence", role: "Where the Radon–Nikodym derivative carries actual content rather than dressing up a density ratio." },
+  { href: "/sufficient-statistics/", tag: "Inference", title: "Sufficient Statistics", role: "Fisher–Neyman in density form, Doob–Dynkin in measure-theoretic form, same theorem." },
+  { href: "/posterior-summaries/", tag: "Decision", title: "Posterior Summaries & Bayes Risk", role: "Mean and median are properties of the measure; the mode is not." },
+]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<style>
+  .notation-table-wrap { overflow-x: auto; margin: 14px 0 22px; }
+  .notation-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .notation-table th, .notation-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--rule, #d8d3c5);
+    text-align: left;
+    vertical-align: top;
+  }
+  .notation-table th {
+    font-weight: 600;
+    background: var(--panel, #fbfbfa);
+    color: var(--text-dim, #5a6577);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .notation-table td:first-child {
+    font-weight: 600;
+    color: var(--text, #1f2733);
+    white-space: nowrap;
+  }
+</style>
+</ExplainerLayout>

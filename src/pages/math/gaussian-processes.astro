@@ -1,0 +1,210 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import Legend from "../../components/explainer/Legend.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import PresetButton from "../../components/explainer/PresetButton.astro";
+import Readout from "../../components/explainer/Readout.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import VizCard from "../../components/explainer/VizCard.astro";
+import VizCardGrid from "../../components/explainer/VizCardGrid.astro";
+---
+
+<ExplainerLayout title="Gaussian Processes for Regression" breadcrumb="Gaussian Processes for Regression" section="random-processes">
+
+<Hero title="Gaussian Processes for Regression" subtitle="Priors over functions, kernels, posterior conditioning, hyperparameters, and acquisition." />
+
+<p>
+A Gaussian process is the infinite-dimensional version of a multivariate normal. Pick
+any finite set of inputs $x_1,\ldots,x_n$ and the corresponding random function values
+are jointly Gaussian:
+</p>
+
+$$ f(x_&#123;1:n&#125;) \sim \mathcal&#123;N&#125;(m(x_&#123;1:n&#125;), K), \qquad K_&#123;ij&#125;=k(x_i,x_j). $$
+
+<p>
+The mean function says where functions live before data. The kernel says which inputs
+move together. Regression is just conditioning that joint Gaussian on observed values.
+</p>
+
+<Aside>
+  <strong>One sentence:</strong> a GP prior is a distribution over functions; after
+  observations, the posterior mean interpolates the data while the posterior variance
+  pinches near observations and expands away from them.
+</Aside>
+
+<h2>1. Kernel zoo</h2>
+
+<p>
+The kernel encodes smoothness, length-scale, signal variance, periodicity, and
+stationarity. The heatmap in each mini-panel is the covariance matrix over fixed input
+locations; the curves are prior samples from that covariance.
+</p>
+
+<Figure title="Figure 1 · Kernel matrices and prior sample functions" canvasId="fig1" width="760" height="520" readoutId="fig1-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>prior sample functions</span>
+      <span><span class="swatch" style="background:#b8412a"></span>kernel covariance heatmap</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig1-ell" label="length-scale ℓ" valueId="fig1-ell-v" min="0.05" max="0.8" step="0.01" value="0.22" />
+      <ControlRange id="fig1-sf" label="signal σ_f" valueId="fig1-sf-v" min="0.2" max="2" step="0.05" value="1" />
+      <PresetRow>
+        <button id="fig1-resample">Resample functions</button>
+        <button data-gp-audio="rbf">Hear RBF</button>
+        <button data-gp-audio="ou">Hear OU</button>
+        <button data-gp-audio="periodic">Hear periodic</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>2. Prior to posterior by conditioning</h2>
+
+<p>
+For noisy observations $y=f(X)+\epsilon$, $\epsilon\sim\mathcal&#123;N&#125;(0,\sigma_n^2I)$,
+the posterior at a test point $x_*$ has
+</p>
+
+$$
+\mu_*(x_*) = k_*^T(K+\sigma_n^2I)^&#123;-1&#125;y,\qquad
+\sigma_*^2(x_*) = k(x_*,x_*) - k_*^T(K+\sigma_n^2I)^&#123;-1&#125;k_*.
+$$
+
+<p>
+Click the plot to add an observation. Drag existing observations. The band shows
+roughly 95% posterior uncertainty.
+</p>
+
+<Figure title="Figure 2 · Click-to-condition Gaussian process regression" canvasId="fig2" width="760" height="370" readoutId="fig2-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>posterior mean</span>
+      <span><span class="swatch" style="background:rgba(31,74,140,0.24)"></span>95% band</span>
+      <span><span class="swatch" style="background:#b8412a"></span>observations</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig2-ell" label="length-scale ℓ" valueId="fig2-ell-v" min="0.05" max="0.8" step="0.01" value="0.22" />
+      <ControlRange id="fig2-noise" label="noise σ_n" valueId="fig2-noise-v" min="0.01" max="0.6" step="0.01" value="0.12" />
+      <PresetRow>
+        <button id="fig2-reset">Reset observations</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 2b · Gaussian conditioning as a slice through a joint ellipse" canvasId="fig2-slice" width="760" height="360" readoutId="fig2-slice-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>joint prior over two function values</span>
+      <span><span class="swatch" style="background:#b8412a"></span>observed coordinate</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>conditional distribution</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig2-slice-x1" label="$x_1$" valueId="fig2-slice-x1-v" min="0.05" max="0.95" step="0.01" value="0.30" />
+      <ControlRange id="fig2-slice-x2" label="$x_2$" valueId="fig2-slice-x2-v" min="0.05" max="0.95" step="0.01" value="0.62" />
+      <ControlRange id="fig2-slice-y1" label="observed $f(x_1)$" valueId="fig2-slice-y1-v" min="-2.5" max="2.5" step="0.05" value="1.0" />
+</Fragment>
+</Figure>
+
+<h2>3. Length-scale as model complexity</h2>
+
+<p>
+Short length-scales let nearby observations vary independently; long length-scales
+force the function to move as a broad sheet. The same data can look overfit,
+reasonable, or underfit depending on $\ell$.
+</p>
+
+<Figure title="Figure 3 · Same observations under three length-scales" canvasId="fig3" width="760" height="340" readoutId="fig3-readout" />
+
+<h2>4. Marginal likelihood landscape</h2>
+
+<p>
+The log marginal likelihood scores hyperparameters by integrating out the latent
+function:
+</p>
+
+$$
+\log p(y\mid X,\theta)=
+-\frac12 y^T(K_\theta+\sigma_n^2I)^&#123;-1&#125;y
+-\frac12\log|K_\theta+\sigma_n^2I|
+-\frac n2\log(2\pi).
+$$
+
+<p>
+Click the landscape to update the posterior below it. The optimum balances fit,
+uncertainty, and complexity.
+</p>
+
+<Figure title="Figure 4 · Hyperparameter learning by marginal likelihood" canvasId="fig4" width="760" height="470" readoutId="fig4-readout" />
+
+<Figure title="Figure 4b · Same data, different kernels, different assumptions" canvasId="fig4-kernels" width="760" height="420" readoutId="fig4-kernels-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>RBF</span>
+      <span><span class="swatch" style="background:#b8412a"></span>periodic</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>rough Matérn</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <button data-kernel-data="smooth" class="active">smooth trend</button>
+        <button data-kernel-data="periodic">periodic data</button>
+        <button data-kernel-data="rough">rough data</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>5. Two-dimensional regression toy</h2>
+
+<p>
+The same conditioning formula works over any input space. In two dimensions, the
+posterior mean becomes a surface. The heatmap below draws that mean; opacity fades
+where posterior uncertainty is high. Drag training points to reshape the surface.
+</p>
+
+<Figure title="Figure 5 · 2-D posterior mean with uncertainty transparency" canvasId="fig5" width="760" height="420" readoutId="fig5-readout" />
+
+<h2>6. Acquisition teaser</h2>
+
+<p>
+Bayesian optimization uses the GP posterior to choose where to evaluate next. Expected
+improvement is high where the mean is promising, the uncertainty is large, or both.
+</p>
+
+<Figure title="Figure 6 · Expected improvement under the current posterior" canvasId="fig6" width="760" height="330" readoutId="fig6-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>posterior mean</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>expected improvement</span>
+      <span><span class="swatch" style="background:#b8412a"></span>next query</span>
+    </div>
+</Fragment>
+</Figure>
+
+<h2>What to remember</h2>
+
+<div class="compare">
+  <div data-target-figure="fig1" data-hint-control="fig1-ell"><strong>GP prior</strong>Every finite set of function values is jointly Gaussian.</div>
+  <div data-target-figure="fig1" data-hint-control="fig1-ell"><strong>Kernel</strong>The covariance rule that encodes smoothness, scale, and structure.</div>
+  <div data-target-figure="fig2"><strong>Conditioning</strong>Posterior mean and variance come from Gaussian conditioning.</div>
+  <div data-target-figure="fig4"><strong>Marginal likelihood</strong>A data-driven score for kernel hyperparameters.</div>
+  <div data-target-figure="fig3"><strong>Limitations</strong>Exact GP regression costs $O(n^3)$, and the kernel assumption matters.</div>
+</div>
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Related:
+  <a href="/math/psd-wiener-khinchin/">Power Spectral Density &amp; Wiener-Khinchin</a>,
+  <a href="/math/fisher-information/">Uninformative Priors, Fisher Information &amp; MLE</a>,
+  <a href="/math/monte-carlo/">Monte Carlo &amp; MCMC</a>.
+</div>
+
+  <script is:inline src="/math/gaussian-processes/gp.js"></script>
+</ExplainerLayout>

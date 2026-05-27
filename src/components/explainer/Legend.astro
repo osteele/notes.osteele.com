@@ -1,0 +1,26 @@
+---
+interface LegendItem {
+  label: string;
+  color: string;
+  opacity?: number;
+}
+
+interface Props {
+  items?: LegendItem[];
+}
+
+const { items = [] } = Astro.props;
+---
+
+<div class="legend">
+  {items.length > 0 ? (
+    items.map((item) => (
+      <span>
+        <span class="swatch" style={`background:${item.color}${item.opacity === undefined ? "" : `; opacity:${item.opacity}`}`}></span>
+        <span set:html={item.label}></span>
+      </span>
+    ))
+  ) : (
+    <slot />
+  )}
+</div>

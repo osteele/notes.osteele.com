@@ -1,0 +1,21 @@
+---
+interface Props {
+  id: string;
+  viz: string;
+  title: string;
+  tag?: string;
+  tagClass?: string;
+  mini?: boolean;
+}
+
+const { id, viz, title, tag, tagClass, mini = false } = Astro.props;
+---
+
+<article class:list={[mini ? "mini-card" : "card", "viz-card"]} id={id} data-viz={viz}>
+  <h3 class="card-title">
+    {tag && <span class:list={["tag", tagClass]}>{tag}</span>}<span class="card-title-text" set:html={title} />
+  </h3>
+  <div class="card-body">
+    <slot />
+  </div>
+</article>

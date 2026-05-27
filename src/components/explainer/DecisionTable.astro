@@ -1,0 +1,21 @@
+---
+interface Props {
+  headers?: string[];
+  tableClass?: string;
+}
+
+const { headers = [], tableClass = "decision" } = Astro.props;
+---
+
+<div class="decision-wrap">
+  <table class={tableClass}>
+    {headers.length > 0 && (
+      <thead>
+        <tr>{headers.map((header) => <th>{header}</th>)}</tr>
+      </thead>
+    )}
+    <tbody>
+      <slot />
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,1528 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Bayesian Neural Networks — Interactive Explainer" breadcrumb="Bayesian Neural Networks" section="bayesian-inference">
+  <Hero title="Bayesian Neural Networks" subtitle="Weight uncertainty, predictive distributions, Laplace approximation, and evidence in the smallest neural net that still shows the ideas." />
+
+  <p>
+    A Bayesian neural network puts a prior on weights and conditions that prior on data.
+    Even a tiny nonlinear model can produce a non-Gaussian posterior in weight space, while
+    the predictive distribution is a distribution over functions. The widgets below keep the
+    parameter space two-dimensional so the posterior can be drawn directly.
+  </p>
+
+  <h2>1. Posterior over a tiny neural network</h2>
+  <p>
+    The model is $f(x)=w_1\tanh(w_2x)$. The energy
+    $M(w)=\beta E_D+\alpha E_W$ combines data error and weight decay. Larger $\alpha$
+    favors smaller weights; larger $\beta$ trusts the observations more.
+    Minimizing $M$ on its own is ordinary training (squared-error loss with weight
+    decay), and its minimizer is the MAP weight $w^*$; everything Bayesian on this
+    page is built on that same $w^*$.
+    Toggle the heatmap to see the two terms separately: $\beta E_D$ is the data-fit landscape
+    (independent of $\alpha$); $\alpha E_W$ is the prior-decay landscape (concentric circles
+    around the origin); their sum is the full $M$.
+    <strong>On the right panel:</strong> click to add a data point, drag to move one, option/alt-click to remove.
+  </p>
+
+  <Figure title="Figure 1 · Weight posterior and predictive fan" canvasId="bnn-posterior" width="780" height="430" readoutId="bnn-posterior-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#b8412a"></span>high posterior mass</span>
+        <span><span class="swatch" style="background:#1f4a8c"></span>MAP function</span>
+        <span><span class="swatch" style="background:#6b4592"></span>posterior predictive draws</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <ControlRange id="bnn-alpha" label={String.raw`prior precision $\alpha$`} valueId="bnn-alpha-v" min="0.05" max="3" step="0.05" value="0.55" />
+      <ControlRange id="bnn-beta" label={String.raw`noise precision $\beta$`} valueId="bnn-beta-v" min="0.4" max="20" step="0.2" value="6" />
+      <PresetRow>
+        <button id="bnn-view-M" class="active">show M (combined)</button>
+        <button id="bnn-view-ed">show βE_D (data)</button>
+        <button id="bnn-view-ew">show αE_W (prior)</button>
+        <button id="bnn-new-data">New data</button>
+      </PresetRow>
+    </Fragment>
+  </Figure>
+
+  <h2>2. Laplace approximation, and what it misses</h2>
+  <p>
+    Laplace replaces the posterior with a Gaussian centred at the MAP, using the curvature of
+    $M$ at the MAP as the inverse covariance. That curvature decomposes the same way as the
+    energy: $A = \nabla\nabla M\big|_&#123;w^*&#125; = \alpha I + \beta H$, where
+    $H = \nabla\nabla E_D$ is the data-only Hessian. The prior contributes the same $\alpha$
+    along every direction (the isotropic $\alpha I$ term); the data contributes more along
+    directions where it pins the weights more tightly (large eigenvalues of $\beta H$). The
+    dashed lines through the MAP are the eigenvectors of $A$, the ellipse's principal axes,
+    with semi-axis $1/\sqrt&#123;\mu_i&#125;$ where $\mu_i = \alpha + \lambda_i$ is the
+    corresponding eigenvalue of $A$ and $\lambda_i$ is the corresponding eigenvalue of $\beta H$.
+  </p>
+  <p>
+    Laplace is exact when the posterior really is Gaussian, but the model here has
+    a sign symmetry $f(x; w_1, w_2) = f(x; -w_1, -w_2)$, so the true posterior is bimodal. Laplace
+    sits on top of one mode and ignores the other. When a second mode is present, a faded
+    ghost ellipse marks where Laplace would land at the reflected MAP; on the right panel,
+    the dashed green curve shows $f(x;-w_1^*,-w_2^*)$. It coincides exactly with the solid
+    blue MAP curve, which is why both modes give the same predictions and why predictive uncertainty
+    is unaffected by which mode Laplace picks.
+  </p>
+  <p>
+    The Laplace predictive variance at input $x$ is
+    $\sigma^2(x) = 1/\beta + g(x)^\top A^&#123;-1&#125; g(x)$, where $g(x) = \nabla_w f(x; w^*)$.
+    Linearizing $f$ around $w^*$ leaves the predictive mean exactly at $f(x; w^*)$. The
+    Bayesian treatment corrects only the spread, not the central prediction.
+    The first term is observation noise (constant in $x$); the second is parameter uncertainty
+    (small near where the data pins $f$, large in extrapolation). The toggle on the right
+    panel switches between the two components and their quadrature sum.
+  </p>
+  <p>
+    The dashed teal ellipse is the <strong>mean-field variational</strong> fit — a Gaussian
+    forced to be axis-aligned, $q(w) = q(w_1)\,q(w_2)$ with no covariance term. Toggle the KL
+    direction below the panel. <strong>Reverse KL</strong> $\mathrm&#123;KL&#125;(q\,\|\,p)$, the one the
+    ELBO actually minimizes, is mode-seeking: it sits on one mode and shrinks <em>inside</em> the
+    true spread (its per-axis precision is the diagonal of $A$, which ignores the correlation).
+    <strong>Forward KL</strong> $\mathrm&#123;KL&#125;(p\,\|\,q)$ is mass-covering: on the bimodal
+    symmetric-data preset it stretches to straddle both modes and badly over-covers. Neither can
+    tilt to follow the posterior's correlation. That is the standard point
+    about factorized-Gaussian VI underfitting the BNN posterior.
+  </p>
+  <p>
+    Drag the black <strong>weight probe</strong> anywhere in the left panel to read off the
+    function it produces, drawn in black on the right. Move it onto $+w^*$ and then $-w^*$ to
+    watch the two curves land exactly on top of each other; place it inside versus outside the
+    Laplace ellipse to see what one standard deviation of posterior uncertainty looks like as
+    functions.
+  </p>
+
+  <Figure title="Figure 2 · Weight-space (left) and predictive (right): Laplace vs the truth" canvasId="bnn-laplace" width="780" height="420" readoutId="bnn-laplace-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#b8412a"></span>true posterior contour</span>
+        <span><span class="swatch" style="background:#2d7a3e"></span>Laplace ellipse + eigen-axes</span>
+        <span><span class="swatch" style="background:#1f4a8c"></span>MAP function f(x; w*)</span>
+        <span><span class="swatch" style="background:#2d7a3e;opacity:0.55"></span>reflected MAP f(x; −w*)</span>
+        <span><span class="swatch" style="background:#6b4592"></span>true predictive band</span>
+        <span><span class="swatch" style="background:#d4690a"></span>Laplace predictive band — switch component below</span>
+        <span><span class="swatch" style="background:#0f766e"></span>mean-field VI ellipse (axis-aligned)</span>
+        <span><span class="swatch" style="background:#1f2733"></span>weight probe and its function</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <PresetRow>
+        <button id="bnn-data-asym" class="active">Asymmetric data</button>
+        <button id="bnn-data-sym">Symmetric data (bimodal)</button>
+        <button id="bnn-data-sparse">Sparse data</button>
+      </PresetRow>
+      <PresetRow>
+        <button id="bnn-var-param" class="active">parameter band (g·A⁻¹·g)</button>
+        <button id="bnn-var-noise">noise band (1/√β)</button>
+        <button id="bnn-var-total">total band (quadrature sum)</button>
+      </PresetRow>
+      <PresetRow>
+        <button id="bnn-vi-off">no VI overlay</button>
+        <button id="bnn-vi-rev" class="active">mean-field VI · reverse KL</button>
+        <button id="bnn-vi-fwd">mean-field VI · forward KL</button>
+      </PresetRow>
+    </Fragment>
+  </Figure>
+
+  <p>
+    Figure 2 showed one symmetry of this tiny model, the sign flip
+    $f(x;w_1,w_2) = f(x;-w_1,-w_2)$. A network with more than one hidden unit carries a far
+    larger one: the hidden units can be <strong>permuted</strong>. The figure below uses a
+    two-unit net $f(x) = w_a\tanh(w_c x) + w_b\tanh(w_d x)$. Swapping the two units leaves
+    $f$ untouched (a sum does not care about order) but moves the weight vector to a
+    different point. Every posterior mode therefore has $K!$ identical twins, and Laplace
+    sits on exactly one of them. Drag a unit in the weight plane; press <em>Swap</em> and
+    watch the output curve hold perfectly still.
+  </p>
+
+  <Figure title="Figure 2b · Permutation symmetry: one function, K! weight vectors" canvasId="bnn-perm" width="780" height="340" readoutId="bnn-perm-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#1f4a8c"></span>hidden unit 1</span>
+        <span><span class="swatch" style="background:#d4690a"></span>hidden unit 2</span>
+        <span><span class="swatch" style="background:#2d7a3e"></span>network output f(x)</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <PresetRow>
+        <button id="bnn-perm-swap">Swap the two units</button>
+        <button id="bnn-perm-reset">Reset units</button>
+      </PresetRow>
+    </Fragment>
+  </Figure>
+
+  <h2>3. Evidence and Occam's Hill</h2>
+  <p>
+    The log evidence $\log p(\mathcal D \mid \alpha, \beta)$ is what model comparison maximises.
+    In MacKay's framing it is a ratio of three partition functions,
+    $p(\mathcal D \mid \alpha, \beta) = Z_M(\alpha,\beta) / \big[Z_W(\alpha)\, Z_D(\beta)\big]$,
+    where $Z_W(\alpha) = \int e^&#123;-\alpha E_W&#125; dw = (2\pi/\alpha)^&#123;d/2&#125;$ is the prior
+    normaliser, $Z_D(\beta) = (2\pi/\beta)^&#123;N/2&#125;$ is the noise-model normaliser, and
+    $Z_M(\alpha,\beta) = \int e^&#123;-M(w)&#125; dw$ is the posterior partition function. Under
+    Laplace, $Z_M \approx e^&#123;-M(w^*)&#125; (2\pi)^&#123;d/2&#125;/\sqrt&#123;\det A&#125;$, so
+    $\log p(\mathcal D \mid \alpha, \beta) \approx -M(w^*) - \tfrac12\log\det A
+    + \tfrac d2\log\alpha + \tfrac N2\log\beta + \text&#123;const&#125;$.
+  </p>
+  <p>
+    The figure below is exactly a grid integral of $\exp(-M(w))$ over the
+    same $(w_1, w_2)$ as Figure 1, repeated for many values of the prior precision $\alpha$. Too
+    small $\alpha$ wastes prior mass on regions far from the data ($Z_W$ huge, $Z_M$ barely
+    larger); too large $\alpha$ pulls the prior away from where the MAP sits ($Z_W$ tiny but
+    $Z_M$ tiny faster). The peak is the Occam-optimal regulariser.
+    The three insets show the weight-space posterior at small, peak, and large $\alpha$. At
+    small $\alpha$ the posterior is broad and most of its mass sits far from the data minimum;
+    at large $\alpha$ the posterior contracts onto the origin and away from the data minimum.
+  </p>
+  <p>
+    The dashed green curve overlays <strong>held-out test error</strong> (drawn on its own
+    scale; the minimum's <em>location</em> is what matters). The evidence peak and the
+    test-error minimum sit at essentially the same $\alpha$: the evidence picks the
+    generalizing model with no validation set. They decouple when the prior or model is
+    mismatched (try the sparse preset, or drag an outlier into Figure 1's data). Low
+    evidence alongside still-decent test error is the classic signature of
+    model–data mismatch.
+  </p>
+
+  <Figure title="Figure 3 · log evidence vs α with weight-space snapshots" canvasId="bnn-occam" width="780" height="500" readoutId="bnn-occam-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#b8412a"></span>log evidence</span>
+        <span><span class="swatch" style="background:#1f4a8c"></span>fit at MAP</span>
+        <span><span class="swatch" style="background:#6b4592"></span>prior + complexity penalty</span>
+        <span><span class="swatch" style="background:#d4690a"></span>current α (Figure 1)</span>
+        <span><span class="swatch" style="background:#2d7a3e"></span>held-out test error (dashed, own scale)</span>
+        <span><span class="swatch" style="background:#5a6577;opacity:0.6"></span>weight-space insets at three α</span>
+      </div>
+    </Fragment>
+  </Figure>
+
+  <h2>4. Estimating α and β from the data</h2>
+  <p>
+    Sliding $\alpha$ until Figure 3's curve peaks is the manual version of model selection.
+    The evidence gradient gives a closed-form iterative update: at the current MAP, compute
+    the eigenvalues $\lambda_i$ of $\beta H$ (so the eigenvalues of $A$ are $\mu_i = \alpha + \lambda_i$),
+    define the <em>effective number of parameters</em>
+    $\gamma = \sum_i \lambda_i / (\alpha + \lambda_i) = d - \alpha\,\mathrm&#123;tr&#125;(A^&#123;-1&#125;)$, then set
+    $\alpha \leftarrow \gamma / \lVert w^* \rVert^2$ and
+    $\beta^&#123;-1&#125; \leftarrow (N - \gamma)^&#123;-1&#125; \sum_n (y_n - f(x_n; w^*))^2$.
+    Refit the MAP, recompute, repeat. The fixed point is the evidence-optimal $(\alpha, \beta)$.
+  </p>
+  <p>
+    $\gamma$ counts how many directions in weight space are <em>determined by the data</em>: a
+    direction with $\lambda_i \gg \alpha$ contributes ≈ 1 (data-determined); a direction with
+    $\lambda_i \ll \alpha$ contributes ≈ 0 (prior-determined). For this 2-parameter model
+    $\gamma \in [0, 2]$. The $\alpha$ update can then be read as "the prior precision should
+    be just tight enough to absorb the $\gamma$ data-determined dimensions of $w$"; the $\beta$
+    update is the unbiased noise estimator using $N - \gamma$ residual degrees of freedom.
+  </p>
+
+  <Figure title="Figure 4 · MacKay evidence-maximisation: α, β, γ trajectories" canvasId="bnn-evidence" width="780" height="430" readoutId="bnn-evidence-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#b8412a"></span>posterior contour at current α, β</span>
+        <span><span class="swatch" style="background:#1f4a8c"></span>prior 1-σ circle (radius 1/√α)</span>
+        <span><span class="swatch" style="background:#2d7a3e"></span>MAP trajectory</span>
+        <span><span class="swatch" style="background:#d4690a"></span>α(t)</span>
+        <span><span class="swatch" style="background:#6b4592"></span>β(t)</span>
+        <span><span class="swatch" style="background:#2d7a3e"></span>γ(t)</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <PresetRow>
+        <button id="bnn-ev-reset">Reset (α=0.05, β=0.5)</button>
+        <button id="bnn-ev-reset-tight">Reset (α=10, β=15)</button>
+        <button id="bnn-ev-step">Step</button>
+        <button id="bnn-ev-run">Run</button>
+        <button id="bnn-ev-apply">Apply to Figure 1</button>
+      </PresetRow>
+    </Fragment>
+  </Figure>
+
+  <h2>5. Prior mismatch: when one precision isn't enough</h2>
+  <p>
+    The previous section assumes a single prior precision $\alpha$ covers all weights. But
+    weights in different layers measure different things, so a single $\alpha$ implicitly
+    couples them, and the coupling is not unit-consistent. Rescale inputs $x \to cx$:
+    the function $f(x;w_1,w_2) = w_1\tanh(w_2 x)$ is unchanged if we also send $w_2 \to w_2/c$.
+    A sensible prior should be invariant under this joint rescaling. But the isotropic prior
+    $p(w) \propto \exp\big(-\tfrac\alpha 2 (w_1^2 + w_2^2)\big)$ treats $w_1$ and $w_2$ on
+    equal footing: rescaling inputs changes the effective prior on $w_2$ but not $w_1$, which
+    means the prior carries an arbitrary choice of input units. The cure is one precision per
+    layer ($\alpha_&#123;\text&#123;out&#125;&#125;$ on $w_1$ and $\alpha_&#123;\text&#123;in&#125;&#125;$ on $w_2$), chosen
+    by the same MacKay updates from §4 applied separately to each group. This is the basis of
+    automatic relevance determination.
+  </p>
+  <p>
+    Before the prior story: what does each weight do on its own? The two panels below show
+    $f(x)=w_1\tanh(w_2x)$ with one weight swept and the other fixed. $w_1$ scales the output
+    amplitude; $w_2$ scales the input, which changes how steep the tanh is around $x=0$. A
+    prior that constrains $w_1$ therefore constrains amplitude; a prior that constrains $w_2$
+    constrains how nonlinear the function can be.
+  </p>
+
+  <div style="display:flex; gap:1rem; margin:0.75rem 0 1.25rem; flex-wrap:wrap;">
+    <div style="flex:1; min-width:280px;">
+      <div style="font-size:0.85rem; color:#5a6577; margin-bottom:0.25rem;"><strong>w₁</strong> swept (w₂ = 1.5): amplitude</div>
+      <canvas id="bnn-w1-effect" width="360" height="140" style="width:100%; height:auto; border:1px solid #e3ddd0; border-radius:4px;"></canvas>
+    </div>
+    <div style="flex:1; min-width:280px;">
+      <div style="font-size:0.85rem; color:#5a6577; margin-bottom:0.25rem;"><strong>w₂</strong> swept (w₁ = 1.2): steepness</div>
+      <canvas id="bnn-w2-effect" width="360" height="140" style="width:100%; height:auto; border:1px solid #e3ddd0; border-radius:4px;"></canvas>
+    </div>
+  </div>
+
+  <p>
+    Per-layer prior precision now decouples these: $\alpha_&#123;\text&#123;in&#125;&#125;$
+    regulates $w_2$ (slope inside the tanh; how steep the nonlinearity can be);
+    $\alpha_&#123;\text&#123;out&#125;&#125;$ regulates $w_1$ (output amplitude). The top panel draws
+    <em>prior-predictive</em> functions (before seeing data); the bottom panel draws
+    <em>posterior-predictive</em> functions conditioned on the same eight data points. When the
+    prior is mis-scaled, the prior band can't even bracket the data and the posterior is
+    pushed into a corner of weight space.
+    <strong>Click to add a data point, drag a point, option/alt-click to remove.</strong>
+    The top (prior) band ignores the data, so only the bottom band moves.
+  </p>
+
+  <Figure title="Figure 5 · Prior-predictive (top) vs posterior-predictive (bottom)" canvasId="bnn-prior" width="780" height="430" readoutId="bnn-prior-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#1f4a8c"></span>prior-predictive band</span>
+        <span><span class="swatch" style="background:#6b4592"></span>posterior-predictive band</span>
+        <span><span class="swatch" style="background:#b8412a"></span>data</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <ControlRange id="bnn-a1" label={String.raw`$\alpha_{\text{out}}$ (output-layer precision)`} valueId="bnn-a1-v" min="0.1" max="20" step="0.1" value="0.6" />
+      <ControlRange id="bnn-a2" label={String.raw`$\alpha_{\text{in}}$ (input-layer precision)`} valueId="bnn-a2-v" min="0.1" max="20" step="0.1" value="0.6" />
+      <PresetRow>
+        <button id="bnn-prior-balanced" class="active">Balanced</button>
+        <button id="bnn-prior-tight-in">Tight α<sub>in</sub></button>
+        <button id="bnn-prior-tight-out">Tight α<sub>out</sub></button>
+      </PresetRow>
+    </Fragment>
+  </Figure>
+
+  <h2>6. Where Laplace stops working</h2>
+  <p>
+    Everything on this page assumes the Gaussian Laplace approximation around a single mode
+    is a reasonable picture of the posterior. That assumption fails when the posterior is
+    genuinely multimodal in ways that <em>do</em> change the predictive distribution, when
+    the network is deep enough that the central-limit argument no longer justifies Gaussianity,
+    or when the dataset is too big to compute the full Hessian. The alternatives: sample the
+    posterior, or optimize a tractable approximation to it.
+  </p>
+  <p>
+    <strong>Hamiltonian Monte Carlo (HMC).</strong> Augments $w$ with a momentum vector and
+    integrates Hamiltonian dynamics on $-\log p(w \mid \mathcal D) + \tfrac12 \lVert p\rVert^2$
+    using leapfrog steps, then accepts/rejects via Metropolis. Gradient-informed trajectories
+    let it move long distances per accepted step and explore high-dimensional posteriors that
+    random-walk MH cannot. Covered with an interactive on
+    <a href="/math/monte-carlo/">the Monte Carlo &amp; MCMC page</a>, including a "BNN posterior target"
+    preset that uses the same energy surface as Figure 1 here.
+  </p>
+  <p>
+    <strong>Stochastic Gradient Langevin Dynamics (SGLD).</strong> The minibatch-scale relative
+    of HMC. Each step is an SGD update with carefully scaled Gaussian noise injected:
+    $w_&#123;t+1&#125; = w_t - \tfrac&#123;\eta_t&#125;2 \nabla \tilde M(w_t) + \sqrt&#123;\eta_t&#125;\,\xi_t$
+    with $\xi_t \sim \mathcal N(0, I)$, where $\nabla \tilde M$ is the stochastic-gradient
+    estimator on a minibatch. In the small-step-size limit the iterates form a Markov chain
+    whose stationary distribution is the posterior $p(w \mid \mathcal D)$. Unlike HMC it
+    does not require a full-batch gradient or a Metropolis correction, which is why it scales
+    to real-world neural nets. SGLD belongs alongside HMC on the Monte Carlo &amp; MCMC page; it
+    is not implemented there yet.
+  </p>
+  <p>
+    <strong>Two non-sampling routes</strong> round out the picture.
+    <a href="/math/variational-inference/">Variational inference</a> fits a tractable $q(w)$ by
+    optimization rather than sampling, though a fully factorized Gaussian $q$ tends to
+    underfit the weight posterior's correlations and multimodality. <strong>MC-Dropout</strong>
+    reuses dropout at test time: each forward pass drops a random set of units, and the spread
+    across passes is a cheap posterior approximation. <strong>Monte Carlo noise injection</strong>
+    is its close cousin: instead of dropping units it perturbs the weights with noise on each
+    pass, reading uncertainty off the same forward-pass spread.
+  </p>
+  <p>
+    The figure runs MC-Dropout on a 14-unit network fitted to the red points. Each
+    test-time forward pass keeps each hidden unit only with probability $1-p$ (kept units
+    rescaled by $1/(1-p)$), so every pass is a different thinned sub-network. The spread of
+    those sub-networks <em>is</em> the predictive uncertainty, wide in extrapolation and narrow
+    where the data pins the fit. Slide $p$ and watch the band inflate with no new data: unlike
+    the Laplace band, whose width comes from the data through the Hessian, the MC-Dropout band's
+    width is set by the free knob $p$. Switch the perturbation to <strong>MC noise injection</strong>
+    and the same picture emerges from a different mechanism: Gaussian noise added to every
+    weight on each pass instead of dropped units.
+  </p>
+
+  <Figure title="Figure 6 · MC-Dropout and noise injection: a band from random perturbations" canvasId="bnn-dropout" width="780" height="380" readoutId="bnn-dropout-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#b8412a"></span>training data</span>
+        <span><span class="swatch" style="background:#1f4a8c"></span>full network (unperturbed)</span>
+        <span><span class="swatch" style="background:#6b4592"></span>perturbed sub-networks + predictive band</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <PresetRow>
+        <button id="bnn-drop-mode-drop" class="active">drop units (MC-Dropout)</button>
+        <button id="bnn-drop-mode-noise">inject weight noise (MCNI)</button>
+      </PresetRow>
+      <ControlRange id="bnn-drop-p" label="dropout rate p" valueId="bnn-drop-p-v" min="0" max="0.7" step="0.05" value="0.3" />
+      <ControlRange id="bnn-drop-n" label="MC passes" valueId="bnn-drop-n-v" min="8" max="80" step="4" value="40" />
+      <PresetRow>
+        <button id="bnn-drop-resample">New samples</button>
+      </PresetRow>
+    </Fragment>
+  </Figure>
+
+  <NextCards heading="What next" intro="Bayesian neural nets share computation and function-space intuition with other Bayesian pages." cards={[
+    { href: "/gaussian-processes/", tag: "Function priors", title: "Gaussian Processes", role: "Compare explicit function-space Gaussian priors with neural-network weight priors." },
+    { href: "/monte-carlo/", tag: "Posterior computation", title: "Monte Carlo &amp; MCMC", role: "Random-walk, Langevin, and Hamiltonian methods explore the weight posterior." },
+    { href: "/variational-inference/", tag: "Approximation", title: "Free Energy &amp; Variational Inference", role: "Optimize a tractable posterior approximation instead of sampling weight space." },
+  ]} />
+
+  <div class="footer">Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.</div>
+
+  <script is:inline>
+    (() => {
+      const C = { bg: "#fff", grid: "#e3ddd0", text: "#1f2733", dim: "#5a6577", blue: "#1f4a8c", red: "#b8412a", green: "#2d7a3e", purple: "#6b4592", orange: "#d4690a" };
+      const $ = (id) => document.getElementById(id);
+      const G = 80;        // grid resolution
+      const W = 2.6;       // weight range [-W, W]
+      let data = [];
+      let testData = [];   // held-out points from the same ground truth, for Figure 3
+      let dataMode = "asym";
+      // Ground truth per preset: y = amp·tanh(slope·x) + noise. `xs` are the training inputs.
+      const TRUTH = {
+        asym:   { amp: 1.15, slope: 1.55, noise: 0.18, xs: [-1.8, -1.1, -0.45, 0.15, 0.7, 1.35, 1.9] },
+        sym:    { amp: 1.2,  slope: 1.4,  noise: 0.12, xs: [-1.6, -1.0, -0.5, 0.5, 1.0, 1.6] },
+        sparse: { amp: 1.05, slope: 1.45, noise: 0.1,  xs: [-1.0, 0.9] },
+      };
+      let posteriorView = "M"; // "M" | "ed" | "ew"
+      let varianceView = "param"; // "param" | "noise" | "total"
+      let viView = "reverse"; // "off" | "reverse" | "forward" — mean-field VI overlay on Fig 2
+      let grid = [], map = { w1: 1, w2: 1, e: 0 }, reflMap = null, hasReflMap = false, samples = [];
+      let probe = { w1: 1.05, w2: 1.55 }; // draggable weight-space probe (Figure 2 left panel)
+      // Fixed standard-normal clouds, generated once and reused every redraw, so the Laplace
+      // band is a deterministic, smooth function of the data — no per-frame resampling jitter.
+      const fig2Rng = mkRng(0x5bd1e995);
+      function fig2Randn() { const u = Math.max(1e-9, fig2Rng()), v = fig2Rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+      const lapCloud = Array.from({ length: 200 }, () => ({ z1: fig2Randn(), z2: fig2Randn() }));
+      const noiseCloud = Array.from({ length: 256 }, () => fig2Randn());
+      function setup(id) {
+        const c = $(id), ratio = window.devicePixelRatio || 1;
+        const iw = Number(c.getAttribute("width")), ih = Number(c.getAttribute("height"));
+        c.style.width = "100%"; c.style.height = `${c.getBoundingClientRect().width * ih / iw}px`;
+        const r = c.getBoundingClientRect(); c.width = r.width * ratio; c.height = r.height * ratio;
+        const ctx = c.getContext("2d"); ctx.scale(ratio, ratio); return { ctx, w: r.width, h: r.height };
+      }
+      function randn() { const u = Math.random() || 1e-12, v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+      function f(x, w1, w2) { return w1 * Math.tanh(w2 * x); }
+      function energy(w1, w2, alpha, beta) {
+        const ed = 0.5 * data.reduce((s, d) => s + (d.y - f(d.x, w1, w2)) ** 2, 0);
+        const ew = 0.5 * (w1 * w1 + w2 * w2);
+        return beta * ed + alpha * ew;
+      }
+      function energyParts(w1, w2) {
+        const ed = 0.5 * data.reduce((s, d) => s + (d.y - f(d.x, w1, w2)) ** 2, 0);
+        const ew = 0.5 * (w1 * w1 + w2 * w2);
+        return { ed, ew };
+      }
+      function makeData(mode) {
+        dataMode = mode;
+        const t = TRUTH[mode] || TRUTH.asym;
+        data = t.xs.map((x) => ({ x, y: t.amp * Math.tanh(t.slope * x) + t.noise * randn() }));
+        // Held-out test set: same ground truth, fresh noise, dense x-grid. Stays fixed
+        // when the user edits the training `data`, so it measures generalization.
+        testData = [];
+        for (let i = 0; i < 40; i++) {
+          const x = -2.0 + 4.0 * i / 39;
+          testData.push({ x, y: t.amp * Math.tanh(t.slope * x) + t.noise * randn() });
+        }
+        ["bnn-data-asym", "bnn-data-sym", "bnn-data-sparse"].forEach((id) => $(id).classList.toggle("active", id === `bnn-data-${mode}`));
+        evResetHistory();
+        recomputePosterior();
+      }
+      function evResetHistory() {
+        if (typeof evState === "undefined") return;
+        if (evState.running) evPause();
+        evState.history = [];
+        evState.converged = false;
+      }
+      // Refine a grid-search MAP into a continuous one with a few Newton steps, so the MAP
+      // (and every curve depending on it) moves smoothly as the data is dragged, instead of
+      // snapping from grid cell to grid cell.
+      function refineMAP(m, alpha, beta) {
+        let w1 = m.w1, w2 = m.w2;
+        const side = m.w1 >= 0 ? 1 : -1;
+        for (let it = 0; it < 8; it++) {
+          const hh = 0.02;
+          const gx = (energy(w1 + hh, w2, alpha, beta) - energy(w1 - hh, w2, alpha, beta)) / (2 * hh);
+          const gy = (energy(w1, w2 + hh, alpha, beta) - energy(w1, w2 - hh, alpha, beta)) / (2 * hh);
+          const Hl = hessianAt(w1, w2, alpha, beta);
+          const det = Hl.fxx * Hl.fyy - Hl.fxy * Hl.fxy;
+          if (Math.abs(det) < 1e-6) break;
+          const dw1 = -(Hl.fyy * gx - Hl.fxy * gy) / det;
+          const dw2 = -(-Hl.fxy * gx + Hl.fxx * gy) / det;
+          w1 += dw1; w2 += dw2;
+          if (side * w1 < 0) w1 = side * 0.02; // keep the refinement in its own sign basin
+          if (Math.hypot(dw1, dw2) < 1e-5) break;
+        }
+        return { w1, w2, e: energy(w1, w2, alpha, beta) };
+      }
+      function recomputePosterior() {
+        const alpha = Number($("bnn-alpha").value), beta = Number($("bnn-beta").value);
+        $("bnn-alpha-v").textContent = alpha.toFixed(2); $("bnn-beta-v").textContent = beta.toFixed(1);
+        grid = [];
+        let emin = Infinity, mapPos = null, emin2 = Infinity, mapNeg = null;
+        for (let i = 0; i < G; i++) for (let j = 0; j < G; j++) {
+          const w1 = -W + 2 * W * i / (G - 1), w2 = -W + 2 * W * j / (G - 1);
+          const parts = energyParts(w1, w2);
+          const bED = beta * parts.ed, aEW = alpha * parts.ew;
+          const e = bED + aEW;
+          grid.push({ w1, w2, e, bED, aEW });
+          if (w1 >= 0 && e < emin) { emin = e; mapPos = { w1, w2, e }; }
+          if (w1 < 0 && e < emin2) { emin2 = e; mapNeg = { w1, w2, e }; }
+        }
+        if (!mapPos) mapPos = mapNeg;
+        if (!mapNeg) mapNeg = mapPos;
+        mapPos = refineMAP(mapPos, alpha, beta);
+        mapNeg = refineMAP(mapNeg, alpha, beta);
+        map = mapPos.e <= mapNeg.e ? mapPos : mapNeg;
+        reflMap = mapPos.e <= mapNeg.e ? mapNeg : mapPos;
+        // "Two-mode" iff the other mode is within ~2 nats of the MAP (so contributes ≳ exp(-2) ~ 14% as much mass).
+        hasReflMap = (reflMap.e - map.e) < 2.0 && Math.hypot(reflMap.w1 - map.w1, reflMap.w2 - map.w2) > 0.5;
+        // Systematic (deterministic) resampling of the grid posterior: the same data gives the
+        // same representative weights every frame, so the predictive band and Figure 1's fan
+        // move smoothly instead of jittering with fresh randomness.
+        const weights = grid.map((g) => Math.exp(-(g.e - map.e)));
+        const sum = weights.reduce((a, b) => a + b, 0);
+        samples = [];
+        const stepW = sum / 64;
+        let targetW = stepW * 0.5, cumW = 0, idxW = 0;
+        for (let s = 0; s < 64; s++) {
+          while (cumW + weights[idxW] < targetW && idxW < weights.length - 1) { cumW += weights[idxW]; idxW++; }
+          samples.push(grid[idxW]);
+          targetW += stepW;
+        }
+        drawAll();
+      }
+      function axes(ctx, x, y, w, h) {
+        ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) { const px = x + i * w / 4, py = y + i * h / 4; ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px, y + h); ctx.moveTo(x, py); ctx.lineTo(x + w, py); ctx.stroke(); }
+        ctx.strokeStyle = C.dim; ctx.strokeRect(x, y, w, h);
+      }
+      // ---- Fig 1: posterior + predictive fan -------------------------------------------------
+      function drawPosterior() {
+        const { ctx, w, h } = setup("bnn-posterior"); ctx.clearRect(0, 0, w, h);
+        const leftW = Math.min(330, w * 0.44), px = 38, py = 32, pw = leftW - 58, ph = h - 72;
+        axes(ctx, px, py, pw, ph);
+        const fieldOf = (g) => posteriorView === "M" ? g.e : (posteriorView === "ed" ? g.bED : g.aEW);
+        const heatColor = posteriorView === "ed" ? "31,74,140" : (posteriorView === "ew" ? "107,69,146" : "184,65,42");
+        const vals = grid.map(fieldOf);
+        const emin = Math.min(...vals), emax = Math.min(emin + 8, Math.max(...vals));
+        grid.forEach((g) => {
+          const v = fieldOf(g);
+          const q = Math.max(0, Math.min(1, 1 - (v - emin) / (emax - emin)));
+          const x = px + (g.w1 + W) / (2 * W) * pw, y = py + ph - (g.w2 + W) / (2 * W) * ph;
+          ctx.fillStyle = `rgba(${heatColor},${0.06 + 0.42 * q * q})`; ctx.fillRect(x, y, Math.max(2, pw / G), Math.max(2, ph / G));
+        });
+        ctx.fillStyle = C.blue; ctx.beginPath(); ctx.arc(px + (map.w1 + W) / (2 * W) * pw, py + ph - (map.w2 + W) / (2 * W) * ph, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = C.dim; ctx.font = "11px -apple-system, sans-serif"; ctx.fillText("w1", px + pw - 10, py + ph + 20); ctx.fillText("w2", px - 28, py + 8);
+        const viewLabel = posteriorView === "M" ? "M = βE_D + αE_W" : (posteriorView === "ed" ? "βE_D (data fit)" : "αE_W (prior decay)");
+        ctx.fillStyle = C.text; ctx.font = "10px -apple-system, sans-serif"; ctx.fillText(viewLabel, px + 4, py - 6);
+        const gx = leftW + 40, gy = 32, gw = w - gx - 24, gh = h - 72; axes(ctx, gx, gy, gw, gh);
+        const sx = (x) => gx + (x + 2.2) / 4.4 * gw, sy = (v) => gy + gh - (v + 1.7) / 3.4 * gh;
+        samples.filter((_, i) => i % 2 === 0).forEach((s) => {
+          ctx.strokeStyle = "rgba(107,69,146,0.23)"; ctx.lineWidth = 1; ctx.beginPath();
+          for (let i = 0; i <= 100; i++) { const x = -2.2 + 4.4 * i / 100, y = f(x, s.w1, s.w2); i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)); }
+          ctx.stroke();
+        });
+        ctx.strokeStyle = C.blue; ctx.lineWidth = 2.2; ctx.beginPath();
+        for (let i = 0; i <= 120; i++) { const x = -2.2 + 4.4 * i / 120, y = f(x, map.w1, map.w2); i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)); }
+        ctx.stroke();
+        data.forEach((d) => { ctx.fillStyle = C.red; ctx.beginPath(); ctx.arc(sx(d.x), sy(d.y), 4, 0, Math.PI * 2); ctx.fill(); });
+        $("bnn-posterior-readout").innerHTML = `<div class="row"><span class="lbl">MAP weights</span><span>w1=${map.w1.toFixed(2)}, w2=${map.w2.toFixed(2)}</span></div><div class="row"><span class="lbl">energy at MAP</span><span>${map.e.toFixed(2)}</span></div>`;
+      }
+      // ---- Hessian / Laplace utilities -------------------------------------------------------
+      function hessianAt(w1c, w2c, alpha, beta) {
+        const h = 0.04;
+        const e00 = energy(w1c, w2c, alpha, beta);
+        const fxx = (energy(w1c + h, w2c, alpha, beta) - 2 * e00 + energy(w1c - h, w2c, alpha, beta)) / (h * h);
+        const fyy = (energy(w1c, w2c + h, alpha, beta) - 2 * e00 + energy(w1c, w2c - h, alpha, beta)) / (h * h);
+        const fxy = (energy(w1c + h, w2c + h, alpha, beta) - energy(w1c + h, w2c - h, alpha, beta) - energy(w1c - h, w2c + h, alpha, beta) + energy(w1c - h, w2c - h, alpha, beta)) / (4 * h * h);
+        return { fxx, fyy, fxy };
+      }
+      function laplaceEig(H) {
+        const tr = H.fxx + H.fyy, det = Math.max(1e-4, H.fxx * H.fyy - H.fxy * H.fxy);
+        const disc = Math.sqrt(Math.max(0, tr * tr / 4 - det));
+        return { l1: tr / 2 + disc, l2: Math.max(1e-4, tr / 2 - disc), angle: 0.5 * Math.atan2(2 * H.fxy, H.fxx - H.fyy), det };
+      }
+      function laplaceSample(c, H, z) {
+        const eig = laplaceEig(H);
+        // Transform a fixed standard-normal pair into the rotated principal axes.
+        const z1 = z.z1 / Math.sqrt(eig.l1), z2 = z.z2 / Math.sqrt(eig.l2);
+        const cs = Math.cos(eig.angle), sn = Math.sin(eig.angle);
+        return { w1: c.w1 + cs * z1 - sn * z2, w2: c.w2 + sn * z1 + cs * z2 };
+      }
+      // ---- Marching squares contour for true posterior --------------------------------------
+      function drawContours(ctx, px, py, pw, ph, levels) {
+        const emin = map.e;
+        for (const level of levels) {
+          const target = emin + level;
+          ctx.strokeStyle = `rgba(184,65,42,${0.35 - 0.04 * level})`;
+          ctx.lineWidth = 1.1;
+          for (let i = 0; i < G - 1; i++) for (let j = 0; j < G - 1; j++) {
+            const idx = (a, b) => a * G + b;
+            const v00 = grid[idx(i, j)].e, v10 = grid[idx(i + 1, j)].e, v01 = grid[idx(i, j + 1)].e, v11 = grid[idx(i + 1, j + 1)].e;
+            const a = v00 > target ? 1 : 0, b = v10 > target ? 1 : 0, c = v11 > target ? 1 : 0, d = v01 > target ? 1 : 0;
+            const code = a | (b << 1) | (c << 2) | (d << 3);
+            if (code === 0 || code === 15) continue;
+            const x0 = px + i / (G - 1) * pw, x1 = px + (i + 1) / (G - 1) * pw;
+            const y0 = py + ph - j / (G - 1) * ph, y1 = py + ph - (j + 1) / (G - 1) * ph;
+            const interp = (va, vb, ca, cb) => {
+              const t = (target - va) / (vb - va || 1e-9);
+              return [ca[0] + t * (cb[0] - ca[0]), ca[1] + t * (cb[1] - ca[1])];
+            };
+            const pa = interp(v00, v10, [x0, y0], [x1, y0]);
+            const pb = interp(v10, v11, [x1, y0], [x1, y1]);
+            const pc = interp(v01, v11, [x0, y1], [x1, y1]);
+            const pd = interp(v00, v01, [x0, y0], [x0, y1]);
+            const segs = { 1: [pa, pd], 2: [pa, pb], 3: [pb, pd], 4: [pb, pc], 6: [pa, pc], 7: [pc, pd], 8: [pc, pd], 9: [pa, pc], 11: [pb, pc], 12: [pb, pd], 13: [pa, pb], 14: [pa, pd] };
+            const seg = segs[code];
+            if (seg) { ctx.beginPath(); ctx.moveTo(seg[0][0], seg[0][1]); ctx.lineTo(seg[1][0], seg[1][1]); ctx.stroke(); }
+          }
+        }
+      }
+      // ---- Fig 2: Laplace -------------------------------------------------------------------
+      function drawLaplace() {
+        const { ctx, w, h } = setup("bnn-laplace"); ctx.clearRect(0, 0, w, h);
+        const leftW = w * 0.5;
+        const px = 42, py = 32, pw = leftW - 76, ph = h - 72;
+        axes(ctx, px, py, pw, ph);
+        drawContours(ctx, px, py, pw, ph, [0.7, 1.6, 2.6, 4]);
+        const alpha = Number($("bnn-alpha").value), beta = Number($("bnn-beta").value);
+        const H = hessianAt(map.w1, map.w2, alpha, beta);
+        const eig = laplaceEig(H);
+        const tx = (a) => px + (a + W) / (2 * W) * pw, ty = (b) => py + ph - (b + W) / (2 * W) * ph;
+        const rxScale = pw / (2 * W);
+        ctx.save(); ctx.translate(tx(map.w1), ty(map.w2)); ctx.rotate(-eig.angle);
+        ctx.strokeStyle = C.green; ctx.lineWidth = 2;
+        [1, 1.7, 2.5].forEach((r) => { ctx.beginPath(); ctx.ellipse(0, 0, r * rxScale / Math.sqrt(eig.l1), r * rxScale / Math.sqrt(eig.l2), 0, 0, Math.PI * 2); ctx.stroke(); });
+        // Eigenvector axes (principal directions of the ellipse)
+        const L1 = rxScale * 2.5 / Math.sqrt(eig.l1);
+        const L2 = rxScale * 2.5 / Math.sqrt(eig.l2);
+        ctx.setLineDash([4, 3]); ctx.lineWidth = 1; ctx.strokeStyle = "rgba(45,122,62,0.85)";
+        ctx.beginPath(); ctx.moveTo(-L1, 0); ctx.lineTo(L1, 0); ctx.moveTo(0, -L2); ctx.lineTo(0, L2); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+        ctx.fillStyle = C.green; ctx.beginPath(); ctx.arc(tx(map.w1), ty(map.w2), 5, 0, Math.PI * 2); ctx.fill();
+        if (hasReflMap) {
+          // Ghost Laplace ellipse at the reflected MAP
+          const H2 = hessianAt(reflMap.w1, reflMap.w2, alpha, beta);
+          const eig2 = laplaceEig(H2);
+          ctx.save(); ctx.translate(tx(reflMap.w1), ty(reflMap.w2)); ctx.rotate(-eig2.angle);
+          ctx.strokeStyle = "rgba(45,122,62,0.35)"; ctx.lineWidth = 1.5;
+          [1, 1.7, 2.5].forEach((r) => { ctx.beginPath(); ctx.ellipse(0, 0, r * rxScale / Math.sqrt(eig2.l1), r * rxScale / Math.sqrt(eig2.l2), 0, 0, Math.PI * 2); ctx.stroke(); });
+          ctx.restore();
+          ctx.fillStyle = "rgba(45,122,62,0.4)"; ctx.beginPath(); ctx.arc(tx(reflMap.w1), ty(reflMap.w2), 4, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = C.red; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(tx(reflMap.w1), ty(reflMap.w2), 9, 0, Math.PI * 2); ctx.stroke();
+          ctx.fillStyle = C.red; ctx.font = "10px -apple-system, sans-serif"; ctx.textAlign = "center";
+          ctx.fillText("missed mode", tx(reflMap.w1), ty(reflMap.w2) - 13);
+        }
+        // Mean-field VI overlay: an axis-aligned Gaussian q(w1)q(w2), no covariance.
+        if (viView !== "off") {
+          let vc, vs1, vs2;
+          if (viView === "reverse") {
+            // reverse KL(q‖p): mode-seeking — centre on the MAP; per-axis precision is the
+            // diagonal of A, so per-axis variance = 1/A_ii, which underestimates the spread.
+            vc = { w1: map.w1, w2: map.w2 };
+            vs1 = 1 / Math.sqrt(Math.max(1e-4, H.fxx));
+            vs2 = 1 / Math.sqrt(Math.max(1e-4, H.fyy));
+          } else {
+            // forward KL(p‖q): mass-covering — match the posterior's marginal moments.
+            let sw = 0, m1 = 0, m2 = 0;
+            for (const g of grid) { const wt = Math.exp(-(g.e - map.e)); sw += wt; m1 += wt * g.w1; m2 += wt * g.w2; }
+            m1 /= sw; m2 /= sw;
+            let v1 = 0, v2 = 0;
+            for (const g of grid) { const wt = Math.exp(-(g.e - map.e)); v1 += wt * (g.w1 - m1) ** 2; v2 += wt * (g.w2 - m2) ** 2; }
+            v1 /= sw; v2 /= sw;
+            vc = { w1: m1, w2: m2 };
+            vs1 = Math.sqrt(Math.max(1e-6, v1));
+            vs2 = Math.sqrt(Math.max(1e-6, v2));
+          }
+          ctx.strokeStyle = "#0f766e"; ctx.lineWidth = 2; ctx.setLineDash([5, 3]);
+          [1, 2].forEach((r) => {
+            ctx.beginPath();
+            ctx.ellipse(tx(vc.w1), ty(vc.w2), r * vs1 * rxScale, r * vs2 * rxScale, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          });
+          ctx.setLineDash([]);
+          ctx.fillStyle = "#0f766e"; ctx.beginPath(); ctx.arc(tx(vc.w1), ty(vc.w2), 4, 0, Math.PI * 2); ctx.fill();
+        }
+        // Draggable weight probe — a black ring the reader moves to sample any weight.
+        const pxp = tx(probe.w1), pyp = ty(probe.w2);
+        ctx.strokeStyle = C.text; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(pxp, pyp, 7, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = C.text;
+        ctx.beginPath(); ctx.arc(pxp, pyp, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = C.dim; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("w1 →", px + pw - 30, py + ph + 18); ctx.fillText("w2", px - 22, py + 10);
+        // Right: predictive comparison
+        const gx = leftW + 30, gy = 32, gw = w - gx - 18, gh = h - 72;
+        axes(ctx, gx, gy, gw, gh);
+        const sx = (x) => gx + (x + 2.2) / 4.4 * gw, sy = (v) => gy + gh - (v + 1.7) / 3.4 * gh;
+        const xs = [];
+        for (let i = 0; i <= 60; i++) xs.push(-2.2 + 4.4 * i / 60);
+        // Variance decomposition: σ²(x) = 1/β + g^T A^-1 g.
+        // "param" = parameter component (sample weights, no noise);
+        // "noise" = noise component only (flat ±1.96/√β around MAP curve);
+        // "total" = parameter + noise (add independent Gaussian noise per sample).
+        const noiseSigma = 1 / Math.sqrt(beta);
+        const includeNoise = varianceView === "total";
+        const noiseOnly = varianceView === "noise";
+        function band(samplesArr) {
+          return xs.map((x) => {
+            if (noiseOnly) {
+              const mean = f(x, map.w1, map.w2);
+              return { lo: mean - 1.96 * noiseSigma, hi: mean + 1.96 * noiseSigma, mean };
+            }
+            const ys = samplesArr.map((s, si) => {
+              const v = f(x, s.w1, s.w2);
+              return includeNoise ? v + noiseSigma * noiseCloud[si % noiseCloud.length] : v;
+            }).sort((a, b) => a - b);
+            const lo = ys[Math.floor(ys.length * 0.05)];
+            const hi = ys[Math.floor(ys.length * 0.95)];
+            const mean = ys.reduce((s, v) => s + v, 0) / ys.length;
+            return { lo, hi, mean };
+          });
+        }
+        const truePred = band(samples);
+        const lapSamples = lapCloud.map((z) => laplaceSample(map, H, z));
+        const lapPred = band(lapSamples);
+        function fillBand(arr, fillStyle, strokeStyle) {
+          ctx.fillStyle = fillStyle; ctx.beginPath();
+          for (let i = 0; i < xs.length; i++) i === 0 ? ctx.moveTo(sx(xs[i]), sy(arr[i].hi)) : ctx.lineTo(sx(xs[i]), sy(arr[i].hi));
+          for (let i = xs.length - 1; i >= 0; i--) ctx.lineTo(sx(xs[i]), sy(arr[i].lo));
+          ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = strokeStyle; ctx.lineWidth = 1.2; ctx.beginPath();
+          for (let i = 0; i < xs.length; i++) i === 0 ? ctx.moveTo(sx(xs[i]), sy(arr[i].mean)) : ctx.lineTo(sx(xs[i]), sy(arr[i].mean));
+          ctx.stroke();
+        }
+        fillBand(truePred, "rgba(107,69,146,0.18)", C.purple);
+        fillBand(lapPred, "rgba(212,105,10,0.18)", C.orange);
+        // MAP function curve (solid blue) — the prediction Laplace centres on.
+        ctx.strokeStyle = C.blue; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i <= 120; i++) { const x = -2.2 + 4.4 * i / 120, y = f(x, map.w1, map.w2); i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)); }
+        ctx.stroke();
+        if (hasReflMap) {
+          // Reflected MAP function curve — sign-symmetric, so it exactly overlays the blue curve.
+          ctx.strokeStyle = "rgba(45,122,62,0.85)"; ctx.setLineDash([6, 4]); ctx.lineWidth = 1.5; ctx.beginPath();
+          for (let i = 0; i <= 120; i++) { const x = -2.2 + 4.4 * i / 120, y = f(x, -map.w1, -map.w2); i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)); }
+          ctx.stroke(); ctx.setLineDash([]);
+          ctx.fillStyle = "rgba(45,122,62,0.85)"; ctx.font = "10px -apple-system, sans-serif"; ctx.textAlign = "left";
+          ctx.fillText("dashed = f(x; −w*) — overlays the blue MAP curve", gx + 6, gy + gh - 6);
+        }
+        // Weight-probe function: f(x; probe), drawn in black.
+        ctx.strokeStyle = C.text; ctx.lineWidth = 1.6; ctx.beginPath();
+        for (let i = 0; i <= 120; i++) { const x = -2.2 + 4.4 * i / 120, y = f(x, probe.w1, probe.w2); i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)); }
+        ctx.stroke();
+        data.forEach((d) => { ctx.fillStyle = C.red; ctx.beginPath(); ctx.arc(sx(d.x), sy(d.y), 4, 0, Math.PI * 2); ctx.fill(); });
+        ctx.fillStyle = C.dim; ctx.textAlign = "left"; ctx.fillText("x →", gx + gw - 22, gy + gh + 18); ctx.fillText("f(x)", gx - 28, gy + 10);
+        // Quantify mismatch: average band-width ratio (true / laplace)
+        let widthTrue = 0, widthLap = 0;
+        for (let i = 0; i < xs.length; i++) { widthTrue += truePred[i].hi - truePred[i].lo; widthLap += lapPred[i].hi - lapPred[i].lo; }
+        widthTrue /= xs.length; widthLap /= xs.length;
+        const ratio = widthTrue / Math.max(1e-6, widthLap);
+        const verdict = hasReflMap
+          ? `Two modes detected (Δenergy = ${(reflMap.e - map.e).toFixed(2)}). Laplace centres on one and underestimates the other — but both modes give identical predictions, so the predictive band is unaffected.`
+          : `Effectively unimodal posterior. Laplace ≈ truth.`;
+        const viRow = viView === "off" ? ""
+          : viView === "reverse"
+            ? `<div class="row"><span class="lbl">mean-field VI (reverse KL)</span><span>axis-aligned on one mode; per-axis σ = 1/√A_ii, narrower than the tilted Laplace ellipse along the correlated direction</span></div>`
+            : `<div class="row"><span class="lbl">mean-field VI (forward KL)</span><span>axis-aligned, matched to the posterior's marginal moments; on the bimodal preset it spans both modes and over-covers</span></div>`;
+        $("bnn-laplace-readout").innerHTML = `<div class="row"><span class="lbl">data preset</span><span>${dataMode}</span></div><div class="row"><span class="lbl">Hessian eigenvalues (tight / loose)</span><span>λ₁ = ${eig.l1.toFixed(2)}, λ₂ = ${eig.l2.toFixed(2)} → axes 1/√λ = ${(1/Math.sqrt(eig.l1)).toFixed(2)} / ${(1/Math.sqrt(eig.l2)).toFixed(2)}</span></div><div class="row"><span class="lbl">true / Laplace mean band width</span><span>${widthTrue.toFixed(2)} / ${widthLap.toFixed(2)}  (ratio ${ratio.toFixed(2)})</span></div><div class="row"><span class="lbl">verdict</span><span>${verdict}</span></div>${viRow}<div class="row"><span class="lbl">weight probe</span><span>w = (${probe.w1.toFixed(2)}, ${probe.w2.toFixed(2)}); the black curve on the right is its function</span></div>`;
+      }
+      // ---- Fig 3: Occam's hill (real evidence via Laplace) ----------------------------------
+      function drawMiniHeatmap(ctx, x, y, w, h, alphaMini, beta, label) {
+        const Gm = 30;
+        const cells = []; let vmin = Infinity, vmax = -Infinity;
+        for (let i = 0; i < Gm; i++) for (let j = 0; j < Gm; j++) {
+          const w1 = -W + 2 * W * i / (Gm - 1), w2 = -W + 2 * W * j / (Gm - 1);
+          const parts = energyParts(w1, w2);
+          const e = beta * parts.ed + alphaMini * parts.ew;
+          cells.push({ i, j, e });
+          if (e < vmin) vmin = e;
+          if (e > vmax) vmax = e;
+        }
+        const top = Math.min(vmin + 8, vmax);
+        ctx.strokeStyle = C.grid; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
+        cells.forEach((c) => {
+          const q = Math.max(0, Math.min(1, 1 - (c.e - vmin) / (top - vmin + 1e-6)));
+          const cx = x + c.i / (Gm - 1) * w, cy = y + h - c.j / (Gm - 1) * h;
+          ctx.fillStyle = `rgba(184,65,42,${0.06 + 0.5 * q * q})`;
+          ctx.fillRect(cx, cy - h / Gm, w / Gm + 1, h / Gm + 1);
+        });
+        // Origin (prior mean): blue dot
+        ctx.fillStyle = "rgba(31,74,140,0.85)"; ctx.beginPath(); ctx.arc(x + w / 2, y + h / 2, 3, 0, Math.PI * 2); ctx.fill();
+        // Crosshair through origin to anchor the eye
+        ctx.strokeStyle = "rgba(31,74,140,0.25)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x, y + h / 2); ctx.lineTo(x + w, y + h / 2); ctx.moveTo(x + w / 2, y); ctx.lineTo(x + w / 2, y + h); ctx.stroke();
+        // Find approximate MAP for this alpha (positive-w1 mode) and mark it
+        let bestE = Infinity, bw1 = 0, bw2 = 0;
+        for (const c of cells) {
+          const w1 = -W + 2 * W * c.i / (Gm - 1);
+          if (w1 < 0) continue;
+          if (c.e < bestE) { bestE = c.e; bw1 = w1; bw2 = -W + 2 * W * c.j / (Gm - 1); }
+        }
+        const mx = x + (bw1 + W) / (2 * W) * w, my = y + h - (bw2 + W) / (2 * W) * h;
+        ctx.strokeStyle = C.text; ctx.lineWidth = 1.4; ctx.beginPath();
+        ctx.moveTo(mx - 4, my); ctx.lineTo(mx + 4, my); ctx.moveTo(mx, my - 4); ctx.lineTo(mx, my + 4); ctx.stroke();
+        // Label below
+        ctx.fillStyle = C.text; ctx.font = "10.5px -apple-system, sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(label, x + w / 2, y + h + 14);
+      }
+      function drawOccam() {
+        const { ctx, w, h } = setup("bnn-occam"); ctx.clearRect(0, 0, w, h);
+        const beta = Number($("bnn-beta").value);
+        const alphaCur = Number($("bnn-alpha").value);
+        const curveH = 260;
+        const px = 60, py = 28, pw = w - 88, ph = curveH - 62;
+        axes(ctx, px, py, pw, ph);
+        const alphas = [];
+        const aMin = 0.05, aMax = 30, K = 36;
+        for (let i = 0; i < K; i++) alphas.push(aMin * Math.exp(i * Math.log(aMax / aMin) / (K - 1)));
+        function fastMap(alpha) {
+          let best = Infinity, bw = { w1: 0, w2: 0 };
+          const M = 32;
+          for (let i = 0; i < M; i++) for (let j = 0; j < M; j++) {
+            const w1 = 0 + W * i / (M - 1), w2 = -W + 2 * W * j / (M - 1); // search positive-w1 mode only
+            const e = energy(w1, w2, alpha, beta);
+            if (e < best) { best = e; bw = { w1, w2 }; }
+          }
+          return bw;
+        }
+        const N = data.length;
+        const curve = alphas.map((alpha) => {
+          const w = fastMap(alpha);
+          const Hloc = hessianAt(w.w1, w.w2, alpha, beta);
+          const det = Math.max(1e-6, Hloc.fxx * Hloc.fyy - Hloc.fxy * Hloc.fxy);
+          const ed = 0.5 * data.reduce((s, d) => s + (d.y - f(d.x, w.w1, w.w2)) ** 2, 0);
+          const ew = 0.5 * (w.w1 ** 2 + w.w2 ** 2);
+          // log p(D | alpha, beta) ≈ -beta*ED - alpha*EW + (N/2) log(beta/2π) + (d/2)(log alpha - log 2π) + (d/2) log 2π - (1/2) log det A
+          //                       = -beta*ED - alpha*EW + (N/2)(log beta - log 2π) + (d/2) log alpha - (1/2) log det A
+          const d = 2;
+          const fitMAP = -beta * ed;                    // higher is better fit
+          const priorLogZ = (d / 2) * Math.log(alpha);   // grows with alpha (prior gets sharper)
+          const wPenalty = -alpha * ew;                  // -(α/2)||w||² at MAP
+          const laplacePenalty = -0.5 * Math.log(det);   // Laplace correction
+          const evidence = fitMAP + wPenalty + priorLogZ + laplacePenalty + (N / 2) * Math.log(beta / (2 * Math.PI));
+          const testErr = testData.length ? testData.reduce((s, d) => s + (d.y - f(d.x, w.w1, w.w2)) ** 2, 0) / testData.length : 0;
+          return { alpha, fit: fitMAP, penalty: wPenalty + priorLogZ + laplacePenalty, evidence, testErr };
+        });
+        const vals = curve.flatMap((p) => [p.fit, p.penalty, p.evidence]);
+        const lo = Math.min(...vals), hi = Math.max(...vals);
+        const sx = (a) => px + (Math.log(a) - Math.log(aMin)) / (Math.log(aMax) - Math.log(aMin)) * pw;
+        const sy = (v) => py + ph - (v - lo) / (hi - lo + 1e-6) * ph;
+        function line(key, color) {
+          ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+          curve.forEach((p, i) => { const y = sy(p[key]); i === 0 ? ctx.moveTo(sx(p.alpha), y) : ctx.lineTo(sx(p.alpha), y); });
+          ctx.stroke();
+        }
+        line("fit", C.blue);
+        line("penalty", C.purple);
+        line("evidence", C.red);
+        // Held-out test error, drawn on its own [min,max] scale — the minimum's
+        // location is the point, so it can share the box with the log-evidence curve.
+        const teVals = curve.map((p) => p.testErr);
+        const teLo = Math.min(...teVals), teHi = Math.max(...teVals);
+        const syTe = (e) => py + ph - (e - teLo) / Math.max(1e-9, teHi - teLo) * ph;
+        ctx.strokeStyle = C.green; ctx.lineWidth = 2; ctx.setLineDash([5, 3]);
+        ctx.beginPath();
+        curve.forEach((p, i) => { const y = syTe(p.testErr); i === 0 ? ctx.moveTo(sx(p.alpha), y) : ctx.lineTo(sx(p.alpha), y); });
+        ctx.stroke(); ctx.setLineDash([]);
+        const teMin = curve.reduce((a, b) => b.testErr < a.testErr ? b : a);
+        // Current alpha marker
+        let curEv = curve[0]; for (const p of curve) if (Math.abs(Math.log(p.alpha) - Math.log(alphaCur)) < Math.abs(Math.log(curEv.alpha) - Math.log(alphaCur))) curEv = p;
+        ctx.fillStyle = C.orange; ctx.beginPath(); ctx.arc(sx(alphaCur), sy(curEv.evidence), 6, 0, Math.PI * 2); ctx.fill();
+        // x-axis labels at decade ticks
+        ctx.fillStyle = C.dim; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "center";
+        [0.1, 1, 10].forEach((a) => { ctx.fillText(`α=${a}`, sx(a), py + ph + 16); });
+        ctx.textAlign = "left"; ctx.fillText("log α →", px + pw - 50, py + ph + 30);
+        const peak = curve.reduce((a, b) => b.evidence > a.evidence ? b : a);
+        // Vertical ticks comparing the evidence peak (red) with the test-error minimum (green).
+        [[peak.alpha, C.red], [teMin.alpha, C.green]].forEach(([a, col]) => {
+          ctx.strokeStyle = col; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(sx(a), py + ph - 8); ctx.lineTo(sx(a), py + ph); ctx.stroke();
+        });
+        // Three weight-space snapshots at low / peak / high α
+        const miniTop = curveH + 30;
+        const miniH = h - miniTop - 32;
+        const gap = 24;
+        const miniW = (w - 80 - 2 * gap) / 3;
+        const aLow = 0.12;
+        const aHigh = Math.min(20, Math.max(8, peak.alpha * 12));
+        const xs0 = 40;
+        drawMiniHeatmap(ctx, xs0,                       miniTop, miniW, miniH, aLow,       beta, `α = ${aLow.toFixed(2)} (broad, mass far from data)`);
+        drawMiniHeatmap(ctx, xs0 + miniW + gap,         miniTop, miniW, miniH, peak.alpha, beta, `α ≈ ${peak.alpha.toFixed(2)} (Occam peak)`);
+        drawMiniHeatmap(ctx, xs0 + 2 * (miniW + gap),   miniTop, miniW, miniH, aHigh,      beta, `α = ${aHigh.toFixed(1)} (pulled toward origin)`);
+        const teClose = Math.abs(Math.log(peak.alpha) - Math.log(teMin.alpha)) < Math.log(2.5);
+        $("bnn-occam-readout").innerHTML = `<div class="row"><span class="lbl">peak log evidence at</span><span>α ≈ ${peak.alpha.toFixed(2)}</span></div><div class="row"><span class="lbl">evidence peak vs test-error min</span><span>α ≈ ${peak.alpha.toFixed(2)} vs ${teMin.alpha.toFixed(2)} — ${teClose ? "they nearly coincide: evidence picks the generalising model with no validation set" : "they diverge — the classic signature of model–data mismatch"}</span></div><div class="row"><span class="lbl">current α (Figure 1)</span><span>${alphaCur.toFixed(2)}; evidence ${curEv.evidence.toFixed(2)} vs peak ${peak.evidence.toFixed(2)}</span></div><div class="row"><span class="lbl">interpretation</span><span>The hill shape comes from prior normalisation $(d/2)\\log\\alpha$ minus the Hessian correction; the fit term keeps falling as $\\alpha$ pulls the MAP away from the data.</span></div><div class="row"><span class="lbl">snapshot legend</span><span>red shading = $\\exp(-M)$ posterior; blue dot at origin = prior centre; black cross = MAP. The cross moves toward the origin as α grows.</span></div>`;
+      }
+      // ---- Fig 4: prior-predictive vs posterior-predictive on pinned data -------------------
+      const priorData = [
+        { x: -1.85, y: -1.1 }, { x: -1.25, y: -1.0 }, { x: -0.55, y: -0.65 }, { x: -0.1, y: -0.05 },
+        { x: 0.35, y: 0.45 },  { x: 0.85, y: 0.95 },   { x: 1.4, y: 1.05 },  { x: 1.9, y: 1.15 },
+      ];
+      function drawPrior() {
+        const { ctx, w, h } = setup("bnn-prior"); ctx.clearRect(0, 0, w, h);
+        const aOut = Number($("bnn-a1").value), aIn = Number($("bnn-a2").value);
+        $("bnn-a1-v").textContent = aOut.toFixed(1); $("bnn-a2-v").textContent = aIn.toFixed(1);
+        const halfH = (h - 60) / 2;
+        const xs = [];
+        for (let i = 0; i <= 60; i++) xs.push(-2.2 + 4.4 * i / 60);
+        // Importance-sample 200 weights from prior
+        const NS = 200;
+        const priorSamples = Array.from({ length: NS }, () => ({ w1: randn() / Math.sqrt(aOut), w2: randn() / Math.sqrt(aIn) }));
+        const beta = 8.0;
+        function bands(weightsFn) {
+          return xs.map((x) => {
+            const arr = priorSamples.map((s) => ({ y: f(x, s.w1, s.w2), w: weightsFn(s) }));
+            arr.sort((a, b) => a.y - b.y);
+            const total = arr.reduce((s, e) => s + e.w, 0) || 1e-12;
+            let cum = 0, lo = arr[0].y, hi = arr[arr.length - 1].y, foundLo = false;
+            let mean = 0; for (const e of arr) mean += e.y * e.w;
+            mean /= total;
+            for (const e of arr) {
+              cum += e.w;
+              if (!foundLo && cum / total >= 0.05) { lo = e.y; foundLo = true; }
+              if (cum / total <= 0.95) hi = e.y;
+            }
+            return { lo, hi, mean };
+          });
+        }
+        const priorBand = bands(() => 1);
+        const postBand = bands((s) => {
+          const ed = 0.5 * priorData.reduce((sum, d) => sum + (d.y - f(d.x, s.w1, s.w2)) ** 2, 0);
+          return Math.exp(-beta * ed);
+        });
+        function drawPanel(yTop, bandData, fillRGB, color, label) {
+          const px = 48, py = yTop, pw = w - 80, ph = halfH;
+          axes(ctx, px, py, pw, ph);
+          const sx = (x) => px + (x + 2.2) / 4.4 * pw, sy = (v) => py + ph - (v + 2.4) / 4.8 * ph;
+          ctx.fillStyle = fillRGB; ctx.beginPath();
+          for (let i = 0; i < xs.length; i++) i === 0 ? ctx.moveTo(sx(xs[i]), sy(bandData[i].hi)) : ctx.lineTo(sx(xs[i]), sy(bandData[i].hi));
+          for (let i = xs.length - 1; i >= 0; i--) ctx.lineTo(sx(xs[i]), sy(bandData[i].lo));
+          ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.beginPath();
+          for (let i = 0; i < xs.length; i++) i === 0 ? ctx.moveTo(sx(xs[i]), sy(bandData[i].mean)) : ctx.lineTo(sx(xs[i]), sy(bandData[i].mean));
+          ctx.stroke();
+          priorData.forEach((d) => { ctx.fillStyle = C.red; ctx.beginPath(); ctx.arc(sx(d.x), sy(d.y), 3, 0, Math.PI * 2); ctx.fill(); });
+          ctx.fillStyle = C.dim; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "left"; ctx.fillText(label, px + 6, py + 14);
+        }
+        drawPanel(28, priorBand, "rgba(31,74,140,0.18)", C.blue, "prior-predictive (before seeing data)");
+        drawPanel(28 + halfH + 18, postBand, "rgba(107,69,146,0.22)", C.purple, "posterior-predictive");
+        // Diagnose: prior band coverage of data
+        let priorCovered = 0;
+        priorData.forEach((d) => {
+          const i = Math.round((d.x + 2.2) / 4.4 * 60);
+          const b = priorBand[Math.max(0, Math.min(60, i))];
+          if (d.y >= b.lo && d.y <= b.hi) priorCovered++;
+        });
+        let verdict = "Prior brackets the data and the posterior contracts around it.";
+        if (aIn > 4 && aOut < 4) verdict = "α_in too tight: w₂ is shrunk, so prior functions are almost linear (small slope). Posterior cannot grow nonlinearity.";
+        else if (aOut > 4 && aIn < 4) verdict = "α_out too tight: w₁ is shrunk, so prior functions are tiny. Posterior cannot reach the data amplitude.";
+        else if (aIn > 4 && aOut > 4) verdict = "Both layers over-regularised: prior puts all mass near zero. Posterior is pulled toward zero even where data argues otherwise.";
+        $("bnn-prior-readout").innerHTML = `<div class="row"><span class="lbl">α_out / α_in</span><span>${aOut.toFixed(1)} / ${aIn.toFixed(1)}</span></div><div class="row"><span class="lbl">prior 90% band covers</span><span>${priorCovered} / ${priorData.length} data points</span></div><div class="row"><span class="lbl">diagnosis</span><span>${verdict}</span></div>`;
+      }
+      function drawWeightEffect(id, varyW1) {
+        const { ctx, w, h } = setup(id); ctx.clearRect(0, 0, w, h);
+        const px = 28, py = 10, pw = w - 40, ph = h - 24;
+        // Axes
+        ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(px, py + ph / 2); ctx.lineTo(px + pw, py + ph / 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(px + pw / 2, py); ctx.lineTo(px + pw / 2, py + ph); ctx.stroke();
+        const sx = (x) => px + (x + 2) / 4 * pw;
+        const sy = (v) => py + ph / 2 - v * (ph / 2 - 4) / 2.2;
+        const vals = varyW1 ? [0.4, 0.8, 1.2, 1.6, 2.0] : [0.4, 0.9, 1.5, 2.5, 4.5];
+        vals.forEach((v, k) => {
+          const w1 = varyW1 ? v : 1.2;
+          const w2 = varyW1 ? 1.5 : v;
+          const t = k / (vals.length - 1);
+          ctx.strokeStyle = varyW1
+            ? `rgba(31,74,140,${0.35 + 0.55 * t})`
+            : `rgba(107,69,146,${0.35 + 0.55 * t})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          for (let i = 0; i <= 80; i++) {
+            const x = -2 + 4 * i / 80, y = f(x, w1, w2);
+            i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y));
+          }
+          ctx.stroke();
+          // Value tag at right edge
+          const lastX = 2, lastY = f(lastX, w1, w2);
+          ctx.fillStyle = varyW1 ? `rgba(31,74,140,${0.5 + 0.45 * t})` : `rgba(107,69,146,${0.5 + 0.45 * t})`;
+          ctx.font = "9px -apple-system, sans-serif"; ctx.textAlign = "left";
+          ctx.fillText((varyW1 ? "w₁=" : "w₂=") + v.toFixed(1), sx(lastX) + 2, sy(lastY) + 3);
+        });
+      }
+      // ---- Fig 2b: permutation symmetry of a two-hidden-unit net --------------------------
+      const permDefault = () => [{ wIn: 1.6, wOut: 1.05 }, { wIn: -1.15, wOut: 0.75 }];
+      let permUnits = permDefault();
+      let permSwaps = 0;
+      function fUnit(x, u) { return u.wOut * Math.tanh(u.wIn * x); }
+      function drawPerm() {
+        const { ctx, w, h } = setup("bnn-perm"); ctx.clearRect(0, 0, w, h);
+        const splitX = Math.min(330, w * 0.44);
+        // Left: output function, with each unit's contribution as a faint dashed bump.
+        const px = 44, py = 28, pw = splitX - 64, ph = h - 64;
+        axes(ctx, px, py, pw, ph);
+        const sx = (x) => px + (x + 2.2) / 4.4 * pw;
+        const sy = (v) => py + ph - (v + 2.6) / 5.2 * ph;
+        const unitRGB = ["31,74,140", "212,105,10"];
+        permUnits.forEach((u, k) => {
+          ctx.strokeStyle = `rgba(${unitRGB[k]},0.55)`; ctx.lineWidth = 1.4; ctx.setLineDash([4, 3]);
+          ctx.beginPath();
+          for (let i = 0; i <= 100; i++) { const x = -2.2 + 4.4 * i / 100, y = fUnit(x, u); i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)); }
+          ctx.stroke(); ctx.setLineDash([]);
+        });
+        ctx.strokeStyle = C.green; ctx.lineWidth = 2.4; ctx.beginPath();
+        for (let i = 0; i <= 140; i++) { const x = -2.2 + 4.4 * i / 140, y = fUnit(x, permUnits[0]) + fUnit(x, permUnits[1]); i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)); }
+        ctx.stroke();
+        ctx.fillStyle = C.text; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("f(x) = unit 1 + unit 2", px + 6, py + 14);
+        ctx.fillStyle = C.dim; ctx.fillText("x →", px + pw - 22, py + ph + 18);
+        // Right: weight plane — each unit is one point; the network is the unordered set.
+        const gx = splitX + 56, gy = 28, gw = w - gx - 24, gh = h - 64;
+        axes(ctx, gx, gy, gw, gh);
+        const WIN = 3, WOUT = 2;
+        const tx = (wi) => gx + (wi + WIN) / (2 * WIN) * gw;
+        const ty = (wo) => gy + gh - (wo + WOUT) / (2 * WOUT) * gh;
+        ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(gx, ty(0)); ctx.lineTo(gx + gw, ty(0)); ctx.moveTo(tx(0), gy); ctx.lineTo(tx(0), gy + gh); ctx.stroke();
+        ctx.fillStyle = C.text; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("weight plane — drag a unit", gx + 6, gy + 14);
+        ctx.fillStyle = C.dim; ctx.font = "10px -apple-system, sans-serif";
+        ctx.fillText("input weight →", gx + gw - 86, gy + gh + 16);
+        permUnits.forEach((u, k) => {
+          const x = tx(u.wIn), y = ty(u.wOut);
+          ctx.fillStyle = k === 0 ? C.blue : C.orange;
+          ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#fff"; ctx.font = "700 11px -apple-system, sans-serif";
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(String(k + 1), x, y);
+        });
+        ctx.textBaseline = "alphabetic";
+        const fmt = (u) => `(${u.wIn.toFixed(2)}, ${u.wOut.toFixed(2)})`;
+        $("bnn-perm-readout").innerHTML =
+          `<div class="row"><span class="lbl">weight vector (unit 1, unit 2)</span><span>${fmt(permUnits[0])}, ${fmt(permUnits[1])}</span></div>` +
+          `<div class="row"><span class="lbl">swaps applied</span><span>${permSwaps} — f(x) is identical every time</span></div>` +
+          `<div class="row"><span class="lbl">twin modes</span><span>2 hidden units → 2! = 2 weight orderings, same function. A real 10-unit layer → 10! = 3,628,800 identical posterior modes; Laplace fits one.</span></div>`;
+      }
+      function bindPerm() {
+        const c = $("bnn-perm");
+        if (!c) return;
+        c.style.cursor = "crosshair";
+        function hit(event) {
+          const r = c.getBoundingClientRect();
+          const mx = event.clientX - r.left, my = event.clientY - r.top;
+          const splitX = Math.min(330, r.width * 0.44);
+          const gx = splitX + 56, gy = 28, gw = r.width - gx - 24, gh = r.height - 64;
+          if (mx < gx || mx > gx + gw || my < gy || my > gy + gh) return null;
+          return { wIn: (mx - gx) / gw * 6 - 3, wOut: (1 - (my - gy) / gh) * 4 - 2 };
+        }
+        let permDrag = -1;
+        c.addEventListener("mousedown", (event) => {
+          const pt = hit(event); if (!pt) return;
+          let best = -1, bd = 0.55;
+          permUnits.forEach((u, k) => { const d = Math.hypot(u.wIn - pt.wIn, u.wOut - pt.wOut); if (d < bd) { bd = d; best = k; } });
+          if (best >= 0) { permDrag = best; c.style.cursor = "grabbing"; }
+        });
+        c.addEventListener("mousemove", (event) => {
+          const pt = hit(event);
+          if (permDrag < 0) { c.style.cursor = pt ? "grab" : "crosshair"; return; }
+          if (!pt) return;
+          permUnits[permDrag] = { wIn: Math.max(-3, Math.min(3, pt.wIn)), wOut: Math.max(-2, Math.min(2, pt.wOut)) };
+          drawPerm();
+        });
+        const rel = () => { if (permDrag >= 0) { permDrag = -1; c.style.cursor = "crosshair"; } };
+        c.addEventListener("mouseup", rel);
+        c.addEventListener("mouseleave", rel);
+      }
+      // ---- Fig 4: MacKay evidence-maximisation widget --------------------------------------
+      const evState = { alpha: 0.05, beta: 0.5, history: [], running: false, timerId: null, converged: false };
+      function findMAP(alpha, beta) {
+        const Gm = 36;
+        let best = Infinity, bw = { w1: 0.5, w2: 0.5 };
+        for (let i = 0; i < Gm; i++) for (let j = 0; j < Gm; j++) {
+          const w1 = 0.05 + (W - 0.05) * i / (Gm - 1);  // positive-w1 mode only
+          const w2 = -W + 2 * W * j / (Gm - 1);
+          const e = energy(w1, w2, alpha, beta);
+          if (e < best) { best = e; bw = { w1, w2 }; }
+        }
+        return bw;
+      }
+      function evComputeIter() {
+        const { alpha, beta } = evState;
+        const w = findMAP(alpha, beta);
+        const H = hessianAt(w.w1, w.w2, alpha, beta);
+        const eig = laplaceEig(H);
+        const gamma = Math.max(0, Math.min(2, 2 - alpha * (1 / Math.max(1e-6, eig.l1) + 1 / Math.max(1e-6, eig.l2))));
+        const wNormSq = w.w1 * w.w1 + w.w2 * w.w2;
+        const residSumSq = data.reduce((s, d) => s + (d.y - f(d.x, w.w1, w.w2)) ** 2, 0);
+        const N = data.length;
+        const alphaTarget = Math.max(0.005, Math.min(50, gamma / Math.max(1e-3, wNormSq)));
+        const betaTarget = Math.max(0.05, Math.min(200, (N - gamma) / Math.max(1e-3, residSumSq)));
+        // Damp to keep trajectories smooth and the widget visually meaningful
+        const alphaNew = 0.5 * alpha + 0.5 * alphaTarget;
+        const betaNew = 0.5 * beta + 0.5 * betaTarget;
+        const converged = Math.abs(alphaNew - alpha) < 0.005 && Math.abs(betaNew - beta) < 0.04;
+        return { w, gamma, eig, wNormSq, residSumSq, alphaNew, betaNew, converged };
+      }
+      function evStep() {
+        const r = evComputeIter();
+        evState.history.push({ alpha: evState.alpha, beta: evState.beta, gamma: r.gamma, w1: r.w.w1, w2: r.w.w2, wNormSq: r.wNormSq, residSumSq: r.residSumSq });
+        evState.alpha = r.alphaNew;
+        evState.beta = r.betaNew;
+        evState.converged = r.converged;
+        drawEvidenceWidget();
+        if (r.converged || evState.history.length > 40) evPause();
+      }
+      function evRun() {
+        if (evState.running) { evPause(); return; }
+        evState.running = true;
+        $("bnn-ev-run").textContent = "Pause";
+        evState.timerId = setInterval(evStep, 220);
+      }
+      function evPause() {
+        evState.running = false;
+        if ($("bnn-ev-run")) $("bnn-ev-run").textContent = "Run";
+        if (evState.timerId) { clearInterval(evState.timerId); evState.timerId = null; }
+      }
+      function evResetWith(a0, b0) {
+        evPause();
+        evState.alpha = a0;
+        evState.beta = b0;
+        evState.history = [];
+        evState.converged = false;
+        drawEvidenceWidget();
+      }
+      function evApply() {
+        evPause();
+        const aSlider = $("bnn-alpha"), bSlider = $("bnn-beta");
+        const aClamped = Math.max(Number(aSlider.min), Math.min(Number(aSlider.max), evState.alpha));
+        const bClamped = Math.max(Number(bSlider.min), Math.min(Number(bSlider.max), evState.beta));
+        aSlider.value = String(aClamped);
+        bSlider.value = String(bClamped);
+        recomputePosterior();
+      }
+      function drawEvidenceWidget() {
+        const { ctx, w, h } = setup("bnn-evidence"); ctx.clearRect(0, 0, w, h);
+        const { alpha, beta, history } = evState;
+        // Left panel: weight-space heatmap at current α, β
+        const lx = 40, ly = 24, lw = Math.min(360, w * 0.46) - 24, lh = h - 70;
+        axes(ctx, lx, ly, lw, lh);
+        const Gm = 36;
+        const cells = []; let vmin = Infinity, vmax = -Infinity;
+        for (let i = 0; i < Gm; i++) for (let j = 0; j < Gm; j++) {
+          const w1 = -W + 2 * W * i / (Gm - 1), w2 = -W + 2 * W * j / (Gm - 1);
+          const e = energy(w1, w2, alpha, beta);
+          cells.push({ i, j, e });
+          if (e < vmin) vmin = e;
+          if (e > vmax) vmax = e;
+        }
+        const top = Math.min(vmin + 8, vmax);
+        cells.forEach((c) => {
+          const q = Math.max(0, Math.min(1, 1 - (c.e - vmin) / (top - vmin + 1e-6)));
+          const cx = lx + c.i / (Gm - 1) * lw, cy = ly + lh - c.j / (Gm - 1) * lh;
+          ctx.fillStyle = `rgba(184,65,42,${0.05 + 0.45 * q * q})`;
+          ctx.fillRect(cx, cy - lh / Gm, lw / Gm + 1, lh / Gm + 1);
+        });
+        const tx = (a) => lx + (a + W) / (2 * W) * lw;
+        const ty = (b2) => ly + lh - (b2 + W) / (2 * W) * lh;
+        // Prior 1-σ contour: circle of radius 1/√α in weight coords
+        const rPrior = 1 / Math.sqrt(Math.max(1e-4, alpha));
+        ctx.strokeStyle = "rgba(31,74,140,0.75)"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.ellipse(tx(0), ty(0), Math.min(lw / 2, rPrior / (2 * W) * lw), Math.min(lh / 2, rPrior / (2 * W) * lh), 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // MAP trajectory
+        if (history.length > 0) {
+          ctx.strokeStyle = "rgba(45,122,62,0.55)"; ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          history.forEach((s, k) => { const px = tx(s.w1), py = ty(s.w2); k === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py); });
+          ctx.stroke();
+          history.forEach((s, k) => {
+            const a = 0.25 + 0.65 * (k / Math.max(1, history.length - 1));
+            ctx.fillStyle = `rgba(45,122,62,${a})`;
+            ctx.beginPath(); ctx.arc(tx(s.w1), ty(s.w2), 3, 0, Math.PI * 2); ctx.fill();
+          });
+          const last = history[history.length - 1];
+          ctx.strokeStyle = C.green; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(tx(last.w1), ty(last.w2), 6, 0, Math.PI * 2); ctx.stroke();
+        }
+        // Data data points projected via current MAP for reference (faint)
+        ctx.fillStyle = C.dim; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("w1", lx + lw - 14, ly + lh + 18);
+        ctx.fillText("w2", lx - 22, ly + 10);
+        ctx.font = "10px -apple-system, sans-serif"; ctx.fillStyle = C.text;
+        ctx.fillText(`α=${alpha.toFixed(3)}, β=${beta.toFixed(2)}, iter ${history.length}`, lx + 4, ly - 6);
+        // Right panels: α, β, γ trajectories
+        const rx0 = lx + lw + 30;
+        const rw = w - rx0 - 24;
+        const subH = (h - 70) / 3;
+        function trajPlot(yTop, label, values, color, axisMin, axisMax) {
+          const x0 = rx0, y0 = yTop, ww = rw, hh = subH - 12;
+          axes(ctx, x0, y0, ww, hh);
+          ctx.fillStyle = C.text; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "left";
+          ctx.fillText(label, x0 + 6, y0 + 12);
+          if (values.length === 0) {
+            ctx.fillStyle = C.dim; ctx.font = "10px -apple-system, sans-serif";
+            ctx.fillText("(press Step or Run)", x0 + 6, y0 + 26);
+            return;
+          }
+          const T = Math.max(values.length - 1, 1);
+          const sxT = (k) => x0 + (values.length === 1 ? ww / 2 : k / T * ww);
+          const syT = (v) => y0 + hh - (v - axisMin) / Math.max(1e-6, axisMax - axisMin) * hh;
+          ctx.strokeStyle = color; ctx.lineWidth = 2;
+          ctx.beginPath();
+          values.forEach((v, k) => { k === 0 ? ctx.moveTo(sxT(k), syT(v)) : ctx.lineTo(sxT(k), syT(v)); });
+          ctx.stroke();
+          ctx.fillStyle = color;
+          values.forEach((v, k) => { ctx.beginPath(); ctx.arc(sxT(k), syT(v), 2.5, 0, Math.PI * 2); ctx.fill(); });
+          ctx.fillStyle = color; ctx.textAlign = "right";
+          ctx.fillText(`current ${values[values.length - 1].toFixed(values[values.length - 1] >= 10 ? 1 : 3)}`, x0 + ww - 4, y0 + 12);
+        }
+        const alphaVals = history.map((s) => s.alpha).concat([alpha]);
+        const betaVals = history.map((s) => s.beta).concat([beta]);
+        const gammaVals = history.map((s) => s.gamma);
+        const alphaMax = Math.max(0.5, Math.max(...alphaVals)) * 1.15;
+        const betaMax = Math.max(1, Math.max(...betaVals)) * 1.15;
+        trajPlot(24, "α (prior precision)", alphaVals, C.orange, 0, alphaMax);
+        trajPlot(24 + subH, "β (noise precision)", betaVals, C.purple, 0, betaMax);
+        trajPlot(24 + 2 * subH, "γ (effective # params, max 2)", gammaVals, C.green, 0, 2);
+        // Readout
+        const last = history.length > 0 ? history[history.length - 1] : null;
+        const status = evState.converged
+          ? `Converged after ${history.length} iterations`
+          : (history.length === 0 ? "Initial state — press Step or Run" : `Iteration ${history.length}` + (evState.running ? " (running)" : ""));
+        const detail = last
+          ? `at MAP: ‖w*‖²=${last.wNormSq.toFixed(3)}, Σ residual²=${last.residSumSq.toFixed(3)}, γ=${last.gamma.toFixed(3)} / 2`
+          : `no MAP computed yet`;
+        $("bnn-evidence-readout").innerHTML = `<div class="row"><span class="lbl">status</span><span>${status}</span></div><div class="row"><span class="lbl">last iteration</span><span>${detail}</span></div><div class="row"><span class="lbl">interpretation</span><span>γ counts how many of the two weight directions are data-determined. At convergence, $\\alpha = \\gamma / \\lVert w^*\\rVert^2$ balances prior tightness against weight magnitude; $\\beta^{-1} = (N-\\gamma)^{-1}\\sum \\mathrm{residual}^2$ is the unbiased noise variance using the remaining $N-\\gamma$ degrees of freedom.</span></div>`;
+      }
+      // ---- Fig 6: MC-Dropout predictive ensemble ------------------------------------------
+      function mkRng(seed) { let s = seed >>> 0; return () => { s = (1664525 * s + 1013904223) >>> 0; return s / 4294967296; }; }
+      // A 14-unit tanh net, fitted once at load to a fixed two-bump target. The fit is
+      // deterministic (seeded init) so the figure looks the same on every visit.
+      const dropNet = (function fitDropoutNet() {
+        const K = 14;
+        const rng = mkRng(0x9e3779b9);
+        const rn = () => { const u = Math.max(1e-9, rng()), v = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+        const target = (x) => 1.3 * Math.tanh(1.4 * x) + 0.45 * Math.tanh(3.5 * (x + 0.4));
+        const X = [], Y = [];
+        for (let i = 0; i < 16; i++) { const x = -2 + 4 * i / 15; X.push(x); Y.push(target(x)); }
+        const wIn = [], b = [], wOut = [];
+        let b0 = 0;
+        for (let k = 0; k < K; k++) { wIn.push(1.5 * rn()); b.push(rn()); wOut.push(0.3 * rn()); }
+        const lr = 0.003;
+        for (let step = 0; step < 3500; step++) {
+          const gIn = new Array(K).fill(0), gB = new Array(K).fill(0), gOut = new Array(K).fill(0);
+          let gB0 = 0;
+          for (let i = 0; i < X.length; i++) {
+            const x = X[i];
+            let fx = b0; const a = [];
+            for (let k = 0; k < K; k++) { const ak = Math.tanh(wIn[k] * x + b[k]); a.push(ak); fx += wOut[k] * ak; }
+            const r = 2 * (fx - Y[i]);
+            gB0 += r;
+            for (let k = 0; k < K; k++) {
+              gOut[k] += r * a[k];
+              const dpre = r * wOut[k] * (1 - a[k] * a[k]);
+              gIn[k] += dpre * x; gB[k] += dpre;
+            }
+          }
+          b0 -= lr * gB0;
+          for (let k = 0; k < K; k++) { wIn[k] -= lr * gIn[k]; b[k] -= lr * gB[k]; wOut[k] -= lr * gOut[k]; }
+        }
+        return { K, wIn, b, wOut, b0, X, Y };
+      })();
+      let dropMode = "drop"; // "drop" (MC-Dropout) | "noise" (MC noise injection)
+      function netForward(x, net) {
+        let fx = net.b0;
+        for (let k = 0; k < net.wIn.length; k++) fx += net.wOut[k] * Math.tanh(net.wIn[k] * x + net.b[k]);
+        return fx;
+      }
+      // One stochastic forward-pass network. MC-Dropout zeroes units (Bernoulli mask,
+      // kept units rescaled by 1/(1-rate)); MC noise injection adds N(0, rate²) noise
+      // to every weight. Both read uncertainty off the spread of these passes.
+      function makeDropPasses(N, rate, mode) {
+        const passes = [];
+        for (let n = 0; n < N; n++) {
+          if (mode === "drop") {
+            const scale = 1 / Math.max(1e-6, 1 - rate);
+            passes.push({
+              wIn: dropNet.wIn, b: dropNet.b, b0: dropNet.b0,
+              wOut: dropNet.wOut.map((wo) => (Math.random() < 1 - rate ? wo * scale : 0)),
+            });
+          } else {
+            passes.push({
+              wIn: dropNet.wIn.map((v) => v + rate * randn()),
+              b: dropNet.b.map((v) => v + rate * randn()),
+              wOut: dropNet.wOut.map((v) => v + rate * randn()),
+              b0: dropNet.b0 + rate * randn(),
+            });
+          }
+        }
+        return passes;
+      }
+      function drawDropout() {
+        const c = $("bnn-dropout"); if (!c) return;
+        const { ctx, w, h } = setup("bnn-dropout"); ctx.clearRect(0, 0, w, h);
+        const rate = Number($("bnn-drop-p").value), N = Number($("bnn-drop-n").value);
+        $("bnn-drop-p-v").textContent = rate.toFixed(2); $("bnn-drop-n-v").textContent = String(N);
+        const px = 50, py = 24, pw = w - 78, ph = h - 60;
+        axes(ctx, px, py, pw, ph);
+        const sx = (x) => px + (x + 2.6) / 5.2 * pw;
+        const sy = (v) => py + ph - (v + 2.6) / 5.2 * ph;
+        // Faint shading of the extrapolation region (|x| > 2, outside the data).
+        ctx.fillStyle = "rgba(90,101,119,0.06)";
+        ctx.fillRect(px, py, sx(-2) - px, ph);
+        ctx.fillRect(sx(2), py, px + pw - sx(2), ph);
+        const xs = []; for (let i = 0; i <= 120; i++) xs.push(-2.6 + 5.2 * i / 120);
+        const passes = makeDropPasses(N, rate, dropMode);
+        const cols = xs.map((x) => passes.map((net) => netForward(x, net)));
+        ctx.lineWidth = 1; ctx.strokeStyle = "rgba(107,69,146,0.16)";
+        for (let n = 0; n < N; n++) {
+          ctx.beginPath();
+          xs.forEach((x, i) => { const y = cols[i][n]; i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)); });
+          ctx.stroke();
+        }
+        const band = cols.map((col) => {
+          const s = [...col].sort((a, b) => a - b);
+          return { lo: s[Math.floor(s.length * 0.05)], hi: s[Math.min(s.length - 1, Math.floor(s.length * 0.95))], mean: s.reduce((a, b) => a + b, 0) / s.length };
+        });
+        ctx.fillStyle = "rgba(107,69,146,0.18)"; ctx.beginPath();
+        xs.forEach((x, i) => i ? ctx.lineTo(sx(x), sy(band[i].hi)) : ctx.moveTo(sx(x), sy(band[i].hi)));
+        for (let i = xs.length - 1; i >= 0; i--) ctx.lineTo(sx(xs[i]), sy(band[i].lo));
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = C.purple; ctx.lineWidth = 1.8; ctx.beginPath();
+        xs.forEach((x, i) => i ? ctx.lineTo(sx(x), sy(band[i].mean)) : ctx.moveTo(sx(x), sy(band[i].mean)));
+        ctx.stroke();
+        ctx.strokeStyle = C.blue; ctx.lineWidth = 2; ctx.beginPath();
+        xs.forEach((x, i) => { const y = netForward(x, dropNet); i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)); });
+        ctx.stroke();
+        dropNet.X.forEach((x, i) => { ctx.fillStyle = C.red; ctx.beginPath(); ctx.arc(sx(x), sy(dropNet.Y[i]), 3.5, 0, Math.PI * 2); ctx.fill(); });
+        ctx.fillStyle = C.dim; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("x →", px + pw - 22, py + ph + 18); ctx.fillText("f(x)", px - 32, py + 10);
+        ctx.fillText("extrapolation", sx(2) + 6, py + 14);
+        let sumIn = 0, nIn = 0, sumOut = 0, nOut = 0;
+        xs.forEach((x, i) => { const bw = band[i].hi - band[i].lo; if (Math.abs(x) <= 2) { sumIn += bw; nIn++; } else { sumOut += bw; nOut++; } });
+        const avgIn = nIn ? sumIn / nIn : 0, avgOut = nOut ? sumOut / nOut : 0;
+        const modeDesc = dropMode === "drop"
+          ? `dropout rate p = ${rate.toFixed(2)}; ≈ ${(dropNet.K * (1 - rate)).toFixed(1)} of ${dropNet.K} units kept per pass`
+          : `noise scale σ = ${rate.toFixed(2)}; Gaussian noise on every weight`;
+        const knob = dropMode === "drop" ? "p" : "σ";
+        $("bnn-dropout-readout").innerHTML =
+          `<div class="row"><span class="lbl">perturbation</span><span>${dropMode === "drop" ? "MC-Dropout" : "MC noise injection"} — ${modeDesc}; N = ${N} passes</span></div>` +
+          `<div class="row"><span class="lbl">band width: data region vs extrapolation</span><span>${avgIn.toFixed(2)} vs ${avgOut.toFixed(2)} — uncertainty grows where the data does not pin the fit</span></div>` +
+          `<div class="row"><span class="lbl">caveat</span><span>The band inflates with ${knob} alone — both methods' calibration is a tuning choice, not a consequence of the data, unlike the Laplace band whose width comes from the Hessian.</span></div>`;
+      }
+      function setDropMode(m) {
+        dropMode = m;
+        $("bnn-drop-mode-drop").classList.toggle("active", m === "drop");
+        $("bnn-drop-mode-noise").classList.toggle("active", m === "noise");
+        const lbl = $("bnn-drop-p").closest(".control")?.querySelector("label span");
+        if (lbl) lbl.textContent = m === "drop" ? "dropout rate p" : "noise scale σ";
+        drawDropout();
+      }
+      function drawAll() { drawPosterior(); drawLaplace(); drawOccam(); drawPrior(); drawWeightEffect("bnn-w1-effect", true); drawWeightEffect("bnn-w2-effect", false); drawEvidenceWidget(); drawPerm(); drawDropout(); }
+      bindPerm();
+      ["bnn-drop-p", "bnn-drop-n"].forEach((id) => $(id).addEventListener("input", drawDropout));
+      $("bnn-drop-resample").addEventListener("click", drawDropout);
+      $("bnn-drop-mode-drop").addEventListener("click", () => setDropMode("drop"));
+      $("bnn-drop-mode-noise").addEventListener("click", () => setDropMode("noise"));
+      $("bnn-perm-swap").addEventListener("click", () => { permUnits.reverse(); permSwaps++; drawPerm(); });
+      $("bnn-perm-reset").addEventListener("click", () => { permUnits = permDefault(); permSwaps = 0; drawPerm(); });
+      // ---- Pointer interaction for editable data points ------------------------------------
+      // Click empty space to add a point, drag a point to move, alt/option-click to remove.
+      // Works on Figure 1 (right panel) and Figure 2 (right panel). Both edit the same `data`.
+      function rightPanelHit(canvas, event) {
+        const r = canvas.getBoundingClientRect();
+        const cssW = r.width, cssH = r.height;
+        const px = event.clientX - r.left, py = event.clientY - r.top;
+        if (canvas.id === "bnn-posterior") {
+          const leftW = Math.min(330, cssW * 0.44);
+          const gx = leftW + 40, gy = 32, gw = cssW - gx - 24, gh = cssH - 72;
+          if (px < gx || px > gx + gw || py < gy || py > gy + gh) return null;
+          return { x: (px - gx) / gw * 4.4 - 2.2, y: (1 - (py - gy) / gh) * 3.4 - 1.7 };
+        }
+        if (canvas.id === "bnn-laplace") {
+          const leftW = cssW * 0.5;
+          const gx = leftW + 30, gy = 32, gw = cssW - gx - 18, gh = cssH - 72;
+          if (px < gx || px > gx + gw || py < gy || py > gy + gh) return null;
+          return { x: (px - gx) / gw * 4.4 - 2.2, y: (1 - (py - gy) / gh) * 3.4 - 1.7 };
+        }
+        return null;
+      }
+      let dragState = null;
+      function hitIndex(arr, pt, radius) {
+        let best = -1, bd = radius;
+        for (let i = 0; i < arr.length; i++) {
+          const d = Math.hypot(arr[i].x - pt.x, arr[i].y - pt.y);
+          if (d < bd) { bd = d; best = i; }
+        }
+        return best;
+      }
+      function bindDataCanvas(id) {
+        const c = $(id);
+        c.style.cursor = "crosshair";
+        c.addEventListener("mousedown", (event) => {
+          const pt = rightPanelHit(c, event); if (!pt) return;
+          const idx = hitIndex(data, pt, 0.22);
+          if (event.altKey) {
+            if (idx >= 0 && data.length > 1) { data.splice(idx, 1); evResetHistory(); recomputePosterior(); }
+            return;
+          }
+          if (idx >= 0) { dragState = { canvas: id, idx, kind: "data" }; c.style.cursor = "grabbing"; }
+          else { data.push(pt); evResetHistory(); recomputePosterior(); }
+        });
+        c.addEventListener("mousemove", (event) => {
+          if (!dragState || dragState.kind !== "data") {
+            const pt = rightPanelHit(c, event);
+            c.style.cursor = pt && hitIndex(data, pt, 0.22) >= 0 ? "grab" : "crosshair";
+            return;
+          }
+          const pt = rightPanelHit(c, event); if (!pt) return;
+          data[dragState.idx] = pt; evResetHistory(); recomputePosterior();
+        });
+        const release = () => { if (dragState && dragState.kind === "data") { $(dragState.canvas).style.cursor = "crosshair"; dragState = null; } };
+        c.addEventListener("mouseup", release);
+        c.addEventListener("mouseleave", release);
+      }
+      bindDataCanvas("bnn-posterior");
+      bindDataCanvas("bnn-laplace");
+      // Figure 2 left panel: drag the weight probe anywhere in weight space.
+      function bindProbe() {
+        const c = $("bnn-laplace");
+        if (!c) return;
+        function leftHit(event) {
+          const r = c.getBoundingClientRect();
+          const mx = event.clientX - r.left, my = event.clientY - r.top;
+          const leftW = r.width * 0.5;
+          const lpx = 42, lpy = 32, lpw = leftW - 76, lph = r.height - 72;
+          if (mx < lpx || mx > lpx + lpw || my < lpy || my > lpy + lph) return null;
+          return { w1: (mx - lpx) / lpw * 2 * W - W, w2: (1 - (my - lpy) / lph) * 2 * W - W };
+        }
+        c.addEventListener("mousedown", (event) => {
+          const pt = leftHit(event); if (!pt) return;
+          dragState = { canvas: "bnn-laplace", kind: "probe" };
+          probe = pt; c.style.cursor = "grabbing"; drawLaplace();
+        });
+        c.addEventListener("mousemove", (event) => {
+          if (!dragState || dragState.kind !== "probe") {
+            if (leftHit(event)) c.style.cursor = "crosshair";
+            return;
+          }
+          const pt = leftHit(event); if (!pt) return;
+          probe = pt; c.style.cursor = "grabbing"; drawLaplace();
+        });
+        const rel = () => { if (dragState && dragState.kind === "probe") { dragState = null; c.style.cursor = "crosshair"; } };
+        c.addEventListener("mouseup", rel);
+        c.addEventListener("mouseleave", rel);
+      }
+      bindProbe();
+      // ---- Figure 4: drag pinned data points ------------------------------------------------
+      function priorPanelHit(event) {
+        // Either panel — data points appear in both; editing affects the posterior band.
+        const c = $("bnn-prior");
+        const r = c.getBoundingClientRect();
+        const cssW = r.width, cssH = r.height;
+        const px = event.clientX - r.left, py = event.clientY - r.top;
+        const halfH = (cssH - 60) / 2;
+        const gx = 48, gw = cssW - 80;
+        if (px < gx || px > gx + gw) return null;
+        // Try top panel first, then bottom
+        for (const yTop of [28, 28 + halfH + 18]) {
+          const gy = yTop, gh = halfH;
+          if (py >= gy && py <= gy + gh) {
+            return { x: (px - gx) / gw * 4.4 - 2.2, y: (1 - (py - gy) / gh) * 4.8 - 2.4 };
+          }
+        }
+        return null;
+      }
+      const priorCanvas = $("bnn-prior");
+      priorCanvas.style.cursor = "crosshair";
+      priorCanvas.addEventListener("mousedown", (event) => {
+        const pt = priorPanelHit(event); if (!pt) return;
+        const idx = hitIndex(priorData, pt, 0.22);
+        if (event.altKey) {
+          if (idx >= 0 && priorData.length > 1) { priorData.splice(idx, 1); drawPrior(); }
+          return;
+        }
+        if (idx >= 0) { dragState = { canvas: "bnn-prior", idx, kind: "prior" }; priorCanvas.style.cursor = "grabbing"; }
+        else { priorData.push(pt); drawPrior(); }
+      });
+      priorCanvas.addEventListener("mousemove", (event) => {
+        if (!dragState || dragState.kind !== "prior") {
+          const pt = priorPanelHit(event);
+          priorCanvas.style.cursor = pt && hitIndex(priorData, pt, 0.22) >= 0 ? "grab" : "crosshair";
+          return;
+        }
+        const pt = priorPanelHit(event); if (!pt) return;
+        priorData[dragState.idx] = pt; drawPrior();
+      });
+      const priorRelease = () => { if (dragState && dragState.kind === "prior") { priorCanvas.style.cursor = "crosshair"; dragState = null; } };
+      priorCanvas.addEventListener("mouseup", priorRelease);
+      priorCanvas.addEventListener("mouseleave", priorRelease);
+      function setView(v) {
+        posteriorView = v;
+        ["M", "ed", "ew"].forEach((k) => $("bnn-view-" + k).classList.toggle("active", k === v));
+        drawPosterior();
+      }
+      $("bnn-view-M").addEventListener("click", () => setView("M"));
+      $("bnn-view-ed").addEventListener("click", () => setView("ed"));
+      $("bnn-view-ew").addEventListener("click", () => setView("ew"));
+      function setVarianceView(v) {
+        varianceView = v;
+        ["param", "noise", "total"].forEach((k) => $("bnn-var-" + k).classList.toggle("active", k === v));
+        drawLaplace();
+      }
+      $("bnn-var-param").addEventListener("click", () => setVarianceView("param"));
+      $("bnn-var-noise").addEventListener("click", () => setVarianceView("noise"));
+      $("bnn-var-total").addEventListener("click", () => setVarianceView("total"));
+      function setViView(v) {
+        viView = v;
+        const map3 = { off: "bnn-vi-off", reverse: "bnn-vi-rev", forward: "bnn-vi-fwd" };
+        Object.entries(map3).forEach(([k, id]) => $(id).classList.toggle("active", k === v));
+        drawLaplace();
+      }
+      $("bnn-vi-off").addEventListener("click", () => setViView("off"));
+      $("bnn-vi-rev").addEventListener("click", () => setViView("reverse"));
+      $("bnn-vi-fwd").addEventListener("click", () => setViView("forward"));
+      $("bnn-ev-reset").addEventListener("click", () => evResetWith(0.05, 0.5));
+      $("bnn-ev-reset-tight").addEventListener("click", () => evResetWith(10, 15));
+      $("bnn-ev-step").addEventListener("click", evStep);
+      $("bnn-ev-run").addEventListener("click", evRun);
+      $("bnn-ev-apply").addEventListener("click", evApply);
+      ["bnn-alpha", "bnn-beta"].forEach((id) => $(id).addEventListener("input", recomputePosterior));
+      $("bnn-new-data").addEventListener("click", () => makeData(dataMode));
+      $("bnn-data-asym").addEventListener("click", () => makeData("asym"));
+      $("bnn-data-sym").addEventListener("click", () => makeData("sym"));
+      $("bnn-data-sparse").addEventListener("click", () => makeData("sparse"));
+      ["bnn-a1", "bnn-a2"].forEach((id) => $(id).addEventListener("input", drawPrior));
+      $("bnn-prior-balanced").addEventListener("click", () => { $("bnn-a1").value = "0.6"; $("bnn-a2").value = "0.6"; drawPrior(); });
+      $("bnn-prior-tight-in").addEventListener("click", () => { $("bnn-a1").value = "0.6"; $("bnn-a2").value = "10"; drawPrior(); });
+      $("bnn-prior-tight-out").addEventListener("click", () => { $("bnn-a1").value = "10"; $("bnn-a2").value = "0.6"; drawPrior(); });
+      makeData("asym"); window.addEventListener("resize", drawAll);
+    })();
+  </script>
+</ExplainerLayout>

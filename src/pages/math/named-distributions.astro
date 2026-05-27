@@ -1,0 +1,971 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import VizCard from "../../components/explainer/VizCard.astro";
+import VizCardGrid from "../../components/explainer/VizCardGrid.astro";
+---
+
+<ExplainerLayout title="Named Distributions" breadcrumb="Named Distributions" section="probability-and-statistics">
+<style>
+  .dist-facts {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+  .dist-facts th {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    color: var(--text-dim);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    padding: 7px 8px;
+    text-align: left;
+    text-transform: uppercase;
+    vertical-align: bottom;
+  }
+  .dist-facts td {
+    border: 1px solid var(--rule);
+    padding: 7px 8px;
+    vertical-align: top;
+  }
+  .dist-facts .formula-cell {
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    font-size: 12px;
+  }
+  .dist-facts th:first-child,
+  .dist-facts td:first-child { width: 68px; }
+</style>
+
+<Hero title="Named Distributions" subtitle="
+    A family tree of the usual distributions: limits, sums, transformations, ratios, tails, and conjugacy.
+  " />
+
+<p>
+Named distributions are easier to remember when they are connected by operations.
+Bernoulli trials add into binomials; rare binomials limit to Poisson; Gaussians stay
+Gaussian under sums; squared Gaussians make $\chi^2$; ratios make Cauchy, $t$, and
+$F$ laws. This page shows those connections.
+</p>
+
+<h2 id="family">1. Opening figure: the family map</h2>
+
+<p>
+Click a node to jump to its card. The edge labels are the operations that turn one
+distribution into another: sums, limits, transformations, ratios, and conjugate
+updates.
+</p>
+
+<Figure title="Figure 1 · Family map of named distributions" canvasId="family-map" width="840" height="510" readoutId="family-readout" readoutText="Hover for a one-line summary; click a node to scroll to its card.">
+<Fragment slot="legend">
+  <div class="family-controls">
+    <strong>View:</strong>
+    <button class="family-filter active" data-filter="all" type="button">all</button>
+    <button class="family-filter" data-filter="op" type="button">sums &amp; transforms</button>
+    <button class="family-filter" data-filter="prior" type="button">conjugate priors</button>
+    <button class="family-filter" data-filter="case" type="button">special cases</button>
+    <button class="family-filter" data-filter="limit" type="button">limits</button>
+  </div>
+  <div class="family-legend">
+    <div class="legend">
+      <span><span class="swatch" style="background:rgba(212,105,10,0.18);border:1px solid rgba(212,105,10,0.5);border-radius:3px;height:14px;width:22px"></span>discrete</span>
+      <span><span class="swatch" style="background:rgba(31,74,140,0.14);border:1px solid rgba(31,74,140,0.5);border-radius:3px;height:14px;width:22px"></span>continuous</span>
+      <span style="font-style:italic;color:var(--text-dim,#5a6577)">italic = multivariate</span>
+    </div>
+    <div class="legend">
+      <strong style="font-weight:600;color:var(--text-dim,#5a6577)">support:</strong>
+      <span><span class="swatch" style="background:rgba(31,74,140,0.14);border:1px solid rgba(31,74,140,0.5);border-radius:3px;height:14px;width:22px"></span>bounded [a, b]</span>
+      <span><span class="swatch" style="background:rgba(31,74,140,0.14);border:1px solid rgba(31,74,140,0.5);border-radius:3px 8px 8px 3px;height:14px;width:22px"></span>half-bounded [0, ∞)</span>
+      <span><span class="swatch" style="background:rgba(31,74,140,0.14);border:1px solid rgba(31,74,140,0.5);border-radius:8px;height:14px;width:22px"></span>unbounded ℝ</span>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c;height:2px;width:18px"></span>sum / transform / ratio</span>
+      <span><span class="swatch" style="background:transparent;border-top:2px dashed #d4690a;height:0;width:18px"></span>conjugate prior</span>
+      <span><span class="swatch" style="background:#2d7a3e;height:2px;width:18px"></span>special case</span>
+      <span><span class="swatch" style="background:#6b4592;height:2px;width:18px"></span>limit</span>
+    </div>
+  </div>
+</Fragment>
+</Figure>
+<style>
+  .family-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 14px 10px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    color: var(--text-dim, #5a6577);
+  }
+  .family-controls strong { font-weight: 600; margin-right: 4px; }
+  .family-filter {
+    background: #ffffff;
+    border: 1px solid #9ca3af;
+    color: var(--text, #1f2733);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-family: inherit;
+    transition: all 0.12s ease;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+  }
+  .family-filter:hover {
+    background: #f3f4f6;
+    border-color: #6b7280;
+  }
+  .family-filter.active {
+    background: var(--accent-2, #1f4a8c);
+    border-color: var(--accent-2, #1f4a8c);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(31, 74, 140, 0.3);
+  }
+  .family-filter.active:hover {
+    background: #163a72;
+    border-color: #163a72;
+  }
+  .family-legend {
+    margin: 0 14px 14px;
+    padding: 12px 14px;
+    background: var(--panel, #fbfbfa);
+    border: 1px solid var(--rule, #d8d3c5);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .family-legend .legend { padding: 0; }
+</style>
+
+<h2 id="discrete">2. Discrete distributions</h2>
+
+<VizCard id="bernoulli-binomial" viz="bernoulli-binomial" tag="discrete" tagClass="discrete" title="Bernoulli → Binomial">
+<div class="card-copy">
+      <h3>One trial becomes a count.</h3>
+      <p>A Bernoulli variable is a single yes/no event. A binomial is the sum of $n$
+      independent Bernoulli trials with the same success probability $p$.</p>
+      <p>Drag $n$ and $p$: the bars are $P(X=k)$ for $X\sim\mathrm&#123;Binomial&#125;(n,p)$.
+      The center tracks $np$ and the spread tracks $np(1-p)$.</p>
+      <table class="dist-facts">
+        <thead><tr><th>Law</th><th>PMF</th><th>CDF</th><th>CF</th><th>Mean</th><th>Var</th></tr></thead>
+        <tbody>
+          <tr><td>Bernoulli</td><td class="formula-cell">$p^x(1-p)^&#123;1-x&#125;$</td><td class="formula-cell">$0,1-p,1$</td><td class="formula-cell">$1-p+pe^&#123;it&#125;$</td><td>$p$</td><td>$p(1-p)$</td></tr>
+          <tr><td>Binomial</td><td class="formula-cell">$\binom&#123;n&#125;&#123;k&#125;p^k(1-p)^&#123;n-k&#125;$</td><td class="formula-cell">$\sum_&#123;j\le k&#125;\binom&#123;n&#125;&#123;j&#125;p^j(1-p)^&#123;n-j&#125;$</td><td class="formula-cell">$(1-p+pe^&#123;it&#125;)^n$</td><td>$np$</td><td>$np(1-p)$</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="260"></canvas>
+      <div class="controls">
+        <ControlRange label="n" dataParam="n" min="1" max="80" step="1" value="12" />
+        <ControlRange label="p" dataParam="p" min="0.02" max="0.98" step="0.01" value="0.35" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="categorical-multinomial" viz="categorical-multinomial" tag="discrete" tagClass="discrete" title="Categorical → Multinomial">
+<div class="card-copy">
+      <h3>From one $K$-sided draw to a vector of counts.</h3>
+      <p>A categorical variable is a single draw over $K$ outcomes with probabilities
+      $(p_1,\dots,p_K)$. The multinomial is the vector of category counts after $n$
+      independent categorical draws. With $K=2$ these reduce to Bernoulli and binomial;
+      each marginal count is $\mathrm&#123;Binomial&#125;(n, p_k)$, but counts share negative
+      covariance because the total must equal $n$.</p>
+      <p>Bars show the expected counts $np_k$ with $\pm 2$ standard-deviation
+      whiskers from the binomial marginals.</p>
+      <table class="dist-facts">
+        <thead><tr><th>Law</th><th>PMF</th><th>Mean</th><th>Var / Cov</th></tr></thead>
+        <tbody>
+          <tr><td>Categorical</td><td class="formula-cell">$\prod_k p_k^&#123;\mathbb 1_&#123;x=k&#125;&#125;$</td><td class="formula-cell">$p_k$</td><td class="formula-cell">$p_k(1-p_k)$; $-p_jp_k$</td></tr>
+          <tr><td>Multinomial</td><td class="formula-cell">$\frac&#123;n!&#125;&#123;\prod_k k_i!&#125;\prod_k p_k^&#123;k_i&#125;$</td><td class="formula-cell">$np_k$</td><td class="formula-cell">$np_k(1-p_k)$; $-np_jp_k$</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="260"></canvas>
+      <div class="controls">
+        <ControlRange label="n" dataParam="n" min="1" max="80" step="1" value="20" />
+        <ControlRange label="p₁" dataParam="p1" min="0.05" max="0.9" step="0.01" value="0.5" />
+        <ControlRange label="p₂" dataParam="p2" min="0.05" max="0.9" step="0.01" value="0.3" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="geometric" viz="geometric" tag="discrete" tagClass="discrete" title="Geometric">
+<div class="card-copy">
+      <h3>Waiting for the first success.</h3>
+      <p>The geometric distribution counts trials until the first success. After
+      failures, the remaining wait still has the same distribution: discrete
+      memoryless waiting time.</p>
+      <p>The expectation follows from the tail sum:</p>
+      <p>\[\mathbb&#123;E&#125;X=\sum_&#123;k\ge0&#125;P(X>k)=\sum_&#123;k\ge0&#125;(1-p)^k=1/p.\]</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PMF</th><td class="formula-cell">$p(1-p)^&#123;k-1&#125;$ for $k\ge1$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$1-(1-p)^k$</td></tr>
+          <tr><th>CF</th><td class="formula-cell">$\frac&#123;pe^&#123;it&#125;&#125;&#123;1-(1-p)e^&#123;it&#125;&#125;$</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$1/p$, $(1-p)/p^2$</td></tr>
+          <tr><th>Fact</th><td>Discrete memoryless waiting time.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="250"></canvas>
+      <div class="controls">
+        <ControlRange label="p" dataParam="p" min="0.05" max="0.8" step="0.01" value="0.25" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="poisson" viz="poisson-limit" tag="discrete" tagClass="discrete" title="Poisson as a rare-event limit">
+<div class="card-copy">
+      <h3>Many tiny chances become a rate.</h3>
+      <p>If $X_n\sim\mathrm&#123;Binomial&#125;(n,\lambda/n)$, then as $n\to\infty$ the mass
+      approaches $\mathrm&#123;Poisson&#125;(\lambda)$. This is the count model for many
+      independent rare opportunities.</p>
+      <p><a href="/math/poisson-processes/">Poisson processes</a> are the
+      process-level version: counts over time windows plus exponential waiting times.</p>
+      <p>The plot overlays the binomial bars (blue, wider) with the limiting Poisson distribution (red, narrower).</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PMF</th><td class="formula-cell">$e^&#123;-\lambda&#125;\lambda^k/k!$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$\sum_&#123;j\le k&#125;e^&#123;-\lambda&#125;\lambda^j/j!$</td></tr>
+          <tr><th>CF</th><td class="formula-cell">$\exp(\lambda(e^&#123;it&#125;-1))$</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$\lambda$, $\lambda$</td></tr>
+          <tr><th>Fact</th><td>Independent Poisson counts add by adding rates.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="260"></canvas>
+      <div class="controls">
+        <ControlRange label="lambda" dataParam="lambda" min="0.5" max="12" step="0.1" value="4" />
+        <ControlRange label="n" dataParam="n" min="5" max="600" step="5" value="40" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="negative-binomial" viz="negative-binomial" tag="discrete" tagClass="discrete" title="Negative Binomial">
+<div class="card-copy">
+      <h3>Waiting for several successes, or overdispersed counts.</h3>
+      <p>A negative binomial can be seen as a sum of geometric waits. As a count model,
+      it is what you reach for when Poisson variance is too small for the data.</p>
+      <p>The gray curve is a Poisson with the same mean. The wider bars show the
+      extra dispersion.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PMF</th><td class="formula-cell">$\binom&#123;k+r-1&#125;&#123;k&#125;p^r(1-p)^k$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$\sum_&#123;j\le k&#125;\binom&#123;j+r-1&#125;&#123;j&#125;p^r(1-p)^j$</td></tr>
+          <tr><th>CF</th><td class="formula-cell">$\left(\frac&#123;p&#125;&#123;1-(1-p)e^&#123;it&#125;&#125;\right)^r$</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$r(1-p)/p$, $r(1-p)/p^2$</td></tr>
+          <tr><th>Fact</th><td>Variance-to-mean ratio is $1/p$, so it exceeds Poisson when $p<1$.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="250"></canvas>
+      <div class="controls">
+        <ControlRange label="r successes" dataParam="r" min="1" max="20" step="1" value="5" />
+        <ControlRange label="p" dataParam="p" min="0.1" max="0.8" step="0.01" value="0.35" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<h2 id="continuous">3. Continuous distributions</h2>
+
+<VizCard id="uniform" viz="inverse-cdf" tag="continuous" tagClass="continuous" title="Uniform and inverse-CDF sampling">
+<div class="card-copy">
+      <h3>The random-number source behind the others.</h3>
+      <p>If $U\sim\mathrm&#123;Uniform&#125;(0,1)$, then $F^&#123;-1&#125;(U)$ has CDF $F$. This is the
+      inverse-CDF method behind exact one-dimensional sampling.</p>
+      <p>The left axis is uniform probability. The curve is $F^&#123;-1&#125;(u)$ for the chosen
+      family, turning evenly spaced $u$ values into nonuniform samples.</p>
+      <p><a href="/math/monte-carlo/">Monte Carlo &amp; MCMC</a> builds this into
+      rejection and importance sampling.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PDF</th><td class="formula-cell">$1/(b-a)$ on $[a,b]$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$(x-a)/(b-a)$ on $[a,b]$</td></tr>
+          <tr><th>CF</th><td class="formula-cell">$\frac&#123;e^&#123;itb&#125;-e^&#123;ita&#125;&#125;&#123;it(b-a)&#125;$</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$(a+b)/2$, $(b-a)^2/12$</td></tr>
+          <tr><th>Fact</th><td>The source law behind inverse-CDF sampling.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="250"></canvas>
+      <div class="controls">
+        <ControlSelect label="target" dataParam="family" options={[{"value":"exponential","label":"Exponential"},{"value":"logistic","label":"Logistic"},{"value":"pareto","label":"Pareto"}]} />
+        <ControlRange label="shape/rate" dataParam="shape" min="0.5" max="4" step="0.05" value="1.4" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="exponential" viz="exponential-min" tag="continuous" tagClass="continuous" title="Exponential">
+<div class="card-copy">
+      <h3>Memoryless waiting in continuous time.</h3>
+      <p>The exponential distribution is the continuous waiting time with no aging:</p>
+      <p>\[P(T>s+t\mid T>s)=P(T>t).\]</p>
+      <p>It is also the interarrival-time distribution in a
+      <a href="/math/poisson-processes/#memoryless">Poisson process</a>.</p>
+      <p>The minimum of independent exponentials is exponential again:
+      $\min(T_1,T_2)\sim\mathrm&#123;Exp&#125;(\lambda_1+\lambda_2)$. Competing clocks add rates.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PDF</th><td class="formula-cell">$\lambda e^&#123;-\lambda x&#125;$ for $x\ge0$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$1-e^&#123;-\lambda x&#125;$</td></tr>
+          <tr><th>CF</th><td class="formula-cell">$\lambda/(\lambda-it)$</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$1/\lambda$, $1/\lambda^2$</td></tr>
+          <tr><th>Fact</th><td>The only continuous memoryless distribution.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="250"></canvas>
+      <div class="controls">
+        <ControlRange label="lambda 1" dataParam="l1" min="0.2" max="4" step="0.05" value="1.1" />
+        <ControlRange label="lambda 2" dataParam="l2" min="0.2" max="4" step="0.05" value="0.8" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="gaussian" viz="gaussian-clt" tag="continuous" tagClass="continuous" title="Gaussian">
+<div class="card-copy">
+      <h3>The shape sums with finite variance converge to.</h3>
+      <p>Gaussian distributions are closed under sums: independent normals add to a
+      normal. More broadly, normalized sums of many finite-variance variables drift
+      toward a bell curve.</p>
+      <p>The bars show the sum of $m$ centered uniform variables rescaled to variance
+      $\sigma^2$. The curve is the matching normal approximation.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PDF</th><td class="formula-cell">$\frac&#123;1&#125;&#123;\sigma\sqrt&#123;2\pi&#125;&#125;e^&#123;-(x-\mu)^2/(2\sigma^2)&#125;$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$\Phi((x-\mu)/\sigma)$</td></tr>
+          <tr><th>CF</th><td class="formula-cell">$e^&#123;i\mu t-\sigma^2t^2/2&#125;$</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$\mu$, $\sigma^2$</td></tr>
+          <tr><th>Fact</th><td>Closed under independent sums.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="260"></canvas>
+      <div class="controls">
+        <ControlRange label="sigma" dataParam="sigma" min="0.4" max="2.5" step="0.05" value="1" />
+        <ControlRange label="summands" dataParam="m" min="1" max="12" step="1" value="4" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<Figure title="Figure 3b · Galton board: binomial paths become a bell curve" canvasId="galton-board" width="840" height="420" readoutId="galton-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>falling balls</span>
+      <span><span class="swatch" style="background:#b8412a"></span>normal approximation</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>empirical histogram</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="galton-levels" label="rows" valueId="galton-levels-v" min="4" max="18" step="1" value="12" />
+      <ControlRange id="galton-balls" label="balls" valueId="galton-balls-v" min="50" max="3000" step="50" value="600" />
+      <PresetRow>
+        <button id="galton-drop">Drop again</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<VizCard id="cauchy" viz="cauchy-mean" tag="continuous" tagClass="continuous" title="Cauchy">
+<div class="card-copy">
+      <h3>A ratio distribution with no mean.</h3>
+      <p>If $Z_1,Z_2$ are independent standard normals, then $Z_1/Z_2$ is Cauchy.
+      Its tails are so heavy that the mean does not exist.</p>
+      <p>The plot shows the theoretical Cauchy density against a normal density.
+      The Cauchy peak is lower and its tails decay much more slowly.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PDF</th><td class="formula-cell">$\frac&#123;1&#125;&#123;\pi\gamma[1+((x-x_0)/\gamma)^2]&#125;$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$\frac&#123;1&#125;&#123;\pi&#125;\arctan\frac&#123;x-x_0&#125;&#123;\gamma&#125;+\frac&#123;1&#125;&#123;2&#125;$</td></tr>
+          <tr><th>CF</th><td class="formula-cell">$e^&#123;ix_0t-\gamma|t|&#125;$</td></tr>
+          <tr><th>Mean / variance</th><td>Undefined; undefined.</td></tr>
+          <tr><th>Fact</th><td>$Z_1/Z_2$ for independent standard normals.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="260"></canvas>
+      <div class="controls">
+        <ControlRange label="scale gamma" dataParam="gamma" min="0.4" max="3" step="0.05" value="1" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="laplace" viz="laplace" tag="continuous" tagClass="continuous" title="Laplace">
+<div class="card-copy">
+      <h3>The double exponential: a sharp peak with exponential tails.</h3>
+      <p>If $E_1,E_2$ are independent $\mathrm&#123;Exp&#125;(1/b)$, then $E_1-E_2\sim\mathrm&#123;Laplace&#125;(0,b)$.
+      The density is the symmetric exponential $\frac&#123;1&#125;&#123;2b&#125;e^&#123;-|x-\mu|/b&#125;$, so it has a
+      cusp at the mean and decays linearly on a log scale — heavier tails than a Gaussian, but
+      far lighter than a Cauchy.</p>
+      <p>It is the maximum-entropy distribution on $\mathbb&#123;R&#125;$ for a fixed mean absolute
+      deviation $\mathbb E|X-\mu|=b$, the same way Gaussian is max-entropy for fixed variance.
+      As a noise model, $-\log p(x\mid\mu,b)\propto|x-\mu|/b$, so MLE under Laplace noise is
+      <em>median regression</em> (L1 loss); as a prior on regression coefficients it gives
+      the lasso.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PDF</th><td class="formula-cell">$\frac&#123;1&#125;&#123;2b&#125;e^&#123;-|x-\mu|/b&#125;$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$\tfrac12+\tfrac12\,\mathrm&#123;sgn&#125;(x-\mu)(1-e^&#123;-|x-\mu|/b&#125;)$</td></tr>
+          <tr><th>CF</th><td class="formula-cell">$e^&#123;i\mu t&#125;/(1+b^2t^2)$</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$\mu$, $2b^2$</td></tr>
+          <tr><th>Fact</th><td>Difference of two iid $\mathrm&#123;Exp&#125;(1/b)$; max-entropy on $\mathbb&#123;R&#125;$ with fixed $\mathbb E|X-\mu|$.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="260"></canvas>
+      <div class="controls">
+        <ControlRange label="scale b" dataParam="b" min="0.4" max="3" step="0.05" value="1" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<h2 id="operations">4. Operations that make new distributions</h2>
+
+<h3 id="clt">4a. The central limit theorem: any shape becomes Gaussian</h3>
+
+<p>
+Pick any base distribution with finite variance. Standardize its sample mean:
+</p>
+
+$$
+Z_n \;=\; \frac&#123;\bar X_n - \mu&#125;&#123;\sigma/\sqrt n&#125;
+\;=\; \frac&#123;\sqrt n\,(\bar X_n - \mu)&#125;&#123;\sigma&#125;.
+$$
+
+<p>
+Then $Z_n \Rightarrow \mathcal N(0,1)$ as $n \to \infty$. The base shape can be
+skewed, bimodal, or discrete — the standardized sum is still Gaussian in the
+limit. Pick a base below and slide $n$.
+</p>
+
+<Figure title="Figure 4a · The standardized sample mean converges to N(0, 1)" canvasId="fig-clt" width="800" height="480" readoutId="clt-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:rgba(212,105,10,0.5);border:1px solid #d4690a"></span>base distribution sample</span>
+    <span><span class="swatch" style="background:rgba(31,74,140,0.5);border:1px solid #1f4a8c"></span>standardized sum (Monte Carlo)</span>
+    <span><span class="swatch" style="background:#b8412a;height:3px;width:18px"></span>$\mathcal N(0, 1)$ target</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="ps-controls">
+    <div class="ps-control-group">
+      <strong>base:</strong>
+      <button class="clt-base" data-base="uniform" type="button">Uniform(0,1)</button>
+      <button class="clt-base active" data-base="exponential" type="button">Exponential(1)</button>
+      <button class="clt-base" data-base="bimodal" type="button">Bimodal mixture</button>
+      <button class="clt-base" data-base="bernoulli" type="button">Bernoulli(0.3)</button>
+    </div>
+    <div class="ps-control-group">
+      <strong>summands $n$:</strong>
+      <input id="fig-clt-n" type="range" min="1" max="60" step="1" value="2" />
+      <span id="fig-clt-n-v">2</span>
+    </div>
+  </div>
+</Fragment>
+</Figure>
+
+<p>Things to notice:</p>
+
+<ul>
+  <li>At $n = 1$, the bottom panel <em>is</em> the top panel — standardized but
+  otherwise unchanged. The Exponential is right-skewed; the bimodal mixture is
+  two-humped; Bernoulli is two spikes.</li>
+  <li>By $n = 5&#123;-&#125;10$, all four bases produce a bell-shaped bottom panel that
+  visibly tracks the $\mathcal N(0,1)$ curve. The empirical mean and variance
+  of $Z_n$ in the readout are already $\approx 0$ and $\approx 1$.</li>
+  <li>The Bernoulli base needs the most summands — for small $n$ the
+  standardized sum is still discrete, so the histogram is jagged. The CLT
+  converges in distribution, not pointwise: the discrete histogram smooths into
+  the continuous bell as $n$ grows.</li>
+  <li>This is why the Gaussian shows up everywhere: any finite-variance
+  averaging process produces it.</li>
+</ul>
+
+<h3 id="ops-list">4b. Other operations</h3>
+
+<VizCard id="sums" viz="sums" tag="operation" tagClass="operation" title="Sums and convolution">
+<div class="card-copy">
+      <h3>Adding independent variables convolves their densities.</h3>
+      <p>The density of $X+Y$ is $f_X*f_Y$. Some families are closed under addition:
+      Gaussian plus Gaussian is Gaussian; Poisson plus Poisson is Poisson; Cauchy plus
+      Cauchy is Cauchy.</p>
+      <p>The plot shows two draggable family choices and their sum.</p>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="260"></canvas>
+      <div class="controls">
+        <ControlSelect label="X" dataParam="a" options={[{"value":"normal","label":"Normal"},{"value":"uniform","label":"Uniform"},{"value":"cauchy","label":"Cauchy"}]} />
+        <ControlSelect label="Y" dataParam="b" options={[{"value":"normal","label":"Normal"},{"value":"uniform","label":"Uniform"},{"value":"cauchy","label":"Cauchy"}]} />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="extremes" viz="extremes" tag="operation" tagClass="operation" title="Max and min of i.i.d. samples">
+<div class="card-copy">
+      <h3>Extremes act on the CDF, not the density.</h3>
+      <p>If $M_n=\max(X_1,\dots,X_n)$, then:</p>
+      <p>\[P(M_n\le x)=F(x)^n.\]</p>
+      <p>If $m_n=\min(X_1,\dots,X_n)$, then:</p>
+      <p>\[P(m_n\le x)=1-(1-F(x))^n.\]</p>
+      <p>The plot uses a $\mathrm&#123;Uniform&#125;(0,1)$ base distribution and shows how
+      increasing $n$ pushes mass toward the right edge for maxima and the left edge
+      for minima.</p>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="250"></canvas>
+      <div class="controls">
+        <ControlRange label="n" dataParam="n" min="1" max="80" step="1" value="8" />
+        <ControlSelect label="show" dataParam="which" options={[{"value":"max","label":"max"},{"value":"min","label":"min"}]} />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="transformations" viz="transformations" tag="operation" tagClass="operation" title="Transformations and Jacobians">
+<div class="card-copy">
+      <h3>Changing variables reshapes density by the derivative.</h3>
+      <p>For a monotone transform:</p>
+      <p>\[f_Y(y)=f_X(g^&#123;-1&#125;(y))\left|\frac&#123;d&#125;&#123;dy&#125;g^&#123;-1&#125;(y)\right|.\]</p>
+      <p>Non-monotone transforms sum over preimages.</p>
+      <p>Two canonical cases: $Y=X^2$ turns $N(0,1)$ into $\chi^2_1$; $Y=e^X$ turns a
+      normal into a log-normal.</p>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="260"></canvas>
+      <div class="controls">
+        <ControlSelect label="transform" dataParam="kind" options={[{"value":"square","label":"Y = X^2"},{"value":"exp","label":"Y = exp(X)"}]} />
+        <ControlRange label="sigma" dataParam="sigma" min="0.5" max="1.8" step="0.05" value="1" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="ratios" viz="ratios" tag="operation" tagClass="operation" title="Ratios">
+<div class="card-copy">
+      <h3>Division creates heavy tails.</h3>
+      <p>The Cauchy distribution is what you get when you divide one standard normal
+      by another. Near-zero denominators create enormous ratios.</p>
+      <p>This is the ratio story behind the $t$ and $F$ sampling distributions too:
+      normalize by an estimated scale, and tail weight appears.</p>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="250"></canvas>
+      <div class="controls">
+        <ControlRange label="denominator scale" dataParam="denScale" min="0.15" max="2" step="0.05" value="1" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<h2 id="sampling-distributions">5. Sampling distributions from Gaussians</h2>
+
+<VizCard id="chi-square" viz="chi-square" tag="continuous" tagClass="continuous" title={String.raw`$\chi^2$`}>
+<div class="card-copy">
+      <h3>Sum squared standard normals.</h3>
+      <p>If $Z_i\sim N(0,1)$ independently, then $\sum_&#123;i=1&#125;^k Z_i^2\sim\chi^2_k$.
+      It is the distribution of squared Gaussian length in $k$ dimensions.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PDF</th><td class="formula-cell">$x^&#123;k/2-1&#125;e^&#123;-x/2&#125;/(2^&#123;k/2&#125;\Gamma(k/2))$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$P(k/2,x/2)$</td></tr>
+          <tr><th>CF</th><td class="formula-cell">$(1-2it)^&#123;-k/2&#125;$</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$k$, $2k$</td></tr>
+          <tr><th>Fact</th><td>Gamma with shape $k/2$ and rate $1/2$.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="230"></canvas>
+      <div class="controls"><ControlRange label="k" dataParam="k" min="1" max="20" step="1" value="4" /></div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="student-t" viz="student-t" tag="continuous" tagClass="continuous" title="Student's t">
+<div class="card-copy">
+      <h3>A normal divided by estimated scale.</h3>
+      <p>If $Z\sim N(0,1)$ and $V\sim\chi^2_\nu$, then
+      $T=Z/\sqrt&#123;V/\nu&#125;$ has Student's $t_\nu$ distribution. As $\nu$ grows, the
+      denominator stabilizes and $t$ becomes Gaussian.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PDF</th><td class="formula-cell">$\frac&#123;\Gamma((\nu+1)/2)&#125;&#123;\sqrt&#123;\nu\pi&#125;\Gamma(\nu/2)&#125;(1+x^2/\nu)^&#123;-(\nu+1)/2&#125;$</td></tr>
+          <tr><th>CDF</th><td>Standard $t_\nu$ special-function CDF.</td></tr>
+          <tr><th>CF</th><td>Special-function form; no compact elementary expression.</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$0$ for $\nu>1$; $\nu/(\nu-2)$ for $\nu>2$</td></tr>
+          <tr><th>Fact</th><td>Heavy-tailed because the scale is estimated.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="230"></canvas>
+      <div class="controls"><ControlRange label="degrees freedom" dataParam="nu" min="1" max="60" step="1" value="6" /></div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="f-distribution" viz="f-distribution" tag="continuous" tagClass="continuous" title="F distribution">
+<div class="card-copy">
+      <h3>Ratio of scaled chi-squares.</h3>
+      <p>If $U\sim\chi^2_&#123;d_1&#125;$ and $V\sim\chi^2_&#123;d_2&#125;$ independently, then
+      $(U/d_1)/(V/d_2)$ has an $F_&#123;d_1,d_2&#125;$ distribution. It appears in variance
+      comparisons and ANOVA-style ratios.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PDF</th><td class="formula-cell">$\frac&#123;(d_1/d_2)^&#123;d_1/2&#125;x^&#123;d_1/2-1&#125;&#125;&#123;B(d_1/2,d_2/2)(1+d_1x/d_2)^&#123;(d_1+d_2)/2&#125;&#125;$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$I_&#123;d_1x/(d_1x+d_2)&#125;(d_1/2,d_2/2)$</td></tr>
+          <tr><th>CF</th><td>Special-function form; no compact elementary expression.</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$d_2/(d_2-2)$; finite variance for $d_2>4$</td></tr>
+          <tr><th>Fact</th><td>Ratio of independent variance estimates.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="230"></canvas>
+      <div class="controls">
+        <ControlRange label="d1" dataParam="d1" min="1" max="20" step="1" value="5" />
+        <ControlRange label="d2" dataParam="d2" min="2" max="40" step="1" value="12" />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<VizCard id="inverse-chi-square" viz="inverse-chi-square" tag="continuous" tagClass="continuous" title={String.raw`Inverse $\chi^2$ and scaled inverse $\chi^2$`}>
+<div class="card-copy">
+      <h3>One over a chi-square; the conjugate prior for normal variance.</h3>
+      <p>If $X\sim\chi^2_\nu$ then $Y=1/X$ has the inverse chi-squared distribution
+      with $\nu$ degrees of freedom. The <em>scaled</em> inverse chi-squared,
+      $\mathrm&#123;Scale&#125;$-$\mathrm&#123;Inv&#125;\chi^2(\nu,\tau^2)$, multiplies by $\nu\tau^2$ and is the
+      standard conjugate prior for the variance $\sigma^2$ of a normal with known
+      mean: $n$ observations with sample variance $s^2$ update the posterior to
+      $\mathrm&#123;Scale&#125;$-$\mathrm&#123;Inv&#125;\chi^2(\nu+n,\,(\nu\tau^2+n s^2)/(\nu+n))$.</p>
+      <p>For both unknown mean and unknown variance, the conjugate prior is
+      <em>Normal–scaled-Inv-$\chi^2$</em> (equivalently
+      <a href="/math/conjugate-priors/#normal-gamma">Normal–Gamma on the precision</a>,
+      via the $1/X$ edge). Marginalising out the variance turns the Gaussian
+      posterior predictive into Student's $t$ with degrees of freedom equal to the
+      posterior $\nu_n$ — heavy tails when $n$ is small, Gaussian as $n\to\infty$.
+      This is the single derivation that ties Chi², Inv-$\chi^2$, and Student-$t$
+      together in Bayesian inference.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PDF</th><td class="formula-cell">$\frac&#123;2^&#123;-\nu/2&#125;&#125;&#123;\Gamma(\nu/2)&#125;x^&#123;-\nu/2-1&#125;e^&#123;-1/(2x)&#125;$ for $x>0$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$Q(\nu/2, 1/(2x))$ (upper regularized $\gamma$)</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$1/(\nu-2)$ for $\nu>2$; $2/((\nu-2)^2(\nu-4))$ for $\nu>4$</td></tr>
+          <tr><th>Fact</th><td>Conjugate prior for the variance of a normal with known mean.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="230"></canvas>
+      <div class="controls"><ControlRange label="degrees freedom" dataParam="nu" min="3" max="30" step="1" value="6" /></div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<h2 id="conjugacy">6. Conjugate prior–likelihood pairs</h2>
+
+<p>
+Conjugacy means the posterior stays in the same family as the prior. These pairs
+are exact-update shortcuts, and reference points for
+<a href="/math/variational-inference/">variational inference</a> when exact updating is
+not available.
+</p>
+
+<Aside>
+<strong>Why conjugacy exists.</strong> All four pairs below share a single structural
+property: the likelihood is an
+<em>exponential family</em>
+$p(x\mid\theta) = h(x)\exp\bigl(\eta(\theta)\cdot T(x) - A(\theta)\bigr)$,
+and the prior has the same exponential-family shape in $\theta$. Multiplying prior by
+likelihood and absorbing the result back into the same form gives a posterior whose
+natural parameter is just a shift in the sufficient-statistic direction. Concretely:
+seeing data shifts $\alpha$ by $\sum T(x_i)$. These are exactly the families
+with finite-dimensional <a href="/math/sufficient-statistics/">sufficient statistics</a>.
+The data influences the posterior only through the fixed-size summary $\sum T(x_i)$,
+which is why the update is a simple parameter shift. Conjugacy is the cases
+where the posterior's <a href="/math/fisher-information/#score-as-tilt">tilt</a>
+stays inside a finite-dimensional family. When that's not true, you reach for
+<a href="/math/variational-inference/">variational inference</a>.
+</Aside>
+
+<table class="dist-facts" style="margin: 16px 0 24px;">
+  <thead><tr><th>Family</th><th>Sufficient statistic $T(x)$</th><th>Natural parameter shift on update</th></tr></thead>
+  <tbody>
+    <tr><td>Bernoulli / Binomial</td><td>$x$ (count of successes)</td><td>$\alpha\to\alpha+s,\;\beta\to\beta+f$</td></tr>
+    <tr><td>Poisson</td><td>$x$ (count)</td><td>$\alpha\to\alpha+\sum y_i,\;\beta\to\beta+t$</td></tr>
+    <tr><td>Normal (known $\sigma^2$)</td><td>$x$</td><td>precision adds; mean is precision-weighted</td></tr>
+    <tr><td>Categorical / Multinomial</td><td>$(\mathbb 1_&#123;x=k&#125;)_k$</td><td>$\alpha_k\to\alpha_k+n_k$</td></tr>
+  </tbody>
+</table>
+
+<Aside>
+<strong>Named distributions as maximum-entropy answers.</strong> Most of the
+distributions on this page are not arbitrary mathematical objects — they are the
+<em>unique</em> distributions that maximize entropy given a particular support and
+moment constraint:
+</Aside>
+
+<table class="dist-facts" style="margin: 8px 0 24px;">
+  <thead><tr><th>Support</th><th>Constraints (beyond normalization)</th><th>Max-entropy law</th></tr></thead>
+  <tbody>
+    <tr><td>$[a, b]$</td><td>none</td><td>Uniform$(a,b)$</td></tr>
+    <tr><td>$[0, \infty)$</td><td>fixed mean $1/\lambda$</td><td>Exponential$(\lambda)$</td></tr>
+    <tr><td>$\mathbb&#123;R&#125;$</td><td>fixed mean $\mu$, variance $\sigma^2$</td><td>Normal$(\mu, \sigma^2)$</td></tr>
+    <tr><td>$\mathbb&#123;R&#125;$</td><td>fixed mean $\mu$, mean abs deviation $\mathbb E|X-\mu|=b$</td><td>Laplace$(\mu, b)$</td></tr>
+    <tr><td>$\&#123;0,1,\dots,N\&#125;$</td><td>fixed mean</td><td>Discrete exp-family (Binomial-like)</td></tr>
+    <tr><td>$\&#123;0,1,2,\dots\&#125;$</td><td>fixed mean $\mu$</td><td>Geometric, $q = \mu/(\mu+1)$</td></tr>
+    <tr><td>$\&#123;0,1,2,\dots\&#125;$</td><td>fixed mean & variance</td><td>Negative-binomial-family</td></tr>
+    <tr><td>$\mathbb&#123;R&#125;^d$</td><td>fixed mean & covariance</td><td>Multivariate Normal</td></tr>
+    <tr><td>$(K-1)$-simplex</td><td>fixed $\mathbb E[\log x_k]$ for each $k$</td><td>Dirichlet$(\alpha_1,\dots,\alpha_K)$</td></tr>
+  </tbody>
+</table>
+
+<p>
+The pattern is the same in every row: write down the Lagrangian
+$-\int q\log q - \sum_i \lambda_i(\int T_i q - c_i)$, take the variation, and the
+stationary $q^*\propto\exp(\sum_i\lambda_i T_i)$ is exactly an exponential family
+with $T_i$ as sufficient statistics. See the <a href="/math/fisher-information/#max-entropy">max-entropy
+interactive on the Fisher-information page</a> to step through the constraints and
+watch the family member emerge, and the <a href="/math/entropy-mutual-information/#legendre">Legendre-duality
+section</a> for why this construction is forced by the geometry of $\log\sum e^&#123;\eta T&#125;$.
+</p>
+
+<VizCardGrid>
+  <VizCard id="beta-binomial" viz="beta-binomial" mini={true} tag="bayes" tagClass="bayes" title="Beta-Binomial">
+<p>Prior over a Bernoulli/binomial probability. Successes add to $\alpha$;
+      failures add to $\beta$.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>Beta PDF</th><td class="formula-cell">$x^&#123;\alpha-1&#125;(1-x)^&#123;\beta-1&#125;/B(\alpha,\beta)$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$I_x(\alpha,\beta)$</td></tr>
+          <tr><th>CF</th><td>Special-function form.</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$\alpha/(\alpha+\beta)$; $\frac&#123;\alpha\beta&#125;&#123;(\alpha+\beta)^2(\alpha+\beta+1)&#125;$</td></tr>
+          <tr><th>Update</th><td class="formula-cell">$\alpha'=\alpha+s$, $\beta'=\beta+f$</td></tr>
+        </tbody>
+      </table>
+      <div class="plot">
+        <canvas width="390" height="220"></canvas>
+        <div class="controls">
+          <ControlRange label="successes" dataParam="s" min="0" max="40" step="1" value="8" />
+          <ControlRange label="failures" dataParam="f" min="0" max="40" step="1" value="5" />
+        </div>
+        <div class="readout"></div>
+      </div>
+</VizCard>
+  <VizCard id="gamma-poisson" viz="gamma-poisson" mini={true} tag="bayes" tagClass="bayes" title="Gamma-Poisson">
+<p>Prior over a Poisson rate. Counts add to shape; exposure adds to rate.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>Gamma PDF</th><td class="formula-cell">$\beta^\alpha x^&#123;\alpha-1&#125;e^&#123;-\beta x&#125;/\Gamma(\alpha)$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$P(\alpha,\beta x)$</td></tr>
+          <tr><th>CF</th><td class="formula-cell">$(1-it/\beta)^&#123;-\alpha&#125;$</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$\alpha/\beta$, $\alpha/\beta^2$</td></tr>
+          <tr><th>Update</th><td class="formula-cell">$\alpha'=\alpha+\sum y_i$, $\beta'=\beta+t$</td></tr>
+        </tbody>
+      </table>
+      <div class="plot">
+        <canvas width="390" height="220"></canvas>
+        <div class="controls">
+          <ControlRange label="count sum" dataParam="y" min="0" max="60" step="1" value="12" />
+          <ControlRange label="exposure" dataParam="t" min="1" max="30" step="1" value="6" />
+        </div>
+        <div class="readout"></div>
+      </div>
+</VizCard>
+  <VizCard id="normal-normal" viz="normal-normal" mini={true} tag="bayes" tagClass="bayes" title="Normal-Normal">
+<p>Known variance Gaussian observations update a Gaussian prior by precision-weighted averaging.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>Normal PDF</th><td class="formula-cell">$\frac&#123;1&#125;&#123;\sigma\sqrt&#123;2\pi&#125;&#125;e^&#123;-(x-\mu)^2/(2\sigma^2)&#125;$</td></tr>
+          <tr><th>CDF / CF</th><td class="formula-cell">$\Phi((x-\mu)/\sigma)$; $e^&#123;i\mu t-\sigma^2t^2/2&#125;$</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$\mu$, $\sigma^2$</td></tr>
+          <tr><th>Update</th><td>Posterior precision is prior precision plus data precision.</td></tr>
+        </tbody>
+      </table>
+      <div class="plot">
+        <canvas width="390" height="220"></canvas>
+        <div class="controls">
+          <ControlRange label="sample mean" dataParam="xbar" min="-3" max="3" step="0.1" value="1" />
+          <ControlRange label="n" dataParam="n" min="1" max="80" step="1" value="10" />
+        </div>
+        <div class="readout"></div>
+      </div>
+</VizCard>
+  <VizCard id="invchi2-normal" viz="invchi2-normal" mini={true} tag="bayes" tagClass="bayes" title={String.raw`Scaled Inv-$\chi^2$ — Normal variance`}>
+<p>Prior over the variance $\sigma^2$ of a normal with known mean. Sample variance shifts both the degrees of freedom and the scale.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>Prior</th><td class="formula-cell">$\sigma^2\sim\mathrm&#123;Scale&#125;\text&#123;-&#125;\mathrm&#123;Inv&#125;\chi^2(\nu_0,\tau_0^2)$</td></tr>
+          <tr><th>Mean / variance</th><td class="formula-cell">$\nu_0\tau_0^2/(\nu_0-2)$; finite var for $\nu_0>4$</td></tr>
+          <tr><th>Update</th><td class="formula-cell">$\nu'=\nu_0+n,\;\tau'^2=(\nu_0\tau_0^2+ns^2)/\nu'$</td></tr>
+          <tr><th>Limit</th><td>Reference (Jeffreys) prior $p(\sigma^2)\propto 1/\sigma^2$ as $\nu_0\to 0$.</td></tr>
+        </tbody>
+      </table>
+      <div class="plot">
+        <canvas width="390" height="220"></canvas>
+        <div class="controls">
+          <ControlRange label="n" dataParam="n" min="1" max="60" step="1" value="10" />
+          <ControlRange label="s²" dataParam="s2" min="0.2" max="4" step="0.05" value="1" />
+        </div>
+        <div class="readout"></div>
+      </div>
+</VizCard>
+  <VizCard id="dirichlet-multinomial" viz="dirichlet-multinomial" mini={true} tag="bayes" tagClass="bayes" title="Dirichlet-Multinomial">
+<p>Prior over category probabilities. Each observed category increments its corresponding concentration.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>Dirichlet PDF</th><td class="formula-cell">$\frac&#123;1&#125;&#123;B(\alpha)&#125;\prod_i x_i^&#123;\alpha_i-1&#125;$</td></tr>
+          <tr><th>CDF / CF</th><td>No compact elementary form.</td></tr>
+          <tr><th>Mean</th><td class="formula-cell">$\mathbb E[X_i]=\alpha_i/\alpha_0$</td></tr>
+          <tr><th>Variance</th><td class="formula-cell">$\alpha_i(\alpha_0-\alpha_i)/(\alpha_0^2(\alpha_0+1))$</td></tr>
+          <tr><th>Update</th><td class="formula-cell">$\alpha_i'=\alpha_i+n_i$</td></tr>
+        </tbody>
+      </table>
+      <div class="plot">
+        <canvas width="390" height="220"></canvas>
+        <div class="controls">
+          <ControlRange label="A count" dataParam="a" min="0" max="40" step="1" value="10" />
+          <ControlRange label="B count" dataParam="b" min="0" max="40" step="1" value="6" />
+          <ControlRange label="C count" dataParam="c" min="0" max="40" step="1" value="3" />
+        </div>
+        <div class="readout"></div>
+      </div>
+</VizCard>
+</VizCardGrid>
+<h2 id="heavy-tails">7. Heavy tails</h2>
+
+<VizCard id="pareto" viz="pareto-tail" tag="tail" tagClass="tail" title="Power law / Pareto">
+<div class="card-copy">
+      <h3>Slow tail decay changes which moments exist.</h3>
+      <p>The Pareto tail has $P(X>x)\propto x^&#123;-\alpha&#125;$. On log-log axes it becomes
+      a straight line, while exponential and Gaussian tails curve downward much faster.
+      Smaller $\alpha$ means heavier tails and fewer finite moments.</p>
+      <p>Cauchy has no mean or variance. Pareto has finite moments only for orders
+      below $\alpha$: mean needs $\alpha>1$, variance needs $\alpha>2$.</p>
+      <table class="dist-facts">
+        <tbody>
+          <tr><th>PDF</th><td class="formula-cell">$\alpha x_m^\alpha/x^&#123;\alpha+1&#125;$ for $x\ge x_m$</td></tr>
+          <tr><th>CDF</th><td class="formula-cell">$1-(x_m/x)^\alpha$</td></tr>
+          <tr><th>CF</th><td>Special-function form; no compact elementary expression.</td></tr>
+          <tr><th>Mean</th><td class="formula-cell">$\alpha x_m/(\alpha-1)$ for $\alpha>1$</td></tr>
+          <tr><th>Variance</th><td class="formula-cell">$\alpha x_m^2/((\alpha-1)^2(\alpha-2))$ for $\alpha>2$</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plot">
+      <canvas width="420" height="260"></canvas>
+      <div class="controls">
+        <ControlRange label="alpha" dataParam="alpha" min="0.6" max="5" step="0.05" value="1.6" />
+        <ControlSelect label="axis" dataParam="scale" options={[{"value":"loglog","label":"log-log"},{"value":"linear","label":"linear"}]} />
+      </div>
+      <div class="readout"></div>
+    </div>
+</VizCard>
+
+<h2 id="decision">8. Decision table</h2>
+
+<p>
+Start from what you are modeling; pick the distribution whose construction matches
+that story.
+</p>
+
+<DecisionTable headers={["What you are modeling","Reach for","Why"]}>
+<tr><td>Single yes/no event</td><td class="method"><a href="#bernoulli-binomial">Bernoulli</a></td><td>One trial with success probability $p$.</td></tr>
+    <tr><td>Number of successes in fixed trials</td><td class="method"><a href="#bernoulli-binomial">Binomial</a></td><td>Sum of independent Bernoulli trials.</td></tr>
+    <tr><td>Single draw over $K$ outcomes</td><td class="method"><a href="#categorical-multinomial">Categorical</a></td><td>One $K$-sided die roll; generalizes Bernoulli.</td></tr>
+    <tr><td>Vector of category counts in fixed trials</td><td class="method"><a href="#categorical-multinomial">Multinomial</a></td><td>Sum of independent categorical draws; generalizes binomial.</td></tr>
+    <tr><td>Rare event counts in fixed exposure</td><td class="method"><a href="#poisson">Poisson</a></td><td>Limit of many tiny independent chances; one rate parameter.</td></tr>
+    <tr><td>Counts with variance larger than the mean</td><td class="method"><a href="#negative-binomial">Negative Binomial</a></td><td>Poisson-like count with extra dispersion.</td></tr>
+    <tr><td>Waiting time until an event</td><td class="method"><a href="#geometric">Geometric</a> / <a href="#exponential">Exponential</a></td><td>Discrete or continuous memoryless waiting.</td></tr>
+    <tr><td>Measurement noise from many small effects</td><td class="method"><a href="#gaussian">Gaussian</a></td><td>Stable under sums and central-limit behavior.</td></tr>
+    <tr><td>Ratio of two noisy measurements</td><td class="method"><a href="#cauchy">Cauchy</a> / <a href="#student-t">Student's t</a></td><td>Near-zero denominators create heavy tails.</td></tr>
+    <tr><td>Symmetric noise with a sharp peak and exponential tails</td><td class="method"><a href="#laplace">Laplace</a></td><td>Max-entropy on $\mathbb&#123;R&#125;$ with fixed mean absolute deviation; MLE gives L1 / median regression, prior gives lasso.</td></tr>
+    <tr><td>Squared Gaussian length or variance component</td><td class="method"><a href="#chi-square">Chi-square</a></td><td>Sum of squared standard normals.</td></tr>
+    <tr><td>Prior over a normal variance</td><td class="method"><a href="#inverse-chi-square">Scaled inverse chi-square</a></td><td>Conjugate prior for $\sigma^2$ with known mean.</td></tr>
+    <tr><td>Ratio of variance estimates</td><td class="method"><a href="#f-distribution">F</a></td><td>Ratio of scaled chi-square variables.</td></tr>
+    <tr><td>Bounded proportion or probability</td><td class="method"><a href="#beta-binomial">Beta (see Beta-Binomial)</a></td><td>Flexible distribution on $[0,1]$; conjugate to binomial data.</td></tr>
+    <tr><td>Probability vector over $K$ categories</td><td class="method"><a href="#dirichlet-multinomial">Dirichlet</a></td><td>Multivariate Beta on the simplex; conjugate to categorical / multinomial data.</td></tr>
+    <tr><td>Positive rate or scale</td><td class="method"><a href="#gamma-poisson">Gamma</a></td><td>Positive support; conjugate to Poisson rates.</td></tr>
+    <tr><td>Extreme values or tail risk</td><td class="method"><a href="#pareto">Pareto</a> / extreme-value family</td><td>Tail behavior is the main object, not the center.</td></tr>
+</DecisionTable>
+
+<NextCards heading="What next" cards={[{"href":"/monte-carlo/","tag":"Sampling","title":"Monte Carlo &amp; MCMC","role":"Inverse-CDF sampling here is the exact 1-D baseline before rejection, importance sampling, and MCMC."},{"href":"/poisson-processes/","tag":"Processes","title":"Poisson Processes","role":"Turn the Poisson count and exponential wait distributions into one continuous-time arrival model."},{"href":"/variational-inference/","tag":"Bayes","title":"Free Energy &amp; Variational Inference","role":"Conjugate pairs show exact posterior updates; VI handles cases where those updates leave the named family."},{"href":"/measure-theory/","tag":"Foundations","title":"Measure Theory &amp; Random Variables","role":"Transformations and densities here are the concrete version of pushforwards and Radon-Nikodym derivatives."}]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+
+  <script is:inline src="/math/named-distributions/distributions.js"></script>
+  <script is:inline src="/math/named-distributions/clt.js"></script>
+
+  <style>
+    .ps-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 4px 14px 12px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 12px;
+      color: var(--text-dim, #5a6577);
+    }
+    .ps-control-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .ps-control-group strong { font-weight: 600; margin-right: 4px; }
+    .ps-control-group input[type="range"] { flex: 1; min-width: 200px; max-width: 360px; }
+    .clt-base {
+      background: #ffffff;
+      border: 1px solid #9ca3af;
+      color: var(--text, #1f2733);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-family: inherit;
+      transition: all 0.12s ease;
+    }
+    .clt-base:hover { background: #f3f4f6; border-color: #6b7280; }
+    .clt-base.active {
+      background: #d4690a;
+      border-color: #d4690a;
+      color: #ffffff;
+    }
+  </style>
+</ExplainerLayout>

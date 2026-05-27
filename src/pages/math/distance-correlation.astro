@@ -1,0 +1,1738 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import InteractivePanel from "../../components/explainer/InteractivePanel.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Distance Correlation — An Interactive Explainer" breadcrumb="Distance Correlation" section="probability-and-statistics">
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --surface: #ffffff;
+      --surface-alt: #e4e8ed;
+      --border: #bfc5cf;
+      --text: #1e2530;
+      --text-dim: #5a6577;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --pos: #16a34a;
+      --neg: #dc2626;
+      --x-color: #2563eb;
+      --y-color: #dc2626;
+      --z-color: #64748b;
+    }
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+    .explainer { min-width: 0; }
+    .byline { font-size: 13px; color: var(--text-dim); margin-bottom: 24px; }
+    .byline a { color: var(--accent); text-decoration: none; }
+    .byline a:hover { text-decoration: underline; }
+    h2 { font-size: 19px; margin: 36px 0 10px; letter-spacing: -0.3px; }
+    h3 { font-size: 15px; margin: 20px 0 6px; }
+    p { font-size: 14px; margin: 0 0 12px; }
+    .lead { font-size: 15px; }
+    code, .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+    }
+    .math {
+      font-family: "Times New Roman", Times, serif;
+      font-style: italic;
+      font-size: 15px;
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 14px 0 18px;
+    }
+    .controls {
+      display: flex; flex-wrap: wrap;
+      gap: 10px 16px; align-items: center;
+      margin-bottom: 12px; font-size: 12px;
+    }
+    .controls label { display: flex; align-items: center; gap: 6px; color: var(--text-dim); }
+    select, button {
+      font-family: inherit; font-size: 12px;
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--border); border-radius: 4px;
+      background: var(--surface); color: var(--text);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    button:hover { border-color: var(--accent); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    input[type="range"] { width: 120px; touch-action: pan-y; }
+    .readout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px; margin-top: 10px;
+    }
+    .stat {
+      background: var(--surface-alt); border-radius: 4px;
+      padding: 8px 10px;
+    }
+    .stat .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat .val { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .stat .val.dim { color: var(--text-dim); font-weight: 500; font-size: 14px; }
+    .row { display: flex; gap: 14px; flex-wrap: wrap; }
+    .row > * { flex: 1; min-width: 240px; }
+    svg { display: block; max-width: 100%; height: auto; }
+    .axis { stroke: var(--border); stroke-width: 1; fill: none; }
+    .axis-label { fill: var(--text-dim); font-size: 10px; font-family: inherit; }
+    .grid-line { stroke: var(--surface-alt); stroke-width: 1; }
+    .point { fill: var(--accent); fill-opacity: 0.55; }
+    .heatmap rect { shape-rendering: crispEdges; }
+    .formula {
+      background: var(--surface-alt);
+      padding: 10px 14px; border-radius: 4px;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 15px; text-align: center;
+      margin: 10px 0; overflow-x: auto;
+    }
+    .legend {
+      font-size: 11px; color: var(--text-dim);
+      margin-top: 6px;
+    }
+    .key {
+      display: inline-block; width: 10px; height: 10px;
+      border-radius: 2px; vertical-align: middle; margin-right: 4px;
+    }
+    blockquote {
+      margin: 12px 0; padding: 8px 14px;
+      border-left: 3px solid var(--accent);
+      background: var(--accent-soft);
+      font-size: 13px; color: var(--text);
+    }
+    .footnote { font-size: 12px; color: var(--text-dim); }
+    .caption { font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 6px; }
+    .toc { display: none; font-size: 13px; }
+    @media (min-width: 960px) {
+      .toc {
+        display: block; position: sticky; top: 18px;
+        align-self: start; max-height: calc(100vh - 36px);
+        overflow: auto; padding-top: 4px;
+      }
+      .toc h4 {
+        margin: 0 0 8px; color: var(--text-dim);
+        font-size: 11px; font-weight: 700;
+        letter-spacing: 0.09em; text-transform: uppercase;
+      }
+      .toc ul { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--border); }
+      .toc li { margin: 0; }
+      .toc a {
+        display: block; margin-left: -2px;
+        padding: 5px 12px; border-left: 2px solid transparent;
+        color: var(--text-dim); text-decoration: none;
+        transition: border-color 0.15s, color 0.15s;
+      }
+      .toc a:hover, .toc a.active { border-left-color: var(--accent); color: var(--accent); }
+      .toc a.active { font-weight: 600; }
+    }
+    .part-divider {
+      margin: 44px 0 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .part-divider .part-name { color: var(--text); }
+    .framing {
+      margin: 10px 0 20px;
+      padding: 12px 16px;
+      background: var(--accent-soft);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-size: 14px;
+    }
+    .framing strong { color: var(--text); }
+    .framing ul { margin: 8px 0 0; padding-left: 22px; }
+    .framing li { margin: 4px 0; }
+    .vec-arrow { fill: none; stroke-width: 2; }
+    .vec-x { stroke: var(--x-color); }
+    .vec-y { stroke: var(--y-color); }
+    .vec-z { stroke: var(--z-color); }
+    .vec-residual { stroke-dasharray: 4 3; stroke-width: 1.6; }
+    .arc { fill: none; stroke-width: 1; }
+    @media (max-width: 640px) {
+      .page { padding: 24px 16px 64px; }
+      h2 { font-size: 18px; line-height: 1.25; }
+      .panel { padding: 12px; margin-left: -4px; margin-right: -4px; }
+      .controls {
+        align-items: stretch;
+        gap: 10px;
+      }
+      .controls label {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .controls select,
+      .controls button,
+      .controls input[type="range"] {
+        max-width: 100%;
+      }
+      input[type="range"] {
+        flex: 1;
+        min-width: 120px;
+      }
+      .row > * {
+        min-width: 0;
+      }
+      .legend {
+        line-height: 1.5;
+      }
+      .formula {
+        margin-left: -4px;
+        margin-right: -4px;
+        text-align: left;
+      }
+    }
+  </style>
+
+  <div class="page">
+    <article class="explainer"><Hero title="Distance Correlation">
+  <div class="byline">Notes on
+          <a href="https://arxiv.org/abs/0803.4101" target="_blank" rel="noopener">Szekely, Rizzo &amp; Bakirov (2007), <em>Measuring and Testing Dependence by Correlation of Distances</em></a>
+          and
+          <a href="https://arxiv.org/abs/1310.2926" target="_blank" rel="noopener">Szekely &amp; Rizzo (2014), <em>Partial Distance Correlation with Methods for Dissimilarities</em></a>.</div>
+</Hero>
+
+        <p class="lead">
+          The 2007 paper introduced <strong>distance correlation</strong>, a scalar coefficient that is zero exactly when two random vectors are independent. Unlike Pearson&rsquo;s $r$, it is not limited to linear dependence. The construction starts with pairwise distance matrices, subtracts row and column means to remove uninformative structure, and averages the entry-wise product.
+        </p>
+        <p class="lead">
+          The 2014 paper replaces the 2007 double-centering with <em>U-centering</em>. With that centering, the same bilinear form becomes a positive semidefinite <strong>inner product</strong> on a Hilbert space of centered matrices. That gives an unbiased estimator, lengths and angles, orthogonal projection for <em>partial</em> distance correlation, and a version that works for non-Euclidean dissimilarities.
+        </p>
+
+        <div class="part-divider">Part I &middot; <span class="part-name">Distance correlation (2007)</span></div>
+
+        <h2 id="pearson">1. What Pearson&rsquo;s r misses</h2>
+        <p>
+          Pearson&rsquo;s $r$ is a coefficient of <em>linear</em> dependence: it measures whether the cloud of points stretches along a diagonal. Symmetric nonlinear relationships, such as a parabola, a sine wave, or a circle, can have $r &bsol;approx 0$ while $X$ and $Y$ are tightly coupled, even deterministic. Rank-based generalizations (Spearman, Kendall) fix monotone misses but not the symmetric ones. The 2007 paper&rsquo;s motivating quote: &ldquo;distance correlation is zero only if the random vectors are independent.&rdquo;
+        </p>
+
+        <div class="panel">
+          <div class="controls">
+            <label>Relationship
+              <select id="d1-shape">
+                <option value="linear">Linear</option>
+                <option value="quadratic" selected>Quadratic</option>
+                <option value="sine">Sine wave</option>
+                <option value="circle">Circle</option>
+                <option value="cross">Cross</option>
+                <option value="independent">Independent noise</option>
+              </select>
+            </label>
+            <label>Noise
+              <input type="range" id="d1-noise" min="0" max="100" value="15" />
+              <span id="d1-noise-val" class="mono" style="width:32px;display:inline-block">0.15</span>
+            </label>
+            <button id="d1-resample">Resample</button>
+          </div>
+          <svg id="d1-scatter" viewBox="0 0 360 220" width="360" height="220" style="margin: 0 auto;"></svg>
+          <div class="readout">
+            <div class="stat"><div class="label">Pearson r</div><div class="val" id="d1-pearson">&mdash;</div></div>
+            <div class="stat"><div class="label">Spearman $&bsol;rho$</div><div class="val" id="d1-spearman">&mdash;</div></div>
+            <div class="stat"><div class="label">Distance correlation</div><div class="val" id="d1-dcor">&mdash;</div></div>
+          </div>
+          <div class="legend">
+            Spearman&rsquo;s $&bsol;rho$ patches the linearity assumption for <em>monotone</em> relationships, but still collapses on the symmetric ones (parabola, circle, cross). The 2007 paper specifically calls out rank-based tests as &ldquo;ineffective for testing nonmonotone types of dependence,&rdquo; precisely the gap distance correlation closes.
+          </div>
+        </div>
+
+        <h2 id="recipe">2. The 2007 definition</h2>
+        <p>
+          The population coefficient. Take a weighted $L^2$ distance between the joint characteristic function $&bsol;phi_&lbrace;X,Y&rbrace;$ and the product of marginals $&bsol;phi_X&bsol;phi_Y$:
+        </p>
+        <div class="formula">
+          $$V^2(X,Y) = &bsol;int |&bsol;phi_&lbrace;X,Y&rbrace;(t,s) - &bsol;phi_X(t)&bsol;phi_Y(s)|^2 w(t,s)&bsol;,dt&bsol;,ds$$
+        </div>
+        <p>
+          The weight $w(t,s) &bsol;propto |t|^&lbrace;-(1+p)&rbrace; |s|^&lbrace;-(1+q)&rbrace;$ is non-integrable on purpose: integrable weights collapse this measure to $&bsol;rho^2$ in the small-signal limit and so cannot distinguish dependence from independence. Under finite first moments, the integral reduces to a compact expected-distance identity:
+        </p>
+        <div class="formula">
+          $$V^2(X,Y) = &bsol;mathbb&lbrace;E&rbrace;|X-X'||Y-Y'| + &bsol;mathbb&lbrace;E&rbrace;|X-X'|&bsol;,&bsol;mathbb&lbrace;E&rbrace;|Y-Y'| - 2&bsol;mathbb&lbrace;E&rbrace;|X-X'||Y-Y''|$$
+        </div>
+        <p>
+          which is what the sample statistic estimates. Form the matrix of pairwise distances $a_&lbrace;ij&rbrace; = |X_i - X_j|$, <em>double-center</em> it (subtract row means, column means, add back the grand mean), do the same for $Y$, and take the entry-wise mean of the product:
+        </p>
+        <div class="formula">
+          $$V_n^2(X,Y) = &lbrace;1&bsol;over n^2&rbrace;&bsol;sum_&lbrace;i,j&rbrace; A_&lbrace;ij&rbrace;B_&lbrace;ij&rbrace;, &bsol;qquad dCor_n = &lbrace;V_n(X,Y)&bsol;over &bsol;sqrt&lbrace;V_n(X)V_n(Y)&rbrace;&rbrace;$$
+        </div>
+        <p>
+          Under finite first moments, $V^2(X,Y) = 0$ iff $X$ and $Y$ are independent, in arbitrary, possibly different, Euclidean dimensions. This is the 2007 paper&rsquo;s headline theorem; everything else follows from it.
+        </p>
+        <p>
+          For one classical reference point: when $(X,Y)$ are bivariate standard normal with correlation $&bsol;rho$, distance correlation has a closed form (Theorem 7). It always lies <em>below</em> $|&bsol;rho|$, with the ratio $R(X,Y)/|&bsol;rho|$ bottoming out near $0.891$ as $&bsol;rho &bsol;to 0$:
+        </p>
+
+        <div class="panel">
+          <div class="controls">
+            <label>$&bsol;rho$ (population correlation)
+              <input type="range" id="dbvn-rho" min="-95" max="95" value="50" />
+              <span id="dbvn-rho-val" class="mono" style="width:42px;display:inline-block">+0.50</span>
+            </label>
+            <button id="dbvn-resample">Resample</button>
+          </div>
+          <div class="row">
+            <div>
+              <svg id="dbvn-scatter" viewBox="0 0 240 240" width="240" height="240"></svg>
+              <div class="caption">Bivariate normal sample (n = 400)</div>
+            </div>
+            <div>
+              <svg id="dbvn-curve" viewBox="0 0 320 240" width="320" height="240"></svg>
+              <div class="caption">$R^2(&bsol;rho)$ and $&bsol;rho^2$: closed form (solid) vs. empirical $dCor^2$ (dot)</div>
+            </div>
+          </div>
+          <div class="readout">
+            <div class="stat"><div class="label">Pearson r (sample)</div><div class="val dim" id="dbvn-r">&mdash;</div></div>
+            <div class="stat"><div class="label">R (closed form)</div><div class="val" id="dbvn-R">&mdash;</div></div>
+            <div class="stat"><div class="label">dCor (sample)</div><div class="val" id="dbvn-dcor">&mdash;</div></div>
+            <div class="stat"><div class="label">$R / |&bsol;rho|$</div><div class="val dim" id="dbvn-ratio">&mdash;</div></div>
+          </div>
+          <div class="legend">
+            Even in the one case where Pearson is the gold standard, distance correlation is a smooth, slightly attenuated version of $|&bsol;rho|$. The interest of dCor isn&rsquo;t this regime; it&rsquo;s everywhere else, where $&bsol;rho$ fails entirely.
+          </div>
+        </div>
+
+        <h2 id="test">3. Testing independence</h2>
+        <p>
+          The sample statistic $V_n^2$ is non-negative but has no clean closed-form null distribution. The 2007 paper proved that under independence and finite first moments, $nV_n^2$ converges in distribution to a quadratic form $&bsol;sum_j &bsol;lambda_j Z_j^2$ in i.i.d. standard normals, with eigenvalues that depend on the distribution of $(X,Y)$. Useful asymptotically, but distribution-dependent. The practical recommendation is a <strong>permutation test</strong>: hold $X$ fixed, shuffle the $Y$ values to break any real dependence, recompute the statistic, and see how often the shuffled value exceeds the observed one.
+        </p>
+
+        <div class="panel">
+          <div class="controls">
+            <label>Shape
+              <select id="dperm-shape">
+                <option value="quadratic" selected>Quadratic</option>
+                <option value="sine">Sine</option>
+                <option value="circle">Circle</option>
+                <option value="independent">Independent</option>
+              </select>
+            </label>
+            <label>Noise
+              <input type="range" id="dperm-noise" min="0" max="100" value="20" />
+              <span id="dperm-noise-val" class="mono" style="width:32px;display:inline-block">0.20</span>
+            </label>
+            <button id="dperm-run">Run 500 permutations</button>
+          </div>
+          <div class="row">
+            <div>
+              <svg id="dperm-scatter" viewBox="0 0 240 240" width="240" height="240"></svg>
+              <div class="caption">Sample (n = 60)</div>
+            </div>
+            <div>
+              <svg id="dperm-hist" viewBox="0 0 360 240" width="360" height="240"></svg>
+              <div class="caption">Permutation null for $V_n^2$; observed in red</div>
+            </div>
+          </div>
+          <div class="readout">
+            <div class="stat"><div class="label">Observed $V_n^2$</div><div class="val" id="dperm-obs">&mdash;</div></div>
+            <div class="stat"><div class="label">Permutation p-value</div><div class="val" id="dperm-p">&mdash;</div></div>
+          </div>
+          <div class="legend">
+            Power comparisons in the 2007 paper (Examples 1&ndash;3) show the dCov-based test matching Wilks&rsquo; LRT on linear Gaussian alternatives and clearly dominating it, along with rank-based tests, on multiplicative-noise and log-quadratic alternatives.
+          </div>
+        </div>
+
+        <h3>What it replaced</h3>
+        <p>
+          Before 2007, each standard way to test for dependence between two random vectors had its own narrow regime:
+        </p>
+        <ul style="font-size:14px;margin:0 0 12px 20px;">
+          <li><strong>Pearson&rsquo;s $r$ and Wilks&rsquo; likelihood-ratio test.</strong> Optimal under Gaussianity. Heavy tails or nonlinear coupling break them; the 2007 paper shows Wilks&rsquo; LRT with inflated Type-I error on $t_1$-distributed data, and near-zero power on multiplicative-noise alternatives.</li>
+          <li><strong>Spearman&rsquo;s $&bsol;rho$, Kendall&rsquo;s $&bsol;tau$, Puri-Sen rank correlation.</strong> Distribution-free for <em>monotone</em> alternatives. Power flatlines on symmetric non-monotone dependence (parabolas, sinusoids, multiplicative noise), visible directly in &sect; 1 above.</li>
+          <li><strong>The Mantel test (1967).</strong> Permutation correlation between two raw distance matrices. Widely used in ecology, but its statistic does not double-center the matrices, so it is not a consistent test of independence; it can return zero when $X$ and $Y$ are dependent. The 2014 paper compares its partial-dCor test directly against partial Mantel and dominates it.</li>
+          <li><strong>Hoeffding&rsquo;s $D$, Blum-Kiefer-Rosenblatt.</strong> Genuine if-and-only-if independence coefficients via the joint vs. product CDFs, but defined only for <em>bivariate continuous</em> distributions. They do not extend to vectors in $&bsol;mathbb&lbrace;R&rbrace;^p &bsol;times &bsol;mathbb&lbrace;R&rbrace;^q$.</li>
+          <li><strong>Mutual information estimators (Kraskov et al. 2004, kernel-based).</strong> Also characterize independence in any dimension, but require bandwidth or k-neighbour tuning and don&rsquo;t produce a single canonical scalar.</li>
+          <li><strong>HSIC (Gretton et al. 2005).</strong> A near-contemporaneous kernel-based independence criterion, conceptually very close: also an inner product of centered objects in a Hilbert space (an RKHS). The two were later shown to coincide for a particular distance-induced kernel (Sejdinovic et al. 2013).</li>
+        </ul>
+        <p>
+          What distance correlation offers is a single scalar in $[0,1]$ that is parameter-free, defined in arbitrary dimensions, characterizes independence exactly, has a tractable permutation test, and is competitive with the LRT in the Gaussian regime while dominating it elsewhere.
+        </p>
+
+        <div class="part-divider">Part II &middot; <span class="part-name">Partial dCor and dissimilarities (2014)</span></div>
+
+        <div class="framing">
+          The 2007 sample statistic $V_n^2 = n^&lbrace;-2&rbrace;&bsol;sum A_&lbrace;ij&rbrace;B_&lbrace;ij&rbrace;$ is a <em>bilinear form</em> on double-centered matrices, but it is not a clean inner product on a Hilbert space; it is biased, and there is no natural projection geometry on which to build a partial-correlation analogue. The 2014 paper&rsquo;s observation is that a slightly different centering rule resolves all of these issues. Replace double-centering with <em>U-centering</em> ($&bsol;widetilde A$), and the bilinear form
+          $(&bsol;widetilde A &bsol;cdot &bsol;widetilde B) = &lbrace;1&bsol;over n(n-3)&rbrace;&bsol;sum_&lbrace;i&bsol;ne j&rbrace;&bsol;widetilde A_&lbrace;ij&rbrace;&bsol;widetilde B_&lbrace;ij&rbrace;$
+          becomes a positive semidefinite inner product on a Hilbert space $H_n$ of centered matrices. The general recipe: pick a centering that removes the nuisance row, column, and grand-mean structure so the residuals&rsquo; bilinear form (a) still captures dependence and (b) is PSD. Three things follow:
+          <ul>
+            <li>The inner product is an <strong>unbiased</strong> estimator of $V^2(X,Y)$ (&sect; 4 below).</li>
+            <li>Length, angle, orthogonality, and <strong>orthogonal projection</strong> become legitimate operations, and partial distance correlation is the cosine of the angle between residuals after projecting out a third matrix (&sect; 5).</li>
+            <li>The inner product is <strong>invariant to additive shifts</strong> of the underlying dissimilarities, so any symmetric zero-diagonal dissimilarity matrix, not just Euclidean distances, plugs straight in (&sect; 6).</li>
+          </ul>
+        </div>
+
+        <h2 id="unbiased">4. The unbiased estimator</h2>
+        <p>
+          Where the double-centered estimator $V_n^2$ divides row and column sums by $n$ and the grand sum by $n^2$, U-centering uses $n-2$ and $(n-1)(n-2)$, the &ldquo;leave-one-out&rdquo; counts that make the expectation algebra come out cleanly:
+        </p>
+        <div class="formula">
+          $$&bsol;widetilde A_&lbrace;ij&rbrace; = a_&lbrace;ij&rbrace; - &lbrace;a_&lbrace;i&bsol;cdot&rbrace;&bsol;over n-2&rbrace; - &lbrace;a_&lbrace;&bsol;cdot j&rbrace;&bsol;over n-2&rbrace; + &lbrace;a_&lbrace;&bsol;cdot&bsol;cdot&rbrace;&bsol;over (n-1)(n-2)&rbrace;, &bsol;qquad i&bsol;ne j$$
+        </div>
+        <p>
+          Diagonal entries are set to zero. Proposition 1: $(&bsol;widetilde A &bsol;cdot &bsol;widetilde B)$ is an <em>unbiased</em> estimator of the population $V^2(X,Y)$. Below: a Monte Carlo comparing the 2007 estimator with its 2014 replacement as $n$ increases.
+        </p>
+
+        <div class="panel">
+          <div class="controls">
+            <label>True relationship
+              <select id="d2-scenario">
+                <option value="indep" selected>X ⟂ Y   (true V² = 0)</option>
+                <option value="dep">Y = X² + noise   (true V² > 0)</option>
+              </select>
+            </label>
+            <label>Replicates per n
+              <select id="d2-reps">
+                <option value="50">50</option>
+                <option value="200" selected>200</option>
+                <option value="800">800</option>
+              </select>
+            </label>
+            <button id="d2-run">Run simulation</button>
+            <span id="d2-progress" class="mono" style="color:var(--text-dim)"></span>
+          </div>
+          <svg id="d2-plot" viewBox="0 0 540 280" width="540" height="280" style="margin: 0 auto;"></svg>
+          <div class="legend" style="text-align:center; margin-top: 4px;">
+            <span class="key" style="background: var(--neg)"></span> biased $V_n^2$ (double-centered) &nbsp;
+            <span class="key" style="background: var(--accent)"></span> unbiased $(&bsol;widetilde A&bsol;cdot&bsol;widetilde B)$ (U-centered) &nbsp;
+            <span class="key" style="background: var(--pos)"></span> long-run truth
+          </div>
+          <p class="footnote" style="margin-top:8px">
+            With $X &bsol;perp Y$ the truth is exactly zero, and the bias of $V_n^2$ is most visible: positive, decaying like $1/n$. The unbiased estimator fluctuates symmetrically around zero (it can be negative; remember, it is an inner product, not a squared length).
+          </p>
+        </div>
+
+        <h2 id="geometry">5. The Hilbert-space picture</h2>
+        <p>
+          The U-centered matrices live in a Hilbert space $H_n$ with the inner product above. Once we have an inner product, every concept from Euclidean geometry (lengths, angles, orthogonal projections) transfers automatically. <em>Partial distance correlation</em> is just the standard geometric construction:
+        </p>
+        <ol style="font-size:14px;margin:0 0 12px 20px;">
+          <li>Form U-centered matrices $&bsol;widetilde A, &bsol;widetilde B, &bsol;widetilde C$ from $X, Y, Z$.</li>
+          <li>Project $&bsol;widetilde A$ and $&bsol;widetilde B$ onto the orthogonal complement of $&bsol;widetilde C$. Call the residuals $P_&lbrace;Z^&bsol;perp&rbrace;(&bsol;widetilde A) = &bsol;widetilde A - &bsol;alpha&bsol;widetilde C$ and $P_&lbrace;Z^&bsol;perp&rbrace;(&bsol;widetilde B) = &bsol;widetilde B - &bsol;beta&bsol;widetilde C$.</li>
+          <li>$R^*(X,Y;Z)$ is the cosine of the angle between the residuals.</li>
+        </ol>
+        <p>
+          The picture below is drawn from <em>actual</em> U-centered inner products: vector lengths and pairwise angles all reflect what the math says. Slide the controls to reshape the data and watch the residual angle, the partial distance correlation, change.
+        </p>
+
+        <div class="panel">
+          <div class="controls">
+            <label>Z &rarr; X strength
+              <input type="range" id="d3-sx" min="0" max="100" value="70" />
+              <span id="d3-sx-val" class="mono" style="width:32px;display:inline-block">0.70</span>
+            </label>
+            <label>Z &rarr; Y strength
+              <input type="range" id="d3-sy" min="0" max="100" value="70" />
+              <span id="d3-sy-val" class="mono" style="width:32px;display:inline-block">0.70</span>
+            </label>
+            <label>Direct X &rarr; Y
+              <input type="range" id="d3-dxy" min="-100" max="100" value="0" />
+              <span id="d3-dxy-val" class="mono" style="width:42px;display:inline-block">+0.00</span>
+            </label>
+            <button id="d3-resample">Resample</button>
+          </div>
+          <svg id="d3-geom" viewBox="0 0 540 320" width="540" height="320" style="margin: 0 auto;"></svg>
+          <div class="caption">Vectors live in $H_n$; they are sketched here in 2D using their true pairwise angles (the angle between $&bsol;widetilde A$ and $&bsol;widetilde B$ is exact; the placement of $&bsol;widetilde A$ and $&bsol;widetilde B$ on either side of $&bsol;widetilde C$ is chosen so the partial cosine is realised.)</div>
+          <div class="readout">
+            <div class="stat"><div class="label">R*(X,Y)</div><div class="val" id="d3-rxy">&mdash;</div></div>
+            <div class="stat"><div class="label">R*(X,Z)</div><div class="val dim" id="d3-rxz">&mdash;</div></div>
+            <div class="stat"><div class="label">R*(Y,Z)</div><div class="val dim" id="d3-ryz">&mdash;</div></div>
+            <div class="stat"><div class="label">R*(X,Y;Z)</div><div class="val" id="d3-rxyz">&mdash;</div></div>
+          </div>
+          <div class="legend">
+            <span class="key" style="background: var(--x-color)"></span> $&bsol;widetilde A$ (from X) &nbsp;
+            <span class="key" style="background: var(--y-color)"></span> $&bsol;widetilde B$ (from Y) &nbsp;
+            <span class="key" style="background: var(--z-color)"></span> $&bsol;widetilde C$ (from Z). Dashed arrows are residuals after projecting out $&bsol;widetilde C$.
+          </div>
+        </div>
+
+        <p>
+          With direct link at zero, $X$ and $Y$ share only their $Z$ pathway: $&bsol;widetilde A$ and $&bsol;widetilde B$ both lean toward $&bsol;widetilde C$, and once that shared component is subtracted, the residuals are nearly perpendicular, with $R^*(X,Y;Z) &bsol;approx 0$. Move the direct slider, and the residuals swing back into alignment. The paper notes that $R^*(X,Y;Z) = 0$ does <em>not</em> in general imply conditional independence; it characterises orthogonality in $H_n$, which is strictly weaker.
+        </p>
+
+        <div class="formula">
+          $$R^*(X,Y;Z) = &lbrace;R^*(X,Y) - R^*(X,Z)R^*(Y,Z)&bsol;over &bsol;sqrt&lbrace;(1 - R^*(X,Z)^2)(1 - R^*(Y,Z)^2)&rbrace;&rbrace;$$
+        </div>
+        <p class="footnote">
+          The familiar partial-correlation formula falls out as Proposition 2 of the paper, a direct consequence of the projection geometry. Note that here $R^*$ plays the role that <em>squared</em> dCor plays elsewhere, so its values are on the scale of $dCor^2$ and can be negative.
+        </p>
+
+        <h2 id="dissim">6. Beyond Euclidean distances</h2>
+        <p>
+          In ecology, genetics, and psychometrics, &ldquo;dissimilarities&rdquo; often violate the triangle inequality; Bray-Curtis on species counts is a standard example. The paper&rsquo;s second contribution: distance-correlation methods still work, because U-centering only sees the <em>inner product</em>, not the original dissimilarities.
+        </p>
+        <p>
+          Two facts make this go. <strong>Theorem 2</strong>: every element of $H_n$ is the U-centered distance matrix of some Euclidean point configuration in $&bsol;mathbb&lbrace;R&rbrace;^p$ ($p &bsol;le n - 2$), recoverable via classical multidimensional scaling. <strong>Lemma 1(iv)</strong>: U-centering is <em>invariant</em> to adding a constant $c$ to every off-diagonal dissimilarity (a &ldquo;Cailliez constant&rdquo; commonly used to force Euclidean embedding). The recovered MDS configuration moves around as $c$ changes, but the inner product, and hence every dCor statistic, does not.
+        </p>
+
+        <div class="panel">
+          <div class="controls">
+            <button id="d4-resample">New dataset</button>
+            <label>Cailliez constant c
+              <input type="range" id="d4-c" min="0" max="200" value="0" />
+              <span id="d4-c-val" class="mono" style="width:42px;display:inline-block">+0.00</span>
+            </label>
+          </div>
+          <div class="row">
+            <div>
+              <svg id="d4-mat-bc" viewBox="0 0 220 220" width="220" height="220"></svg>
+              <div class="caption">Bray-Curtis dissimilarities ($D + c$)</div>
+            </div>
+            <div>
+              <svg id="d4-mat-uc" viewBox="0 0 220 220" width="220" height="220"></svg>
+              <div class="caption">U-centered ($&bsol;widetilde A$): identical for every $c$</div>
+            </div>
+            <div>
+              <svg id="d4-mds" viewBox="0 0 220 220" width="220" height="220"></svg>
+              <div class="caption">Classical MDS recovery (2D)</div>
+            </div>
+          </div>
+          <div class="readout">
+            <div class="stat"><div class="label">Min MDS eigenvalue</div><div class="val dim" id="d4-tri">&mdash;</div></div>
+            <div class="stat"><div class="label">$|&bsol;widetilde A|^2$ (invariant)</div><div class="val" id="d4-norm">&mdash;</div></div>
+            <div class="stat"><div class="label">R*(species, env)</div><div class="val" id="d4-rxy">&mdash;</div></div>
+          </div>
+          <div class="legend">
+            Eight sites with simulated species counts; the second matrix is built from a related environmental gradient. The Bray-Curtis matrix is a metric but not generally Euclidean, so classical MDS produces a negative eigenvalue at $c = 0$ (Euclidean embedding is impossible). Sliding $c$ upward (the Cailliez additive constant) pushes that eigenvalue toward zero and rearranges the embedding, but the U-centered matrix and the R* readout are unchanged, as Lemma 1(iv) guarantees.
+          </div>
+        </div>
+
+        <h2 id="network-recovery">7. Network recovery: Pearson, partial, and distance correlation</h2>
+        <p>
+          Bayesian-network skeleton recovery from observational data is a classic use of
+          correlation measures. Here data come from a known 4-node DAG: $A\to B$, $A\to C$,
+          $B\to D$, $C\to D$. Marginally $A$ and $D$ are correlated through their two paths
+          even though there is no direct edge between them. Pairwise Pearson correlation
+          puts an edge wherever any two variables co-vary, so it cannot tell the indirect
+          $A\!-\!D$ path from the direct ones.
+          <a href="/math/bayesian-graphical-models/#partial-correlation">Partial correlation</a>
+          conditions on the other variables (the precision matrix, the inverse covariance)
+          and recovers the direct-edge structure. Distance correlation has stronger power against non-linear dependence
+          but, like raw Pearson, does not condition out indirect paths.
+        </p>
+
+        <div class="panel">
+          <div class="controls">
+            <button id="d7-resample">New dataset</button>
+            <label>sample size N
+              <input type="range" id="d7-n" min="40" max="500" step="20" value="200" />
+              <span id="d7-n-val" class="mono" style="width:42px;display:inline-block">200</span>
+            </label>
+            <label>threshold τ
+              <input type="range" id="d7-tau" min="0.03" max="0.6" step="0.01" value="0.16" />
+              <span id="d7-tau-val" class="mono" style="width:42px;display:inline-block">0.16</span>
+            </label>
+          </div>
+          <div class="row">
+            <div>
+              <svg id="d7-true" viewBox="0 0 180 180" width="180" height="180"></svg>
+              <div class="caption">true skeleton</div>
+            </div>
+            <div>
+              <svg id="d7-pearson" viewBox="0 0 180 180" width="180" height="180"></svg>
+              <div class="caption">Pearson |r| ≥ τ</div>
+            </div>
+            <div>
+              <svg id="d7-partial" viewBox="0 0 180 180" width="180" height="180"></svg>
+              <div class="caption">partial correlation |ρ| ≥ τ</div>
+            </div>
+            <div>
+              <svg id="d7-dcor" viewBox="0 0 180 180" width="180" height="180"></svg>
+              <div class="caption">dCor ≥ τ</div>
+            </div>
+          </div>
+          <div class="readout">
+            <div class="stat"><div class="label">Pearson</div><div class="val" id="d7-pearson-stat">&mdash;</div></div>
+            <div class="stat"><div class="label">Partial</div><div class="val" id="d7-partial-stat">&mdash;</div></div>
+            <div class="stat"><div class="label">dCor</div><div class="val" id="d7-dcor-stat">&mdash;</div></div>
+          </div>
+          <div class="legend">
+            The true skeleton has 4 edges (A–B, A–C, B–D, C–D). The spurious A–D appears in raw
+            Pearson and dCor because $A$ and $D$ share two indirect paths. Partial correlation
+            conditions on $B$ and $C$ and removes it. Stats show recovered edges as TP/FP out of
+            the 6 candidate pairs at the current threshold. <strong>Click any edge</strong> (true,
+            recovered, or omitted) to see its Pearson / partial / dCor numeric values.
+          </div>
+        </div>
+
+        <h2>Further reading</h2>
+        <ul style="font-size:14px;">
+          <li>Szekely, Rizzo &amp; Bakirov (2007), <em>Measuring and testing dependence by correlation of distances</em> &mdash; the original.</li>
+          <li>Szekely &amp; Rizzo (2014), <em><a href="https://arxiv.org/abs/1310.2926" target="_blank" rel="noopener">Partial Distance Correlation with Methods for Dissimilarities</a></em> &mdash; this page.</li>
+          <li>R package <code>energy</code> by Rizzo &amp; Szekely &mdash; reference implementation of all of the above.</li>
+        </ul>
+
+        <NextCards heading="What next" intro="Other Math &amp; Stats explainers connect distance-based dependence to information and computation." cards={[{"href":"/entropy-mutual-information/","tag":"Dependence","title":"Entropy &amp; Mutual Information","role":"A distribution-level companion to correlation: dependence as uncertainty removed by observing another variable."},{"href":"/monte-carlo/","tag":"Computation","title":"Monte Carlo &amp; MCMC","role":"Permutation tests, Monte Carlo estimates, and posterior simulation use the same resampling logic at larger scale."},{"href":"/measure-theory/index.html","tag":"Foundations","title":"Measure Theory &amp; Random Variables","role":"The measure-language backdrop for random vectors, pushforwards, densities, and change of measure."}]} />
+
+      </article>
+  </div>
+
+  <script is:inline>
+    // ===================================================================
+    // Math primitives
+    // ===================================================================
+    function gauss() {
+      let u = 0, v = 0;
+      while (u === 0) u = Math.random();
+      while (v === 0) v = Math.random();
+      return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    }
+    function ranks(arr) {
+      const n = arr.length;
+      const idx = Array.from({ length: n }, (_, i) => i);
+      idx.sort((a, b) => arr[a] - arr[b]);
+      const r = new Array(n);
+      // average ranks for ties
+      let i = 0;
+      while (i < n) {
+        let j = i;
+        while (j + 1 < n && arr[idx[j + 1]] === arr[idx[i]]) j++;
+        const avg = (i + j + 2) / 2; // 1-indexed average rank
+        for (let k = i; k <= j; k++) r[idx[k]] = avg;
+        i = j + 1;
+      }
+      return r;
+    }
+    function spearman(X, Y) {
+      return pearson(ranks(X), ranks(Y));
+    }
+    function pearson(X, Y) {
+      const n = X.length;
+      let mx = 0, my = 0;
+      for (let i = 0; i < n; i++) { mx += X[i]; my += Y[i]; }
+      mx /= n; my /= n;
+      let num = 0, sx = 0, sy = 0;
+      for (let i = 0; i < n; i++) {
+        const dx = X[i] - mx, dy = Y[i] - my;
+        num += dx * dy; sx += dx * dx; sy += dy * dy;
+      }
+      return sx * sy === 0 ? 0 : num / Math.sqrt(sx * sy);
+    }
+    function distMatrix1D(X) {
+      const n = X.length;
+      const D = new Float64Array(n * n);
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const d = Math.abs(X[i] - X[j]);
+          D[i * n + j] = d;
+          D[j * n + i] = d;
+        }
+      }
+      return D;
+    }
+    function doubleCenter(D, n) {
+      const A = new Float64Array(n * n);
+      const rowMean = new Float64Array(n);
+      const colMean = new Float64Array(n);
+      let grand = 0;
+      for (let i = 0; i < n; i++) {
+        let s = 0;
+        for (let j = 0; j < n; j++) s += D[i * n + j];
+        rowMean[i] = s / n;
+        grand += s;
+      }
+      grand /= (n * n);
+      for (let j = 0; j < n; j++) {
+        let s = 0;
+        for (let i = 0; i < n; i++) s += D[i * n + j];
+        colMean[j] = s / n;
+      }
+      for (let i = 0; i < n; i++)
+        for (let j = 0; j < n; j++)
+          A[i * n + j] = D[i * n + j] - rowMean[i] - colMean[j] + grand;
+      return A;
+    }
+    function uCenter(D, n) {
+      if (n < 4) return new Float64Array(n * n);
+      const A = new Float64Array(n * n);
+      const rowSum = new Float64Array(n);
+      let grand = 0;
+      for (let i = 0; i < n; i++) {
+        let s = 0;
+        for (let j = 0; j < n; j++) s += D[i * n + j];
+        rowSum[i] = s;
+        grand += s;
+      }
+      for (let i = 0; i < n; i++)
+        for (let j = 0; j < n; j++) {
+          if (i === j) { A[i * n + j] = 0; continue; }
+          A[i * n + j] = D[i * n + j]
+            - rowSum[i] / (n - 2)
+            - rowSum[j] / (n - 2)
+            + grand / ((n - 1) * (n - 2));
+        }
+      return A;
+    }
+    function frobInner(A, B, n) {
+      let s = 0;
+      for (let k = 0; k < n * n; k++) s += A[k] * B[k];
+      return s;
+    }
+    function uInner(A, B, n) { return frobInner(A, B, n) / (n * (n - 3)); }
+    function uNorm(A, n) { return Math.sqrt(Math.max(0, uInner(A, A, n))); }
+    function dCovBiased(X, Y) {
+      const n = X.length;
+      const A = doubleCenter(distMatrix1D(X), n);
+      const B = doubleCenter(distMatrix1D(Y), n);
+      return frobInner(A, B, n) / (n * n);
+    }
+    function dCovUnbiased(X, Y) {
+      const n = X.length;
+      const A = uCenter(distMatrix1D(X), n);
+      const B = uCenter(distMatrix1D(Y), n);
+      return uInner(A, B, n);
+    }
+    function dCor(X, Y) {
+      const n = X.length;
+      const A = doubleCenter(distMatrix1D(X), n);
+      const B = doubleCenter(distMatrix1D(Y), n);
+      const xy = frobInner(A, B, n) / (n * n);
+      const xx = frobInner(A, A, n) / (n * n);
+      const yy = frobInner(B, B, n) / (n * n);
+      if (xx <= 0 || yy <= 0) return 0;
+      const v = xy / Math.sqrt(xx * yy);
+      return v <= 0 ? 0 : Math.sqrt(v);
+    }
+    function uDCor(Atil, Btil, n) {
+      const xy = uInner(Atil, Btil, n);
+      const xx = uInner(Atil, Atil, n);
+      const yy = uInner(Btil, Btil, n);
+      if (xx <= 0 || yy <= 0) return 0;
+      return xy / Math.sqrt(xx * yy);
+    }
+
+    // ===================================================================
+    // Plot helpers
+    // ===================================================================
+    function clearSVG(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+    function el(tag, attrs, text) {
+      const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      for (const k in attrs) e.setAttribute(k, attrs[k]);
+      if (text != null) e.textContent = text;
+      return e;
+    }
+    function autoExtent(arr, pad = 0.1) {
+      let lo = Infinity, hi = -Infinity;
+      for (const v of arr) { if (v < lo) lo = v; if (v > hi) hi = v; }
+      if (lo === hi) { lo -= 1; hi += 1; }
+      const r = hi - lo;
+      return [lo - r * pad, hi + r * pad];
+    }
+    function scatter(svg, X, Y, w, h, opts) {
+      clearSVG(svg);
+      opts = opts || {};
+      const pad = 18;
+      const xExt = opts.xExt || autoExtent(X);
+      const yExt = opts.yExt || autoExtent(Y);
+      const xs = v => pad + (v - xExt[0]) / (xExt[1] - xExt[0]) * (w - 2 * pad);
+      const ys = v => h - pad - (v - yExt[0]) / (yExt[1] - yExt[0]) * (h - 2 * pad);
+      svg.appendChild(el("line", { class: "axis", x1: pad, y1: h - pad, x2: w - pad, y2: h - pad }));
+      svg.appendChild(el("line", { class: "axis", x1: pad, y1: pad, x2: pad, y2: h - pad }));
+      for (let i = 0; i < X.length; i++) {
+        svg.appendChild(el("circle", { cx: xs(X[i]), cy: ys(Y[i]), r: 2.4, class: "point" }));
+      }
+      return { xs, ys, xExt, yExt };
+    }
+    function heatmap(svg, A, n, w, h, scale) {
+      clearSVG(svg);
+      let maxAbs = scale != null ? scale : 0;
+      if (scale == null) {
+        for (let k = 0; k < n * n; k++) {
+          const a = Math.abs(A[k]);
+          if (a > maxAbs) maxAbs = a;
+        }
+      }
+      if (maxAbs === 0) maxAbs = 1;
+      const cw = w / n, ch = h / n;
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          const v = Math.max(-1, Math.min(1, A[i * n + j] / maxAbs));
+          let r, g, b;
+          if (v > 0) { // positive: white -> blue
+            r = Math.round(255 - 218 * v);
+            g = Math.round(255 - 156 * v);
+            b = Math.round(255 - 20 * v);
+          } else {     // negative: white -> red
+            r = Math.round(255 + 35 * v);
+            g = Math.round(255 + 217 * v);
+            b = Math.round(255 + 217 * v);
+          }
+          svg.appendChild(el("rect", {
+            x: j * cw, y: i * ch, width: cw + 0.5, height: ch + 0.5,
+            fill: `rgb(${r},${g},${b})`
+          }));
+        }
+      }
+    }
+    function fmt(x, d = 3) {
+      if (!isFinite(x)) return "—";
+      return x.toFixed(d);
+    }
+    function fmtSigned(x, d = 3) {
+      if (!isFinite(x)) return "—";
+      return (x >= 0 ? "+" : "") + x.toFixed(d);
+    }
+
+    // ===================================================================
+    // Sample generators
+    // ===================================================================
+    function genSample(shape, n, noise) {
+      const X = new Array(n), Y = new Array(n);
+      for (let i = 0; i < n; i++) {
+        const x = Math.random() * 2 - 1;
+        let y;
+        switch (shape) {
+          case "linear":    y = 0.9 * x; break;
+          case "quadratic": y = 1.4 * x * x - 0.5; break;
+          case "sine":      y = Math.sin(x * Math.PI * 1.8) * 0.7; break;
+          case "circle": {
+            const t = Math.random() * 2 * Math.PI;
+            X[i] = 0.85 * Math.cos(t) + noise * gauss();
+            Y[i] = 0.85 * Math.sin(t) + noise * gauss();
+            continue;
+          }
+          case "cross": {
+            const s = Math.random() < 0.5 ? 1 : -1;
+            X[i] = x; Y[i] = s * x + noise * gauss();
+            continue;
+          }
+          case "independent": y = Math.random() * 2 - 1; break;
+          default: y = 0;
+        }
+        X[i] = x + noise * gauss() * 0.4;
+        Y[i] = y + noise * gauss();
+      }
+      return { X, Y };
+    }
+
+    // ===================================================================
+    // Section 1 — Pearson vs dCor
+    // ===================================================================
+    function s1() {
+      const shapeSel = document.getElementById("d1-shape");
+      const noiseSlider = document.getElementById("d1-noise");
+      const noiseVal = document.getElementById("d1-noise-val");
+      const resampleBtn = document.getElementById("d1-resample");
+      const svg = document.getElementById("d1-scatter");
+      const elPear = document.getElementById("d1-pearson");
+      const elSpear = document.getElementById("d1-spearman");
+      const elDcor = document.getElementById("d1-dcor");
+      let sample;
+      function regen() {
+        const noise = +noiseSlider.value / 100;
+        noiseVal.textContent = noise.toFixed(2);
+        sample = genSample(shapeSel.value, 120, noise);
+        redraw();
+      }
+      function redraw() {
+        scatter(svg, sample.X, sample.Y, 360, 220);
+        const r = pearson(sample.X, sample.Y);
+        const sp = spearman(sample.X, sample.Y);
+        const dc = dCor(sample.X, sample.Y);
+        elPear.textContent = fmtSigned(r);
+        elPear.style.color = Math.abs(r) > 0.2 ? "var(--accent)" : "var(--text-dim)";
+        elSpear.textContent = fmtSigned(sp);
+        elSpear.style.color = Math.abs(sp) > 0.2 ? "var(--accent)" : "var(--text-dim)";
+        elDcor.textContent = fmt(dc);
+        elDcor.style.color = dc > 0.2 ? "var(--accent)" : "var(--text-dim)";
+      }
+      shapeSel.addEventListener("change", regen);
+      noiseSlider.addEventListener("input", regen);
+      resampleBtn.addEventListener("click", regen);
+      regen();
+    }
+
+    // ===================================================================
+    // Section 2 — Bias plot
+    // ===================================================================
+    function s2() {
+      const scenarioSel = document.getElementById("d2-scenario");
+      const repsSel = document.getElementById("d2-reps");
+      const runBtn = document.getElementById("d2-run");
+      const progress = document.getElementById("d2-progress");
+      const svg = document.getElementById("d2-plot");
+      const nGrid = [8, 12, 18, 26, 38, 56, 80, 120];
+      let runSeq = 0;
+      let runTimer = 0;
+
+      function genPair(scenario, n) {
+        const X = new Array(n), Y = new Array(n);
+        for (let i = 0; i < n; i++) {
+          X[i] = gauss();
+          if (scenario === "indep") Y[i] = gauss();
+          else                      Y[i] = X[i] * X[i] + 0.7 * gauss();
+        }
+        return { X, Y };
+      }
+
+      function drawAxes(truth, yMin, yMax) {
+        clearSVG(svg);
+        const w = 540, h = 280;
+        const pad = { l: 56, r: 16, t: 14, b: 38 };
+        const xMin = Math.log(nGrid[0]) - 0.05;
+        const xMax = Math.log(nGrid[nGrid.length - 1]) + 0.05;
+        const xs = lv => pad.l + (lv - xMin) / (xMax - xMin) * (w - pad.l - pad.r);
+        const ys = v => h - pad.b - (v - yMin) / (yMax - yMin) * (h - pad.t - pad.b);
+
+        // axes
+        svg.appendChild(el("line", { class: "axis", x1: pad.l, y1: h - pad.b, x2: w - pad.r, y2: h - pad.b }));
+        svg.appendChild(el("line", { class: "axis", x1: pad.l, y1: pad.t, x2: pad.l, y2: h - pad.b }));
+        // x ticks (powers of n in nGrid)
+        nGrid.forEach(nn => {
+          const x = xs(Math.log(nn));
+          svg.appendChild(el("line", { class: "grid-line", x1: x, y1: pad.t, x2: x, y2: h - pad.b }));
+          svg.appendChild(el("text", { x, y: h - pad.b + 14, class: "axis-label", "text-anchor": "middle" }, "" + nn));
+        });
+        svg.appendChild(el("text", { x: (pad.l + w - pad.r) / 2, y: h - 6, class: "axis-label", "text-anchor": "middle" }, "sample size n"));
+        // y ticks
+        const yTicks = niceTicks(yMin, yMax, 6);
+        yTicks.forEach(t => {
+          const y = ys(t);
+          svg.appendChild(el("line", { class: "grid-line", x1: pad.l, y1: y, x2: w - pad.r, y2: y }));
+          svg.appendChild(el("text", { x: pad.l - 6, y: y + 3, class: "axis-label", "text-anchor": "end" }, t.toFixed(3)));
+        });
+        svg.appendChild(el("text", { x: 12, y: (pad.t + h - pad.b) / 2, class: "axis-label", "text-anchor": "middle", transform: `rotate(-90, 12, ${(pad.t + h - pad.b) / 2})` }, "estimator value"));
+
+        // truth line
+        const yT = ys(truth);
+        svg.appendChild(el("line", { x1: pad.l, x2: w - pad.r, y1: yT, y2: yT, stroke: "var(--pos)", "stroke-width": 1.5, "stroke-dasharray": "5 3" }));
+        svg.appendChild(el("text", { x: w - pad.r - 4, y: yT - 4, class: "axis-label", "text-anchor": "end", fill: "var(--pos)" }, `truth ≈ ${truth.toFixed(3)}`));
+
+        return { xs, ys, w, h, pad };
+      }
+
+      function niceTicks(lo, hi, n) {
+        const range = hi - lo;
+        const step = Math.pow(10, Math.floor(Math.log10(range / n)));
+        const steps = [1, 2, 2.5, 5, 10].map(m => m * step);
+        const best = steps.reduce((a, b) => Math.abs(range / b - n) < Math.abs(range / a - n) ? b : a);
+        const ticks = [];
+        const start = Math.ceil(lo / best) * best;
+        for (let v = start; v <= hi + 1e-12; v += best) ticks.push(+v.toFixed(10));
+        return ticks;
+      }
+
+      async function run(runId) {
+        runBtn.disabled = true;
+        const scenario = scenarioSel.value;
+        const reps = +repsSel.value;
+        // First estimate truth with a big sample
+        let truth = 0;
+        if (scenario !== "indep") {
+          const big = genPair(scenario, 400);
+          truth = dCovUnbiased(big.X, big.Y);
+        }
+        const biasedMeans = [], unbiasedMeans = [];
+        const biasedErr = [], unbiasedErr = [];
+        for (let idx = 0; idx < nGrid.length; idx++) {
+          const n = nGrid[idx];
+          progress.textContent = `n=${n} (${idx + 1}/${nGrid.length})…`;
+          // yield to UI
+          await new Promise(r => setTimeout(r, 0));
+          if (runId !== runSeq) return;
+          let sumB = 0, sumU = 0, sumB2 = 0, sumU2 = 0;
+          for (let r = 0; r < reps; r++) {
+            const { X, Y } = genPair(scenario, n);
+            const b = dCovBiased(X, Y);
+            const u = dCovUnbiased(X, Y);
+            sumB += b; sumU += u; sumB2 += b * b; sumU2 += u * u;
+          }
+          const mB = sumB / reps, mU = sumU / reps;
+          biasedMeans.push(mB); unbiasedMeans.push(mU);
+          biasedErr.push(Math.sqrt(Math.max(0, sumB2 / reps - mB * mB) / reps));
+          unbiasedErr.push(Math.sqrt(Math.max(0, sumU2 / reps - mU * mU) / reps));
+        }
+        progress.textContent = "";
+
+        // y extent
+        const allVals = biasedMeans.concat(unbiasedMeans).concat([truth, 0]);
+        let yMin = Math.min(...allVals), yMax = Math.max(...allVals);
+        const yPad = (yMax - yMin) * 0.15 + 1e-4;
+        yMin -= yPad; yMax += yPad;
+        const { xs, ys, w, pad } = drawAxes(truth, yMin, yMax);
+        const xMin = Math.log(nGrid[0]) - 0.05;
+        const xMax = Math.log(nGrid[nGrid.length - 1]) + 0.05;
+
+        // zero line if differs from truth
+        if (Math.abs(truth) > 1e-6) {
+          const y0 = ys(0);
+          svg.appendChild(el("line", { x1: pad.l, x2: w - pad.r, y1: y0, y2: y0, stroke: "var(--border)", "stroke-width": 1, "stroke-dasharray": "2 3" }));
+        }
+
+        function plotLine(means, errs, color, label, labelDx, labelDy) {
+          let pathD = "";
+          nGrid.forEach((nn, i) => {
+            const x = xs(Math.log(nn));
+            const y = ys(means[i]);
+            pathD += (i === 0 ? "M" : "L") + x + "," + y + " ";
+            // error band
+            const yUp = ys(means[i] + errs[i]);
+            const yDn = ys(means[i] - errs[i]);
+            svg.appendChild(el("line", { x1: x, x2: x, y1: yUp, y2: yDn, stroke: color, "stroke-width": 1, opacity: 0.4 }));
+            svg.appendChild(el("circle", { cx: x, cy: y, r: 3, fill: color }));
+          });
+          svg.appendChild(el("path", { d: pathD, fill: "none", stroke: color, "stroke-width": 1.8 }));
+          // label at the end
+          const last = nGrid.length - 1;
+          svg.appendChild(el("text", {
+            x: xs(Math.log(nGrid[last])) + (labelDx || 6),
+            y: ys(means[last]) + (labelDy || 4),
+            class: "axis-label",
+            fill: color,
+            "font-weight": 600
+          }, label));
+        }
+        plotLine(biasedMeans, biasedErr, "var(--neg)", "V²ₙ", -28, -8);
+        plotLine(unbiasedMeans, unbiasedErr, "var(--accent)", "(Ã·B̃)", -38, 14);
+
+        if (runId === runSeq) runBtn.disabled = false;
+      }
+
+      function runNow() {
+        clearTimeout(runTimer);
+        run(++runSeq);
+      }
+      function scheduleRun() {
+        clearTimeout(runTimer);
+        const nextRun = ++runSeq;
+        progress.textContent = "updating…";
+        runTimer = window.setTimeout(() => run(nextRun), 150);
+      }
+
+      runBtn.addEventListener("click", runNow);
+      scenarioSel.addEventListener("change", scheduleRun);
+      repsSel.addEventListener("change", scheduleRun);
+      runNow();
+    }
+
+    // ===================================================================
+    // Section 3 — Projection geometry
+    // ===================================================================
+    function s3() {
+      const sxSlider = document.getElementById("d3-sx");
+      const syEl = document.getElementById("d3-sy");
+      const dxySlider = document.getElementById("d3-dxy");
+      const sxVal = document.getElementById("d3-sx-val");
+      const syVal = document.getElementById("d3-sy-val");
+      const dxyVal = document.getElementById("d3-dxy-val");
+      const resampleBtn = document.getElementById("d3-resample");
+      const svg = document.getElementById("d3-geom");
+      const elRxy = document.getElementById("d3-rxy");
+      const elRxz = document.getElementById("d3-rxz");
+      const elRyz = document.getElementById("d3-ryz");
+      const elRxyz = document.getElementById("d3-rxyz");
+      const n = 120;
+      let baseZ, baseEx, baseEy;
+
+      function reseed() {
+        baseZ = new Array(n); baseEx = new Array(n); baseEy = new Array(n);
+        for (let i = 0; i < n; i++) { baseZ[i] = gauss(); baseEx[i] = gauss(); baseEy[i] = gauss(); }
+      }
+      reseed();
+
+      function computeData() {
+        const sx = +sxSlider.value / 100;
+        const sy = +syEl.value / 100;
+        const dxy = +dxySlider.value / 100;
+        sxVal.textContent = sx.toFixed(2);
+        syVal.textContent = sy.toFixed(2);
+        dxyVal.textContent = (dxy >= 0 ? "+" : "") + dxy.toFixed(2);
+        const X = new Array(n), Y = new Array(n), Z = new Array(n);
+        for (let i = 0; i < n; i++) {
+          const z = baseZ[i];
+          const fz = z * z - 1; // mean-zero nonlinear
+          const x = sx * fz + 0.6 * baseEx[i];
+          const y = sy * fz + 0.6 * baseEy[i] + dxy * x;
+          X[i] = x; Y[i] = y; Z[i] = z;
+        }
+        return { X, Y, Z };
+      }
+
+      function arrow(svg, x1, y1, x2, y2, color, dashed, label, labelOffset) {
+        const dx = x2 - x1, dy = y2 - y1;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len < 1) return;
+        const ux = dx / len, uy = dy / len;
+        const ah = 8;
+        const hx = x2 - ux * ah;
+        const hy = y2 - uy * ah;
+        const px = -uy, py = ux;
+        const cls = "vec-arrow " + color + (dashed ? " vec-residual" : "");
+        svg.appendChild(el("line", { class: cls, x1, y1, x2: hx, y2: hy }));
+        const pts = `${x2},${y2} ${hx + px * 3.5},${hy + py * 3.5} ${hx - px * 3.5},${hy - py * 3.5}`;
+        svg.appendChild(el("polygon", { class: cls, points: pts, "stroke-dasharray": "none" }));
+        if (label) {
+          const lx = x2 + (labelOffset ? labelOffset[0] : ux * 10);
+          const ly = y2 + (labelOffset ? labelOffset[1] : uy * 10);
+          const colorVar = color === "vec-x" ? "var(--x-color)" : color === "vec-y" ? "var(--y-color)" : "var(--z-color)";
+          svg.appendChild(el("text", {
+            x: lx, y: ly, class: "axis-label",
+            fill: colorVar, "font-weight": 600, "font-size": 12
+          }, label));
+        }
+      }
+
+      function redraw() {
+        const { X, Y, Z } = computeData();
+        const Atil = uCenter(distMatrix1D(X), n);
+        const Btil = uCenter(distMatrix1D(Y), n);
+        const Ctil = uCenter(distMatrix1D(Z), n);
+        const nA = uNorm(Atil, n);
+        const nB = uNorm(Btil, n);
+        const nC = uNorm(Ctil, n);
+        const rxy = nA * nB > 0 ? uInner(Atil, Btil, n) / (nA * nB) : 0;
+        const rxz = nA * nC > 0 ? uInner(Atil, Ctil, n) / (nA * nC) : 0;
+        const ryz = nB * nC > 0 ? uInner(Btil, Ctil, n) / (nB * nC) : 0;
+        const denom = Math.sqrt(Math.max(0, 1 - rxz * rxz) * Math.max(0, 1 - ryz * ryz));
+        const rxyz = denom === 0 ? 0 : (rxy - rxz * ryz) / denom;
+
+        elRxy.textContent = fmtSigned(rxy);
+        elRxz.textContent = fmtSigned(rxz);
+        elRyz.textContent = fmtSigned(ryz);
+        elRxyz.textContent = fmtSigned(rxyz);
+        elRxyz.style.color = Math.abs(rxyz) > 0.05 ? "var(--neg)" : "var(--pos)";
+
+        // ----- draw vectors -----
+        clearSVG(svg);
+        const w = 540, h = 320;
+        const ox = 100, oy = h - 80;
+        // scale vector lengths to fit
+        const maxLen = Math.max(nA, nB, nC);
+        const scale = 180 / Math.max(maxLen, 1e-9);
+        const Llen = nC * scale;
+        const Alen = nA * scale;
+        const Blen = nB * scale;
+
+        // angles relative to C-axis
+        const thA = Math.acos(Math.max(-1, Math.min(1, rxz)));   // angle(A, C)
+        const thB = Math.acos(Math.max(-1, Math.min(1, ryz)));   // angle(B, C)
+        // pick sign on B so that the resulting angle(A,B) approximates arccos(rxy)
+        const targetAB = Math.acos(Math.max(-1, Math.min(1, rxy)));
+        // Option 1: A and B on same side of C  →  angle(A,B) = |thA - thB|
+        // Option 2: A and B on opposite sides   →  angle(A,B) = thA + thB
+        const sameSide = Math.abs(targetAB - Math.abs(thA - thB)) < Math.abs(targetAB - (thA + thB));
+        const phiA = -thA;            // place A above x-axis
+        const phiB = sameSide ? -thB : thB;
+
+        // ----- C along x-axis -----
+        const Cx = ox + Llen, Cy = oy;
+        // C arrow
+        arrow(svg, ox, oy, Cx, Cy, "vec-z", false, "C̃ (Z)", [10, 4]);
+
+        // ----- A & B endpoints -----
+        const Ax = ox + Alen * Math.cos(phiA);
+        const Ay = oy + Alen * Math.sin(phiA);
+        const Bx = ox + Blen * Math.cos(phiB);
+        const By = oy + Blen * Math.sin(phiB);
+
+        // alpha * C and beta * C (projection scalars)
+        const alpha = nC > 0 ? uInner(Atil, Ctil, n) / uInner(Ctil, Ctil, n) : 0;
+        const beta  = nC > 0 ? uInner(Btil, Ctil, n) / uInner(Ctil, Ctil, n) : 0;
+        const aCx = ox + alpha * Llen, aCy = oy;
+        const bCx = ox + beta * Llen,  bCy = oy;
+
+        // alpha*C and beta*C colored segments along C (faint)
+        svg.appendChild(el("line", {
+          x1: ox, y1: oy + 7, x2: aCx, y2: oy + 7,
+          stroke: "var(--x-color)", "stroke-width": 3, opacity: 0.45
+        }));
+        svg.appendChild(el("line", {
+          x1: ox, y1: oy + 13, x2: bCx, y2: oy + 13,
+          stroke: "var(--y-color)", "stroke-width": 3, opacity: 0.45
+        }));
+        // labels
+        svg.appendChild(el("text", { x: aCx + 4, y: oy + 11, class: "axis-label", fill: "var(--x-color)" }, "α·C̃"));
+        svg.appendChild(el("text", { x: bCx + 4, y: oy + 22, class: "axis-label", fill: "var(--y-color)" }, "β·C̃"));
+
+        // A & B main arrows
+        arrow(svg, ox, oy, Ax, Ay, "vec-x", false, "Ã (X)", [8, -4]);
+        arrow(svg, ox, oy, Bx, By, "vec-y", false, "B̃ (Y)", [8, 14]);
+
+        // residual = A - alpha*C, drawn from alpha*C tip to A tip
+        arrow(svg, aCx, aCy, Ax, Ay, "vec-x", true);
+        // residual = B - beta*C, drawn from beta*C tip to B tip
+        arrow(svg, bCx, bCy, Bx, By, "vec-y", true);
+
+        // arc for residual angle near origin: shift to common origin for clarity
+        // also draw the two residual arrows from the common origin to make the angle visible
+        const rxOrig = Ax - aCx, ryOrig = Ay - aCy;
+        const sxOrig = Bx - bCx, syOrig = By - bCy;
+        const ox2 = 400, oy2 = h / 2;
+        // Length scale for "residual" panel
+        const rA = Math.sqrt(rxOrig * rxOrig + ryOrig * ryOrig);
+        const rB = Math.sqrt(sxOrig * sxOrig + syOrig * syOrig);
+        const rMax = Math.max(rA, rB, 1);
+        const rScale = 110 / rMax;
+        const rAx = ox2 + rxOrig * rScale, rAy = oy2 + ryOrig * rScale;
+        const rBx = ox2 + sxOrig * rScale, rBy = oy2 + syOrig * rScale;
+
+        // dotted reference axis
+        svg.appendChild(el("line", { x1: ox2 - 10, y1: oy2, x2: ox2 + 120, y2: oy2, stroke: "var(--border)", "stroke-width": 1, "stroke-dasharray": "2 3" }));
+
+        // residual arrows from common origin
+        arrow(svg, ox2, oy2, rAx, rAy, "vec-x", true, "PZ⊥(Ã)", [6, -4]);
+        arrow(svg, ox2, oy2, rBx, rBy, "vec-y", true, "PZ⊥(B̃)", [6, 14]);
+        // angle arc
+        const angA = Math.atan2(rAy - oy2, rAx - ox2);
+        const angB = Math.atan2(rBy - oy2, rBx - ox2);
+        let a0 = angA, a1 = angB;
+        // Always sweep from A to B the short way
+        let da = a1 - a0;
+        while (da > Math.PI) da -= 2 * Math.PI;
+        while (da < -Math.PI) da += 2 * Math.PI;
+        const arcR = 26;
+        const lx0 = ox2 + arcR * Math.cos(a0), ly0 = oy2 + arcR * Math.sin(a0);
+        const lx1 = ox2 + arcR * Math.cos(a0 + da), ly1 = oy2 + arcR * Math.sin(a0 + da);
+        const sweep = da > 0 ? 1 : 0;
+        const largeArc = Math.abs(da) > Math.PI ? 1 : 0;
+        svg.appendChild(el("path", {
+          d: `M ${lx0} ${ly0} A ${arcR} ${arcR} 0 ${largeArc} ${sweep} ${lx1} ${ly1}`,
+          class: "arc", stroke: "var(--text-dim)"
+        }));
+        const midAng = a0 + da / 2;
+        svg.appendChild(el("text", {
+          x: ox2 + (arcR + 12) * Math.cos(midAng),
+          y: oy2 + (arcR + 12) * Math.sin(midAng) + 4,
+          class: "axis-label",
+          "text-anchor": "middle",
+          "font-weight": 600
+        }, `θ = arccos R*(X,Y;Z)`));
+
+        // section titles
+        svg.appendChild(el("text", { x: ox, y: 20, class: "axis-label", "font-weight": 600, "text-anchor": "start" }, "Ã, B̃ and their projections onto C̃"));
+        svg.appendChild(el("text", { x: ox2, y: 20, class: "axis-label", "font-weight": 600, "text-anchor": "middle" }, "Residuals"));
+
+        // helper: R*(X,Y;Z) readout near arc
+        svg.appendChild(el("text", {
+          x: ox2, y: h - 14, class: "axis-label", "text-anchor": "middle"
+        }, `cos θ = R*(X,Y;Z) = ${fmtSigned(rxyz)}`));
+      }
+
+      sxSlider.addEventListener("input", redraw);
+      syEl.addEventListener("input", redraw);
+      dxySlider.addEventListener("input", redraw);
+      resampleBtn.addEventListener("click", () => { reseed(); redraw(); });
+      redraw();
+    }
+
+    // ===================================================================
+    // Section 4 — Dissimilarities + classical MDS
+    // ===================================================================
+
+    // Jacobi eigendecomposition for small symmetric matrices.
+    function jacobiEig(M, n, maxSweeps = 100, tol = 1e-11) {
+      const A = new Float64Array(M);
+      const V = new Float64Array(n * n);
+      for (let i = 0; i < n; i++) V[i * n + i] = 1;
+      for (let sweep = 0; sweep < maxSweeps; sweep++) {
+        let off = 0;
+        for (let i = 0; i < n; i++)
+          for (let j = i + 1; j < n; j++) off += A[i * n + j] * A[i * n + j];
+        if (off < tol) break;
+        for (let p = 0; p < n - 1; p++) {
+          for (let q = p + 1; q < n; q++) {
+            const apq = A[p * n + q];
+            if (Math.abs(apq) < 1e-15) continue;
+            const app = A[p * n + p], aqq = A[q * n + q];
+            const theta = (aqq - app) / (2 * apq);
+            const t = (theta >= 0 ? 1 : -1) / (Math.abs(theta) + Math.sqrt(theta * theta + 1));
+            const c = 1 / Math.sqrt(t * t + 1);
+            const s = t * c;
+            A[p * n + p] = app - t * apq;
+            A[q * n + q] = aqq + t * apq;
+            A[p * n + q] = 0; A[q * n + p] = 0;
+            for (let i = 0; i < n; i++) {
+              if (i !== p && i !== q) {
+                const aip = A[i * n + p], aiq = A[i * n + q];
+                A[i * n + p] = c * aip - s * aiq; A[p * n + i] = A[i * n + p];
+                A[i * n + q] = s * aip + c * aiq; A[q * n + i] = A[i * n + q];
+              }
+              const vip = V[i * n + p], viq = V[i * n + q];
+              V[i * n + p] = c * vip - s * viq;
+              V[i * n + q] = s * vip + c * viq;
+            }
+          }
+        }
+      }
+      const eigvals = new Float64Array(n);
+      for (let i = 0; i < n; i++) eigvals[i] = A[i * n + i];
+      return { eigvals, eigvecs: V };
+    }
+
+    function cmdscaleFull(D, n, dim = 2) {
+      const D2 = new Float64Array(n * n);
+      for (let k = 0; k < n * n; k++) D2[k] = D[k] * D[k];
+      const rowMean = new Float64Array(n);
+      let grand = 0;
+      for (let i = 0; i < n; i++) {
+        let s = 0;
+        for (let j = 0; j < n; j++) s += D2[i * n + j];
+        rowMean[i] = s / n;
+        grand += s;
+      }
+      grand /= n * n;
+      const B = new Float64Array(n * n);
+      for (let i = 0; i < n; i++)
+        for (let j = 0; j < n; j++)
+          B[i * n + j] = -0.5 * (D2[i * n + j] - rowMean[i] - rowMean[j] + grand);
+      const { eigvals, eigvecs } = jacobiEig(B, n);
+      const order = Array.from({ length: n }, (_, i) => i).sort((a, b) => eigvals[b] - eigvals[a]);
+      const pts = new Array(n);
+      for (let i = 0; i < n; i++) {
+        const p = new Array(dim);
+        for (let d = 0; d < dim; d++) {
+          const lam = eigvals[order[d]];
+          const sq = lam > 0 ? Math.sqrt(lam) : 0;
+          p[d] = eigvecs[i * n + order[d]] * sq;
+        }
+        pts[i] = p;
+      }
+      // sorted eigenvalues (descending) for diagnostics
+      const sortedEig = order.map(i => eigvals[i]);
+      return { pts, eigvals: sortedEig };
+    }
+
+    function brayCurtis(counts) {
+      const n = counts.length;
+      const D = new Float64Array(n * n);
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          let num = 0, den = 0;
+          for (let k = 0; k < counts[i].length; k++) {
+            num += Math.abs(counts[i][k] - counts[j][k]);
+            den += counts[i][k] + counts[j][k];
+          }
+          const d = den === 0 ? 0 : num / den;
+          D[i * n + j] = d; D[j * n + i] = d;
+        }
+      }
+      return D;
+    }
+
+    function s4() {
+      const resampleBtn = document.getElementById("d4-resample");
+      const cSlider = document.getElementById("d4-c");
+      const cVal = document.getElementById("d4-c-val");
+      const svgBC = document.getElementById("d4-mat-bc");
+      const svgUC = document.getElementById("d4-mat-uc");
+      const svgMDS = document.getElementById("d4-mds");
+      const elTri = document.getElementById("d4-tri");
+      const elNorm = document.getElementById("d4-norm");
+      const elRxy = document.getElementById("d4-rxy");
+      const n = 8;
+      let counts, env;
+
+      function reseed() {
+        // 8 sites, 4 species; counts driven by a hidden environmental gradient
+        counts = []; env = [];
+        for (let i = 0; i < n; i++) {
+          const g = (i / (n - 1)) * 2 - 1 + 0.15 * gauss(); // environment
+          env.push(g);
+          const row = [];
+          for (let k = 0; k < 4; k++) {
+            const peak = -1 + 2 * k / 3;
+            const v = 25 * Math.exp(-2 * (g - peak) * (g - peak)) + 1.5 * Math.abs(gauss());
+            row.push(Math.max(0, v));
+          }
+          counts.push(row);
+        }
+      }
+      reseed();
+
+      function redraw() {
+        const c = +cSlider.value / 100;
+        cVal.textContent = (c >= 0 ? "+" : "") + c.toFixed(2);
+
+        // Bray-Curtis on counts, plus Cailliez constant
+        const Draw = brayCurtis(counts);
+        const D = new Float64Array(n * n);
+        for (let i = 0; i < n; i++)
+          for (let j = 0; j < n; j++)
+            D[i * n + j] = i === j ? 0 : Draw[i * n + j] + c;
+
+        // (Min MDS eigenvalue is computed after cmdscale below.)
+
+        // U-centered matrix
+        const UC = uCenter(D, n);
+        // matrix on env: dissimilarities = |env_i - env_j|
+        const Denv = new Float64Array(n * n);
+        for (let i = 0; i < n; i++)
+          for (let j = 0; j < n; j++)
+            Denv[i * n + j] = i === j ? 0 : Math.abs(env[i] - env[j]);
+        const UCenv = uCenter(Denv, n);
+        const inner = uInner(UC, UCenv, n);
+        const nUC = uNorm(UC, n);
+        const nUCenv = uNorm(UCenv, n);
+        const rxy = nUC * nUCenv > 0 ? inner / (nUC * nUCenv) : 0;
+
+        elNorm.textContent = fmt(nUC * nUC, 4);
+        elRxy.textContent = fmtSigned(rxy);
+
+        // Heatmaps. Use a shared scale across slider movements for D so transitions are visible.
+        let maxD = 0;
+        for (let k = 0; k < n * n; k++) if (D[k] > maxD) maxD = D[k];
+        heatmap(svgBC, D, n, 220, 220, maxD || 1);
+        // U-centered: scale to its own absmax so colours stay readable as c moves (they shouldn't)
+        let maxUC = 0;
+        for (let k = 0; k < n * n; k++) if (Math.abs(UC[k]) > maxUC) maxUC = Math.abs(UC[k]);
+        heatmap(svgUC, UC, n, 220, 220, maxUC || 1);
+
+        // Classical MDS recovery from D (with c)
+        const { pts, eigvals: mdsEigs } = cmdscaleFull(D, n, 2);
+        const minEig = mdsEigs[mdsEigs.length - 1];
+        elTri.textContent = fmtSigned(minEig, 4);
+        elTri.style.color = minEig < -1e-6 ? "var(--neg)" : "var(--pos)";
+        // Scale to fit
+        let xExt = autoExtent(pts.map(p => p[0]), 0.15);
+        let yExt = autoExtent(pts.map(p => p[1]), 0.15);
+        // Force square aspect
+        const cx = (xExt[0] + xExt[1]) / 2, cy = (yExt[0] + yExt[1]) / 2;
+        const half = Math.max(xExt[1] - cx, yExt[1] - cy, 1e-6);
+        xExt = [cx - half, cx + half];
+        yExt = [cy - half, cy + half];
+        clearSVG(svgMDS);
+        const w = 220, hh = 220, pad = 22;
+        svgMDS.appendChild(el("line", { class: "axis", x1: pad, y1: hh - pad, x2: w - pad, y2: hh - pad }));
+        svgMDS.appendChild(el("line", { class: "axis", x1: pad, y1: pad, x2: pad, y2: hh - pad }));
+        const xs = v => pad + (v - xExt[0]) / (xExt[1] - xExt[0]) * (w - 2 * pad);
+        const ys = v => hh - pad - (v - yExt[0]) / (yExt[1] - yExt[0]) * (hh - 2 * pad);
+        for (let i = 0; i < n; i++) {
+          const e = env[i];
+          // color by environment
+          const t = (e + 1) / 2;
+          const cr = Math.round(220 - 200 * t);
+          const cg = Math.round(80 + 100 * t);
+          const cb = Math.round(60 + 180 * t);
+          svgMDS.appendChild(el("circle", {
+            cx: xs(pts[i][0]), cy: ys(pts[i][1]), r: 5,
+            fill: `rgb(${cr},${cg},${cb})`, stroke: "white", "stroke-width": 1.5
+          }));
+          svgMDS.appendChild(el("text", {
+            x: xs(pts[i][0]) + 7, y: ys(pts[i][1]) + 3, class: "axis-label"
+          }, "site " + (i + 1)));
+        }
+      }
+
+      cSlider.addEventListener("input", redraw);
+      resampleBtn.addEventListener("click", () => { reseed(); redraw(); });
+      redraw();
+    }
+
+    // ===================================================================
+    // Section 2b — Bivariate normal closed form (Thm 7 of 2007 paper)
+    // ===================================================================
+    function bvnRSquared(rho) {
+      const r = Math.abs(rho);
+      const num = r * Math.asin(r) + Math.sqrt(1 - r * r) - r * Math.asin(r / 2) - Math.sqrt(4 - r * r) + 1;
+      const denom = 1 + Math.PI / 3 - Math.sqrt(3);
+      return num / denom;
+    }
+    function sbvn() {
+      const rhoSlider = document.getElementById("dbvn-rho");
+      const rhoVal = document.getElementById("dbvn-rho-val");
+      const resampleBtn = document.getElementById("dbvn-resample");
+      const svgScatter = document.getElementById("dbvn-scatter");
+      const svgCurve = document.getElementById("dbvn-curve");
+      const elR = document.getElementById("dbvn-r");
+      const elRclosed = document.getElementById("dbvn-R");
+      const elDcor = document.getElementById("dbvn-dcor");
+      const elRatio = document.getElementById("dbvn-ratio");
+      const n = 400;
+      let baseU, baseV;
+      function reseed() {
+        baseU = new Array(n); baseV = new Array(n);
+        for (let i = 0; i < n; i++) { baseU[i] = gauss(); baseV[i] = gauss(); }
+      }
+      reseed();
+      function drawCurve(rho) {
+        clearSVG(svgCurve);
+        const w = 320, h = 240, pad = { l: 36, r: 14, t: 12, b: 32 };
+        const xs = v => pad.l + (v + 1) / 2 * (w - pad.l - pad.r);
+        const ys = v => h - pad.b - v * (h - pad.t - pad.b);
+        // axes
+        svgCurve.appendChild(el("line", { class: "axis", x1: pad.l, y1: h - pad.b, x2: w - pad.r, y2: h - pad.b }));
+        svgCurve.appendChild(el("line", { class: "axis", x1: pad.l, y1: pad.t, x2: pad.l, y2: h - pad.b }));
+        // gridlines + ticks
+        for (let v = -1; v <= 1.0001; v += 0.5) {
+          const x = xs(v);
+          svgCurve.appendChild(el("line", { class: "grid-line", x1: x, y1: pad.t, x2: x, y2: h - pad.b }));
+          svgCurve.appendChild(el("text", { x, y: h - pad.b + 14, class: "axis-label", "text-anchor": "middle" }, v.toFixed(1)));
+        }
+        for (let v = 0; v <= 1.0001; v += 0.25) {
+          const y = ys(v);
+          svgCurve.appendChild(el("line", { class: "grid-line", x1: pad.l, y1: y, x2: w - pad.r, y2: y }));
+          svgCurve.appendChild(el("text", { x: pad.l - 4, y: y + 3, class: "axis-label", "text-anchor": "end" }, v.toFixed(2)));
+        }
+        svgCurve.appendChild(el("text", { x: (pad.l + w - pad.r) / 2, y: h - 4, class: "axis-label", "text-anchor": "middle" }, "ρ"));
+        // curves
+        const N = 80;
+        let pathRho = "", pathR = "";
+        for (let i = 0; i <= N; i++) {
+          const r = -1 + 2 * i / N;
+          const x = xs(r);
+          pathRho += (i === 0 ? "M" : "L") + x + "," + ys(r * r) + " ";
+          pathR += (i === 0 ? "M" : "L") + x + "," + ys(bvnRSquared(r)) + " ";
+        }
+        svgCurve.appendChild(el("path", { d: pathRho, fill: "none", stroke: "var(--text-dim)", "stroke-width": 1.5, "stroke-dasharray": "4 3" }));
+        svgCurve.appendChild(el("path", { d: pathR, fill: "none", stroke: "var(--accent)", "stroke-width": 1.8 }));
+        // labels for curves
+        svgCurve.appendChild(el("text", { x: w - pad.r - 4, y: ys(1) + 14, class: "axis-label", "text-anchor": "end", fill: "var(--text-dim)" }, "ρ²"));
+        svgCurve.appendChild(el("text", { x: w - pad.r - 4, y: ys(bvnRSquared(0.9)) - 4, class: "axis-label", "text-anchor": "end", fill: "var(--accent)", "font-weight": 600 }, "R²(ρ)"));
+        // current ρ marker
+        const r2 = bvnRSquared(rho);
+        svgCurve.appendChild(el("line", { x1: xs(rho), y1: pad.t, x2: xs(rho), y2: h - pad.b, stroke: "var(--neg)", "stroke-width": 1, "stroke-dasharray": "2 2" }));
+        svgCurve.appendChild(el("circle", { cx: xs(rho), cy: ys(r2), r: 4, fill: "var(--neg)" }));
+      }
+      function redraw() {
+        const rho = +rhoSlider.value / 100;
+        rhoVal.textContent = (rho >= 0 ? "+" : "") + rho.toFixed(2);
+        const X = new Array(n), Y = new Array(n);
+        const a = Math.sqrt(Math.max(0, 1 - rho * rho));
+        for (let i = 0; i < n; i++) {
+          X[i] = baseU[i];
+          Y[i] = rho * baseU[i] + a * baseV[i];
+        }
+        scatter(svgScatter, X, Y, 240, 240, { xExt: [-3.2, 3.2], yExt: [-3.2, 3.2] });
+        const rSample = pearson(X, Y);
+        const dc = dCor(X, Y);
+        const Rclosed = Math.sqrt(Math.max(0, bvnRSquared(rho)));
+        elR.textContent = fmtSigned(rSample);
+        elRclosed.textContent = fmt(Rclosed);
+        elDcor.textContent = fmt(dc);
+        elRatio.textContent = Math.abs(rho) > 0.01 ? fmt(Rclosed / Math.abs(rho)) : "—";
+        drawCurve(rho);
+      }
+      rhoSlider.addEventListener("input", redraw);
+      resampleBtn.addEventListener("click", () => { reseed(); redraw(); });
+      redraw();
+    }
+
+    // ===================================================================
+    // Section 3 — Permutation test
+    // ===================================================================
+    function sperm() {
+      const shapeSel = document.getElementById("dperm-shape");
+      const noiseSlider = document.getElementById("dperm-noise");
+      const noiseVal = document.getElementById("dperm-noise-val");
+      const runBtn = document.getElementById("dperm-run");
+      const svgScatter = document.getElementById("dperm-scatter");
+      const svgHist = document.getElementById("dperm-hist");
+      const elObs = document.getElementById("dperm-obs");
+      const elP = document.getElementById("dperm-p");
+      const n = 60;
+      let sample;
+      let permTimer = 0;
+      function regen() {
+        const noise = +noiseSlider.value / 100;
+        noiseVal.textContent = noise.toFixed(2);
+        sample = genSample(shapeSel.value, n, noise);
+        scatter(svgScatter, sample.X, sample.Y, 240, 240);
+        elObs.textContent = fmt(dCovBiased(sample.X, sample.Y), 4);
+        elP.textContent = "—";
+        elP.style.color = "var(--text-dim)";
+        clearSVG(svgHist);
+      }
+      function runPerm() {
+        const observed = dCovBiased(sample.X, sample.Y);
+        const nperm = 500;
+        const draws = new Array(nperm);
+        const Y = sample.Y.slice();
+        for (let p = 0; p < nperm; p++) {
+          for (let i = Y.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const tmp = Y[i]; Y[i] = Y[j]; Y[j] = tmp;
+          }
+          draws[p] = dCovBiased(sample.X, Y);
+        }
+        let count = 0;
+        for (const d of draws) if (d >= observed) count++;
+        const pval = (count + 1) / (nperm + 1);
+        elObs.textContent = fmt(observed, 4);
+        elP.textContent = pval < 0.002 ? "< 0.002" : fmt(pval, 3);
+        elP.style.color = pval < 0.05 ? "var(--pos)" : "var(--text-dim)";
+
+        const w = 360, h = 240, pad = { l: 30, r: 14, t: 12, b: 28 };
+        clearSVG(svgHist);
+        const allVals = draws.concat([observed]);
+        const ext = autoExtent(allVals, 0.05);
+        const bins = 30;
+        const counts = new Array(bins).fill(0);
+        for (const d of draws) {
+          let b = Math.floor((d - ext[0]) / (ext[1] - ext[0]) * bins);
+          if (b < 0) b = 0; if (b >= bins) b = bins - 1;
+          counts[b]++;
+        }
+        const maxC = Math.max(...counts);
+        const obsBin = Math.floor((observed - ext[0]) / (ext[1] - ext[0]) * bins);
+        for (let b = 0; b < bins; b++) {
+          const x = pad.l + b * (w - pad.l - pad.r) / bins;
+          const bw = (w - pad.l - pad.r) / bins - 1;
+          const bh = counts[b] / maxC * (h - pad.t - pad.b);
+          svgHist.appendChild(el("rect", {
+            x, y: h - pad.b - bh, width: bw, height: bh,
+            class: "hist-bar" + (b === obsBin ? " obs" : "")
+          }));
+        }
+        svgHist.appendChild(el("line", { class: "axis", x1: pad.l, y1: h - pad.b, x2: w - pad.r, y2: h - pad.b }));
+        svgHist.appendChild(el("line", { class: "axis", x1: pad.l, y1: pad.t, x2: pad.l, y2: h - pad.b }));
+        const obsX = pad.l + (observed - ext[0]) / (ext[1] - ext[0]) * (w - pad.l - pad.r);
+        svgHist.appendChild(el("line", { class: "observed-line", x1: obsX, y1: pad.t, x2: obsX, y2: h - pad.b }));
+        svgHist.appendChild(el("text", { x: obsX + 4, y: pad.t + 10, class: "axis-label", fill: "var(--neg)" }, "observed"));
+        svgHist.appendChild(el("text", { x: pad.l, y: h - 4, class: "axis-label" }, ext[0].toFixed(3)));
+        svgHist.appendChild(el("text", { x: w - pad.r - 4, y: h - 4, class: "axis-label", "text-anchor": "end" }, ext[1].toFixed(3)));
+      }
+      function runPermNow() {
+        clearTimeout(permTimer);
+        runPerm();
+      }
+      function schedulePermRun() {
+        clearTimeout(permTimer);
+        regen();
+        permTimer = window.setTimeout(runPerm, 200);
+      }
+
+      shapeSel.addEventListener("change", schedulePermRun);
+      noiseSlider.addEventListener("input", schedulePermRun);
+      runBtn.addEventListener("click", runPermNow);
+      regen();
+    }
+
+    // ===================================================================
+    // Section 7 — Network recovery (Pearson vs partial vs dCor)
+    // ===================================================================
+    function s7() {
+      const varsN = 4, labels = ["A", "B", "C", "D"];
+      const pos = { A: [40, 90], B: [90, 35], C: [90, 145], D: [140, 90] };
+      const trueEdges = new Set(["A-B", "A-C", "B-D", "C-D"]);
+      const candidatePairs = [];
+      for (let i = 0; i < varsN; i++) for (let j = i + 1; j < varsN; j++) candidatePairs.push([labels[i], labels[j]]);
+      const resampleBtn = document.getElementById("d7-resample");
+      const nIn = document.getElementById("d7-n"), nV = document.getElementById("d7-n-val");
+      const tauIn = document.getElementById("d7-tau"), tauV = document.getElementById("d7-tau-val");
+      function gen(N) {
+        const out = { A: [], B: [], C: [], D: [] };
+        for (let i = 0; i < N; i++) {
+          const A = gauss();
+          const B = 0.9 * A + 0.45 * gauss();
+          const C = -0.75 * A + 0.5 * gauss();
+          const D = 0.8 * B - 0.6 * C + 0.45 * gauss();
+          out.A.push(A); out.B.push(B); out.C.push(C); out.D.push(D);
+        }
+        return out;
+      }
+      function invertSymmetric(M) {
+        // Gauss-Jordan inverse for small dense square matrix.
+        const n = M.length;
+        const A = M.map((row, i) => [...row, ...Array.from({ length: n }, (_, k) => (k === i ? 1 : 0))]);
+        for (let i = 0; i < n; i++) {
+          let p = i;
+          for (let k = i + 1; k < n; k++) if (Math.abs(A[k][i]) > Math.abs(A[p][i])) p = k;
+          [A[i], A[p]] = [A[p], A[i]];
+          if (Math.abs(A[i][i]) < 1e-10) return null;
+          const piv = A[i][i];
+          for (let j = 0; j < 2 * n; j++) A[i][j] /= piv;
+          for (let k = 0; k < n; k++) if (k !== i) {
+            const f = A[k][i];
+            for (let j = 0; j < 2 * n; j++) A[k][j] -= f * A[i][j];
+          }
+        }
+        return A.map((row) => row.slice(n));
+      }
+      let selectedPair = null; // "A-B" etc
+      function drawSkeleton(svgId, edges, color, scores) {
+        const svg = document.getElementById(svgId);
+        clearSVG(svg);
+        for (const [a, b] of candidatePairs) {
+          const key = `${a}-${b}`;
+          const isEdge = edges.has(key);
+          const inTrue = trueEdges.has(key);
+          const isSelected = selectedPair === key;
+          const stroke = isSelected ? "#d4690a" : (isEdge ? (inTrue ? "#2d7a3e" : "#b8412a") : (inTrue ? "rgba(45,122,62,0.25)" : "rgba(140,140,140,0.22)"));
+          const width = isSelected ? 3.2 : (isEdge ? 2.4 : 1.2);
+          const dash = isSelected ? "" : (isEdge ? "" : (inTrue ? "" : "3 4"));
+          // Invisible thick line for hit-testing; visible thin line on top
+          svg.appendChild(el("line", { x1: pos[a][0], y1: pos[a][1], x2: pos[b][0], y2: pos[b][1], stroke: "transparent", "stroke-width": 12, "data-pair": key, style: "cursor:pointer" }));
+          svg.appendChild(el("line", { x1: pos[a][0], y1: pos[a][1], x2: pos[b][0], y2: pos[b][1], stroke, "stroke-width": width, "stroke-dasharray": dash, "pointer-events": "none" }));
+        }
+        for (const v of labels) {
+          svg.appendChild(el("circle", { cx: pos[v][0], cy: pos[v][1], r: 14, fill: "#fff", stroke: color, "stroke-width": 2 }));
+          svg.appendChild(el("text", { x: pos[v][0], y: pos[v][1] + 4, "text-anchor": "middle", "font-size": 12, fill: "#1f2733" }, v));
+        }
+        if (scores && !svg.dataset.bound) {
+          svg.addEventListener("click", (event) => {
+            const target = event.target;
+            const key = target && target.getAttribute && target.getAttribute("data-pair");
+            if (!key) return;
+            selectedPair = selectedPair === key ? null : key;
+            update();
+          });
+          svg.dataset.bound = "1";
+        }
+      }
+      function recovery(edges) {
+        let tp = 0, fp = 0;
+        for (const e of edges) (trueEdges.has(e) ? tp++ : fp++);
+        return { tp, fp, total: trueEdges.size };
+      }
+      function update() {
+        const N = +nIn.value, tau = +tauIn.value;
+        nV.textContent = String(N); tauV.textContent = tau.toFixed(2);
+        const data = gen(N);
+        const corr = Array.from({ length: varsN }, () => Array(varsN).fill(0));
+        const dcorr = Array.from({ length: varsN }, () => Array(varsN).fill(0));
+        for (let i = 0; i < varsN; i++) for (let j = i; j < varsN; j++) {
+          const c = pearson(data[labels[i]], data[labels[j]]);
+          corr[i][j] = corr[j][i] = c;
+          const dc = i === j ? 1 : dCor(data[labels[i]], data[labels[j]]);
+          dcorr[i][j] = dcorr[j][i] = dc;
+        }
+        const inv = invertSymmetric(corr);
+        // Partial correlation: -inv[i][j] / sqrt(inv[i][i] inv[j][j])
+        const partial = Array.from({ length: varsN }, () => Array(varsN).fill(0));
+        if (inv) for (let i = 0; i < varsN; i++) for (let j = 0; j < varsN; j++) {
+          partial[i][j] = i === j ? 1 : -inv[i][j] / Math.sqrt(Math.max(1e-12, inv[i][i] * inv[j][j]));
+        }
+        const peEdges = new Set(), paEdges = new Set(), dcEdges = new Set();
+        for (let i = 0; i < varsN; i++) for (let j = i + 1; j < varsN; j++) {
+          const key = `${labels[i]}-${labels[j]}`;
+          if (Math.abs(corr[i][j]) >= tau) peEdges.add(key);
+          if (Math.abs(partial[i][j]) >= tau) paEdges.add(key);
+          if (dcorr[i][j] >= tau) dcEdges.add(key);
+        }
+        drawSkeleton("d7-true", trueEdges, "#1f4a8c", { corr, partial, dcorr });
+        drawSkeleton("d7-pearson", peEdges, "#1f4a8c", { corr, partial, dcorr });
+        drawSkeleton("d7-partial", paEdges, "#1f4a8c", { corr, partial, dcorr });
+        drawSkeleton("d7-dcor", dcEdges, "#1f4a8c", { corr, partial, dcorr });
+        const pr = recovery(peEdges), pa = recovery(paEdges), dr = recovery(dcEdges);
+        function fmt(M, key) {
+          if (!selectedPair) return `TP ${M.tp}/4 · FP ${M.fp}`;
+          const [a, b] = selectedPair.split("-");
+          const i = labels.indexOf(a), j = labels.indexOf(b);
+          const v = key === "pearson" ? corr[i][j] : key === "partial" ? partial[i][j] : dcorr[i][j];
+          return `${selectedPair}: ${v.toFixed(3)} (overall TP ${M.tp}/4 · FP ${M.fp})`;
+        }
+        document.getElementById("d7-pearson-stat").textContent = fmt(pr, "pearson");
+        document.getElementById("d7-partial-stat").textContent = fmt(pa, "partial");
+        document.getElementById("d7-dcor-stat").textContent = fmt(dr, "dcor");
+      }
+      resampleBtn.addEventListener("click", update);
+      nIn.addEventListener("input", update);
+      tauIn.addEventListener("input", update);
+      update();
+    }
+
+    s1(); sbvn(); sperm(); s2(); s3(); s4(); s7();
+  </script>
+</ExplainerLayout>

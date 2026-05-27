@@ -1,0 +1,261 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import Legend from "../../components/explainer/Legend.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import PresetButton from "../../components/explainer/PresetButton.astro";
+import Readout from "../../components/explainer/Readout.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import VizCard from "../../components/explainer/VizCard.astro";
+import VizCardGrid from "../../components/explainer/VizCardGrid.astro";
+---
+
+<ExplainerLayout title="Power Spectral Density" breadcrumb="Power Spectral Density" section="random-processes">
+
+<Hero title="Power Spectral Density" subtitle="The same stationary random process seen as time-domain correlation and frequency-domain power, linked by the Wiener-Khinchin theorem." />
+
+<p>
+This page is the representation view: autocorrelation and spectra. For the system
+view, where a filter acts on random inputs in both time and frequency, see
+<a href="/math/lti-random-inputs/">LTI Systems on Random Inputs</a>.
+</p>
+
+<h2 id="wss">1. Wide-sense stationarity</h2>
+
+<p>
+A random process $X(t)$ is <strong>wide-sense stationary</strong> when its mean is
+constant and its autocorrelation depends only on lag:
+</p>
+
+$$
+R_X(\tau)=\mathbb&#123;E&#125;[X(t)X(t+\tau)].
+$$
+
+<p>
+That lag-only dependence is what makes a spectrum meaningful. The process may wiggle
+differently on each realization, but its average second-order structure is fixed in
+time.
+</p>
+
+<Aside>
+  <strong>WSS vs SSS.</strong> <em>Strict-sense stationarity</em> (SSS) is the stronger condition
+  that the full joint distribution of $(X(t_1),\dots,X(t_n))$ is invariant under any time shift.
+  <em>Wide-sense stationarity</em> (WSS) only constrains the first two moments: constant mean and
+  lag-only autocorrelation. SSS implies WSS, but not the reverse. The spectral story on this page
+  is exactly the WSS story: Wiener-Khinchin needs nothing beyond second-order structure. For a
+  Gaussian process the two coincide, because a Gaussian is fully determined by its mean and
+  autocorrelation.
+</Aside>
+
+<Figure title="Figure 0 · Wide-sense stationarity as stable second-order structure" canvasId="fig0" width="780" height="420" readoutId="fig0-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>W.S.S. process</span>
+      <span><span class="swatch" style="background:#b8412a"></span>non-W.S.S. process</span>
+      <span><span class="swatch" style="background:#6b4592"></span>running summaries</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="preset-row">
+        <button id="fig0-swap">Swap non-W.S.S. process</button>
+        <button id="fig0-resample">Fresh realization</button>
+      </div>
+</Fragment>
+</Figure>
+
+<Aside>
+  <strong>PSD in one line.</strong> The power spectral density says how the total
+  second-moment power of a W.S.S. process is distributed over frequency.
+</Aside>
+
+<h2 id="pair">2. Wiener-Khinchin as a Fourier pair</h2>
+
+<p>
+The Wiener-Khinchin theorem says the autocorrelation and power spectral density are
+Fourier transforms of one another:
+</p>
+
+$$
+S_X(\omega)=\int_&#123;-\infty&#125;^&#123;\infty&#125; R_X(\tau)e^&#123;-i\omega\tau&#125;\,d\tau,\qquad
+R_X(\tau)=\frac&#123;1&#125;&#123;2\pi&#125;\int_&#123;-\infty&#125;^&#123;\infty&#125; S_X(\omega)e^&#123;i\omega\tau&#125;\,d\omega.
+$$
+
+<p>
+For a real W.S.S. process, $S_X(\omega)$ is real, even, and nonnegative. The area
+under it is total power:
+</p>
+
+$$
+R_X(0)=\mathbb&#123;E&#125;[X(t)^2]=\frac&#123;1&#125;&#123;2\pi&#125;\int_&#123;-\infty&#125;^&#123;\infty&#125;S_X(\omega)\,d\omega.
+$$
+
+<Figure title="Figure 1 · Autocorrelation and PSD as a Fourier pair" canvasId="fig1" width="780" height="380" readoutId="fig1-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>$R(\tau)$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>$S(\omega)$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig1-width" label="band / color" valueId="fig1-width-v" min="0.15" max="1.8" step="0.01" value="0.55" />
+      <ControlRange id="fig1-center" label="center frequency" valueId="fig1-center-v" min="0" max="2.6" step="0.01" value="0" />
+      <PresetRow>
+        <button data-fig1-preset="white">White</button>
+        <button data-fig1-preset="lowpass">Low-pass</button>
+        <button data-fig1-preset="ou">Ornstein-Uhlenbeck</button>
+        <button data-fig1-preset="tone">Narrow band</button>
+        <button data-fig1-preset="bandpass">Bandpass</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="paths">3. Sample paths and audio texture</h2>
+
+<p>
+The PSD is not a single waveform; it describes the average frequency content of a
+population of waveforms. Regenerating sample paths from the same spectrum makes this
+visible: the paths differ, but their roughness, dominant oscillations, and slow drift
+match the same spectral shape.
+</p>
+
+<Figure title="Figure 2 · Fresh sample paths from the current spectrum" canvasId="fig2" width="780" height="360" readoutId="fig2-readout">
+<Fragment slot="controls">
+  <PresetRow>
+        <button id="fig2-resample">Regenerate paths</button>
+        <button id="fig2-audio">Play texture</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 2b · Spectrogram: time-local frequency power" canvasId="fig-spectrogram" width="780" height="360" readoutId="spectrogram-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>sample path</span>
+      <span><span class="swatch" style="background:#b8412a"></span>local high power</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>instantaneous tone</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="spectrogram-chirp" label="chirp strength" valueId="spectrogram-chirp-v" min="0" max="1" step="0.05" value="0.65" />
+      <ControlRange id="spectrogram-window" label="window length" valueId="spectrogram-window-v" min="24" max="96" step="4" value="56" />
+      <PresetRow>
+        <button id="spectrogram-resample">New path</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="lti">4. LTI shaping</h2>
+
+<p>
+A linear time-invariant filter shapes spectra by multiplication:
+</p>
+
+$$
+S_&#123;YY&#125;(\omega)=|H(\omega)|^2S_&#123;XX&#125;(\omega).
+$$
+
+<p>
+The filter ignores the random phases of the input; at the second-order level it
+scales each frequency's power.
+</p>
+
+<Figure title="Figure 3 · Input PSD, filter gain, and output PSD" canvasId="fig3" width="780" height="360" readoutId="fig3-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>$S_&#123;XX&#125;$</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>$|H|^2$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>$S_&#123;YY&#125;$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig3-center" label="filter center" valueId="fig3-center-v" min="0" max="2.8" step="0.01" value="0" />
+      <ControlRange id="fig3-width" label="filter bandwidth" valueId="fig3-width-v" min="0.12" max="2.4" step="0.01" value="1" />
+      <PresetRow>
+        <button data-fig3-filter="low">Low-pass</button>
+        <button data-fig3-filter="high">High-pass</button>
+        <button data-fig3-filter="band">Band-pass</button>
+        <button data-fig3-filter="notch">Notch</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="periodogram">5. Periodogram estimates</h2>
+
+<p>
+The PSD is an ensemble object, but real data gives you finite records. The
+periodogram estimates power by squaring Fourier coefficients from one sample path.
+It is noisy: longer records reveal the spectral shape better, but single-frequency
+estimates still fluctuate.
+</p>
+
+<Figure title="Figure 4 · Periodogram convergence with record length" canvasId="fig4" width="780" height="360" readoutId="fig4-readout">
+<Fragment slot="controls">
+  <PresetRow>
+        <button id="fig4-resample">New realization</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 4b · Welch averaging and window choice" canvasId="fig4-welch" width="780" height="360" readoutId="fig4-welch-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>true PSD</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>raw periodogram</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>Welch estimate</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig4-welch-segments" label="segments" valueId="fig4-welch-segments-v" min="1" max="12" step="1" value="6" />
+      <div class="control">
+        <label>window</label>
+        <select id="fig4-welch-window">
+          <option value="rect">rectangular</option>
+          <option value="hann" selected>Hann</option>
+          <option value="hamming">Hamming</option>
+        </select>
+      </div>
+      <PresetRow>
+        <button id="fig4-welch-resample">New realization</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>What to remember</h2>
+
+<DecisionTable headers={["Object","Time-domain reading","Frequency-domain reading"]}>
+    <tr data-target-figure="fig1" data-hint-control="fig1-width">
+      <td>$R(\tau)$</td>
+      <td>How much a process resembles a lagged copy of itself.</td>
+      <td>Narrow spectra produce long-lived oscillatory correlations.</td>
+    </tr>
+    <tr data-target-figure="fig1" data-hint-control="fig1-center">
+      <td>$S(\omega)$</td>
+      <td>Determines the autocorrelation by inverse Fourier transform.</td>
+      <td>How power is distributed over frequency; real, even, nonnegative for real W.S.S. processes.</td>
+    </tr>
+    <tr data-target-figure="fig3" data-preset="band" data-hint-control="fig3-width">
+      <td>LTI filter</td>
+      <td>Convolution reshapes sample paths.</td>
+      <td>Multiplication by $|H(\omega)|^2$ reshapes PSDs.</td>
+    </tr>
+    <tr data-target-figure="fig4" data-hint-control="fig4-resample">
+      <td>Periodogram</td>
+      <td>Computed from one finite realization.</td>
+      <td>A noisy estimate of the underlying PSD.</td>
+    </tr>
+</DecisionTable>
+
+<NextCards heading="What next" intro="PSD sits between Fourier analysis, filtering, and stochastic-process inference." cards={[{"href":"/lti-random-inputs/","tag":"Systems","title":"LTI Systems on Random Inputs","role":"Use the PSD to predict how linear filters reshape random sample paths, correlations, and spectra."},{"href":"/monte-carlo/","tag":"Inference","title":"Monte Carlo &amp; MCMC","role":"Compare frequency-domain second-order structure with simulation methods for posterior distributions."},{"href":"/entropy-mutual-information/","tag":"Information","title":"Entropy &amp; Mutual Information","role":"Move from second-order power to uncertainty and dependence between random variables."},{"href":"/fisher-information/","tag":"Geometry","title":"Fisher Information","role":"Another way expectations turn local model behavior into a global quantitative object."},{"href":"/gaussian-processes/","tag":"Regression","title":"Gaussian Processes","role":"Use kernels as covariance functions for priors over functions, then condition them on observed data."}]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+
+  <script is:inline src="/math/psd-wiener-khinchin/psd.js"></script>
+</ExplainerLayout>

@@ -1,0 +1,601 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Bayesian Graphical Models — Interactive Explainer" breadcrumb="Bayesian Graphical Models" section="bayesian-inference">
+  <Hero title="Bayesian Graphical Models" subtitle="Graphs as compact probability models: factorization, conditional independence, parameter learning, and structure scoring." />
+
+  <p>
+    A Bayesian network combines a directed acyclic graph $G$ with local conditional
+    distributions $\Theta$. The graph says which variables are direct parents of each node;
+    the probability model factorizes as $\prod_i p(x_i\mid \operatorname&#123;pa&#125;(x_i))$.
+  </p>
+
+  <h2>1. D-separation and explaining away</h2>
+  <p>
+    Click a node to mark it observed. Chains (A→B→C) and forks (A←B→C) are blocked by observing
+    the middle variable; colliders (A→B←C) are <em>opened</em> by observing the common effect or
+    any descendant of it. The matrix on the right shows every pairwise conditional independence
+    given the current evidence: green for independent, red for dependent.
+  </p>
+
+  <Figure title="Figure 1 · Toggle observed nodes; the matrix updates with all pairwise d-separations" canvasId="bgm-dsep" width="780" height="400" readoutId="bgm-dsep-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#1f4a8c"></span>unobserved</span>
+        <span><span class="swatch" style="background:#b8412a"></span>observed</span>
+        <span><span class="swatch" style="background:#2d7a3e"></span>X ⟂ Y | obs</span>
+        <span><span class="swatch" style="background:#d4690a"></span>X ⊥̸ Y | obs</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <PresetRow>
+        <button data-dsep="none">No evidence</button>
+        <button data-dsep="alarm">Observe Alarm</button>
+        <button data-dsep="john">Observe call</button>
+        <button data-dsep="reset">Clear</button>
+      </PresetRow>
+    </Fragment>
+  </Figure>
+
+  <h2>2. Dirichlet-multinomial CPT learning</h2>
+  <p>
+    For a discrete node, each row of a conditional probability table is a multinomial parameter.
+    A Dirichlet prior acts like pseudo-counts. The posterior mean is
+    $(\alpha_k+n_k)/(\sum_j\alpha_j+\sum_j n_j)$, so stronger priors move more slowly.
+  </p>
+
+  <Figure title="Figure 2 · Pseudo-counts and posterior CPT rows" canvasId="bgm-cpt" width="780" height="330" readoutId="bgm-cpt-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#1f4a8c"></span>posterior dry</span>
+        <span><span class="swatch" style="background:#b8412a"></span>posterior wet</span>
+        <span><span class="swatch" style="background:#e3ddd0"></span>empirical rate</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <ControlRange id="bgm-alpha" label="Dirichlet strength" valueId="bgm-alpha-v" min="0.2" max="20" step="0.2" value="2" />
+      <ControlRange id="bgm-samples" label="# observations" valueId="bgm-samples-v" min="4" max="160" step="4" value="48" />
+      <PresetRow>
+        <button id="bgm-resample-cpt">Resample data</button>
+      </PresetRow>
+    </Fragment>
+  </Figure>
+
+  <h2 id="partial-correlation">3. Linear Gaussian Bayesian network</h2>
+  <p>
+    When every node is a linear-Gaussian function of its parents, the joint distribution is
+    multivariate Gaussian. For the chain $A\to B\to C$ with $B = \beta_1 A + \varepsilon_B$ and
+    $C = \beta_2 B + \varepsilon_C$, the covariance $\Sigma$ becomes dense as the edge
+    coefficients grow, but the precision $K=\Sigma^&#123;-1&#125;$ keeps the entry $K_&#123;AC&#125;=0$. Zeros
+    in $K$ correspond exactly to conditional independencies given the rest; here, $A\perp C\mid B$.
+  </p>
+
+  <p>
+    Normalizing turns that contrast into a correlation. <strong>Pearson correlation</strong> is the
+    normalized covariance, $r_&#123;ij&#125; = \Sigma_&#123;ij&#125;/\sqrt&#123;\Sigma_&#123;ii&#125;\Sigma_&#123;jj&#125;&#125;$, and
+    <strong>partial correlation</strong> is the normalized <em>negative</em> precision,
+    $\rho_&#123;ij\cdot\text&#123;rest&#125;&#125; = -K_&#123;ij&#125;/\sqrt&#123;K_&#123;ii&#125;K_&#123;jj&#125;&#125;$. The two answer different
+    questions: $r_&#123;AC&#125;\neq 0$ because $A$ and $C$ are linked through the indirect path
+    $A\!-\!B\!-\!C$, while $\rho_&#123;AC\cdot B&#125; = 0$ because conditioning on $B$ closes that path. For a
+    Gaussian, $\rho_&#123;ij\cdot\text&#123;rest&#125;&#125; = 0 \iff K_&#123;ij&#125; = 0 \iff X_i \perp X_j \mid \text&#123;rest&#125;$:
+    the partial-correlation zeros are exactly the missing edges of the
+    <strong>Gaussian graphical model</strong>. Stripping indirect paths out of a correlation network
+    is the standard use of partial correlation —
+    <a href="/math/distance-correlation/#network-recovery">Distance Correlation §7</a> pits it against
+    Pearson and distance correlation on that task.
+  </p>
+
+  <Figure title="Figure 3 · Pearson vs partial correlation in a linear-Gaussian chain" canvasId="bgm-linear" width="780" height="360" readoutId="bgm-linear-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#1f4a8c"></span>large positive entry</span>
+        <span><span class="swatch" style="background:#b8412a"></span>large negative entry</span>
+        <span><span class="swatch" style="background:#e3ddd0"></span>near-zero entry</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <ControlRange id="bgm-b1" label={String.raw`$\beta_1$ (A → B)`} valueId="bgm-b1-v" min="-1.4" max="1.4" step="0.05" value="0.8" />
+      <ControlRange id="bgm-b2" label={String.raw`$\beta_2$ (B → C)`} valueId="bgm-b2-v" min="-1.4" max="1.4" step="0.05" value="0.7" />
+      <ControlRange id="bgm-noise" label="noise variance" valueId="bgm-noise-v" min="0.1" max="2" step="0.05" value="0.5" />
+    </Fragment>
+  </Figure>
+
+  <h2>4. Structure search sandbox</h2>
+  <p>
+    Structure learning trades fit against complexity. The score below is BIC for a Gaussian
+    linear regression at each node: $\sum_i \log p(\mathcal D_i \mid \operatorname&#123;pa&#125;(x_i),\hat w_i) -
+    \tfrac12 k_i \log N$. Click an edge slot to toggle it; both directions are separate slots so
+    you can reverse an edge. Cycles are rejected. The true generative DAG is shown faintly for comparison
+    with greedy search.
+  </p>
+
+  <Figure title="Figure 4 · Toggle edges; the score updates per node" canvasId="bgm-structure" width="780" height="420" readoutId="bgm-structure-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#1f4a8c"></span>included edge</span>
+        <span><span class="swatch" style="background:#b8412a"></span>cycle would form</span>
+        <span><span class="swatch" style="background:#2d7a3e"></span>matches true DAG</span>
+        <span><span class="swatch" style="background:#cfc7b8"></span>candidate slot</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <PresetRow>
+        <button id="bgm-greedy">Greedy step</button>
+        <button id="bgm-greedy-run">Greedy to convergence</button>
+        <button id="bgm-reset-structure">Reset to empty</button>
+        <button id="bgm-true-structure">Set to true DAG</button>
+      </PresetRow>
+    </Fragment>
+  </Figure>
+
+  <NextCards heading="What next" intro="Static Bayesian networks connect to dynamic models, dependence measures, and Bayesian computation." cards={[
+    { href: "/hidden-markov-models/", tag: "Dynamic BN", title: "Hidden Markov Models", role: "Repeat a small Bayesian network across time and compare filtering, smoothing, and Viterbi decoding." },
+    { href: "/distance-correlation/", tag: "Dependence", title: "Distance Correlation", role: "Pearson and partial correlations are common network-construction tools, but they miss nonlinear dependence." },
+    { href: "/monte-carlo/", tag: "Computation", title: "Monte Carlo &amp; MCMC", role: "Use sampling when local messages or closed-form parameter updates are unavailable." },
+  ]} />
+
+  <div class="footer">Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.</div>
+
+  <script is:inline>
+    (() => {
+      const C = { bg: "#fff", grid: "#e3ddd0", text: "#1f2733", dim: "#5a6577", blue: "#1f4a8c", red: "#b8412a", green: "#2d7a3e", orange: "#d4690a" };
+      const $ = (id) => document.getElementById(id);
+      function setup(id) {
+        const c = $(id), ratio = window.devicePixelRatio || 1;
+        const iw = Number(c.getAttribute("width")), ih = Number(c.getAttribute("height"));
+        c.style.width = "100%"; c.style.height = `${c.getBoundingClientRect().width * ih / iw}px`;
+        const r = c.getBoundingClientRect(); c.width = r.width * ratio; c.height = r.height * ratio;
+        const ctx = c.getContext("2d"); ctx.scale(ratio, ratio); return { c, ctx, w: r.width, h: r.height };
+      }
+      function arrow(ctx, a, b, color = C.blue, dashed = false) {
+        ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2; if (dashed) ctx.setLineDash([5, 4]);
+        const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+        const x1 = a.x + ux * 24, y1 = a.y + uy * 24, x2 = b.x - ux * 25, y2 = b.y - uy * 25;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        const ang = Math.atan2(dy, dx); ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - 9 * Math.cos(ang - 0.45), y2 - 9 * Math.sin(ang - 0.45)); ctx.lineTo(x2 - 9 * Math.cos(ang + 0.45), y2 - 9 * Math.sin(ang + 0.45)); ctx.closePath(); ctx.fill(); ctx.restore();
+      }
+
+      const nodes = {
+        Burglary: { x: 130, y: 80 }, Earthquake: { x: 360, y: 80 }, Alarm: { x: 245, y: 175 }, John: { x: 150, y: 285 }, Mary: { x: 345, y: 285 },
+      };
+      const dsepNames = Object.keys(nodes);
+      const edges = [["Burglary", "Alarm"], ["Earthquake", "Alarm"], ["Alarm", "John"], ["Alarm", "Mary"]];
+      const parents = {}; dsepNames.forEach((n) => parents[n] = []);
+      const children = {}; dsepNames.forEach((n) => children[n] = []);
+      edges.forEach(([a, b]) => { children[a].push(b); parents[b].push(a); });
+      // Standard "active trail" / Bayes-ball d-separation (Koller & Friedman p. 75).
+      // Direction "up" = arrived at v from a child of v (walking against an arrow into v).
+      // Direction "down" = arrived at v from a parent of v (walking with the arrow).
+      function dSeparated(x, y, Z) {
+        if (x === y) return false;
+        const Zset = new Set(Z);
+        // Ancestors of Z (inclusive). Used to detect colliders with a descendant in Z.
+        const ancZ = new Set(Z); const stack = [...Z];
+        while (stack.length) {
+          const v = stack.pop();
+          for (const p of parents[v]) if (!ancZ.has(p)) { ancZ.add(p); stack.push(p); }
+        }
+        const visited = new Set();
+        // Seed: leave X toward parents (as "up") and toward children (as "down"). The endpoint's
+        // observation status doesn't block — only interior triples block.
+        const queue = [];
+        for (const p of parents[x]) queue.push([p, "up"]);
+        for (const c of children[x]) queue.push([c, "down"]);
+        while (queue.length) {
+          const [v, d] = queue.shift();
+          const key = `${v}|${d}`;
+          if (visited.has(key)) continue;
+          visited.add(key);
+          if (v === y) return false; // d-connected
+          if (d === "up") {
+            if (!Zset.has(v)) {
+              for (const p of parents[v]) queue.push([p, "up"]);
+              for (const c of children[v]) queue.push([c, "down"]);
+            }
+          } else {
+            if (!Zset.has(v)) for (const c of children[v]) queue.push([c, "down"]);
+            if (ancZ.has(v)) for (const p of parents[v]) queue.push([p, "up"]);
+          }
+        }
+        return true;
+      }
+      const observed = new Set();
+      function drawDsep() {
+        const { c, ctx, w, h } = setup("bgm-dsep");
+        ctx.clearRect(0, 0, w, h);
+        // Layout: graph on left half, pairwise matrix on right half.
+        const leftW = w * 0.52;
+        const sxLeft = leftW / 500, syLeft = h / 360;
+        const sxy = Math.min(sxLeft, syLeft);
+        ctx.save(); ctx.scale(sxy, sxy);
+        edges.forEach(([a, b]) => arrow(ctx, nodes[a], nodes[b], C.blue));
+        for (const [name, p] of Object.entries(nodes)) {
+          ctx.fillStyle = observed.has(name) ? "#f5d4c9" : "#dbe6f6"; ctx.strokeStyle = observed.has(name) ? C.red : C.blue; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(p.x, p.y, 30, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = C.text; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(name, p.x, p.y);
+        }
+        ctx.restore();
+        // Pairwise independence matrix on the right.
+        const mx = leftW + 20, my = 36, cell = Math.min(50, (w - mx - 16) / (dsepNames.length + 1), (h - my - 30) / (dsepNames.length + 1));
+        ctx.font = "10px -apple-system, sans-serif"; ctx.textBaseline = "middle";
+        ctx.fillStyle = C.text; ctx.textAlign = "left";
+        ctx.fillText("pairwise independence given evidence", mx, my - 16);
+        for (let i = 0; i < dsepNames.length; i++) {
+          ctx.fillStyle = C.dim; ctx.textAlign = "right";
+          ctx.fillText(dsepNames[i].slice(0, 4), mx + cell - 4, my + (i + 1) * cell + cell / 2);
+          ctx.textAlign = "center";
+          ctx.save(); ctx.translate(mx + (i + 1) * cell + cell / 2, my + cell - 4); ctx.rotate(-Math.PI / 4); ctx.fillText(dsepNames[i].slice(0, 4), 0, 0); ctx.restore();
+        }
+        for (let i = 0; i < dsepNames.length; i++) for (let j = 0; j < dsepNames.length; j++) {
+          const x0 = mx + (j + 1) * cell, y0 = my + (i + 1) * cell;
+          if (i === j) { ctx.fillStyle = "#f8f6f2"; ctx.fillRect(x0, y0, cell - 1, cell - 1); continue; }
+          const indep = dSeparated(dsepNames[i], dsepNames[j], [...observed]);
+          ctx.fillStyle = indep ? "rgba(45,122,62,0.35)" : "rgba(212,105,10,0.32)";
+          ctx.fillRect(x0, y0, cell - 1, cell - 1);
+          ctx.fillStyle = C.text; ctx.textAlign = "center"; ctx.fillText(indep ? "⟂" : "⊥̸", x0 + cell / 2, y0 + cell / 2);
+        }
+        // Summary readout: count of independencies, highlight the classic collider case
+        let indepCount = 0, totalPairs = 0;
+        for (let i = 0; i < dsepNames.length; i++) for (let j = i + 1; j < dsepNames.length; j++) {
+          totalPairs++; if (dSeparated(dsepNames[i], dsepNames[j], [...observed])) indepCount++;
+        }
+        const beIndep = dSeparated("Burglary", "Earthquake", [...observed]);
+        $("bgm-dsep-readout").innerHTML = `<div class="row"><span class="lbl">independent pairs (out of ${totalPairs})</span><span>${indepCount}</span></div><div class="row"><span class="lbl">Burglary vs Earthquake</span><span>${beIndep ? "independent (collider blocks the path)" : "dependent (explaining away through evidence at or below the alarm)"}</span></div><div class="row"><span class="lbl">observed</span><span>${observed.size ? [...observed].join(", ") : "none"}</span></div>`;
+        c.onclick = (event) => {
+          const r = c.getBoundingClientRect();
+          const x = (event.clientX - r.left), y = (event.clientY - r.top);
+          // hit-test only within the graph half
+          if (x > leftW) return;
+          const gx = x / sxy, gy = y / sxy;
+          for (const [name, p] of Object.entries(nodes)) if (Math.hypot(gx - p.x, gy - p.y) < 32) { observed.has(name) ? observed.delete(name) : observed.add(name); drawDsep(); break; }
+        };
+      }
+      document.querySelectorAll("[data-dsep]").forEach((b) => b.addEventListener("click", () => {
+        observed.clear(); const mode = b.dataset.dsep; if (mode === "alarm") observed.add("Alarm"); if (mode === "john") observed.add("John"); drawDsep();
+      }));
+
+      let cptData = [];
+      function randn() { const u = Math.random(), v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+      function resampleCpt() {
+        const n = Number($("bgm-samples").value); cptData = [];
+        for (let i = 0; i < n; i++) {
+          const cloudy = Math.random() < 0.45;
+          const wet = Math.random() < (cloudy ? 0.72 : 0.18);
+          cptData.push({ cloudy, wet });
+        }
+        drawCpt();
+      }
+      function drawCpt() {
+        const { ctx, w, h } = setup("bgm-cpt");
+        const alpha = Number($("bgm-alpha").value), n = Number($("bgm-samples").value);
+        $("bgm-alpha-v").textContent = alpha.toFixed(1); $("bgm-samples-v").textContent = String(n);
+        ctx.clearRect(0, 0, w, h); ctx.font = "12px -apple-system, sans-serif"; ctx.textAlign = "left";
+        const rows = [false, true], labels = ["not cloudy", "cloudy"], left = 150, top = 62, barW = w - 230, barH = 34;
+        rows.forEach((cloudy, r) => {
+          const subset = cptData.filter((d) => d.cloudy === cloudy), wet = subset.filter((d) => d.wet).length, dry = subset.length - wet;
+          const pWet = (alpha / 2 + wet) / (alpha + subset.length), empWet = subset.length ? wet / subset.length : 0.5;
+          const y = top + r * 92;
+          ctx.fillStyle = C.dim; ctx.fillText(`Sprinkler | ${labels[r]}`, 24, y + 22);
+          ctx.fillStyle = "#dbe6f6"; ctx.fillRect(left, y, barW * (1 - pWet), barH);
+          ctx.fillStyle = "#f5d4c9"; ctx.fillRect(left + barW * (1 - pWet), y, barW * pWet, barH);
+          ctx.strokeStyle = C.grid; ctx.strokeRect(left, y, barW, barH);
+          ctx.strokeStyle = C.text; ctx.beginPath(); ctx.moveTo(left + barW * empWet, y - 5); ctx.lineTo(left + barW * empWet, y + barH + 5); ctx.stroke();
+          ctx.fillStyle = C.text; ctx.textAlign = "center"; ctx.fillText(`dry ${(1 - pWet).toFixed(2)}`, left + barW * (1 - pWet) / 2, y + 22); ctx.fillText(`wet ${pWet.toFixed(2)}`, left + barW * (1 - pWet) + barW * pWet / 2, y + 22); ctx.textAlign = "left";
+          ctx.fillStyle = C.dim; ctx.fillText(`counts dry/wet = ${dry}/${wet}`, left, y + 56);
+        });
+        $("bgm-cpt-readout").innerHTML = `<div class="row"><span class="lbl">posterior rule</span><span>(alpha/2 + count) / (alpha + row count)</span></div>`;
+      }
+      $("bgm-alpha").addEventListener("input", drawCpt); $("bgm-samples").addEventListener("input", resampleCpt); $("bgm-resample-cpt").addEventListener("click", resampleCpt);
+
+      // ---- Linear Gaussian chain widget ----------------------------------------------------
+      function drawLinear() {
+        const { ctx, w, h } = setup("bgm-linear");
+        ctx.clearRect(0, 0, w, h);
+        const b1 = Number($("bgm-b1").value), b2 = Number($("bgm-b2").value), s2 = Number($("bgm-noise").value);
+        $("bgm-b1-v").textContent = b1.toFixed(2); $("bgm-b2-v").textContent = b2.toFixed(2); $("bgm-noise-v").textContent = s2.toFixed(2);
+        // Σ for [A, B, C] with A ~ N(0,1), B = b1*A + ε_B, C = b2*B + ε_C; ε ~ N(0, s2).
+        const varA = 1, varB = b1 * b1 + s2, varC = b2 * b2 * varB + s2;
+        const covAB = b1, covBC = b2 * varB, covAC = b1 * b2;
+        const Sigma = [[varA, covAB, covAC], [covAB, varB, covBC], [covAC, covBC, varC]];
+        // Precision K = Sigma^-1 (3x3 closed form)
+        function inv3(m) {
+          const [a, b, c] = m[0], [d, e, f] = m[1], [g, hh, i] = m[2];
+          const det = a * (e * i - f * hh) - b * (d * i - f * g) + c * (d * hh - e * g);
+          if (Math.abs(det) < 1e-12) return null;
+          const invDet = 1 / det;
+          return [
+            [(e * i - f * hh) * invDet, -(b * i - c * hh) * invDet, (b * f - c * e) * invDet],
+            [-(d * i - f * g) * invDet, (a * i - c * g) * invDet, -(a * f - c * d) * invDet],
+            [(d * hh - e * g) * invDet, -(a * hh - b * g) * invDet, (a * e - b * d) * invDet],
+          ];
+        }
+        const K = inv3(Sigma) || [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+        // Layout: DAG and moralized graph on the left, four matrices on the right.
+        const labels = ["A", "B", "C"];
+        // DAG (left top)
+        const gx = 24, gy = 24, gw = 200, gh = 110;
+        const ax = { A: gx + 30, B: gx + 100, C: gx + 170 }, ay = gy + 55;
+        ctx.fillStyle = C.dim; ctx.font = "12px -apple-system, sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("DAG: A → B → C", gx, gy);
+        ctx.strokeStyle = C.blue; ctx.lineWidth = 2;
+        for (const [from, to] of [["A", "B"], ["B", "C"]]) {
+          arrow(ctx, { x: ax[from], y: ay }, { x: ax[to], y: ay }, C.blue);
+        }
+        for (const v of labels) {
+          ctx.fillStyle = "#dbe6f6"; ctx.strokeStyle = C.blue; ctx.beginPath(); ctx.arc(ax[v], ay, 18, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = C.text; ctx.font = "13px -apple-system, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(v, ax[v], ay);
+        }
+        // Moralized / undirected graph from non-zero pattern of K (below DAG)
+        const ux = { A: gx + 30, B: gx + 100, C: gx + 170 }, uy = gy + 175;
+        ctx.fillStyle = C.dim; ctx.font = "12px -apple-system, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+        ctx.fillText("undirected from precision pattern", gx, uy - 32);
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) {
+          const mag = Math.abs(K[i][j]);
+          if (mag > 0.02) {
+            ctx.strokeStyle = mag > 0.1 ? C.purple : "#cfc7b8";
+            ctx.beginPath(); ctx.moveTo(ux[labels[i]], uy); ctx.lineTo(ux[labels[j]], uy); ctx.stroke();
+          }
+        }
+        for (const v of labels) {
+          ctx.fillStyle = "#dbe6f6"; ctx.strokeStyle = C.purple; ctx.beginPath(); ctx.arc(ux[v], uy, 18, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = C.text; ctx.font = "13px -apple-system, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(v, ux[v], uy);
+        }
+        // Matrices on the right: raw (left column) and normalized (right column).
+        // Pearson correlation = normalized covariance; partial correlation =
+        // normalized negative precision. Diagonals are 1 by convention.
+        function normalize(M, sign) {
+          const d = [Math.sqrt(M[0][0]), Math.sqrt(M[1][1]), Math.sqrt(M[2][2])];
+          return [0, 1, 2].map((i) => [0, 1, 2].map((j) => {
+            if (i === j) return 1;
+            const v = sign * M[i][j] / (d[i] * d[j]);
+            return Math.abs(v) < 5e-4 ? 0 : v;
+          }));
+        }
+        const R = normalize(Sigma, 1);
+        const P = normalize(K, -1);
+        const my = 30, gap = 26, mx = w * 0.40;
+        const cell = Math.min(56, (w - 20 - gap - mx) / 4.8);
+        const colW = 2.4 * cell + gap;
+        function drawMatrix(M, title, x0, y0, scale) {
+          ctx.fillStyle = C.text; ctx.font = "12px -apple-system, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+          ctx.fillText(title, x0, y0 - 6);
+          for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+            const v = M[i][j];
+            const q = Math.max(-1, Math.min(1, v / scale));
+            const r = q > 0 ? 255 - Math.round(180 * q) : 255 - Math.round(40 * -q);
+            const g = q > 0 ? 255 - Math.round(120 * q) : 255 - Math.round(80 * -q);
+            const bb = q > 0 ? 255 - Math.round(50 * q) : 255 - Math.round(180 * -q);
+            ctx.fillStyle = `rgb(${r},${g},${bb})`;
+            ctx.fillRect(x0 + (j + 1) * cell * 0.6, y0 + i * cell * 0.6, cell * 0.6 - 1, cell * 0.6 - 1);
+            ctx.fillStyle = C.text; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText(v.toFixed(2), x0 + (j + 1) * cell * 0.6 + cell * 0.3, y0 + i * cell * 0.6 + cell * 0.3);
+          }
+          ctx.fillStyle = C.dim; ctx.font = "10px -apple-system, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          for (let i = 0; i < 3; i++) ctx.fillText(labels[i], x0 + cell * 0.3, y0 + i * cell * 0.6 + cell * 0.3);
+        }
+        const sScale = Math.max(varC, Math.abs(covBC), 1);
+        const kScale = Math.max(Math.abs(K[0][0]), Math.abs(K[1][1]), Math.abs(K[2][2]), 1);
+        drawMatrix(Sigma, "covariance Σ", mx, my, sScale);
+        drawMatrix(R, "Pearson correlation", mx + colW, my, 1);
+        drawMatrix(K, "precision K = Σ⁻¹", mx, my + 170, kScale);
+        drawMatrix(P, "partial correlation", mx + colW, my + 170, 1);
+        const rAC = R[0][2], pAC = Math.abs(P[0][2]) < 5e-4 ? 0 : P[0][2];
+        $("bgm-linear-readout").innerHTML = `<div class="row"><span class="lbl">Pearson r(A,C)</span><span>${rAC.toFixed(3)}; A and C are marginally correlated through the path A–B–C</span></div><div class="row"><span class="lbl">partial ρ(A,C | B)</span><span>${pAC.toFixed(3)}; should be 0 — conditioning on B closes the path</span></div><div class="row"><span class="lbl">reading</span><span>Pearson correlation = normalized covariance; partial correlation = normalized negative precision. Zero partial correlation ⟺ zero in K ⟺ no edge in the Gaussian graphical model.</span></div>`;
+      }
+      ["bgm-b1", "bgm-b2", "bgm-noise"].forEach((id) => $(id).addEventListener("input", drawLinear));
+
+      // ---- Structure search ----------------------------------------------------------------
+      const vars = ["A", "B", "C", "D"], pos = { A: { x: 105, y: 130 }, B: { x: 260, y: 70 }, C: { x: 260, y: 220 }, D: { x: 410, y: 145 } };
+      // True generative DAG: A→B, A→C, B→D, C→D (matches the data generator below).
+      const trueDag = new Set(["A>B", "A>C", "B>D", "C>D"]);
+      const pairs = [["A", "B"], ["A", "C"], ["B", "D"], ["C", "D"], ["B", "C"], ["A", "D"]];
+      // State per pair: "" (no edge) | "fwd" (a→b) | "rev" (b→a)
+      let pairState = new Map(pairs.map((p) => [`${p[0]}-${p[1]}`, ""]));
+      const N = 120;
+      const data = Array.from({ length: N }, () => {
+        const A = randn();
+        const B = 0.9 * A + 0.45 * randn();
+        const C = -0.75 * A + 0.5 * randn();
+        const D = 0.8 * B - 0.6 * C + 0.45 * randn();
+        return { A, B, C, D };
+      });
+      function chosenEdges() {
+        const out = new Set();
+        for (const [key, s] of pairState) {
+          if (!s) continue;
+          const [a, b] = key.split("-");
+          out.add(s === "fwd" ? `${a}>${b}` : `${b}>${a}`);
+        }
+        return out;
+      }
+      function hasCycle(set) {
+        const adj = Object.fromEntries(vars.map((v) => [v, []]));
+        set.forEach((key) => { const [a, b] = key.split(">"); adj[a].push(b); });
+        const visiting = new Set(), seen = new Set();
+        function dfs(v) {
+          if (visiting.has(v)) return true;
+          if (seen.has(v)) return false;
+          visiting.add(v);
+          for (const u of adj[v]) if (dfs(u)) return true;
+          visiting.delete(v); seen.add(v); return false;
+        }
+        return vars.some(dfs);
+      }
+      function solveLinear(A, b) {
+        const n = b.length;
+        const M = A.map((row, i) => [...row, b[i]]);
+        for (let i = 0; i < n; i++) {
+          let p = i;
+          for (let k = i + 1; k < n; k++) if (Math.abs(M[k][i]) > Math.abs(M[p][i])) p = k;
+          [M[i], M[p]] = [M[p], M[i]];
+          if (Math.abs(M[i][i]) < 1e-10) return null;
+          for (let k = i + 1; k < n; k++) {
+            const f = M[k][i] / M[i][i];
+            for (let j = i; j <= n; j++) M[k][j] -= f * M[i][j];
+          }
+        }
+        const x = Array(n).fill(0);
+        for (let i = n - 1; i >= 0; i--) {
+          let s = M[i][n];
+          for (let j = i + 1; j < n; j++) s -= M[i][j] * x[j];
+          x[i] = s / M[i][i];
+        }
+        return x;
+      }
+      function nodeScore(v, parentList) {
+        // BIC for Gaussian linear regression: log L_v - (k_v / 2) log N, where k_v = 1 + |parents|.
+        const y = data.map((d) => d[v]);
+        const k = 1 + parentList.length;
+        const X = data.map((d) => [1, ...parentList.map((p) => d[p])]);
+        // Normal equations: (X^T X) beta = X^T y
+        const XtX = Array.from({ length: k }, () => Array(k).fill(0));
+        const Xty = Array(k).fill(0);
+        for (let i = 0; i < N; i++) {
+          for (let a = 0; a < k; a++) {
+            Xty[a] += X[i][a] * y[i];
+            for (let b = 0; b < k; b++) XtX[a][b] += X[i][a] * X[i][b];
+          }
+        }
+        const beta = solveLinear(XtX, Xty);
+        if (!beta) return { logL: -1e6, penalty: 0, score: -1e6 };
+        let sse = 0;
+        for (let i = 0; i < N; i++) {
+          let pred = 0; for (let a = 0; a < k; a++) pred += X[i][a] * beta[a];
+          sse += (y[i] - pred) ** 2;
+        }
+        const sigma2 = Math.max(1e-8, sse / N);
+        const logL = -N / 2 * (Math.log(2 * Math.PI * sigma2) + 1);
+        const penalty = (k / 2) * Math.log(N);
+        return { logL, penalty, score: logL - penalty };
+      }
+      function scoreStructure(set) {
+        const parts = vars.map((v) => {
+          const ps = [...set].map((key) => key.split(">")).filter((e) => e[1] === v).map((e) => e[0]);
+          const r = nodeScore(v, ps);
+          return { v, parents: ps, ...r };
+        });
+        return { parts, total: parts.reduce((s, p) => s + p.score, 0) };
+      }
+      function drawStructure(blocked = "") {
+        const { c, ctx, w, h } = setup("bgm-structure");
+        const sx = w / 540, sy = h / 360, sxy = Math.min(sx, sy);
+        ctx.clearRect(0, 0, w, h);
+        ctx.save(); ctx.scale(sxy, sxy);
+        const chosen = chosenEdges();
+        // Draw true-DAG edges as faint dotted underlay
+        ctx.save();
+        ctx.setLineDash([2, 5]);
+        trueDag.forEach((key) => {
+          const [a, b] = key.split(">");
+          arrow(ctx, pos[a], pos[b], "#bcd6c2", false);
+        });
+        ctx.setLineDash([]);
+        ctx.restore();
+        // Draw candidate edges in current state
+        pairs.forEach(([a, b]) => {
+          const state = pairState.get(`${a}-${b}`);
+          if (!state) {
+            // faint placeholder line
+            ctx.save(); ctx.strokeStyle = "#e3ddd0"; ctx.lineWidth = 1; ctx.setLineDash([2, 4]);
+            ctx.beginPath(); ctx.moveTo(pos[a].x, pos[a].y); ctx.lineTo(pos[b].x, pos[b].y); ctx.stroke();
+            ctx.setLineDash([]); ctx.restore();
+            return;
+          }
+          const from = state === "fwd" ? a : b;
+          const to = state === "fwd" ? b : a;
+          const matches = trueDag.has(`${from}>${to}`);
+          arrow(ctx, pos[from], pos[to], matches ? C.green : C.blue);
+        });
+        if (blocked) { const [a, b] = blocked.split(">"); arrow(ctx, pos[a], pos[b], C.red, true); }
+        vars.forEach((v) => {
+          const p = pos[v];
+          ctx.fillStyle = "#fff"; ctx.strokeStyle = C.blue; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(p.x, p.y, 26, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = C.text; ctx.font = "700 16px -apple-system, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(v, p.x, p.y);
+        });
+        ctx.restore();
+        const { parts, total } = scoreStructure(chosen);
+        const rows = parts.map((p) => `<div class="row"><span class="lbl">${p.v} | pa=${p.parents.length ? p.parents.join(",") : "∅"}</span><span>logL ${p.logL.toFixed(2)} − pen ${p.penalty.toFixed(2)} = ${p.score.toFixed(2)}</span></div>`).join("");
+        const trueScore = scoreStructure(trueDag).total;
+        $("bgm-structure-readout").innerHTML = `${rows}<div class="row"><span class="lbl"><strong>total BIC</strong></span><span><strong>${total.toFixed(2)}</strong> (true DAG: ${trueScore.toFixed(2)})</span></div><div class="row"><span class="lbl">edges</span><span>${[...chosen].sort().join(", ") || "none"}</span></div>`;
+        c.onclick = (event) => {
+          const r = c.getBoundingClientRect();
+          const x = (event.clientX - r.left) / sxy, y = (event.clientY - r.top) / sxy;
+          let best = null, bd = Infinity;
+          pairs.forEach(([a, b]) => {
+            const mx = (pos[a].x + pos[b].x) / 2, my = (pos[a].y + pos[b].y) / 2;
+            const d = Math.hypot(x - mx, y - my);
+            if (d < bd) { bd = d; best = [a, b]; }
+          });
+          if (bd >= 52 || !best) return;
+          const key = `${best[0]}-${best[1]}`;
+          const cur = pairState.get(key);
+          const sequence = ["", "fwd", "rev", ""];
+          const next = new Map(pairState);
+          let chosenNext = cur;
+          for (let step = 0; step < 3; step++) {
+            const i = sequence.indexOf(chosenNext);
+            chosenNext = sequence[(i + 1) % 3];
+            next.set(key, chosenNext);
+            // build edge set & test cycle
+            const trial = new Set();
+            for (const [k, s] of next) {
+              if (!s) continue;
+              const [a, b] = k.split("-");
+              trial.add(s === "fwd" ? `${a}>${b}` : `${b}>${a}`);
+            }
+            if (!hasCycle(trial)) { pairState = next; drawStructure(); return; }
+          }
+          drawStructure(`${best[0]}>${best[1]}`);
+        };
+      }
+      function greedyStep() {
+        const cur = chosenEdges();
+        const baseScore = scoreStructure(cur).total;
+        let bestDelta = 0, bestKey = null, bestNextState = null;
+        pairs.forEach(([a, b]) => {
+          const key = `${a}-${b}`;
+          const curState = pairState.get(key);
+          for (const trialState of ["", "fwd", "rev"]) {
+            if (trialState === curState) continue;
+            const trial = new Set();
+            for (const [k, s] of pairState) {
+              const useState = k === key ? trialState : s;
+              if (!useState) continue;
+              const [aa, bb] = k.split("-");
+              trial.add(useState === "fwd" ? `${aa}>${bb}` : `${bb}>${aa}`);
+            }
+            if (hasCycle(trial)) continue;
+            const sc = scoreStructure(trial).total;
+            if (sc - baseScore > bestDelta) {
+              bestDelta = sc - baseScore; bestKey = key; bestNextState = trialState;
+            }
+          }
+        });
+        if (bestKey) { pairState.set(bestKey, bestNextState); drawStructure(); return true; }
+        return false;
+      }
+      $("bgm-reset-structure").addEventListener("click", () => { pairs.forEach(([a, b]) => pairState.set(`${a}-${b}`, "")); drawStructure(); });
+      $("bgm-true-structure").addEventListener("click", () => {
+        pairs.forEach(([a, b]) => {
+          if (trueDag.has(`${a}>${b}`)) pairState.set(`${a}-${b}`, "fwd");
+          else if (trueDag.has(`${b}>${a}`)) pairState.set(`${a}-${b}`, "rev");
+          else pairState.set(`${a}-${b}`, "");
+        });
+        drawStructure();
+      });
+      $("bgm-greedy").addEventListener("click", () => { greedyStep(); });
+      $("bgm-greedy-run").addEventListener("click", () => { let iter = 0; while (iter++ < 30 && greedyStep()) {} });
+      drawDsep(); resampleCpt(); drawLinear(); drawStructure();
+      window.addEventListener("resize", () => { drawDsep(); drawCpt(); drawLinear(); drawStructure(); });
+    })();
+  </script>
+</ExplainerLayout>

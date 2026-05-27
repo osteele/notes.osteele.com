@@ -1,0 +1,350 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+import NotationAside from "../../components/explainer/NotationAside.astro";
+---
+
+<ExplainerLayout title="Posterior Summaries & Bayes Risk" breadcrumb="Posterior Summaries" section="bayesian-inference">
+<Hero title="Posterior Summaries & Bayes Risk" subtitle="Squared, absolute, and zero-one loss pick out the mean, median, and mode. Three losses, three summaries. They only agree when the posterior is symmetric." />
+
+<OrientationNote>
+  <p>
+    A posterior $p(\theta\mid y)$ encodes everything, but actions need a single
+    number. The choice of summary (mean, median, or mode) follows from the loss
+    function: each <em>minimises expected loss</em> under a different choice of $L$.
+  </p>
+</OrientationNote>
+
+<p>
+Given a posterior $p(\theta\mid y)$ and a loss $L(\theta, \hat\theta)$ that scores
+how bad an estimate $\hat\theta$ is when the truth is $\theta$, the
+<strong>Bayes risk</strong> at $\hat\theta$ is
+</p>
+
+$$
+R(\hat\theta) \;=\; \mathbb&#123;E&#125;_&#123;\theta \mid y&#125;\!\bigl[L(\theta, \hat\theta)\bigr]
+              \;=\; \int L(\theta, \hat\theta)\,p(\theta\mid y)\,d\theta.
+$$
+
+<NotationAside>
+  <p>
+    Written against the posterior measure $\pi(\cdot\mid y)$ directly,
+    $R(\hat\theta) = \int L(\theta, \hat\theta)\,d\pi(\theta\mid y)$. The
+    Bayes-optimal estimate depends only on $\pi$, not on a density
+    representation — which is why the <strong>mean and median are
+    reparametrization-invariant but the mode is not</strong>. See the
+    <a href="/math/notation/#mode">notation page</a>.
+  </p>
+</NotationAside>
+
+<p>
+The Bayes-optimal point estimate is $\hat\theta^\ast = \arg\min_&#123;\hat\theta&#125; R(\hat\theta)$.
+Three classical losses give three named summaries, each revealing a different feature
+of the posterior.
+</p>
+
+<h2 id="three-losses">1. Three losses, three summaries</h2>
+
+<p>
+The three canonical results:
+</p>
+
+<div class="summary-table-wrap">
+  <table class="summary-table">
+    <thead>
+      <tr><th>Loss $L(\theta, \hat\theta)$</th><th>Bayes-optimal estimate</th><th>Name</th><th>Sensitive to</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>$(\theta - \hat\theta)^2$ &nbsp;<em>(squared)</em></td>
+        <td>posterior mean $\mathbb&#123;E&#125;[\theta\mid y]$</td>
+        <td>MMSE</td>
+        <td>tails (variance)</td>
+      </tr>
+      <tr>
+        <td>$\lvert \theta - \hat\theta \rvert$ &nbsp;<em>(absolute)</em></td>
+        <td>posterior median</td>
+        <td>MAD</td>
+        <td>quantile balance</td>
+      </tr>
+      <tr>
+        <td>$\mathbf 1[\theta \neq \hat\theta]$ &nbsp;<em>(zero-one)</em></td>
+        <td>posterior mode $\arg\max p(\theta\mid y)$</td>
+        <td>MAP</td>
+        <td>peak only</td>
+      </tr>
+      <tr>
+        <td>$-\log q(\theta)$ &nbsp;<em>(log loss, over distributions $q$)</em></td>
+        <td>the posterior itself $q^\ast = p(\theta\mid y)$</td>
+        <td>—</td>
+        <td>every part of the posterior</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+The last row generalises the others: instead of asking for a point estimate $\hat\theta$,
+allow the answer to be a whole probability distribution $q$ and use the
+<a href="/math/kl-divergence/">log loss</a> $L(\theta, q) = -\log q(\theta)$. The Bayes risk
+is $\mathbb E_&#123;\theta \mid y&#125;[-\log q(\theta)]$, minimized by $q = p(\theta\mid y)$
+with minimum value equal to the posterior <em>entropy</em>
+$H(\theta\mid y) = -\!\int p(\theta\mid y)\log p(\theta\mid y)\,d\theta$. Any point
+estimate is strictly worse by a KL gap:
+$\mathbb E[-\log q] - H(\theta\mid y) = D(p\,\Vert\, q)$. Reporting the full
+posterior beats reporting <em>any</em> summary, by an amount the
+<a href="/math/kl-divergence/">KL divergence</a> measures exactly.
+</p>
+
+<h3 id="squared">Squared loss → mean</h3>
+
+<p>
+Expanding $R(\hat\theta) = \mathbb&#123;E&#125;[(\theta - \hat\theta)^2]$,
+</p>
+
+$$
+R(\hat\theta)
+= \mathbb&#123;E&#125;[\theta^2] \;-\; 2\hat\theta\,\mathbb&#123;E&#125;[\theta] \;+\; \hat\theta^2
+= \operatorname&#123;Var&#125;(\theta\mid y) \;+\; \bigl(\hat\theta - \mathbb&#123;E&#125;[\theta\mid y]\bigr)^2.
+$$
+
+<p>
+A parabola in $\hat\theta$, with minimum at $\hat\theta^\ast = \mathbb E[\theta\mid y]$
+and minimum value equal to the posterior variance, the
+<em>minimum mean-squared error</em> (MMSE).
+</p>
+
+<h3 id="absolute">Absolute loss → median</h3>
+
+<p>
+For $R(\hat\theta) = \int |\theta - \hat\theta|\,p(\theta\mid y)\,d\theta$, differentiate:
+</p>
+
+$$
+\frac&#123;dR&#125;&#123;d\hat\theta&#125;
+\;=\; -\!\int_&#123;\hat\theta&#125;^&#123;\infty&#125; p(\theta\mid y)\,d\theta
+   \;+\!\int_&#123;-\infty&#125;^&#123;\hat\theta&#125; p(\theta\mid y)\,d\theta
+\;=\; 2\,F(\hat\theta\mid y) - 1.
+$$
+
+<p>
+Setting this to zero gives $F(\hat\theta^\ast\mid y) = \tfrac12$, the posterior
+<em>median</em>. The Bayes risk at the optimum is the <em>mean absolute deviation</em>
+about the median (MAD).
+</p>
+
+<h3 id="zero-one">Zero-one loss → mode</h3>
+
+<p>
+For continuous $\theta$ strict equality has probability zero, so use a thin-window
+limit: $L_\varepsilon(\theta, \hat\theta) = \mathbf 1[\,|\theta - \hat\theta| > \varepsilon/2\,]$.
+Then $R_\varepsilon(\hat\theta) = 1 - \int_&#123;\hat\theta-\varepsilon/2&#125;^&#123;\hat\theta+\varepsilon/2&#125; p(\theta\mid y)\,d\theta
+\approx 1 - \varepsilon\,p(\hat\theta\mid y)$ for small $\varepsilon$, and the
+minimiser is $\hat\theta^\ast = \arg\max_&#123;\theta&#125; p(\theta\mid y)$, the posterior
+<strong>mode</strong>, also known as the <em>maximum a posteriori</em> (MAP) estimate.
+</p>
+
+<p>
+Equivalent intuition: 0-1 loss only rewards being close to a peak; everything else
+incurs the same cost. The Bayes risk is large unless the posterior concentrates
+mass near $\hat\theta$.
+</p>
+
+<p>
+<strong>The mode is the odd one out.</strong> Mean and median are properties of the
+<em>measure</em> $\pi(\cdot \mid y)$ (defined by integrals and quantiles of the
+distribution itself), and so are <em>reparametrization-invariant</em> in the
+appropriate sense (the mean transforms affinely, the median is preserved under any
+monotone bijection). The mode is a property of the <em>density</em> with respect to
+a chosen reference measure: under a smooth bijection $\phi(\theta)$ the density
+picks up a Jacobian $|\phi'|^&#123;-1&#125;$ and the argmax moves. MAP estimates of
+$\log \sigma^2$ and of $\sigma^2$ disagree, but their means and medians are
+consistent. This is the same reparametrization-invariance issue that motivates
+<a href="/math/choosing-a-prior/#jeffreys">Jeffreys priors</a>.
+</p>
+
+<h2 id="figure">2. Three losses on one posterior</h2>
+
+<p>
+Figure 1 shows a posterior with deliberately distinct mean, median, and mode.
+Drag the slider for the estimator $\hat\theta$ and watch the chosen Bayes-risk
+curve $R(\hat\theta)$ pin its minimum to the matching summary.
+</p>
+
+<Figure title="Figure 1 · Bayes risk for squared, absolute, and zero-one loss" canvasId="fig-summaries" width="780" height="460" readoutId="summaries-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>posterior mean</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>posterior median</span>
+    <span><span class="swatch" style="background:#b8412a"></span>posterior mode (MAP)</span>
+    <span><span class="swatch" style="background:#111827"></span>your estimator $\hat\theta$</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="ps-controls">
+    <div class="ps-control-group">
+      <strong>loss:</strong>
+      <button class="ps-tab active" data-loss="squared" type="button">squared $(\theta-\hat\theta)^2$</button>
+      <button class="ps-tab" data-loss="absolute" type="button">absolute $|\theta-\hat\theta|$</button>
+      <button class="ps-tab" data-loss="zero-one" type="button">zero-one</button>
+    </div>
+    <div class="ps-control-group">
+      <strong>posterior:</strong>
+      <button class="ps-shape active" data-shape="skewed" type="button">skewed (Gamma-like)</button>
+      <button class="ps-shape" data-shape="bimodal" type="button">bimodal mixture</button>
+      <button class="ps-shape" data-shape="symmetric" type="button">symmetric Gaussian</button>
+    </div>
+    <div class="ps-control-group">
+      <strong>estimator $\hat\theta$:</strong>
+      <input id="fig-summaries-x" type="range" min="-2" max="8" step="0.02" value="1.7" />
+      <span id="fig-summaries-x-v">1.70</span>
+    </div>
+    <PresetRow>
+      <button id="fig-summaries-snap-mean" type="button">snap to mean</button>
+      <button id="fig-summaries-snap-median" type="button">snap to median</button>
+      <button id="fig-summaries-snap-mode" type="button">snap to mode</button>
+    </PresetRow>
+  </div>
+</Fragment>
+</Figure>
+
+<p>
+Things to notice as you drag:
+</p>
+
+<ul>
+  <li>On the skewed posterior, mode &lt; median &lt; mean, the canonical ordering
+      when the right tail is heavier. The three Bayes-risk curves each minimise at
+      a different point.</li>
+  <li>On the bimodal posterior, the mode can sit on the taller peak while the
+      median balances mass between modes and the mean lands between them.
+      <strong>MAP can be a poor summary of a multi-modal posterior.</strong> It
+      ignores everything except the highest peak.</li>
+  <li>On a symmetric Gaussian, all three coincide.</li>
+  <li>The squared-loss curve grows quickly away from the mean (it's a parabola
+      pinned at posterior variance). Absolute loss grows linearly. Zero-one loss
+      barely moves until you leave the immediate neighbourhood of a peak.</li>
+</ul>
+
+<h2 id="decision">3. Which to use</h2>
+
+<p>
+Standard advice, written from the point of view of how the estimate will be used:
+</p>
+
+<div class="summary-table-wrap">
+  <table class="summary-table">
+    <thead>
+      <tr><th>Use this loss when</th><th>Reach for</th><th>Caveats</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Errors have quadratic cost; you care about average squared error</td>
+        <td>posterior <strong>mean</strong></td>
+        <td>Sensitive to heavy tails; can sit in a low-density region between modes</td>
+      </tr>
+      <tr>
+        <td>Errors have linear cost; you want a central tendency insensitive to tail mass</td>
+        <td>posterior <strong>median</strong></td>
+        <td>Insensitive to tail mass; usually unique even when mode is not</td>
+      </tr>
+      <tr>
+        <td>Decisions are discrete and an exact match matters</td>
+        <td>posterior <strong>mode (MAP)</strong></td>
+        <td>Ignores uncertainty; arbitrary on a flat ridge; misleading if multimodal</td>
+      </tr>
+      <tr>
+        <td>None of the above: you need the full distribution</td>
+        <td>report intervals, samples, or the full posterior</td>
+        <td>A single summary is always lossy</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+A practical note: the MAP estimate is the most computationally accessible. It's
+the maximum of an unnormalised density, which avoids any integration. That's why
+gradient-based optimisation (and hence regularised maximum likelihood) implicitly
+chooses 0-1 loss. The posterior mean and median require integrating the posterior,
+which is what
+<a href="/math/monte-carlo/">Monte Carlo &amp; MCMC</a> and
+<a href="/math/variational-inference/">variational inference</a> exist to do.
+</p>
+
+<NextCards heading="What next" cards={[
+  { href: "/hypothesis-testing/", tag: "Decision theory", title: "Hypothesis Testing", role: "Bayes risk reappears as the prior-and-loss-weighted error rate that picks the optimal Neyman–Pearson threshold." },
+  { href: "/conjugate-priors/", tag: "Posteriors", title: "Conjugate Priors & the Exponential Family", role: "These pages assume you already have a posterior. Conjugacy is the simplest way to get one." },
+  { href: "/monte-carlo/", tag: "Computation", title: "Monte Carlo & MCMC", role: "Posterior mean and median need integration; samplers approximate the integrals that MAP avoids." },
+  { href: "/variational-inference/", tag: "Approximation", title: "Free Energy & Variational Inference", role: "Variational posteriors give an approximate mean directly; the MAP of the variational q approximates the true MAP." },
+]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<style>
+  .summary-table-wrap { overflow-x: auto; margin: 14px 0 22px; }
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .summary-table th, .summary-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--rule, #d8d3c5);
+    text-align: left;
+    vertical-align: top;
+  }
+  .summary-table th {
+    font-weight: 600;
+    background: var(--panel, #fbfbfa);
+    color: var(--text-dim, #5a6577);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .ps-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 4px 14px 12px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    color: var(--text-dim, #5a6577);
+  }
+  .ps-control-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .ps-control-group strong { font-weight: 600; margin-right: 4px; }
+  .ps-control-group input[type="range"] { flex: 1; min-width: 200px; max-width: 360px; }
+  .ps-tab, .ps-shape {
+    background: #ffffff;
+    border: 1px solid #9ca3af;
+    color: var(--text, #1f2733);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-family: inherit;
+    transition: all 0.12s ease;
+  }
+  .ps-tab:hover, .ps-shape:hover { background: #f3f4f6; border-color: #6b7280; }
+  .ps-tab.active, .ps-shape.active {
+    background: var(--accent-2, #1f4a8c);
+    border-color: var(--accent-2, #1f4a8c);
+    color: #ffffff;
+  }
+</style>
+
+<script is:inline src="/math/posterior-summaries/posterior-summaries.js"></script>
+</ExplainerLayout>

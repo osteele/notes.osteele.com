@@ -1,0 +1,559 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+import NotationAside from "../../components/explainer/NotationAside.astro";
+---
+
+<ExplainerLayout title="Bayesian Regression: Penalties as Priors" breadcrumb="Bayesian Regression" section="bayesian-inference">
+<Hero title="Bayesian Regression" subtitle="Every loss is a likelihood. Every regularizer is a prior. Least squares, ridge, LASSO, and best-subset selection are MAP estimates under four different probabilistic models." />
+
+<OrientationNote>
+  <p>
+    Pick a loss function and a regularizer for linear regression, and you have
+    implicitly chosen a noise model and a prior on the coefficients. Once you
+    see the translation, the four classical recipes (OLS, ridge, LASSO,
+    best-subset) line up as MAP estimates under four different probabilistic
+    assumptions. The shape of the prior near zero determines whether the
+    estimator <em>shrinks</em>, <em>selects</em>, or both.
+  </p>
+</OrientationNote>
+
+<h2 id="dictionary">1. The dictionary</h2>
+
+<p>
+The MAP estimate maximises the posterior, or equivalently minimises its
+negative log:
+</p>
+
+$$
+\hat\beta_&#123;\text&#123;MAP&#125;&#125;
+\;=\;
+\arg\max_\beta\;\log p(y\mid X,\beta) + \log p(\beta)
+\;=\;
+\arg\min_\beta\;\bigl[\,-\log p(y\mid X,\beta)\,\bigr] + \bigl[\,-\log p(\beta)\,\bigr].
+$$
+
+<p>
+The first bracket is a <strong>data-fit loss</strong>; the second is a
+<strong>regularizer</strong>. Read the equation in reverse and every
+penalised-likelihood method you already know turns into a Bayesian model:
+</p>
+
+<div class="summary-table-wrap">
+  <table class="summary-table">
+    <thead>
+      <tr><th>Frequentist piece</th><th>Bayesian piece</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>loss $\;\ell(y, X\beta)$</td><td>$-\log p(y\mid X,\beta)$ &nbsp;<em>(likelihood)</em></td></tr>
+      <tr><td>regularizer $\;\lambda\,R(\beta)$</td><td>$-\log p(\beta)$ &nbsp;<em>(prior)</em></td></tr>
+      <tr><td>regularization strength $\lambda$</td><td>ratio of noise variance to prior variance</td></tr>
+      <tr><td>$\arg\min$ (loss + penalty)</td><td>MAP estimate</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+That is the entire trick. The four sections below just instantiate it for
+specific choices of likelihood and prior.
+</p>
+
+<NotationAside>
+  <p>
+    Throughout, $y \in \mathbb R^n$ is the response vector, $X \in \mathbb
+    R^&#123;n\times p&#125;$ is the design matrix, and $\beta \in \mathbb R^p$ the
+    coefficient vector. The noise variance $\sigma^2$ is assumed known here so
+    that $\lambda$ comes out as a clean function of the prior scale. With
+    $\sigma^2$ unknown, $\lambda$ picks up an extra estimated factor but the
+    structural correspondence is unchanged.
+  </p>
+</NotationAside>
+
+<h2 id="l2-mle">2. Least squares ⇔ MLE with Gaussian noise</h2>
+
+<p>The model:</p>
+
+$$
+y_i \;=\; x_i^\top\beta + \varepsilon_i,\qquad \varepsilon_i \sim \mathcal N(0,\sigma^2).
+$$
+
+<p>The likelihood factorises across observations:</p>
+
+$$
+p(y\mid X,\beta)
+\;\propto\;
+\exp\!\left(-\frac&#123;1&#125;&#123;2\sigma^2&#125;\sum_i (y_i - x_i^\top\beta)^2\right).
+$$
+
+<p>
+Taking the negative log and dropping additive constants leaves
+$\tfrac&#123;1&#125;&#123;2\sigma^2&#125;\sum_i (y_i - x_i^\top\beta)^2$. Maximum
+likelihood is therefore ordinary least squares:
+</p>
+
+$$
+\hat\beta_&#123;\text&#123;OLS&#125;&#125;
+\;=\;
+\arg\min_\beta\;\sum_i (y_i - x_i^\top\beta)^2.
+$$
+
+<div class="aside">
+  <p>
+    <strong>Why squared error?</strong> Because the Gaussian log-density is a
+    quadratic. A residual twice as large is four times as unlikely, so the
+    estimator pushes hardest against the biggest residuals. Switch the noise
+    distribution to Laplace ($\varepsilon_i \sim \text&#123;Laplace&#125;(0,b)$) and the
+    same derivation gives <strong>least absolute deviations</strong>, the
+    median regression of robust statistics. Switch to Student-$t$ and you get
+    a robust regression that down-weights outliers.
+  </p>
+</div>
+
+<h2 id="l2-ridge">3. L2 regularizer ⇔ Gaussian prior (ridge)</h2>
+
+<p>Place an independent Gaussian prior on each coefficient:</p>
+
+$$
+\beta_j \;\sim\; \mathcal N(0, \tau^2)
+\qquad\Longrightarrow\qquad
+p(\beta) \;\propto\; \exp\!\left(-\frac&#123;1&#125;&#123;2\tau^2&#125;\sum_j \beta_j^2\right).
+$$
+
+<p>
+The negative log posterior, again up to constants, is the ridge objective:
+</p>
+
+$$
+\hat\beta_&#123;\text&#123;ridge&#125;&#125;
+\;=\;
+\arg\min_\beta\;\sum_i (y_i - x_i^\top\beta)^2
+\;+\;
+\lambda\sum_j \beta_j^2,
+\qquad
+\lambda \;=\; \frac&#123;\sigma^2&#125;&#123;\tau^2&#125;.
+$$
+
+<p>
+The regularization strength <em>is</em> the ratio of noise variance to prior
+variance. Tight prior (small $\tau^2$) means strong shrinkage; vague prior
+(large $\tau^2$) means $\lambda\to 0$ and ridge collapses back to OLS.
+</p>
+
+<div class="aside">
+  <p>
+    <strong>Why ridge shrinks but doesn't select.</strong> The Gaussian
+    log-density $-\beta_j^2/2\tau^2$ is differentiable and <em>flat</em> at
+    zero: its slope there is $0$. A small coefficient incurs vanishingly small
+    penalty, so the optimum sits at the place where the likelihood gradient
+    balances the prior gradient. That balance point is generically nonzero. The
+    estimator pulls every coefficient toward zero but stops short of the axis.
+  </p>
+</div>
+
+<h2 id="l1-lasso">4. L1 regularizer ⇔ Laplace prior (LASSO)</h2>
+
+<p>
+Swap the Gaussian prior for a Laplace prior: same symmetric shape, but with
+$|\beta_j|$ in the exponent rather than $\beta_j^2$:
+</p>
+
+$$
+\beta_j \;\sim\; \text&#123;Laplace&#125;(0, b),
+\qquad
+p(\beta_j) \;\propto\; \exp\!\left(-\frac&#123;|\beta_j|&#125;&#123;b&#125;\right).
+$$
+
+<p>The MAP objective becomes the LASSO:</p>
+
+$$
+\hat\beta_&#123;\text&#123;LASSO&#125;&#125;
+\;=\;
+\arg\min_\beta\;\sum_i (y_i - x_i^\top\beta)^2
+\;+\;
+\lambda\sum_j |\beta_j|,
+\qquad
+\lambda \;=\; \frac&#123;\sigma^2&#125;&#123;b&#125;.
+$$
+
+<div class="aside">
+  <p>
+    <strong>Why LASSO selects.</strong> The Laplace log-density $-|\beta_j|/b$
+    is <em>not</em> differentiable at zero: its left and right slopes are
+    $+1/b$ and $-1/b$. That kink means there is a finite range of likelihood
+    gradients for which the prior pull at $\beta_j = 0$ can dominate from
+    either side, and the optimum sits <em>exactly</em> at zero. The Laplace
+    prior also has heavier tails than a Gaussian of comparable scale, so once
+    a coefficient escapes the kink, the prior tolerates large values better
+    than ridge would. The net effect is shrinkage plus selection: some
+    coefficients are pushed to exactly $0$, the rest are only mildly biased.
+  </p>
+</div>
+
+<h2 id="l0-subset">5. L0 regularizer ⇔ sparsity prior (best subset)</h2>
+
+<p>The $\ell_0$ "norm" counts nonzero coefficients:</p>
+
+$$
+\|\beta\|_0 \;=\; \#\&#123;\,j : \beta_j \neq 0\,\&#125;.
+$$
+
+<p>A penalty $\lambda \|\beta\|_0$ corresponds to a spike-and-slab prior:</p>
+
+$$
+z_j \sim \text&#123;Bernoulli&#125;(\pi),
+\qquad
+\beta_j \mid z_j = 0 \;=\; 0,
+\qquad
+\beta_j \mid z_j = 1 \;\sim\; q(\beta_j),
+$$
+
+<p>
+where $q$ is some diffuse "slab" distribution on the nonzero coefficients.
+Each $z_j = 0$ pays $\log\bigl((1-\pi)/\pi\bigr)$ relative to $z_j = 1$ in
+log-prior terms; the magnitude of an included coefficient is essentially
+free under the slab.
+</p>
+
+$$
+\hat\beta_&#123;\ell_0&#125;
+\;=\;
+\arg\min_\beta\;\sum_i (y_i - x_i^\top\beta)^2
+\;+\;
+\lambda\,\|\beta\|_0.
+$$
+
+<div class="aside">
+  <p>
+    <strong>Why L0 is literal model selection, and why we usually don't solve
+    it.</strong> The L0 penalty charges a flat fee per included variable and
+    is indifferent to how large the included coefficients get. That is the
+    Bayesian statement of "choose which variables matter, not how big they
+    are." The cost is computational: minimising $\ell_0$ requires searching
+    over $2^p$ subsets, which is NP-hard in general. <strong>LASSO is the
+    convex relaxation</strong>: the tightest convex penalty that still
+    encourages sparsity, and the reason L1 became the default in practice.
+  </p>
+</div>
+
+<h2 id="shrink-viz">6. Three estimators side by side</h2>
+
+<p>
+Slide $\beta_&#123;\text&#123;OLS&#125;&#125;$ and watch the three estimators respond. The top
+panel plots the negative log posterior (the thing being minimised); the bottom
+panel plots the resulting $\hat\beta$ as a function of $\beta_&#123;\text&#123;OLS&#125;&#125;$.
+Ridge is a straight line through the origin with slope $1/(1+\lambda)$,
+proportional shrinkage. LASSO is a soft threshold: a flat dead zone of width
+$\lambda$ around the origin, then a line of slope $1$ shifted toward zero by
+$\lambda/2$. L0 is a hard threshold: identity outside $\pm\sqrt\lambda$, exact
+zero inside.
+</p>
+
+<Figure title="Figure 1 · Shrink, soft-threshold, and hard-threshold side by side" canvasId="fig-shrink" width="780" height="480" readoutId="shrink-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>ridge (L2 / Gaussian prior)</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>LASSO (L1 / Laplace prior)</span>
+    <span><span class="swatch" style="background:#b8412a"></span>L0 (spike-and-slab)</span>
+    <span><span class="swatch" style="background:#111827"></span>$\beta_&#123;\text&#123;OLS&#125;&#125;$ reference</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="ps-controls">
+    <div class="ps-control-group">
+      <strong>$\beta_&#123;\text&#123;OLS&#125;&#125;$:</strong>
+      <input id="fig-shrink-bols" type="range" min="-3" max="3" step="0.02" value="1.6" />
+      <span id="fig-shrink-bols-v">1.60</span>
+    </div>
+    <div class="ps-control-group">
+      <strong>$\lambda$:</strong>
+      <input id="fig-shrink-lambda" type="range" min="0.05" max="2.5" step="0.01" value="0.8" />
+      <span id="fig-shrink-lambda-v">0.80</span>
+    </div>
+  </div>
+</Fragment>
+</Figure>
+
+<p>Things to notice as you drag:</p>
+
+<ul>
+  <li>For small $\beta_&#123;\text&#123;OLS&#125;&#125;$ (close to zero), <strong>LASSO and L0
+  both snap to exactly zero</strong>, while ridge stays close to but never
+  reaches the axis. That's the difference between shrinkage and selection.</li>
+  <li>For large $\beta_&#123;\text&#123;OLS&#125;&#125;$, <strong>L0 returns
+  $\beta_&#123;\text&#123;OLS&#125;&#125;$ unmodified</strong>: once a variable is "in", L0
+  doesn't bias it. Ridge and LASSO still shrink it, ridge by a multiplicative
+  factor, LASSO by a constant offset.</li>
+  <li>Increase $\lambda$. Ridge's slope flattens uniformly. LASSO's dead zone
+  widens. L0's gap jumps outward.</li>
+  <li>On the top panel, ridge's minimum sits in a smooth valley; LASSO's
+  minimum sits in a V-shaped valley; L0's "minimum" can sit at the discrete
+  notch at $\beta = 0$, visible as a separate dot dropping below the parabola
+  whenever the L0 estimate has selected out.</li>
+</ul>
+
+<h2 id="summary">7. The four-row dictionary</h2>
+
+<div class="summary-table-wrap">
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Estimator</th>
+        <th>Loss + penalty</th>
+        <th>Noise model</th>
+        <th>Prior on $\beta_j$</th>
+        <th>Behaviour at $\beta_j = 0$</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>OLS</td>
+        <td>$\sum(y_i - x_i^\top\beta)^2$</td>
+        <td>Gaussian noise</td>
+        <td>flat (improper)</td>
+        <td>no shrinkage</td>
+      </tr>
+      <tr>
+        <td>ridge</td>
+        <td>$\;\;+\;\lambda\sum\beta_j^2$</td>
+        <td>Gaussian noise</td>
+        <td>$\mathcal N(0,\tau^2)$</td>
+        <td>smooth shrinkage, never exactly $0$</td>
+      </tr>
+      <tr>
+        <td>LASSO</td>
+        <td>$\;\;+\;\lambda\sum|\beta_j|$</td>
+        <td>Gaussian noise</td>
+        <td>$\text&#123;Laplace&#125;(0,b)$</td>
+        <td>kink at $0$ &rarr; exact zeros + shrinkage</td>
+      </tr>
+      <tr>
+        <td>best subset</td>
+        <td>$\;\;+\;\lambda\|\beta\|_0$</td>
+        <td>Gaussian noise</td>
+        <td>spike-and-slab</td>
+        <td>discrete in/out, no shrinkage when in</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="geom-viz">8. Why LASSO lands on the axes: 2-D constraint geometry</h2>
+
+<p>
+The 1-D picture above shows soft- vs hard-thresholding cleanly, but it doesn't
+yet show <em>which</em> coefficient LASSO zeros out when there's more than one
+to choose from. For that, the canonical picture is the 2-D
+<em>constraint-region</em> view. Write each estimator as a constrained problem:
+</p>
+
+$$
+\min_\beta\;\sum_i (y_i - x_i^\top\beta)^2
+\quad\text&#123;subject to&#125;\quad \|\beta\|_q \le s,
+\qquad q \in \&#123;0, 1, 2\&#125;.
+$$
+
+<p>
+The OLS objective's level sets are ellipses centred at
+$\beta_&#123;\text&#123;OLS&#125;&#125;$. The MAP estimate is the point of the smallest such
+ellipse that still touches the feasible region. Three regions, three touch
+geometries:
+</p>
+
+<Figure title="Figure 2 · OLS ellipses meet L0 (axes), L1 (diamond), L2 (disk)" canvasId="fig-geom" width="640" height="540" readoutId="geom-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>L2 disk (ridge)</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>L1 diamond (LASSO)</span>
+    <span><span class="swatch" style="background:#b8412a"></span>L0 axes (best subset)</span>
+    <span><span class="swatch" style="background:#111827"></span>$\beta_&#123;\text&#123;OLS&#125;&#125;$ (drag me)</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="ps-controls">
+    <div class="ps-control-group">
+      <strong>constraint radius $r$:</strong>
+      <input id="fig-geom-r" type="range" min="0.2" max="2.0" step="0.01" value="1.0" />
+      <span id="fig-geom-r-v">1.00</span>
+    </div>
+    <div class="ps-control-group">
+      <strong>OLS correlation:</strong>
+      <input id="fig-geom-corr" type="range" min="-0.9" max="0.9" step="0.01" value="0.0" />
+      <span id="fig-geom-corr-v">0.00</span>
+    </div>
+  </div>
+</Fragment>
+</Figure>
+
+<p>
+Drag the OLS point around. Things to notice:
+</p>
+
+<ul>
+  <li>The L2 disk is smooth, so the touch point is generically <em>not</em> on
+  either axis. Ridge shrinks but rarely zeros a coefficient.</li>
+  <li>The L1 diamond has <em>corners on the axes</em>. For a broad range of
+  $\beta_&#123;\text&#123;OLS&#125;&#125;$ directions, the smallest touching ellipse meets
+  the diamond at one of those corners. At a corner, one coordinate is
+  exactly $0$. That is the geometric reason LASSO produces sparse solutions:
+  most directions in which OLS can sit make the closest feasible point a
+  corner.</li>
+  <li>L0 confines the MAP to the axes themselves (one nonzero coordinate at
+  most, for small $r$). The closest point on an axis projects
+  $\beta_&#123;\text&#123;OLS&#125;&#125;$ onto whichever axis lies nearer.</li>
+  <li>Crank the OLS correlation. The ellipses tilt at 45°. The L1 diamond's
+  corners still attract the touch point. LASSO's selection is robust to OLS
+  anisotropy.</li>
+  <li>Shrink $r$ (tighten the constraint, equivalent to increasing $\lambda$).
+  All three MAPs move toward the origin; the L1 MAP picks up selection earlier
+  than the L2 MAP.</li>
+</ul>
+
+<h2 id="intuition">9. The shape-near-zero intuition</h2>
+
+<p>
+The whole story is in the picture of the log-prior near the origin. Three
+curves, three behaviours:
+</p>
+
+<ul>
+  <li>
+    <strong>Quadratic bowl</strong> (Gaussian): smooth, slope $0$ at the
+    origin. The prior never insists on the axis, so the MAP sits just inside
+    it. <em>Shrinkage only.</em>
+  </li>
+  <li>
+    <strong>V-shape</strong> (Laplace): kinked, slope $\pm 1/b$ at the origin.
+    There's a finite range of data gradients for which the prior wins, so
+    the MAP lands exactly on the axis. <em>Shrinkage + selection.</em>
+  </li>
+  <li>
+    <strong>Step</strong> (spike-and-slab): a discrete jump at the origin. In
+    or out, no in-between. <em>Selection only, no shrinkage of included
+    coefficients.</em>
+  </li>
+</ul>
+
+<p>
+Once you see the four estimators as MAP under four priors, several familiar
+facts stop looking arbitrary:
+</p>
+
+<ul>
+  <li>
+    <strong>Cross-validating $\lambda$</strong> is empirical Bayes for the
+    prior scale. You're asking the data to estimate $\sigma^2/\tau^2$.
+  </li>
+  <li>
+    <strong>The Bayes ridge posterior is Gaussian</strong>, conjugate to the
+    Gaussian likelihood, so ridge gives you not just a point estimate but
+    full uncertainty. (See the
+    <a href="/math/conjugate-priors/">conjugate-priors</a> page.)
+  </li>
+  <li>
+    <strong>The Bayes LASSO posterior is not Gaussian</strong> and not
+    conjugate. The MAP is still tractable, but the full posterior needs MCMC
+    or VI (see <a href="/math/monte-carlo/">sampling</a>,
+    <a href="/math/variational-inference/">variational inference</a>).
+  </li>
+  <li>
+    <strong>Elastic net</strong> ($\lambda_1\|\beta\|_1 + \lambda_2\|\beta\|_2^2$)
+    is MAP under a product of Laplace and Gaussian priors, combining the
+    selection of one with the grouping behaviour of the other.
+  </li>
+</ul>
+
+<h2 id="caveats">10. What MAP loses</h2>
+
+<p>
+MAP collapses the posterior to its mode, which means it ignores everything
+else the prior was telling you. Two specific costs are worth flagging:
+</p>
+
+<ul>
+  <li>
+    <strong>No uncertainty quantification.</strong> The MAP point estimate
+    doesn't tell you which coefficients the data really pinned down vs. which
+    the prior largely chose. The full posterior does. See
+    <a href="/math/posterior-summaries/">posterior summaries</a> for why mode,
+    mean, and median disagree.
+  </li>
+  <li>
+    <strong>Reparametrization sensitivity.</strong> The mode moves under a
+    smooth change of variable; the mean and median do not. So the LASSO
+    "selection" of $\beta_j$ depends on the chosen parametrization.
+  </li>
+</ul>
+
+<NextCards heading="What next" cards={[
+  { href: "/hierarchical-bayes/", tag: "Hierarchy", title: "Hierarchical Bayes", role: "Ridge as a hierarchical model: putting a hyperprior on $\\tau^2$ recovers cross-validated $\\lambda$ as empirical Bayes." },
+  { href: "/posterior-summaries/", tag: "Decision", title: "Posterior Summaries & Bayes Risk", role: "MAP is the Bayes estimator under zero-one loss. Squared and absolute losses pick the posterior mean and median instead." },
+  { href: "/conjugate-priors/", tag: "Closed form", title: "Conjugate Priors & the Exponential Family", role: "The Gaussian–Gaussian pair behind ridge regression is conjugate; the Laplace–Gaussian pair behind LASSO is not." },
+  { href: "/fisher-information/", tag: "Likelihood", title: "Fisher Information", role: "The likelihood-geometry view of the OLS objective and why the Gaussian noise model gives quadratic loss." },
+]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<style>
+  .summary-table-wrap { overflow-x: auto; margin: 14px 0 22px; }
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .summary-table th, .summary-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--rule, #d8d3c5);
+    text-align: left;
+    vertical-align: top;
+  }
+  .summary-table th {
+    font-weight: 600;
+    background: var(--surface-soft, #f4efe1);
+  }
+  .summary-table tr:last-child td { border-bottom: none; }
+
+  .ps-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 4px 14px 12px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    color: var(--text-dim, #5a6577);
+  }
+  .ps-control-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .ps-control-group strong { font-weight: 600; margin-right: 4px; }
+  .ps-control-group input[type="range"] { flex: 1; min-width: 200px; max-width: 360px; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--text-dim, #5a6577);
+    margin: 6px 14px 6px;
+    align-items: center;
+  }
+  .legend .swatch {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  #fig-geom { cursor: grab; }
+  #fig-geom:active { cursor: grabbing; }
+</style>
+
+<script is:inline src="/math/bayesian-regression/bayesian-regression.js"></script>
+</ExplainerLayout>

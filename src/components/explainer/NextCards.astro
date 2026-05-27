@@ -1,0 +1,31 @@
+---
+interface NextCard {
+  href: string;
+  tag: string;
+  title: string;
+  role: string;
+}
+
+interface Props {
+  heading?: string;
+  intro?: string;
+  cards: NextCard[];
+}
+
+const { heading = "What next", intro, cards } = Astro.props;
+---
+
+<section class="what-next" aria-labelledby="what-next">
+  <h2 id="what-next">{heading}</h2>
+  {intro && <p class="intro">{intro}</p>}
+  <div class="next-grid">
+    {cards.map((card) => (
+      <a class="next-card" href={card.href}>
+        <canvas class="live-preview" width="220" height="54" data-preview-href={card.href} aria-hidden="true"></canvas>
+        <div class="tag" set:html={card.tag}></div>
+        <div class="title" set:html={card.title}></div>
+        <div class="role" set:html={card.role}></div>
+      </a>
+    ))}
+  </div>
+</section>

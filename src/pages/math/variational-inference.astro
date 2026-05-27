@@ -1,0 +1,469 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import Legend from "../../components/explainer/Legend.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import PresetButton from "../../components/explainer/PresetButton.astro";
+import Readout from "../../components/explainer/Readout.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import VizCard from "../../components/explainer/VizCard.astro";
+import VizCardGrid from "../../components/explainer/VizCardGrid.astro";
+---
+
+<ExplainerLayout title="Free Energy & Variational Inference" breadcrumb="Free Energy & Variational Inference" section="bayesian-inference">
+
+
+<Hero title="Free Energy &amp; Variational Inference" subtitle="How an intractable Bayesian posterior turns into an optimization problem." />
+
+<p>
+Bayesian inference asks: given data $y$ and a model $p(y,\theta) = p(y\mid\theta)\,p(\theta)$,
+what is the posterior $p(\theta\mid y)$? In principle you just apply Bayes:
+$p(\theta\mid y) = p(y,\theta)/p(y)$. In practice the marginal evidence
+$p(y) = \int p(y,\theta)\,d\theta$ is a high-dimensional integral that is almost never
+available in closed form. Variational inference sidesteps the integral by replacing
+"find the posterior" with "find the closest tractable distribution to the posterior",
+turning inference into optimization.
+</p>
+
+<Aside>
+<strong>The posterior is the prior, tilted.</strong> Bayes' rule has a one-line
+<a href="/math/measure-theory/#rn-derivative">measure-theoretic</a> reading: the posterior
+measure is absolutely continuous with respect to the prior, with Radon–Nikodym
+derivative
+$$
+\frac&#123;dP_&#123;\theta\mid y&#125;&#125;&#123;dP_\theta&#125;(\theta) \;\propto\; p(y\mid\theta).
+$$
+Updating doesn't create probability out of nothing; it <em>reweights</em> the prior
+by the likelihood and renormalizes. Variational inference is the case where this tilt
+is intractable, so we minimize a KL gap to an approximating $q$ instead.
+Conjugate cases (see <a href="/math/named-distributions/#conjugacy">named distributions</a>)
+are the ones where the tilt stays inside a finite-dimensional
+<a href="/math/fisher-information/#score-as-tilt">exponential family</a> and updates have
+closed form.
+</Aside>
+
+<p>The closeness measure is the <a href="/math/kl-divergence/"><strong>Kullback-Leibler divergence</strong></a>, and the
+quantity we actually optimize is the <strong>variational free energy</strong> (also
+known, with a sign flip, as the <strong>ELBO</strong>). Together they sit inside the
+single identity</p>
+
+$$ \ln p(y) \;=\; \underbrace&#123;\mathrm&#123;KL&#125;\!\bigl[\,q(\theta)\,\Vert\,p(\theta\mid y)\,\bigr]&#125;_&#123;\geq 0&#125; \;+\; F(q,y). $$
+
+<p>This page uses KL as a building block. For the standalone intuition behind KL,
+including categorical examples and forward-vs-reverse behavior, see
+<a href="/math/kl-divergence/">KL Divergence</a>. Three interactive figures below
+show how the same directed gap becomes an inference algorithm.</p>
+
+<h2>1. KL inside variational inference</h2>
+
+<p>
+For two densities $q$ and $p$ on the same space, the KL divergence is
+</p>
+
+$$ \mathrm&#123;KL&#125;[q\,\Vert\,p] \;=\; \int q(\theta)\,\ln\frac&#123;q(\theta)&#125;&#123;p(\theta)&#125;\,d\theta \;=\; \mathbb&#123;E&#125;_q\!\left[\ln\frac&#123;q(\theta)&#125;&#123;p(\theta)&#125;\right]. $$
+
+<p>
+It is non-negative, zero only when $q=p$ almost everywhere, and directed:
+$\mathrm&#123;KL&#125;[q\Vert p] \neq \mathrm&#123;KL&#125;[p\Vert q]$ in general. Variational
+inference uses $\mathrm&#123;KL&#125;[q\Vert p(\theta\mid y)]$, the reverse or
+mode-seeking direction, because that is the one that drops out of the algebra below.
+</p>
+
+<p>
+Drag $q$ and $p$. The shaded gap between the curves on the bottom plot is the
+integrand $q(\theta)\ln\bigl(q(\theta)/p(\theta)\bigr)$, weighted by $q$. The point
+for VI is that changing $q$ changes both where the approximation puts mass and where
+the mismatch is measured.
+</p>
+
+<Figure title={String.raw`Figure 1 · $\mathrm{KL}[q\Vert p]$ between two Gaussians`} canvasId="fig1" width="720" height="340" readoutId="fig1-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>$q(\theta)$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>$p(\theta)$</span>
+      <span><span class="swatch" style="background:rgba(107,69,146,0.4)"></span>integrand of KL</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig1-mq" label={String.raw`$\mu_q$`} valueId="fig1-mq-v" min="-3" max="3" step="0.05" value="0" />
+      <ControlRange id="fig1-sq" label={String.raw`$\sigma_q$`} valueId="fig1-sq-v" min="0.2" max="3" step="0.05" value="1" />
+      <ControlRange id="fig1-mp" label={String.raw`$\mu_p$`} valueId="fig1-mp-v" min="-3" max="3" step="0.05" value="1" />
+      <ControlRange id="fig1-sp" label={String.raw`$\sigma_p$`} valueId="fig1-sp-v" min="0.2" max="3" step="0.05" value="1" />
+      <PresetRow>
+        <button data-fig1-preset="shift">Mean shift</button>
+        <button data-fig1-preset="wider">$p$ wider than $q$</button>
+        <button data-fig1-preset="narrower">$p$ narrower than $q$</button>
+        <button data-fig1-preset="swap">Swap to KL[p‖q]</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 1a · Reverse KL mode-seeking on a bimodal target" canvasId="fig-mixture-kl" width="720" height="360" readoutId="fig-mixture-kl-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>target posterior $p(\theta\mid y)$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>single-Gaussian $q(\theta)$</span>
+      <span><span class="swatch" style="background:rgba(107,69,146,0.40)"></span>objective landscape</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <button data-mixture-objective="reverse" class="active">Minimize KL[q‖p]</button>
+        <button data-mixture-objective="forward">Minimize KL[p‖q]</button>
+        <button id="fig-mixture-optimize">Optimize</button>
+        <button id="fig-mixture-reset">Reset q</button>
+      </PresetRow>
+      <ControlRange id="fig-mixture-mq" label={String.raw`$\mu_q$`} valueId="fig-mixture-mq-v" min="-4" max="4" step="0.05" value="0" />
+      <ControlRange id="fig-mixture-sq" label={String.raw`$\sigma_q$`} valueId="fig-mixture-sq-v" min="0.25" max="4" step="0.05" value="1.4" />
+</Fragment>
+</Figure>
+
+<h2>2. The variational identity</h2>
+
+<Aside>
+<strong>The evidence is a log-partition function.</strong> Identify $E(\theta) = -\ln p(y,\theta)$.
+Then the marginal evidence is literally a partition function over parameters:
+$$
+p(y) \;=\; \int p(y,\theta)\,d\theta \;=\; \int e^&#123;-E(\theta)&#125;\,d\theta \;=\; Z,
+$$
+and the posterior is the Gibbs distribution at temperature $1$:
+$p(\theta\mid y) = e^&#123;-E(\theta)&#125;/Z$. The
+<a href="/math/entropy-mutual-information/#legendre">Legendre-duality identity</a>
+$\ln Z = \sup_q\!\bigl(\mathbb&#123;E&#125;_q[-E] + H(q)\bigr)$ is then exactly the ELBO,
+achieved when $q = p(\theta\mid y)$. So variational inference is statistical mechanics
+on probability distributions: minimizing free energy, with the posterior as the
+equilibrium and the KL gap as the excess free energy.
+</Aside>
+
+<p>
+Start from Bayes' rule, $p(y,\theta) = p(\theta\mid y)\,p(y)$, take logs, and play the
+classic multiply-and-divide-by-$q(\theta)$ trick:
+</p>
+
+<div class="derivation">
+  <div class="step" data-vi-step="0">
+    <div>$\displaystyle \ln p(y) \;=\; \ln\frac&#123;p(y,\theta)&#125;&#123;p(\theta\mid y)&#125;$</div>
+    <div class="note">Bayes' rule, rearranged</div>
+  </div>
+  <hr>
+  <div class="step" data-vi-step="1">
+    <div>$\displaystyle \phantom&#123;\ln p(y)&#125; \;=\; \int q(\theta)\,\ln\frac&#123;p(y,\theta)&#125;&#123;p(\theta\mid y)&#125;\,d\theta$</div>
+    <div class="note">Multiply by $q(\theta)$ and integrate; $\ln p(y)$ is constant in $\theta$, $\int q = 1$</div>
+  </div>
+  <hr>
+  <div class="step" data-vi-step="2">
+    <div>$\displaystyle \phantom&#123;\ln p(y)&#125; \;=\; \int q(\theta)\,\ln\!\left[\frac&#123;p(y,\theta)&#125;&#123;p(\theta\mid y)&#125;\cdot\frac&#123;q(\theta)&#125;&#123;q(\theta)&#125;\right]d\theta$</div>
+    <div class="note">Multiply and divide by $q(\theta)$ inside the log</div>
+  </div>
+  <hr>
+  <div class="step" data-vi-step="3">
+    <div>$\displaystyle \phantom&#123;\ln p(y)&#125; \;=\; \int q(\theta)\,\ln\frac&#123;q(\theta)&#125;&#123;p(\theta\mid y)&#125;\,d\theta \;+\; \int q(\theta)\,\ln\frac&#123;p(y,\theta)&#125;&#123;q(\theta)&#125;\,d\theta$</div>
+    <div class="note">Split the log of a product</div>
+  </div>
+  <hr>
+  <div class="step" data-vi-step="4">
+    <div>$\displaystyle \phantom&#123;\ln p(y)&#125; \;=\; \underbrace&#123;\mathrm&#123;KL&#125;\!\bigl[q\,\Vert\,p(\cdot\mid y)\bigr]&#125;_&#123;\color&#123;#b8412a&#125;\text&#123;divergence&#125;\geq 0&#125; \;+\; \underbrace&#123;F(q,y)&#125;_&#123;\color&#123;#1f4a8c&#125;\text&#123;free energy&#125;&#125;$</div>
+    <div class="note">Read off the two pieces</div>
+  </div>
+</div>
+
+<Figure title="Figure 1b · Step through the variational identity" canvasId="fig-identity" width="720" height="360" readoutId="fig-identity-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>$q(\theta)$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>true posterior</span>
+      <span><span class="swatch" style="background:rgba(184,65,42,0.55)"></span>KL</span>
+      <span><span class="swatch" style="background:rgba(31,74,140,0.55)"></span>$F$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="control">
+        <label>derivation step <span class="v" id="fig-identity-step-v">3</span></label>
+        <input type="range" id="fig-identity-step" min="0" max="4" step="1" value="3">
+      </div>
+      <div class="control">
+        <label>$\mu_q$ <span class="v" id="fig-identity-mq-v">0.0</span></label>
+        <input type="range" id="fig-identity-mq" min="-4" max="4" step="0.05" value="0">
+      </div>
+      <div class="control">
+        <label>$\sigma_q$ <span class="v" id="fig-identity-sq-v">1.50</span></label>
+        <input type="range" id="fig-identity-sq" min="0.2" max="3" step="0.02" value="1.5">
+      </div>
+</Fragment>
+</Figure>
+
+<p>
+Two consequences follow:
+</p>
+
+<ul>
+  <li>Because $\ln p(y)$ depends on $q$ only through the right-hand side, and KL is
+  non-negative, $F(q,y) \le \ln p(y)$. The free energy is a <strong>lower bound</strong>
+  on the log evidence, the "Evidence Lower BOund" (ELBO).</li>
+  <li>Because $\ln p(y)$ is constant in $q$, <strong>maximizing $F(q,y)$ is
+  equivalent to minimizing $\mathrm&#123;KL&#125;[q\Vert p(\cdot\mid y)]$</strong>. We have
+  turned an intractable integral into a tractable optimization.</li>
+</ul>
+
+<p>
+The picture: log-evidence is a fixed ceiling, $F$ rises toward it as we
+optimize, and the leftover gap is exactly the KL.
+</p>
+
+<h2>3. Visualizing the decomposition</h2>
+
+<p>
+Take a Bayesian inference problem with a closed-form posterior, so we have a
+ground truth to compare against. Model:
+</p>
+
+$$
+\theta \sim \mathcal&#123;N&#125;(\mu_0, \sigma_0^2),\qquad
+y \mid \theta \sim \mathcal&#123;N&#125;(\theta, \sigma^2_&#123;\!\text&#123;lik&#125;&#125;).
+$$
+
+<p>
+With one observation $y$, the true posterior is
+$p(\theta\mid y) = \mathcal&#123;N&#125;(\mu^\star, \sigma^&#123;\star 2&#125;)$ with
+$\sigma^&#123;\star 2&#125;=(1/\sigma_0^2+1/\sigma^2_&#123;\!\text&#123;lik&#125;&#125;)^&#123;-1&#125;$ and
+$\mu^\star = \sigma^&#123;\star 2&#125;(\mu_0/\sigma_0^2 + y/\sigma^2_&#123;\!\text&#123;lik&#125;&#125;)$.
+We pick a variational family $q(\theta)=\mathcal&#123;N&#125;(\mu_q,\sigma_q^2)$ and watch
+the identity $\ln p(y) = \mathrm&#123;KL&#125;[q\Vert p(\cdot\mid y)] + F(q,y)$ hold for every
+choice of $(\mu_q,\sigma_q)$, even bad ones.
+</p>
+
+<p>
+The bar on the right of the figure shows the decomposition. The ceiling
+$\ln p(y)$ is constant (it depends on the data and model, not on $q$). As you move
+$q$ closer to the true posterior, the red KL band shrinks and the blue free-energy
+band fills in to meet it. The "Optimize" button does a gradient ascent on
+$F(q,y)$; you'll see $q$ settle onto the posterior.
+</p>
+
+<Figure title={String.raw`Figure 2 · $\ln p(y) = \mathrm{KL}[q\Vert p(\cdot\mid y)] + F(q,y)$`} canvasId="fig2" width="720" height="380" readoutId="fig2-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#2d7a3e"></span>prior $p(\theta)$</span>
+      <span><span class="swatch" style="background:#d4690a"></span>likelihood $p(y\mid\theta)$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>true posterior $p(\theta\mid y)$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>variational $q(\theta)$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig2-y" label="observation $y$" valueId="fig2-y-v" min="-3" max="3" step="0.05" value="2" />
+      <ControlRange id="fig2-sl" label={String.raw`likelihood noise $\sigma_{\!\text{lik}}$`} valueId="fig2-sl-v" min="0.3" max="3" step="0.05" value="1" />
+      <ControlRange id="fig2-mq" label={String.raw`$\mu_q$`} valueId="fig2-mq-v" min="-4" max="4" step="0.05" value="0" />
+      <ControlRange id="fig2-sq" label={String.raw`$\sigma_q$`} valueId="fig2-sq-v" min="0.2" max="3" step="0.02" value="1.5" />
+      <PresetRow>
+        <button id="fig2-optimize">Optimize F  ↑</button>
+        <button id="fig2-reset">Reset</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>4. Two ways to read the free energy</h2>
+
+<p>
+The free energy admits a second decomposition that is often more useful for
+computation. Starting from its definition,
+</p>
+
+$$
+F(q,y) = \int q(\theta)\,\ln\frac&#123;p(y,\theta)&#125;&#123;q(\theta)&#125;\,d\theta
+       = \underbrace&#123;\mathbb&#123;E&#125;_q[\ln p(y,\theta)]&#125;_&#123;\text&#123;expected log-joint&#125;&#125;
+       + \underbrace&#123;\mathrm&#123;H&#125;[q]&#125;_&#123;\text&#123;entropy of &#125;q&#125;.
+$$
+
+<p>
+Maximizing $F$ trades two pressures:
+</p>
+
+<ul>
+  <li>The <strong>expected log-joint</strong> $\mathbb&#123;E&#125;_q[\ln p(y,\theta)]$ pulls $q$
+  toward regions where the model thinks the data are likely, where high prior meets high
+  likelihood. It is a "fit" term.</li>
+  <li>The <strong>entropy</strong> $\mathrm&#123;H&#125;[q] = -\int q\ln q$ pushes $q$ to spread
+  out. It is a "don't be overconfident" term.</li>
+</ul>
+
+<p>
+Equivalently, and this is the form people optimize in practice,
+$F(q,y) = \mathbb&#123;E&#125;_q[\ln p(y\mid\theta)] - \mathrm&#123;KL&#125;[q\Vert p(\theta)]$:
+fit the data, but stay close to the prior.
+</p>
+
+<p>
+The two contributions appear side by side as you change $q$. Watch
+the trade-off: shrinking $\sigma_q$ raises the fit term (if $\mu_q$ is in the right
+place) but lowers the entropy. The optimum balances them.
+</p>
+
+<Figure title={String.raw`Figure 3 · $F = \mathbb{E}_q[\ln p(y,\theta)] + \mathrm{H}[q]$`} canvasId="fig3" width="720" height="340" readoutId="fig3-readout">
+<Fragment slot="controls">
+  <ControlRange id="fig3-mq" label={String.raw`$\mu_q$`} valueId="fig3-mq-v" min="-4" max="4" step="0.05" value="0" />
+      <ControlRange id="fig3-sq" label={String.raw`$\sigma_q$`} valueId="fig3-sq-v" min="0.2" max="3" step="0.02" value="1.5" />
+      <ControlRange id="fig3-y" label="observation $y$" valueId="fig3-y-v" min="-3" max="3" step="0.05" value="2" />
+      <PresetRow>
+        <button id="fig3-optimize">Optimize</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 4 · Mean-field VI underestimates correlated posterior variance" canvasId="fig-meanfield" width="720" height="360" readoutId="fig-meanfield-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>true correlated posterior</span>
+      <span><span class="swatch" style="background:#b8412a"></span>axis-aligned mean-field $q_1q_2$</span>
+      <span><span class="swatch" style="background:#6b4592"></span>marginal variance kept by reverse KL</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig-meanfield-rho" label={String.raw`posterior correlation $\rho$`} valueId="fig-meanfield-rho-v" min="0" max="0.98" step="0.01" value="0.78" />
+      <PresetRow>
+        <button data-meanfield-rho="0">independent</button>
+        <button data-meanfield-rho="0.65">correlated</button>
+        <button data-meanfield-rho="0.92">highly correlated</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+The heatmap below shows $F(q,y)$ as a function of $(\mu_q, \sigma_q)$ for the same
+Gaussian-Gaussian model. Click anywhere on the landscape to place $q$ there; the
+optimum's $(\mu^\star,\sigma^\star)$ is marked with a crosshair, an arrow shows the
+gradient direction at your current $q$, and the inset on the right plots that $q$
+against the true posterior on the $\theta$ axis. The readout reports $F$, the
+constant ceiling $\ln p(y)$, and their gap, which is exactly $\mathrm&#123;KL&#125;[q\Vert
+p(\cdot\mid y)]$. As you slide $y$ or the likelihood noise, the whole landscape
+shifts.
+</p>
+
+<Figure title="Figure 5 · ELBO landscape over variational parameters" canvasId="fig-elbo-landscape" width="760" height="320" readoutId="fig-elbo-landscape-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>higher ELBO / posterior marker</span>
+      <span><span class="swatch" style="background:#b8412a"></span>optimizer trajectory / current $q$</span>
+      <span><span class="swatch" style="background:#1f2733"></span>$\nabla F$ direction</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig-elbo-y" label="observation $y$" valueId="fig-elbo-y-v" min="-3" max="3" step="0.05" value="2" />
+  <ControlRange id="fig-elbo-sl" label={String.raw`likelihood noise $\sigma_{\!\text{lik}}$`} valueId="fig-elbo-sl-v" min="0.3" max="3" step="0.05" value="1" />
+  <PresetRow>
+        <button id="fig-elbo-run">Run optimizer</button>
+        <button id="fig-elbo-reset">Reset start</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="mean-field-regression">5. Mean-field VI in Bayesian linear regression</h2>
+
+<p>
+Figure 4 above made the underestimation point abstractly: a 2D Gaussian with
+correlation, approximated by an axis-aligned $q_1 q_2$. The same picture
+becomes more concrete in <em>Bayesian linear regression</em>, where the
+correlation in the posterior is not assumed but arises from the data you
+collect. Click in the data panel to add points, drag to move them, or
+alt-click to remove. The model is $y_i = \alpha + \beta x_i + \epsilon_i$ with
+Gaussian noise and a Gaussian prior on $(\alpha, \beta)$, so the exact
+posterior is a (correlated) Gaussian we can plot directly against the best
+axis-aligned mean-field approximation.
+</p>
+
+<Aside>
+  <strong>The failure mode:</strong> when intercept and slope are correlated,
+  reverse-KL mean-field VI cannot rotate its ellipse. It shrinks the marginal
+  variances to avoid putting mass in low-posterior-density corners — the
+  "VI underestimates uncertainty" result you saw in Figure 4, now made
+  contingent on the data you place yourself.
+</Aside>
+
+<Figure title="Figure 6 · Bayesian linear regression posterior and mean-field approximation" canvasId="fig-mf-regression" width="760" height="430" readoutId="fig-mf-regression-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>exact posterior</span>
+    <span><span class="swatch" style="background:#b8412a"></span>mean-field VI</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>posterior predictive</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="mf-noise" label={String.raw`noise $\sigma$`} valueId="mf-noise-v" min="0.15" max="1.2" step="0.01" value="0.35" />
+  <ControlRange id="mf-prior" label="prior sd" valueId="mf-prior-v" min="0.6" max="4" step="0.05" value="2.0" />
+  <PresetRow>
+    <button id="mf-collinear">Collinear x's</button>
+    <button id="mf-balanced">Balanced x's</button>
+    <button id="mf-sparse">Sparse data</button>
+    <button id="mf-clear">Clear</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+The next figure runs the actual <strong>coordinate-ascent VI (CAVI)</strong>
+updates. For a Gaussian posterior, the reverse-KL mean-field optimum has the
+same mean as the exact posterior, but each factor variance is the inverse of
+the matching precision diagonal. Click the buttons to alternate between
+updating the intercept factor $q(\alpha)$ and the slope factor $q(\beta)$:
+the red ellipse snaps toward the coordinate-wise optimum and the ELBO rises.
+You can also click anywhere in the $(\alpha,\beta)$ panel to drop $q$ at a
+different starting position before running CAVI.
+</p>
+
+<Figure title="Figure 7 · Mean-field coordinate updates and ELBO" canvasId="fig-mf-cavi" width="760" height="360" readoutId="fig-mf-cavi-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>exact posterior</span>
+    <span><span class="swatch" style="background:#b8412a"></span>current $q(\alpha)q(\beta)$</span>
+    <span><span class="swatch" style="background:#6b4592"></span>ELBO trace</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+    <button id="mf-step-alpha">Update $q(\alpha)$</button>
+    <button id="mf-step-beta">Update $q(\beta)$</button>
+    <button id="mf-run-cavi">Run CAVI</button>
+    <button id="mf-reset-q">Reset q</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+When the $x$ values are concentrated on one side, many intercept-slope pairs
+explain the data nearly equally well. The exact posterior tilts along that
+tradeoff. The factorized approximation cannot represent the tilt, so reverse
+KL chooses a smaller axis-aligned ellipse — the same phenomenon as Figure 4,
+but here you can see exactly which data placements force it.
+</p>
+
+<h2>Where this goes next</h2>
+
+<ul>
+  <li><strong>Mean-field variational inference.</strong> If $q(\theta) = \prod_i q_i(\theta_i)$ factorizes, coordinate ascent on $F$ has a closed-form update for each $q_i$. This is VI for graphical models, topic models, latent Dirichlet allocation, and more.</li>
+  <li><strong>Amortized inference / VAE.</strong> Replace $q(\theta)$ with $q_\phi(\theta\mid y)$, a neural network mapping data to variational parameters. Maximize the same $F$, now over $\phi$ and over the generative model. That is the variational autoencoder.</li>
+  <li><strong>Free-energy principle.</strong> The same identity, applied at every level of a hierarchical generative model of sensory input, gives Karl Friston's account of perception, action, and learning as minimizing free energy.</li>
+  <li><strong>EM as a special case.</strong> The Expectation–Maximization algorithm alternates E-steps (set $q$ to the exact posterior, KL = 0) and M-steps (maximize $F$ over model parameters) on the same identity.</li>
+</ul>
+
+<p>
+$\ln p(y) = \mathrm&#123;KL&#125;[q\Vert p(\cdot\mid y)] + F(q,y)$. Everything from the
+mean-field updates of a topic model to the loss function of a VAE is a tactic for
+making one side of that equation easy to compute.
+</p>
+
+<NextCards heading="What next" intro="Variational inference sits between measure-theoretic identities and sampling-based computation." cards={[{"href":"/kl-divergence/","tag":"Information","title":"KL Divergence","role":"Study the directed mismatch measure used here, including categorical support errors and forward-vs-reverse behavior."},{"href":"/measure-theory/","tag":"Foundations","title":"Measure Theory &amp; Random Variables","role":"Back up to densities as relationships between measures, including the KL and importance-weight identities used here."},{"href":"/fisher-information/","tag":"Geometry","title":"Uninformative Priors, Fisher Information &amp; MLE","role":"Connect likelihood curvature, Jeffreys priors, and posterior concentration to the optimization view used here."},{"href":"/monte-carlo/","tag":"Computation","title":"Monte Carlo &amp; MCMC","role":"Contrast optimization-based approximate inference with rejection, importance, and MCMC. The state-space (particle-filter) variant is on its own page."},{"href":"/entropy-mutual-information/","tag":"Information","title":"Entropy &amp; Mutual Information","role":"The entropy term in free energy is the same uncertainty accounting, now used as an optimization pressure."}]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Companion to
+  <a href="/math/kl-divergence/">KL Divergence</a> and
+  <a href="/math/measure-theory/">Measure Theory &amp; Random Variables</a>. Math typeset with KaTeX.
+</div>
+
+
+  <script is:inline src="/math/variational-inference/vi.js"></script>
+  <script is:inline src="/math/variational-inference/mf.js"></script>
+</ExplainerLayout>

@@ -1,0 +1,19 @@
+---
+interface Props {
+  id?: string;
+  label: string;
+  valueId?: string;
+  dataParam?: string;
+  min: string | number;
+  max: string | number;
+  step: string | number;
+  value: string | number;
+}
+
+const { id, label, valueId, dataParam, min, max, step, value } = Astro.props;
+---
+
+<div class="control">
+  <label><span set:html={label} /> <span class="v" id={valueId}>{value}</span></label>
+  <input type="range" id={id} data-param={dataParam} min={min} max={max} step={step} value={value} />
+</div>

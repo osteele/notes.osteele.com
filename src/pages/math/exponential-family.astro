@@ -1,0 +1,376 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="The Exponential Family" breadcrumb="Exponential Family" section="probability-and-statistics">
+<Hero title="The Exponential Family" subtitle="One parametric template that covers most named distributions, explains where finite-dimensional sufficient statistics come from, supplies the canonical link functions behind GLMs, and ties Bayesian computation to statistical-mechanics partition functions." />
+
+<h2 id="canonical-form">1. The canonical form</h2>
+
+<p>
+A parametric family is an <strong>exponential family</strong> if every density
+in it can be written
+</p>
+
+$$
+p(x \mid \eta) \;=\; h(x)\,\exp\!\Bigl[\eta^\top T(x) - A(\eta)\Bigr].
+$$
+
+<p>
+Most named distributions are members: Bernoulli, binomial, Poisson, geometric,
+exponential, gamma, beta, Dirichlet, Gaussian (with known or unknown
+variance), multinomial. The shape of the formula does the work.
+<a href="/math/sufficient-statistics/">Sufficient statistics</a> shows the
+factorization theorem the canonical form trivially satisfies:
+$T(x)$ is staring at you in the exponent.
+</p>
+
+<p>
+The <strong>Pitman–Koopman–Darmois theorem</strong> is the converse: under
+regularity (fixed support, smooth densities), this is the <em>only</em> way a
+finite-dimensional sufficient statistic exists for every sample size $n$.
+<a href="/math/conjugate-priors/">Conjugate priors</a> with finite-dimensional
+hyperparameters are therefore restricted to this case; outside it, the
+posterior's complexity grows with $n$.
+</p>
+
+<h2 id="names">2. What each piece is called, and why</h2>
+
+<p>
+The names look like jargon but each one carries a specific meaning. The
+<strong>log-partition</strong> piece in particular is a direct loan from
+statistical physics that pays for itself in §3.
+</p>
+
+<div class="expfam-name-table-wrap">
+  <table class="expfam-name-table">
+    <thead>
+      <tr>
+        <th>Piece</th>
+        <th>Name</th>
+        <th>Why that name</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>$\eta \in \mathbb R^k$</td>
+        <td><strong>natural parameter</strong><br/><span class="muted">(also <em>canonical</em>)</span></td>
+        <td>In this parametrization the log-density is <em>linear</em> in $\eta$, so the family is convex and the geometry is simplest: the Fisher information becomes the Hessian of $A(\eta)$. Contrast the "conventional" or "moment" parameter: $p$ for Bernoulli vs. $\eta = \log\frac&#123;p&#125;&#123;1-p&#125;$, $\lambda$ for Poisson vs. $\eta = \log\lambda$.</td>
+      </tr>
+      <tr>
+        <td>$T(x) \in \mathbb R^k$</td>
+        <td><strong>sufficient statistic</strong></td>
+        <td>Conditional on $T(x)$, the likelihood doesn't depend on $\eta$, by Fisher–Neyman (see <a href="/math/sufficient-statistics/">sufficient statistics</a>). $T$ carries all the information about $\eta$ that $x$ provides. Pitman–Koopman–Darmois says this is the only class where a finite-dimensional $T$ does the job for every $n$.</td>
+      </tr>
+      <tr>
+        <td>$h(x) \ge 0$</td>
+        <td><strong>base measure</strong><br/><span class="muted">(also <em>carrier</em>)</span></td>
+        <td>The dominating measure with respect to which the density is computed. Whatever cannot be absorbed into $\eta^\top T(x) - A(\eta)$ ends up here. For Poisson it carries $1/x!$; for known-$\sigma$ Normal it carries the $x^2$ piece that doesn't depend on $\mu$; for Beta and Gamma it can be taken to be $1$.</td>
+      </tr>
+      <tr>
+        <td>$A(\eta) = \log\int h(x)\,e^&#123;\eta^\top T(x)&#125;\,dx$</td>
+        <td><strong>log-partition function</strong><br/><span class="muted">(also <em>cumulant function</em>)</span></td>
+        <td>Direct loan from statistical mechanics. In thermodynamics, $Z(\beta) = \sum_s e^&#123;-\beta E_s&#125;$ is the <em>partition function</em>: the normalizer that turns Boltzmann weights $e^&#123;-\beta E_s&#125;$ into a probability distribution, and almost every thermodynamic observable is a derivative of $\log Z$. Here $\int h(x)\,e^&#123;\eta^\top T(x)&#125;\,dx = e^&#123;A(\eta)&#125;$, so $A = \log Z$. The "cumulant" alias comes from the derivative property covered in §3.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<Aside>
+  <strong>The log-partition has a direct payoff.</strong> The free-energy/ELBO
+  identity in <a href="/math/variational-inference/">variational inference</a> is
+  literally a statement about the log-partition function of an exponential
+  family: $\log Z = \sup_q (\mathbb E_q[-E] + H(q))$, with $Z = p(y)$ the
+  evidence and $E(\theta) = -\log p(y, \theta)$. That's not a coincidence.
+  Bayesian computation <em>is</em> partition-function evaluation in disguise.
+</Aside>
+
+<h2 id="cumulants">3. Derivatives of $A(\eta)$ give moments</h2>
+
+<p>
+Differentiating $A(\eta) = \log\int h(x)\,e^&#123;\eta^\top T(x)&#125;\,dx$ once and
+twice gives, by the same calculation that defines a moment-generating function:
+</p>
+
+$$
+\nabla A(\eta) \;=\; \mathbb E[T(X)] \;=:\; \mu,
+\qquad
+\nabla^2 A(\eta) \;=\; \mathrm&#123;Cov&#125;[T(X)].
+$$
+
+<p>
+Higher derivatives give higher cumulants (third = skewness × $\sigma^3$,
+fourth = excess kurtosis × $\sigma^4$, …). That is why $A$ is also called the
+<strong>cumulant function</strong>: every cumulant of the sufficient statistic
+is a derivative of one scalar function.
+</p>
+
+<p>
+Two operational consequences follow:
+</p>
+
+<ul>
+  <li><strong>The mean is a function of $\eta$.</strong> Write $\mu(\eta) = \nabla A(\eta)$; this is the <strong>mean function</strong>. It is the link between the natural parametrization (where the math is clean) and the moment parametrization (where the answers live).</li>
+  <li><strong>The Fisher information is the Hessian of $A$.</strong> $I(\eta) = \mathrm&#123;Cov&#125;[T(X)] = \nabla^2 A(\eta)$. So the <a href="/math/fisher-information/">Fisher metric</a> on an exponential family is just the second derivative of the log-partition. This is why exponential families have such clean information geometry.</li>
+</ul>
+
+<h2 id="links">4. The canonical link function (GLMs)</h2>
+
+<p>
+Generalized linear models put a linear predictor $\eta = X^\top\beta$ in front
+of an exponential-family response. The function that maps the mean parameter
+$\mu = \mathbb E[T(X)]$ to the natural parameter $\eta$ is the
+<strong>canonical link</strong>; its inverse $\mu = \nabla A(\eta)$ is the
+mean function. Logistic and Poisson regression are precisely the cases where
+the response is Bernoulli or Poisson and the link is the canonical one:
+</p>
+
+<div class="expfam-name-table-wrap">
+  <table class="expfam-name-table">
+    <thead>
+      <tr>
+        <th>Family</th>
+        <th>$\mu$</th>
+        <th>Canonical link $\eta(\mu)$</th>
+        <th>Inverse link $\mu(\eta)$</th>
+        <th>GLM name</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Bernoulli</td>
+        <td>$p$</td>
+        <td>$\log\dfrac&#123;p&#125;&#123;1-p&#125;$ &nbsp;(<strong>logit</strong>)</td>
+        <td>$\dfrac&#123;1&#125;&#123;1+e^&#123;-\eta&#125;&#125;$ &nbsp;(<strong>sigmoid</strong>)</td>
+        <td>logistic regression</td>
+      </tr>
+      <tr>
+        <td>Poisson</td>
+        <td>$\lambda$</td>
+        <td>$\log\lambda$ &nbsp;(<strong>log link</strong>)</td>
+        <td>$e^\eta$</td>
+        <td>Poisson regression</td>
+      </tr>
+      <tr>
+        <td>Normal ($\sigma$ known)</td>
+        <td>$\mu$</td>
+        <td>$\mu/\sigma^2$ &nbsp;(identity when $\sigma^2 = 1$)</td>
+        <td>$\sigma^2\,\eta$</td>
+        <td>linear regression</td>
+      </tr>
+      <tr>
+        <td>Exponential</td>
+        <td>$1/\lambda$</td>
+        <td>$-\lambda$</td>
+        <td>$-1/\eta$</td>
+        <td>(survival models)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+The logit/sigmoid pair is the most famous example. Logistic regression is
+exactly the GLM with a Bernoulli response and the canonical link; the sigmoid
+is the matching inverse mean function. Same for the log/exp pair behind
+Poisson regression. The "natural" in <em>natural parameter</em> is the same
+"natural" as in <em>natural link</em>.
+</p>
+
+<h2 id="decomposition">5. Six families, one template</h2>
+
+<p>
+The table below shows six standard members in the canonical decomposition.
+Click any row to update the density preview at the bottom; slide the
+parameters to see how the same template generates each density. The pieces
+$h$, $T$, $\eta$, $A$ change family to family, but the
+<em>shape</em> $p(x\mid\eta) = h(x)\exp(\eta^\top T(x) - A(\eta))$ does not.
+</p>
+
+<div class="expfam-decomp-table-wrap">
+  <table class="expfam-decomp-table">
+    <thead>
+      <tr>
+        <th>Family</th>
+        <th>$h(x)$</th>
+        <th>$T(x)$</th>
+        <th>$\eta(\theta)$</th>
+        <th>$A(\eta)$</th>
+        <th>Support</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr data-expfam-row="bernoulli" class="active">
+        <td><strong>Bernoulli$(p)$</strong></td>
+        <td>$1$</td>
+        <td>$x$</td>
+        <td>$\log\dfrac&#123;p&#125;&#123;1-p&#125;$</td>
+        <td>$\log(1+e^\eta) = -\log(1-p)$</td>
+        <td>$\&#123;0,1\&#125;$</td>
+      </tr>
+      <tr data-expfam-row="poisson">
+        <td><strong>Poisson$(\lambda)$</strong></td>
+        <td>$1/x!$</td>
+        <td>$x$</td>
+        <td>$\log\lambda$</td>
+        <td>$e^\eta = \lambda$</td>
+        <td>$\mathbb&#123;N&#125;$</td>
+      </tr>
+      <tr data-expfam-row="exponential">
+        <td><strong>Exponential$(\lambda)$</strong></td>
+        <td>$1$</td>
+        <td>$x$</td>
+        <td>$-\lambda$</td>
+        <td>$-\log(-\eta) = -\log\lambda$</td>
+        <td>$[0,\infty)$</td>
+      </tr>
+      <tr data-expfam-row="normal">
+        <td><strong>Normal$(\mu,\sigma^2)$</strong>, $\sigma$ known</td>
+        <td>$\dfrac&#123;e^&#123;-x^2/(2\sigma^2)&#125;&#125;&#123;\sqrt&#123;2\pi\sigma^2&#125;&#125;$</td>
+        <td>$x$</td>
+        <td>$\mu/\sigma^2$</td>
+        <td>$\sigma^2\eta^2/2 = \mu^2/(2\sigma^2)$</td>
+        <td>$\mathbb R$</td>
+      </tr>
+      <tr data-expfam-row="gamma">
+        <td><strong>Gamma$(\alpha,\beta)$</strong></td>
+        <td>$1$</td>
+        <td>$(\log x,\;x)$</td>
+        <td>$(\alpha-1,\;-\beta)$</td>
+        <td>$\log\Gamma(\alpha) - \alpha\log\beta$</td>
+        <td>$(0,\infty)$</td>
+      </tr>
+      <tr data-expfam-row="beta">
+        <td><strong>Beta$(\alpha,\beta)$</strong></td>
+        <td>$1$</td>
+        <td>$(\log x,\;\log(1-x))$</td>
+        <td>$(\alpha-1,\;\beta-1)$</td>
+        <td>$\log B(\alpha,\beta)$</td>
+        <td>$(0,1)$</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="expfam-fig">
+  <canvas id="fig-expfam" width="780" height="280"></canvas>
+  <div id="expfam-readout" class="readout"></div>
+  <div class="ps-controls">
+    <div class="ps-control-group">
+      <strong id="fig-expfam-p1-lbl">p:</strong>
+      <input id="fig-expfam-p1" type="range" min="0.02" max="0.98" step="0.01" value="0.5" />
+      <span id="fig-expfam-p1-v">0.50</span>
+    </div>
+    <div class="ps-control-group" id="fig-expfam-p2-row">
+      <strong id="fig-expfam-p2-lbl">σ:</strong>
+      <input id="fig-expfam-p2" type="range" min="0.3" max="2.5" step="0.05" value="1" />
+      <span id="fig-expfam-p2-v">1.00</span>
+    </div>
+  </div>
+</div>
+
+<p>
+Three structural symmetries:
+</p>
+
+<ul>
+  <li>The <strong>1-parameter</strong> families (Bernoulli, Poisson, Exponential, Normal-known-$\sigma$) all have $T(x) = x$. Their sufficient statistic for $n$ samples is just $\sum x_i$, the natural quantity an analyst would already compute.</li>
+  <li>The <strong>2-parameter</strong> families (Gamma, Beta) have $T(x)$ a 2-vector. For Gamma it is $(\log x, x)$: geometric and arithmetic means are sufficient. For Beta it is $(\log x, \log(1-x))$, symmetric since Beta is symmetric in $(p, 1-p)$.</li>
+  <li><strong>Cauchy is the standard counterexample</strong>: $p(x\mid\theta) = (\pi[1+(x-\theta)^2])^&#123;-1&#125;$ cannot be put in canonical form, has no finite-dimensional sufficient statistic for $n$ samples, and is exactly what Pitman–Koopman–Darmois rules out.</li>
+</ul>
+
+<NextCards heading="What next" cards={[
+  { href: "/sufficient-statistics/", tag: "Foundations", title: "Sufficient Statistics", role: "The factorization theorem and fiber picture the canonical form is built around — and the data-processing inequality view in §8." },
+  { href: "/conjugate-priors/", tag: "Bayes", title: "Conjugate Priors", role: "Why conjugate priors exist precisely inside the exponential family: the (τ, ν) → (τ+ΣT, ν+n) update." },
+  { href: "/fisher-information/", tag: "Geometry", title: "Fisher Information", role: "Fisher information as the Hessian of $A(\\eta)$, Jeffreys priors, and the information-geometric view of the family." },
+  { href: "/variational-inference/", tag: "Approximation", title: "Free Energy & Variational Inference", role: "The free-energy identity recast as a statement about log-partition functions, with the posterior as the equilibrium distribution." },
+  { href: "/named-distributions/", tag: "Reference", title: "Named Distributions", role: "Where Bernoulli, Beta, Gamma, Normal, Dirichlet, and the rest sit — the family map, with links back to which are exponential-family members." },
+]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<style>
+  .expfam-name-table-wrap,
+  .expfam-decomp-table-wrap {
+    overflow-x: auto;
+    margin: 14px 0 22px;
+  }
+  .expfam-name-table,
+  .expfam-decomp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .expfam-name-table th, .expfam-name-table td,
+  .expfam-decomp-table th, .expfam-decomp-table td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    vertical-align: top;
+  }
+  .expfam-name-table th,
+  .expfam-decomp-table th {
+    font-weight: 600;
+    background: rgba(2, 132, 199, 0.06);
+    border-bottom: 2px solid rgba(2, 132, 199, 0.25);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-dim, #5a6577);
+  }
+  .expfam-name-table .muted,
+  .expfam-decomp-table .muted { color: var(--text-dim); font-size: 11px; }
+  .expfam-decomp-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.12s;
+  }
+  .expfam-decomp-table tbody tr:hover { background: rgba(2, 132, 199, 0.04); }
+  .expfam-decomp-table tbody tr.active { background: rgba(45, 122, 62, 0.10); }
+  .expfam-decomp-table tbody tr.active td:first-child {
+    border-left: 3px solid #2d7a3e;
+    padding-left: 8px;
+  }
+  .expfam-fig {
+    border: 1px solid var(--rule, #d8d3c5);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin: 16px 0 22px;
+    background: #ffffff;
+  }
+  .expfam-fig canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .expfam-fig .readout {
+    font-size: 12.5px;
+    color: var(--text, #1f2733);
+    margin: 8px 0 10px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .ps-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 4px 0 4px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    color: var(--text-dim, #5a6577);
+  }
+  .ps-control-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .ps-control-group strong { font-weight: 600; margin-right: 4px; }
+  .ps-control-group input[type="range"] { flex: 1; min-width: 200px; max-width: 360px; }
+</style>
+
+<script is:inline src="/math/exponential-family/exp-family.js"></script>
+</ExplainerLayout>

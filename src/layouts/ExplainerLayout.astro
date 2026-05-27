@@ -1,0 +1,483 @@
+---
+import "../styles/explainer.css";
+import { descriptionForPath } from "../lib/page-index";
+
+type Section = "probability-and-statistics" | "information-theory" | "random-processes" | "bayesian-inference" | "machine-learning";
+
+interface Props {
+  title: string;
+  breadcrumb: string;
+  description?: string;
+  section?: Section;
+  enableMath?: boolean;
+  showToc?: boolean;
+}
+
+const SECTION_LABELS: Record<Section, string> = {
+  "probability-and-statistics": "Probability & Statistics",
+  "information-theory": "Information Theory",
+  "random-processes": "Random Processes",
+  "bayesian-inference": "Bayesian Inference",
+  "machine-learning": "Machine Learning",
+};
+
+const {
+  title,
+  breadcrumb,
+  description,
+  section = "probability-and-statistics",
+  enableMath = true,
+  showToc = true,
+} = Astro.props;
+const sectionLabel = SECTION_LABELS[section];
+const metaDescription = description ?? descriptionForPath(Astro.url.pathname);
+const katexOnload = "renderMathInElement(document.body,{throwOnError:false,delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\\\[',right:'\\\\]',display:true},{left:'\\\\(',right:'\\\\)',display:false}]});";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    {metaDescription && (
+      <>
+        <meta name="description" content={metaDescription} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={Astro.url.href} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={metaDescription} />
+      </>
+    )}
+    {enableMath && (
+      <>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+        <script
+          is:inline
+          defer
+          src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+          onload={katexOnload}
+        ></script>
+      </>
+    )}
+  </head>
+  <body>
+    <nav class="nav" aria-label="Sites">
+      <a href="https://osteele.com">osteele.com</a>
+      <span class="sep">/</span>
+      <a href="/">notes</a>
+      <span class="sep">/</span>
+      <a class="current" href="/math/">math</a>
+    </nav>
+    <main class="explainer-shell">
+      <div class="explainer-content">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href={`/math/#${section}`}>{sectionLabel}</a>
+          <span class="sep">›</span>
+          <span class="current">{breadcrumb}</span>
+        </nav>
+        <slot />
+      </div>
+      {showToc && (
+        <nav class="explainer-toc" aria-label="Contents" hidden>
+          <div class="explainer-toc-title">Contents</div>
+          <ol></ol>
+        </nav>
+      )}
+    </main>
+    {showToc && (
+      <script is:inline>
+        (() => {
+          const content = document.querySelector(".explainer-content");
+          const toc = document.querySelector(".explainer-toc");
+          const list = toc?.querySelector("ol");
+          if (!content || !toc || !list) return;
+
+          const headings = Array.from(content.querySelectorAll("h2"));
+          if (headings.length < 2) return;
+
+          const usedIds = new Set(Array.from(document.querySelectorAll("[id]"), (node) => node.id));
+          const slugify = (text) => {
+            const base = text
+              .toLowerCase()
+              .normalize("NFKD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/&/g, " and ")
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "");
+            return base || "section";
+          };
+          const uniqueId = (base) => {
+            let id = base;
+            let index = 2;
+            while (usedIds.has(id)) {
+              id = `${base}-${index}`;
+              index += 1;
+            }
+            usedIds.add(id);
+            return id;
+          };
+
+          const linksById = new Map();
+          headings.forEach((heading) => {
+            if (!heading.id) heading.id = uniqueId(slugify(heading.textContent || ""));
+
+            const label = (heading.textContent || "").replace(/^\s*\d+\.\s*/, "").trim();
+            const item = document.createElement("li");
+            const link = document.createElement("a");
+            link.href = `#${heading.id}`;
+            link.textContent = label || heading.id;
+            item.append(link);
+            list.append(item);
+            linksById.set(heading.id, link);
+          });
+
+          toc.hidden = false;
+
+          const activate = (id) => {
+            linksById.forEach((link) => link.classList.toggle("active", link === linksById.get(id)));
+          };
+          activate(headings[0].id);
+
+          const observer = new IntersectionObserver((entries) => {
+            const visible = entries
+              .filter((entry) => entry.isIntersecting)
+              .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+            if (visible[0]?.target.id) activate(visible[0].target.id);
+          }, { rootMargin: "-30% 0px -60% 0px" });
+
+          headings.forEach((heading) => observer.observe(heading));
+        })();
+      </script>
+    )}
+    <script is:inline>
+      (() => {
+        function figureFor(id) {
+          const node = document.getElementById(id);
+          return node?.closest(".figure") || node;
+        }
+        function pulse(el, cls, ms = 1200) {
+          if (!el) return;
+          el.classList.add(cls);
+          window.setTimeout(() => el.classList.remove(cls), ms);
+        }
+        document.addEventListener("click", (event) => {
+          const trigger = event.target.closest("[data-target-figure]");
+          if (!trigger) return;
+          const target = figureFor(trigger.dataset.targetFigure);
+          if (!target) return;
+          target.scrollIntoView({ behavior: "smooth", block: "center" });
+          pulse(target, "is-pulsing", 1500);
+          const preset = trigger.dataset.preset;
+          if (preset) {
+            const buttons = target.querySelectorAll("[data-fig1-preset],[data-fig2-preset],[data-fig3-preset],[data-fig4-preset],[data-fig5-preset],[data-fig-corr-preset],[data-fig2-filter]");
+            const match = Array.from(buttons).find((button) => Object.values(button.dataset).includes(preset));
+            match?.click();
+          }
+          const hint = trigger.dataset.hintControl;
+          if (hint) pulse(document.getElementById(hint)?.closest(".control") || document.getElementById(hint), "control-hint", 1500);
+        });
+        function drawPreview(canvas, t) {
+          const ctx = canvas.getContext("2d");
+          const w = canvas.width;
+          const h = canvas.height;
+          const href = canvas.dataset.previewHref || "";
+          ctx.clearRect(0, 0, w, h);
+          ctx.fillStyle = "#f3f1ec";
+          ctx.fillRect(0, 0, w, h);
+          ctx.strokeStyle = "#d8d2c4";
+          ctx.strokeRect(0.5, 0.5, w - 1, h - 1);
+          const blue = "#1f4a8c", red = "#b8412a", green = "#2d7a3e", purple = "#6b4592";
+          const key = href.toLowerCase();
+          const plotX = 18;
+          const plotY = 8;
+          const plotW = w - 36;
+          const plotH = h - 17;
+          function axes() {
+            ctx.strokeStyle = "#c9c1b2";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(plotX, plotY + plotH);
+            ctx.lineTo(plotX + plotW, plotY + plotH);
+            ctx.moveTo(plotX, plotY);
+            ctx.lineTo(plotX, plotY + plotH);
+            ctx.stroke();
+          }
+          function curve(color, offset = 0) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i <= plotW; i++) {
+              const u = i / plotW;
+              const y = plotY + plotH - (Math.exp(-Math.pow((u - 0.52) * 4.5, 2)) * 0.72 + 0.12 + offset) * plotH;
+              i ? ctx.lineTo(plotX + i, y) : ctx.moveTo(plotX + i, y);
+            }
+            ctx.stroke();
+          }
+          function dot(x, y, r, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          if (key.includes("monte-carlo") || key.includes("state-space-filtering") || key.includes("sampling-methods")) {
+            axes();
+            curve(blue);
+            for (let i = 0; i < 14; i++) {
+              const u = (i + 0.5) / 14;
+              const jitter = Math.sin(t / 360 + i * 1.9) * 4;
+              const y = plotY + plotH - (0.16 + Math.exp(-Math.pow((u - 0.52) * 4.5, 2)) * 0.62) * plotH + jitter;
+              dot(plotX + u * plotW, y, 2.4, i % 3 === 0 ? red : green);
+            }
+          } else if (key.includes("fisher-information")) {
+            axes();
+            curve(blue);
+            const cx = plotX + plotW * 0.54;
+            ctx.strokeStyle = red;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(cx - 20, plotY + 18);
+            ctx.lineTo(cx + 20, plotY + 18 + Math.sin(t / 500) * 3);
+            ctx.stroke();
+            ctx.strokeStyle = purple;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(cx, plotY + 20, 15, Math.PI * 0.12, Math.PI * 0.88);
+            ctx.stroke();
+            dot(cx, plotY + 18, 3, red);
+          } else if (key.includes("entropy-mutual-information")) {
+            const cols = [blue, green, red, purple];
+            for (let i = 0; i < 4; i++) {
+              ctx.fillStyle = cols[i];
+              const y = 13 + i * 7;
+              ctx.globalAlpha = 0.24 + i * 0.06;
+              ctx.fillRect(30 + i * 14, y, 82 - i * 9, 5);
+              ctx.fillRect(112 - i * 6, y, 62 + i * 9, 5);
+            }
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = "#8f8678";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(88, 28, 20, 0, Math.PI * 2);
+            ctx.arc(122, 28, 20, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fillStyle = "rgba(31,74,140,0.25)";
+            ctx.fillRect(92, 16, 26, 24);
+          } else if (key.includes("distance-correlation")) {
+            axes();
+            ctx.strokeStyle = "rgba(107,69,146,0.28)";
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 7; i++) {
+              const ax = plotX + 18 + i * 18;
+              const ay = plotY + 26 + Math.sin(i * 1.3) * 10;
+              ctx.beginPath();
+              ctx.moveTo(ax, ay);
+              ctx.lineTo(ax + 34, plotY + 23 + Math.cos(i * 1.1) * 11);
+              ctx.stroke();
+            }
+            for (let i = 0; i < 12; i++) {
+              const x = plotX + 14 + i * 13;
+              const y = plotY + 26 + Math.sin(i * 0.9 + t / 700) * 11;
+              dot(x, y, 2.5, i % 2 ? blue : red);
+            }
+          } else if (key.includes("sufficient-statistics")) {
+            for (let i = 0; i < 16; i++) {
+              const x = 24 + (i % 8) * 14;
+              const y = 15 + Math.floor(i / 8) * 17 + Math.sin(t / 500 + i) * 1.5;
+              dot(x, y, 2.6, i % 3 === 0 ? red : blue);
+              ctx.strokeStyle = "rgba(107,69,146,0.18)";
+              ctx.beginPath();
+              ctx.moveTo(x + 3, y);
+              ctx.lineTo(156, 27);
+              ctx.stroke();
+            }
+            ctx.strokeStyle = green;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(150, 17, 42, 22);
+            ctx.fillStyle = green;
+            ctx.font = "bold 14px serif";
+            ctx.fillText("T(x)", 158, 32);
+          } else if (key.includes("kv-cache-memory")) {
+            for (let i = 0; i < 7; i++) {
+              const x = 26 + i * 23;
+              ctx.fillStyle = i < 5 ? "rgba(31,74,140,0.25)" : "rgba(184,65,42,0.18)";
+              ctx.fillRect(x, 12, 14, 30);
+              ctx.strokeStyle = i < 5 ? blue : red;
+              ctx.strokeRect(x + 0.5, 12.5, 13, 29);
+              ctx.fillStyle = i % 2 ? green : purple;
+              ctx.fillRect(x + 3, 16, 8, 5 + ((i + Math.floor(t / 500)) % 3) * 3);
+              ctx.fillRect(x + 3, 31, 8, 4);
+            }
+            ctx.strokeStyle = "#8f8678";
+            ctx.beginPath();
+            ctx.moveTo(28, 47);
+            ctx.lineTo(176, 47);
+            ctx.stroke();
+          } else if (href.includes("markov")) {
+            const vals = [0.15, 0.35, 0.5].map((v, i) => v + 0.08 * Math.sin(t / 600 + i));
+            vals.forEach((v, i) => { ctx.fillStyle = [blue, red, green][i]; ctx.fillRect(18 + i * 44, h - 8 - v * 42, 26, v * 42); });
+          } else if (key.includes("psd") || key.includes("lti") || key.includes("gaussian")) {
+            ctx.beginPath();
+            for (let x = 0; x < w; x++) {
+              const y = h * 0.54 + Math.sin(x / 12 + t / 500) * 8 + Math.sin(x / 31) * 5;
+              x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+            }
+            ctx.strokeStyle = key.includes("gaussian") ? green : blue;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          } else if (key.includes("poisson-process")) {
+            axes();
+            ctx.strokeStyle = "#8f8678";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(plotX, plotY + plotH - 6);
+            ctx.lineTo(plotX + plotW, plotY + plotH - 6);
+            ctx.stroke();
+            const arrivals = [];
+            let s = 0;
+            for (let i = 0; i < 9; i++) {
+              s += 0.6 + ((Math.sin(i * 2.1 + t / 700) + 1) * 0.7);
+              arrivals.push(s);
+            }
+            const span = arrivals[arrivals.length - 1] + 0.4;
+            ctx.strokeStyle = blue;
+            ctx.lineWidth = 2;
+            arrivals.forEach((a, i) => {
+              const x = plotX + (a / span) * plotW;
+              ctx.beginPath();
+              ctx.moveTo(x, plotY + plotH - 6);
+              ctx.lineTo(x, plotY + plotH - 18);
+              ctx.stroke();
+              dot(x, plotY + plotH - 6, 2.2, i % 2 ? red : blue);
+            });
+          } else if (key.includes("optimal-transport")) {
+            const left = [], right = [];
+            for (let i = 0; i < 6; i++) {
+              left.push({ x: plotX + 8, y: plotY + 8 + i * 6 + Math.sin(t / 600 + i) * 1.5 });
+              right.push({ x: plotX + plotW - 8, y: plotY + 10 + i * 6 + Math.cos(t / 600 + i * 1.3) * 1.5 });
+            }
+            ctx.strokeStyle = "rgba(107,69,146,0.35)";
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 6; i++) {
+              const j = (i + Math.floor(t / 1200)) % 6;
+              ctx.beginPath();
+              ctx.moveTo(left[i].x + 3, left[i].y);
+              ctx.lineTo(right[j].x - 3, right[j].y);
+              ctx.stroke();
+            }
+            left.forEach(p => dot(p.x, p.y, 2.6, blue));
+            right.forEach(p => dot(p.x, p.y, 2.6, red));
+          } else if (key.includes("hypothesis-testing")) {
+            axes();
+            function bell(cx, color, fill) {
+              ctx.beginPath();
+              for (let i = 0; i <= plotW; i++) {
+                const u = (i / plotW - cx) * 5;
+                const y = plotY + plotH - (Math.exp(-u * u) * 0.7 + 0.08) * plotH;
+                i ? ctx.lineTo(plotX + i, y) : ctx.moveTo(plotX + i, y);
+              }
+              ctx.strokeStyle = color;
+              ctx.lineWidth = 1.8;
+              ctx.stroke();
+              if (fill) {
+                ctx.fillStyle = fill;
+                ctx.lineTo(plotX + plotW, plotY + plotH);
+                ctx.lineTo(plotX, plotY + plotH);
+                ctx.closePath();
+                ctx.fill();
+              }
+            }
+            bell(0.38, blue);
+            bell(0.66, red);
+            const cutU = 0.78 + Math.sin(t / 700) * 0.04;
+            const cutX = plotX + cutU * plotW;
+            ctx.fillStyle = "rgba(184,65,42,0.22)";
+            ctx.beginPath();
+            ctx.moveTo(cutX, plotY + plotH);
+            for (let i = Math.floor(cutU * plotW); i <= plotW; i++) {
+              const u = (i / plotW - 0.66) * 5;
+              const y = plotY + plotH - (Math.exp(-u * u) * 0.7 + 0.08) * plotH;
+              ctx.lineTo(plotX + i, y);
+            }
+            ctx.lineTo(plotX + plotW, plotY + plotH);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = "#8f8678";
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(cutX, plotY);
+            ctx.lineTo(cutX, plotY + plotH);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          } else if (key.includes("conjugate-prior") || key.includes("choosing-a-prior")) {
+            axes();
+            const shift = Math.sin(t / 900) * 0.08;
+            function pdf(color, mean, scale, width) {
+              ctx.beginPath();
+              for (let i = 0; i <= plotW; i++) {
+                const u = (i / plotW - mean) * scale;
+                const y = plotY + plotH - (Math.exp(-u * u) * 0.7 + 0.08) * plotH;
+                i ? ctx.lineTo(plotX + i, y) : ctx.moveTo(plotX + i, y);
+              }
+              ctx.strokeStyle = color;
+              ctx.lineWidth = width;
+              ctx.stroke();
+            }
+            pdf("rgba(107,69,146,0.55)", 0.5, 3.2, 1.6);
+            pdf(blue, 0.5 + shift, 5.0, 2);
+          } else if (key.includes("modes-of-convergence")) {
+            axes();
+            for (let k = 0; k < 5; k++) {
+              const phase = (t / 900 + k * 0.6) % 5;
+              const sharpness = 1 + phase * 1.4;
+              const alpha = 0.18 + k * 0.14;
+              ctx.strokeStyle = `rgba(31,74,140,${alpha})`;
+              ctx.lineWidth = 1.4;
+              ctx.beginPath();
+              for (let i = 0; i <= plotW; i++) {
+                const u = (i / plotW - 0.52) * 4.5 * sharpness;
+                const y = plotY + plotH - (Math.exp(-u * u) * 0.78 + 0.08) * plotH;
+                i ? ctx.lineTo(plotX + i, y) : ctx.moveTo(plotX + i, y);
+              }
+              ctx.stroke();
+            }
+            ctx.strokeStyle = red;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            const tx = plotX + 0.52 * plotW;
+            ctx.moveTo(tx, plotY + 4);
+            ctx.lineTo(tx, plotY + plotH);
+            ctx.stroke();
+          } else if (key.includes("kl") || key.includes("variational") || key.includes("vi-regression")) {
+            ctx.fillStyle = "rgba(31,74,140,0.55)";
+            ctx.fillRect(78, 14, 30, 28);
+            ctx.fillStyle = "rgba(184,65,42,0.55)";
+            ctx.fillRect(78, 6, 30, 8 + 6 * Math.sin(t / 500));
+          } else if (key.includes("measure")) {
+            ctx.fillStyle = "rgba(31,74,140,0.25)";
+            ctx.beginPath(); ctx.arc(78, 28, 18, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "rgba(184,65,42,0.25)";
+            ctx.beginPath(); ctx.arc(98, 28, 18, 0, Math.PI * 2); ctx.fill();
+          } else {
+            ctx.strokeStyle = purple;
+            ctx.beginPath();
+            for (let x = 12; x < w - 12; x += 18) { ctx.moveTo(x, 12); ctx.lineTo(x + 9, 42); }
+            ctx.stroke();
+          }
+        }
+        const previews = Array.from(document.querySelectorAll(".live-preview"));
+        if (previews.length) {
+          const animate = (t) => {
+            previews.forEach((canvas) => drawPreview(canvas, t));
+            requestAnimationFrame(animate);
+          };
+          requestAnimationFrame(animate);
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+---
+interface TocItem {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  title?: string;
+  items?: TocItem[];
+}
+
+const { title = "Contents", items = [] } = Astro.props;
+---
+
+<div class="toc">
+  {items.length > 0 ? (
+    <>
+      <div class="toc-title">{title}</div>
+      <ol>
+        {items.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ol>
+    </>
+  ) : (
+    <slot />
+  )}
+</div>

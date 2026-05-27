@@ -1,0 +1,1318 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import Legend from "../../components/explainer/Legend.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import PresetButton from "../../components/explainer/PresetButton.astro";
+import Readout from "../../components/explainer/Readout.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import VizCard from "../../components/explainer/VizCard.astro";
+import VizCardGrid from "../../components/explainer/VizCardGrid.astro";
+---
+
+<ExplainerLayout title="Monte Carlo & MCMC" breadcrumb="Monte Carlo & MCMC" section="bayesian-inference">
+
+
+<Hero title="Monte Carlo &amp; MCMC" subtitle="
+    Rejection, importance sampling, Metropolis-Hastings, Gibbs, RJMCMC, and simulated
+    annealing: what they share, where they differ, which to reach for, and what their
+    probability mass is doing. State-space filtering — Kalman and particle filters —
+    lives on its own page.
+  " />
+
+<p>
+Bayesian computation centres on two integrals: the posterior
+normalizer $p(y) = \int p(y\mid\theta)p(\theta)\,d\theta$, and a posterior expectation
+$\mathbb&#123;E&#125;_&#123;p(\theta\mid y)&#125;[f(\theta)] = \int f(\theta)\,p(\theta\mid y)\,d\theta$.
+Neither has a closed form for most models of interest. Monte Carlo
+methods replace the integrals with averages over samples, either drawn directly
+(i.i.d. samplers) or drawn from a Markov chain whose stationary distribution is the
+target (MCMC). The sequential / state-space case (sequential Monte Carlo, particle
+filters, Kalman family) is a different problem shape and gets
+<a href="/math/state-space-filtering/">its own page</a>.
+</p>
+
+<h2 id="big-picture">1. The big picture</h2>
+
+<p>
+Every method below evaluates an expectation against some target $\pi(x)$, typically a
+Bayesian posterior $\pi(x) = p(\theta\mid y)$, possibly known only up to a constant.
+They differ in three axes:
+</p>
+
+<ul>
+  <li><strong>How samples are produced.</strong> Direct i.i.d. draws (inverse CDF,
+  rejection), reweighted draws from a tractable proposal (importance sampling), or
+  draws from a Markov chain converging to $\pi$ (Metropolis-Hastings, Gibbs, RJMCMC).</li>
+  <li><strong>What they require of $\pi$.</strong> Inverse CDF needs the CDF;
+  rejection needs a global envelope; importance sampling needs only pointwise
+  $\pi(x)$; MCMC needs only ratios $\pi(x')/\pi(x)$; Gibbs needs tractable full
+  conditionals.</li>
+  <li><strong>What state space they're built for.</strong> Static $\theta$ (most
+  posteriors) or variable-dimension $(k,\theta_k)$ (RJMCMC for model selection). For
+  time-evolving latent state $x_&#123;0:T&#125;$, see
+  <a href="/math/state-space-filtering/">state-space filtering</a>.</li>
+</ul>
+
+<p>
+The "What to use" table at the bottom of this page collapses the choice into one
+view.
+</p>
+
+<Figure title="Figure 1 · How the sampler creates probability mass" readoutId="fig0-readout">
+  <canvas id="fig0" width="780" height="300"></canvas>
+      <table class="sampler-map" id="fig0-table">
+        <thead>
+          <tr>
+            <th>Structure</th>
+            <th>Sampling idea</th>
+            <th>Use when</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-mode="0">
+            <td>Static target</td>
+            <td>Direct / rejection</td>
+            <td>Low-dimensional target with an envelope or inverse transform.</td>
+          </tr>
+          <tr data-mode="1">
+            <td>Weighted target</td>
+            <td>Importance sampling</td>
+            <td>A tractable proposal covers the target and the goal is an expectation.</td>
+          </tr>
+          <tr data-mode="2">
+            <td>Markov target</td>
+            <td>MCMC</td>
+            <td>Only unnormalized target ratios are available, often in high dimension.</td>
+          </tr>
+          <tr data-mode="3">
+            <td>State over time</td>
+            <td>Sequential Monte Carlo</td>
+            <td>Latent state evolves and observations arrive one time step at a time. See <a href="/math/state-space-filtering/">state-space filtering</a>.</td>
+          </tr>
+        </tbody>
+      </table>
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>target $\pi$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>proposal / transition</span>
+      <span><span class="swatch" style="background:#6b4592"></span>weighted particles</span>
+    </div>
+</Fragment>
+</Figure>
+
+<h2 id="iid">2. I.i.d. methods</h2>
+
+<h3><span class="tag exact">exact</span><span class="tag iid">i.i.d.</span> Inverse-CDF sampling</h3>
+
+<p>
+The cleanest case. If $X$ has CDF $F$, then $F(X)\sim\mathcal&#123;U&#125;[0,1]$, so
+$X = F^&#123;-1&#125;(U)$ for $U\sim\mathcal&#123;U&#125;[0,1]$ recovers exact i.i.d. samples.
+</p>
+
+$$ X = F^&#123;-1&#125;(U),\qquad U\sim\mathcal&#123;U&#125;[0,1]. $$
+
+<p>
+It is exact and free of rejection but useless beyond 1-D and beyond targets whose CDF
+has an invertible closed form. It is the baseline that motivates everything else.
+</p>
+
+<h3><span class="tag exact">exact</span><span class="tag iid">i.i.d.</span> Rejection sampling</h3>
+
+<p>
+Pick a tractable proposal $q$ and a constant $M$ with $M\,q(x)\geq \pi(x)$ for all $x$.
+Draw $x\sim q$, $u\sim\mathcal&#123;U&#125;[0,1]$, and accept if $u \lt \pi(x)/(M\,q(x))$.
+Accepted samples are exact draws from $\pi$.
+</p>
+
+<div class="algo">
+  <div class="algo-title">Rejection sampling</div>
+  <ol>
+    <li>Draw $x \sim q$.</li>
+    <li>Draw $u \sim \mathcal&#123;U&#125;[0,1]$.</li>
+    <li>If $u \lt \pi(x) / (M\,q(x))$, accept $x$; else reject and repeat.</li>
+  </ol>
+</div>
+
+<p>
+Acceptance rate is $1/M$. In high dimensions $M$ blows up exponentially, because the gap
+between any plausible $q$ and a peaked $\pi$ widens fast in volume, so rejection is
+unusable past a handful of dimensions.
+</p>
+
+<h3><span class="tag iid">i.i.d.</span> Importance sampling (IS)</h3>
+
+<p>
+Never reject. Reweight every sample from $q$ by the ratio $w(x) = \pi(x)/q(x)$:
+</p>
+
+$$ \mathbb&#123;E&#125;_\pi[f(X)] \approx \frac&#123;1&#125;&#123;N&#125;\sum_&#123;i=1&#125;^N w(x^&#123;(i)&#125;)\,f(x^&#123;(i)&#125;),\qquad x^&#123;(i)&#125;\sim q. $$
+
+<p>
+When $\pi$ is unnormalized (Bayesian posteriors typically are), use
+<strong>self-normalized IS</strong>:
+</p>
+
+$$ \tilde w^&#123;(i)&#125; = \frac&#123;w(x^&#123;(i)&#125;)&#125;&#123;\sum_j w(x^&#123;(j)&#125;)&#125;,\qquad \hat&#123;\mathbb&#123;E&#125;&#125;_\pi[f] = \sum_i \tilde w^&#123;(i)&#125; f(x^&#123;(i)&#125;). $$
+
+<p>
+<strong>How good is this estimator?</strong> The samples come from $q$, so the
+variance is taken under $q$:
+</p>
+
+$$
+\begin&#123;aligned&#125;
+\operatorname&#123;Var&#125;_q\bigl[f(X)\,w(X)\bigr]
+&= \mathbb&#123;E&#125;_q\!\bigl[\,f(X)^2 w(X)^2\,\bigr] - \mathbb&#123;E&#125;_q\!\bigl[\,f(X)\,w(X)\,\bigr]^2 \\
+&= \mathbb&#123;E&#125;_q\!\bigl[\,f(X)^2 w(X)^2\,\bigr] - \mathbb&#123;E&#125;_p\!\bigl[\,f(X)\,\bigr]^2 \\
+&= \mathbb&#123;E&#125;_q\!\bigl[\,f(X)^2 w(X)^2\,\bigr] - \mu_f^2.
+\end&#123;aligned&#125;
+$$
+
+<p>
+The bridge from line 1 to line 2 is the unbiasedness identity that motivated
+IS in the first place:
+$\mathbb E_q[fw] = \int f(x)\,\tfrac&#123;\pi(x)&#125;&#123;q(x)&#125;\,q(x)\,dx = \mathbb E_p[f(X)] = \mu_f$.
+The second term doesn't depend on $q$; it's a property of the problem.
+</p>
+
+<p>Two things follow immediately:</p>
+
+<ul>
+  <li><strong>The IS estimator is unbiased</strong> for any $q$ with support
+  covering $\pi$. The choice of $q$ doesn't shift the mean — only the
+  variance.</li>
+  <li><strong>The only $q$-dependent term is $\mathbb E_q[f^2 w^2]$.</strong>
+  Since $w(x) = \pi(x)/q(x)$, the dangerous factor is
+  $w(x)^2 = (\pi(x)/q(x))^2$: variance blows up wherever $q$ is small
+  relative to $\pi$ in a region where $f$ is not also small. The squared
+  weight is the explosion mechanism.</li>
+</ul>
+
+<p>
+Minimising $\mathbb E_q[f^2 w^2]$ over $q$ subject to $\int q = 1$ gives the
+<strong>optimal proposal</strong>
+</p>
+
+$$
+q^*(x) \;\propto\; |f(x)|\,\pi(x),
+$$
+
+<p>
+which is exactly the thing you can't sample from — it requires the integral
+$\int |f|\pi$, the object closest to what you were trying to compute. What
+this says in practice is <em>direct samples toward where $|f|\pi$ is
+large</em>. For computing the evidence ($f \equiv 1$) the optimal proposal is
+$q^* = \pi$ — exact samples from the target. For a tail-event probability
+($f$ an indicator), $q^*$ shifts mass to the tail, which is the design
+principle behind rare-event simulation.
+</p>
+
+<p>
+The operational shortcut, since $q^*$ is unavailable: choose $q$
+<strong>heavier-tailed than $\pi$</strong> (Student-$t$ over Gaussian,
+Laplace over Normal) so the weight ratio $\pi/q$ stays bounded in the tails.
+Then monitor the <strong>effective sample size</strong>
+$\mathrm&#123;ESS&#125; = \bigl(\sum_i \tilde w^&#123;(i)&#125;\bigr)^2 \big/ \sum_i \bigl(\tilde w^&#123;(i)&#125;\bigr)^2$.
+If it collapses to $\ll N$, your weights are degenerate: the estimate is
+dominated by one or two samples and the variance is effectively the variance
+of the largest weight times $f^2$.
+</p>
+
+<p>
+Figure 2 lets you compare rejection and importance sampling on the same problem.
+Pick a target $\pi$ and a proposal $q$ (family, center, scale, and for Student-$t$ the
+degrees of freedom $\nu$). The top row plots each method's draws; the
+<strong>ESS bar</strong> shows how many useful samples per $N$ draws each method
+extracts; the <strong>empirical-fit strip</strong> overlays the resulting histograms on
+$\pi$ so you can see which method actually reconstructs the target. The preset row
+sweeps through the regimes where the two methods agree, disagree, or both fail.
+</p>
+
+<Figure title="Figure 2 · Rejection sampling vs. importance sampling: choose $p$ and $q$" canvasId="fig1" width="780" height="554" readoutId="fig1-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>target $\pi$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>proposal $M\!\cdot\!q$</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>accepted / rejection ESS</span>
+      <span><span class="swatch" style="background:#6b4592"></span>importance weights / IS ESS</span>
+      <span><span class="swatch" style="background:#c0c0c0"></span>rejected / wasted draws</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlSelect id="fig1-target" label={String.raw`target $p$`} options={[
+        { value: "bimodal", label: "Bimodal mixture", selected: true },
+        { value: "unimodal", label: "Unimodal N(0,1)" },
+        { value: "narrow", label: "Narrow peak N(0,0.3)" },
+        { value: "shifted", label: "Shifted N(3,0.6)" },
+        { value: "heavyTail", label: "Heavy-tailed t₃(0,1)" }
+      ]} />
+      <ControlSelect id="fig1-qfamily" label={String.raw`proposal $q$ family`} options={[
+        { value: "gaussian", label: "Gaussian", selected: true },
+        { value: "student", label: "Student-t" },
+        { value: "uniform", label: "Uniform" },
+        { value: "laplace", label: "Laplace" }
+      ]} />
+      <ControlRange id="fig1-mu" label={String.raw`proposal center $\mu_q$`} valueId="fig1-mu-v" min="-4" max="4" step="0.1" value="0" />
+      <ControlRange id="fig1-sq" label={String.raw`proposal scale $\sigma_q$`} valueId="fig1-sq-v" min="0.3" max="5" step="0.05" value="2.0" />
+      <ControlRange id="fig1-nu" label={String.raw`Student-t df $\nu$`} valueId="fig1-nu-v" min="1" max="30" step="1" value="3" />
+      <ControlRange id="fig1-n" label="# samples" valueId="fig1-n-v" min="50" max="2000" step="50" value="300" />
+      <PresetRow>
+        <button id="fig1-preset-match" class="active">Well-matched</button>
+        <button id="fig1-preset-narrow">q too narrow</button>
+        <button id="fig1-preset-wide">q too wide</button>
+        <button id="fig1-preset-heavy">Heavy-tailed p</button>
+        <button id="fig1-preset-shifted">Wrong center</button>
+      </PresetRow>
+      <PresetRow>
+        <button id="fig1-resample">Resample</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="mcmc">3. MCMC</h2>
+
+<p>
+Once $\pi$ is multivariate and peaked, both rejection (acceptance rate $\to 0$) and
+importance sampling (weight variance $\to \infty$) collapse. MCMC trades i.i.d.
+samples for <em>correlated</em> samples from a Markov chain $X_0, X_1, X_2, \dots$
+whose stationary distribution is $\pi$. The chain is constructed to satisfy
+<a href="/math/markov-chains/#detailed-balance"><strong>detailed balance</strong></a>:
+</p>
+
+$$ \pi(x)\,T(x\to x') \;=\; \pi(x')\,T(x'\to x), $$
+
+<p>
+which is sufficient for $\pi$ to be invariant under $T$. Different MCMC algorithms are
+different ways to engineer such a $T$.
+</p>
+
+<p>
+The MCMC story is a sequence of relaxations. Each step removes one limitation, but it
+adds a new requirement or a new way to fail.
+</p>
+
+<DecisionTable tableClass="decision arc" headers={["Step","What changes","Requirement","What can fail"]}>
+<tr>
+      <td>Metropolis</td>
+      <td>Replace i.i.d. draws with a Markov chain and accept/reject local proposals.</td>
+      <td>Symmetric proposal $q(x'\mid x)=q(x\mid x')$.</td>
+      <td>Proposal scale can make the chain crawl or reject almost everything.</td>
+    </tr>
+    <tr>
+      <td>Metropolis-Hastings</td>
+      <td>Allow asymmetric or independence proposals.</td>
+      <td>Evaluate the proposal correction $q(x\mid x')/q(x'\mid x)$.</td>
+      <td>A bad proposal still gives sticky chains or mode blindness.</td>
+    </tr>
+    <tr>
+      <td>Gibbs</td>
+      <td>Replace accept/reject proposals with exact coordinate conditional draws.</td>
+      <td>Closed-form full conditionals, or MH-within-Gibbs substeps.</td>
+      <td>Strong posterior correlation makes axis moves mix slowly.</td>
+    </tr>
+    <tr>
+      <td>RJMCMC</td>
+      <td>Let the chain jump between parameter spaces with different dimensions.</td>
+      <td>Dimension-matched reversible moves and Jacobian terms.</td>
+      <td>Birth/death move design is problem-specific and can mix poorly.</td>
+    </tr>
+</DecisionTable>
+
+<p>
+Figure 3 puts the MCMC variants on the same toy state space. The tabs keep the
+Markov-chain skeleton fixed where possible, then add the extra mechanism that each
+variant needs: rejection self-loops, Hastings proposal correction, coordinate-wise
+conditionals, birth/death dimension moves, or gradient-guided proposals. The
+<strong>RJMCMC tab</strong> shares the 1-D state space with the others for visual
+parallelism — the states there stand in for model orders $k$, not for the
+within-model parameters. The genuine two-space picture (within-model MH on each
+$k$, plus dimension-jumping moves between them) is in Figure 13.
+</p>
+
+<Figure title="Figure 3 · MCMC variant lab: what changes in the transition kernel" canvasId="fig2variants" width="780" height="520" readoutId="fig2variants-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>target mass</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>proposal / transition</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>accepted move</span>
+      <span><span class="swatch" style="background:#bfb9aa"></span>rejection / self-loop</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <div class="variant-tabs" id="fig2variants-tabs" role="tablist" aria-label="MCMC variants">
+    <button id="fig2variants-metropolis" role="tab" aria-selected="true" data-variant="metropolis">Metropolis</button>
+    <button id="fig2variants-mh" role="tab" aria-selected="false" data-variant="mh">Metropolis-Hastings</button>
+    <button id="fig2variants-gibbs" role="tab" aria-selected="false" data-variant="gibbs">Gibbs</button>
+    <button id="fig2variants-rj" role="tab" aria-selected="false" data-variant="rj">RJMCMC</button>
+    <button id="fig2variants-hmc" role="tab" aria-selected="false" data-variant="hmc">HMC</button>
+  </div>
+  <ControlRange id="fig2variants-knob" label="variant knob" valueId="fig2variants-knob-v" min="0" max="1" step="0.05" value="0.55" />
+      <ControlRange id="fig2variants-speed" label="speed (moves/sec)" valueId="fig2variants-speed-v" min="0.5" max="8" step="0.5" value="2.5" />
+      <PresetRow>
+        <button id="fig2variants-runpause">Pause</button>
+        <button id="fig2variants-reset">Reset chain</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h3><span class="tag mcmc">mcmc</span> Metropolis MCMC (1953)</h3>
+
+<p>
+Metropolis MCMC is the symmetric-proposal member of the Metropolis-Hastings family.
+Use a proposal with $q(x'\mid x) = q(x\mid x')$, propose $x'\sim q(\cdot\mid x)$,
+and accept with probability
+</p>
+
+$$ \alpha(x,x') = \min\!\left\&#123;1,\;\frac&#123;\pi(x')&#125;&#123;\pi(x)&#125;\right\&#125;. $$
+
+<p>
+The symmetric $q$ cancels, so only the target-density ratio remains. Typical choice:
+random walk $x' = x + \epsilon$,
+$\epsilon\sim\mathcal&#123;N&#125;(0,\Sigma_\text&#123;prop&#125;)$. The step size $\Sigma_\text&#123;prop&#125;$ is
+the one tuning knob and it matters: too small and the chain crawls; too large and
+nearly every proposal is rejected.
+</p>
+
+<h3><span class="tag mcmc">mcmc</span> Metropolis-Hastings (1970)</h3>
+
+<p>Generalizes Metropolis to asymmetric $q$ by adding a correction:</p>
+
+$$ \alpha(x,x') = \min\!\left\&#123;1,\;\frac&#123;\pi(x')\,q(x\mid x')&#125;&#123;\pi(x)\,q(x'\mid x)&#125;\right\&#125;. $$
+
+<div class="algo">
+  <div class="algo-title">Metropolis-Hastings</div>
+  <ol>
+    <li>Propose $x' \sim q(\cdot \mid x)$.</li>
+    <li>Compute $\alpha = \min\bigl\&#123;1, \frac&#123;\pi(x')\,q(x \mid x')&#125;&#123;\pi(x)\,q(x' \mid x)&#125;\bigr\&#125;$.</li>
+    <li>Draw $u \sim \mathcal&#123;U&#125;[0,1]$. If $u \lt \alpha$, set $x \leftarrow x'$; else keep $x$.</li>
+  </ol>
+</div>
+
+<p>
+Variants worth naming:
+</p>
+<ul>
+  <li><strong>Random-walk MH:</strong> $q$ symmetric; ratio collapses to $\pi(x')/\pi(x)$. Default in most papers.</li>
+  <li><strong>Independent MH:</strong> $q(x'\mid x) = q(x')$. Equivalent to importance sampling with hard accept/reject; works only if $q$ is genuinely a good global approximation of $\pi$.</li>
+  <li><strong>Langevin / HMC:</strong> $q$ uses gradient information $\nabla\log\pi$ to bias proposals toward high-density regions. Much faster in high dimensions when gradients are available.</li>
+</ul>
+
+<p>
+Why <em>that</em> $\alpha$? Because it is exactly the factor that forces detailed
+balance. Write the transition as $T(x\to x') = q(x'\mid x)\,\alpha(x,x')$. The proposal
+alone is unbalanced: the two flows $\pi(x)\,q(x'\mid x)$ and $\pi(x')\,q(x\mid x')$
+generally differ. One direction is over-full, and its $\alpha$ is the ratio that scales
+it down while the reverse direction's $\alpha$ is $1$. Either way both realized flows
+land on $\min\&#123;\pi(x)\,q(x'\mid x),\;\pi(x')\,q(x\mid x')\&#125;$, so
+$\pi(x)\,T(x\to x') = \pi(x')\,T(x'\to x)$ — detailed balance. Figure 4 lets you push the
+target and proposal ratios around: the proposal flow tilts, $\alpha$ compensates, and
+the realized flow stays balanced no matter what.
+</p>
+
+<Figure title="Figure 4 · The acceptance ratio forces detailed balance" canvasId="fig-mhbalance" width="780" height="320" readoutId="fig-mhbalance-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>proposal flow $\pi\,q$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>over-full direction, throttled by $\alpha$</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>realized flow $\pi\,T$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig-mhbalance-pi" label={String.raw`target ratio $\pi(x')/\pi(x)$`} valueId="fig-mhbalance-pi-v" min="0.2" max="5" step="0.05" value="2" />
+      <ControlRange id="fig-mhbalance-q" label={String.raw`proposal ratio $q(x\mid x')/q(x'\mid x)$`} valueId="fig-mhbalance-q-v" min="0.2" max="5" step="0.05" value="1" />
+      <PresetRow>
+        <button id="fig-mhbalance-sym" class="active">Symmetric proposal</button>
+        <button id="fig-mhbalance-hastings">Asymmetric (Hastings)</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<p>Figure 5 runs a random-walk MH on a 2-D banana-shaped target and lets you watch how step size trades off acceptance rate against mixing. Pause and use <strong>Step</strong> to see one proposal at a time: the dashed ellipse is the proposal region (±&sigma; around the current state), and the line shows where the last proposal landed and whether it was accepted.</p>
+
+<Figure title="Figure 5 · Random-walk Metropolis-Hastings on a banana target" canvasId="fig2" width="780" height="380" readoutId="fig2-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#000"></span>current state</span>
+      <span><span class="swatch" style="background:rgba(31,74,140,0.18)"></span>proposal region (±σ)</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>accepted proposal</span>
+      <span><span class="swatch" style="background:#5a6577"></span>rejected proposal</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig2-step" label={String.raw`step size $\sigma$`} valueId="fig2-step-v" min="0.02" max="3.0" step="0.02" value="0.5" />
+      <ControlRange id="fig2-speed" label="speed (steps/frame)" valueId="fig2-speed-v" min="1" max="50" step="1" value="5" />
+      <PresetRow>
+        <button id="fig2-step-btn">Step</button>
+        <button id="fig2-runpause">Pause</button>
+        <button id="fig2-reset">Reset chain</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 6 · Trace, rolling autocorrelation, and effective sample size" canvasId="fig2diag" width="780" height="360" readoutId="fig2diag-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>trace</span>
+      <span><span class="swatch" style="background:#b8412a"></span>rolling ACF</span>
+      <span><span class="swatch" style="background:#6b4592"></span>ESS estimate</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig2diag-step" label={String.raw`step size $\sigma$`} valueId="fig2diag-step-v" min="0.03" max="2.8" step="0.03" value="0.6" />
+      <PresetRow>
+        <button id="fig2diag-runpause">Pause</button>
+        <button id="fig2diag-reset">Reset chain</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 7 · Random-walk MH versus Hamiltonian proposals" canvasId="fig2hmc" width="780" height="360" readoutId="fig2hmc-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>random-walk MH</span>
+      <span><span class="swatch" style="background:#b8412a"></span>leapfrog trajectory</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>accepted HMC move</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig2hmc-eps" label={String.raw`leapfrog step $\epsilon$`} valueId="fig2hmc-eps-v" min="0.02" max="0.18" step="0.01" value="0.08" />
+      <ControlRange id="fig2hmc-l" label="leapfrog steps" valueId="fig2hmc-l-v" min="4" max="30" step="1" value="16" />
+      <ControlRange id="fig2hmc-speed" label="speed (steps/sec)" valueId="fig2hmc-speed-v" min="0.5" max="8" step="0.5" value="2" />
+      <PresetRow>
+        <button id="fig2hmc-runpause">Pause</button>
+        <button id="fig2hmc-step">Step once</button>
+        <button id="fig2hmc-reset">Reset</button>
+        <button id="fig2hmc-target-banana" class="active">Banana target</button>
+        <button id="fig2hmc-target-bnn">BNN posterior target</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+The <strong>BNN posterior target</strong> swaps the banana for the two-parameter
+$f(x; w_1, w_2) = w_1\tanh(w_2 x)$ posterior used on the
+<a href="/math/bayesian-neural-networks/">Bayesian neural networks</a> page. The model has a sign
+symmetry, so the energy surface has two basins of equal depth. Watch HMC commit to one
+basin while random-walk MH stays trapped in whichever it started in — switching basins
+requires crossing a high-energy ridge that local proposals rarely traverse.
+</p>
+
+<p>
+One caveat the per-step view hides: cost. An HMC step here spends $L$ gradient
+evaluations on its leapfrog trajectory (the <em>leapfrog steps</em> slider) where
+random-walk MH spends none. Per accepted step HMC wins easily; per gradient
+evaluation the gap narrows, and the honest comparison is mixing per unit of compute —
+which is why the strong-but-expensive proposal still has to earn its keep against the
+cheap-but-slow one.
+</p>
+
+<p>
+For a live MALA sampler on this same banana target, see
+<a href="https://chi-feng.github.io/mcmc-demo/app.html#MALA,banana" target="_blank" rel="noopener">chi-feng's MCMC demo</a>.
+MALA — the Metropolis-adjusted Langevin algorithm — is HMC with a single leapfrog step: one
+gradient-guided Langevin proposal, then an accept/reject correction. It sits between
+random-walk MH and full HMC.
+</p>
+
+<p>
+Figure 8 makes MALA's anatomy explicit. Every proposed step on the banana target
+$x' = x + d + s$ splits into a deterministic <strong>drift</strong>
+$d = \tfrac&#123;\epsilon^2&#125;&#123;2&#125;\nabla\log\pi(x)$ that climbs the gradient and a random
+<strong>diffusion</strong> kick $s = \epsilon\,z$ with $z\sim\mathcal&#123;N&#125;(0, I)$. Because the
+proposal is asymmetric, the accept ratio carries both forward and reverse Langevin
+densities. Watch the acceptance gauge: MALA mixes best near a rate of $0.574$, so the
+gauge doubles as a step-size tuning instrument.
+</p>
+
+<p>
+MALA is the corrected discretization of a continuous process. The
+<strong>Langevin diffusion</strong> $d\theta = \tfrac12\nabla\log\pi(\theta)\,dt + dB$ has
+$\pi$ as its exact stationary distribution. Take a finite Euler step of size $\epsilon$ and
+you get the <strong>unadjusted Langevin algorithm</strong> (ULA): fast, but the discretization
+biases the stationary distribution away from $\pi$. MALA removes that bias with the Metropolis
+accept/reject step. Toggle the correction off to run ULA. The histogram strip tracks the
+chain's $x$-marginal against the true $\mathcal&#123;N&#125;(0,4)$: at large $\epsilon$ the
+uncorrected chain visibly settles to the wrong distribution while MALA stays on target.
+</p>
+
+<Figure title="Figure 8 · Langevin diffusion, ULA, and MALA" canvasId="fig-mala" width="780" height="460" readoutId="fig-mala-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#2d7a3e"></span>drift $d = \tfrac&#123;\epsilon^2&#125;&#123;2&#125;\nabla\log\pi$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>diffusion $s = \epsilon z$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>rejected proposal</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig-mala-eps" label={String.raw`step size $\epsilon$`} valueId="fig-mala-eps-v" min="0.05" max="1.2" step="0.05" value="0.45" />
+      <ControlRange id="fig-mala-speed" label="speed (steps/sec)" valueId="fig-mala-speed-v" min="0.5" max="12" step="0.5" value="3" />
+      <PresetRow>
+        <button id="fig-mala-corrected" class="active">MALA (Metropolis-corrected)</button>
+        <button id="fig-mala-ula">unadjusted Langevin (ULA)</button>
+      </PresetRow>
+      <PresetRow>
+        <button id="fig-mala-runpause">Pause</button>
+        <button id="fig-mala-step">Step once</button>
+        <button id="fig-mala-reset">Reset</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+Figure 9 shows the same target as a surface. Drag to rotate it. The ridge shape makes
+the random-walk tuning problem visible: local proposals can slide along the ridge,
+but large proposals jump off the high-density mass.
+</p>
+
+<Figure title="Figure 9 · WebGL density surface for the banana target" canvasId="fig2surface" width="780" height="360" readoutId="fig2surface-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>high target density</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>low target density</span>
+      <span><span class="swatch" style="background:#000"></span>current MH state</span>
+    </div>
+</Fragment>
+</Figure>
+
+<h3 id="markov-topology"><span class="tag mcmc">mcmc</span> Markov topology and stationary mass</h3>
+
+<p>
+The Markov chain is not just a path. It is a transition graph over the state space:
+each state sends probability mass to nearby proposals, then the accept/reject rule
+changes how much of that mass actually moves. A good chain has local moves that still
+let empirical occupation mass converge to the target mass. The mode buttons switch
+the state-space layout: a 1-D <strong>line</strong> (axis-aligned random walk on a
+bimodal target), a 2-D <strong>grid</strong> (Moore-neighborhood random walk on a
+two-bump target), and a <strong>ring with a barrier</strong> between two clusters of
+mass — each exposes a different mixing failure mode.
+</p>
+
+<Figure title="Figure 10 · Discrete MH transition topology and occupation mass" canvasId="fig2b" width="780" height="380" readoutId="fig2b-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>target mass</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>transition edges</span>
+      <span><span class="swatch" style="background:#6b4592"></span>empirical mass</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <button id="fig2b-mode-line" class="active">Line</button>
+        <button id="fig2b-mode-grid">2-D grid</button>
+        <button id="fig2b-mode-ring">Ring with barrier</button>
+      </PresetRow>
+      <ControlRange id="fig2b-radius" label="proposal radius" valueId="fig2b-radius-v" min="1" max="6" step="1" value="2" />
+      <ControlRange id="fig2b-temp" label="temperature" valueId="fig2b-temp-v" min="0.4" max="2.0" step="0.1" value="1.0" />
+      <ControlRange id="fig2b-speed" label="speed (moves/sec)" valueId="fig2b-speed-v" min="0.5" max="8" step="0.5" value="2" />
+      <ControlRange id="fig2b-batch" label="background samples" valueId="fig2b-batch-v" min="0" max="200" step="5" value="25" />
+      <PresetRow>
+        <button id="fig2b-runpause">Pause</button>
+        <button id="fig2b-reset">Reset chain</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h3><span class="tag mcmc">mcmc</span> Gibbs sampling</h3>
+
+<p>
+A special case of MH where the proposal is the full conditional of one coordinate at
+a time. With this proposal, the acceptance probability is identically 1.
+</p>
+
+$$ x_i^&#123;(t+1)&#125; \sim p\!\left(x_i \,\middle|\, x_1^&#123;(t+1)&#125;,\ldots,x_&#123;i-1&#125;^&#123;(t+1)&#125;,\,x_&#123;i+1&#125;^&#123;(t)&#125;,\ldots,x_d^&#123;(t)&#125;\right). $$
+
+<p>
+Gibbs is the workhorse of Bayesian hierarchical modeling because conjugate priors give
+closed-form full conditionals, so every update is a draw from a named distribution. It
+mixes poorly along directions of high posterior correlation (because it can only move
+along axes); a common cure is to update blocks of variables jointly, or to
+reparametrize. If a conditional is intractable, replace that step with an MH
+sub-step. This is <strong>Metropolis-within-Gibbs</strong>.
+</p>
+
+<p>
+Figure 11 shows why Gibbs feels different from a random walk: it moves by exact
+conditional draws along coordinate axes. That makes every proposal accepted, but
+strong posterior correlation can still make the chain advance slowly.
+</p>
+
+<Figure title="Figure 11 · Gibbs coordinate updates versus random-walk MH" canvasId="fig4" width="780" height="360" readoutId="fig4-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>target contours</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>Gibbs path</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>MH path</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig4-rho" label={String.raw`correlation $\rho$`} valueId="fig4-rho-v" min="0.0" max="0.98" step="0.01" value="0.85" />
+      <ControlRange id="fig4-step" label="MH step size" valueId="fig4-step-v" min="0.1" max="3.0" step="0.05" value="0.9" />
+      <PresetRow>
+        <button id="fig4-runpause">Pause</button>
+        <button id="fig4-reset">Reset chains</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h3><span class="tag mcmc">mcmc</span> Reversible-jump MCMC (RJMCMC)</h3>
+
+<p>
+What if the model order itself is unknown: number of mixture components, number of
+change-points, number of hidden layers? Then the state space is a disjoint union
+$\bigsqcup_k \&#123;k\&#125;\times\mathbb&#123;R&#125;^&#123;n_k&#125;$ of spaces of different dimension, and
+standard MH doesn't apply because $\pi(x')/\pi(x)$ is comparing densities in
+different-dimensional spaces.
+</p>
+
+<p>
+Green's RJMCMC fixes this with a dimension-matching auxiliary variable. To move from
+$(k,\theta_k)$ to $(k',\theta_&#123;k'&#125;)$ with $n_&#123;k'&#125;>n_k$, draw auxiliary
+$u\sim g$ and apply a diffeomorphism $\theta_&#123;k'&#125; = T(\theta_k, u)$. The acceptance
+ratio carries a Jacobian:
+</p>
+
+$$ \alpha = \min\!\left\&#123;1,\; \frac&#123;\pi(k',\theta_&#123;k'&#125;)\,g'(u')\,r(k'\to k)&#125;&#123;\pi(k,\theta_k)\,g(u)\,r(k\to k')&#125;\left|\frac&#123;\partial(\theta_&#123;k'&#125;,u')&#125;&#123;\partial(\theta_k,u)&#125;\right|\right\&#125;. $$
+
+<p>
+The classic example is a mixture model with a <em>birth/death</em> pair: birth splits
+one component into two ($\theta_1=\theta+u,\theta_2=\theta-u$, Jacobian $=2$); death
+merges two into one. Recent work uses RJMCMC inside simulated annealing to choose
+neural network architectures jointly with weights.
+</p>
+
+<Figure title="Figure 12 · Dimension-matching map: split / merge" canvasId="fig5" width="780" height="300" readoutId="fig5-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>$k=1$ parameter $\theta = \mu$</span>
+      <span><span class="swatch" style="background:#6b4592"></span>$k=2$ parameters $(\mu_1, \mu_2)$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>auxiliary $u$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig5-mu" label={String.raw`mean $\mu$ (in $k=1$)`} valueId="fig5-mu-v" min="-3" max="3" step="0.05" value="0.5" />
+      <ControlRange id="fig5-u" label={String.raw`auxiliary $u$`} valueId="fig5-u-v" min="0.1" max="3" step="0.05" value="1.2" />
+      <PresetRow>
+        <button id="fig5-split">Split &nbsp;k=1 → k=2</button>
+        <button id="fig5-merge">Merge &nbsp;k=2 → k=1</button>
+        <button id="fig5-reset">Reset</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+Figure 13 puts the split/merge map inside a Markov chain. The left panel runs
+within-model Metropolis-Hastings on the $k=1$ parameter $\mu$; the right panel runs
+MH on the $k=2$ parameters $(\mu_1, \mu_2)$. With probability $p_\text&#123;rj&#125;$ the chain
+proposes a between-model move instead: a <strong>birth</strong> $\mu \mapsto (\mu+u, \mu-u)$
+with $u\sim g$, or a <strong>death</strong> that merges $(\mu_1, \mu_2)$ to their
+midpoint. The acceptance ratio for each between-model move carries the Jacobian factor
+$2$ from the diffeomorphism. The model-order bar below the panels shows the chain's
+marginal occupation of $\&#123;k=1, k=2\&#125;$.
+</p>
+
+<Figure title="Figure 13 · RJMCMC as two coupled chains" canvasId="fig5b" width="780" height="470" readoutId="fig5b-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>target density</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>current state</span>
+      <span><span class="swatch" style="background:#6b4592"></span>recent trail</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>RJ proposal</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig5b-prj" label="between-model proposal probability $p_&#123;rj&#125;$" valueId="fig5b-prj-v" min="0" max="0.6" step="0.02" value="0.30" />
+      <ControlRange id="fig5b-speed" label="speed (steps/sec)" valueId="fig5b-speed-v" min="1" max="40" step="1" value="12" />
+      <PresetRow>
+        <button id="fig5b-runpause">Pause</button>
+        <button id="fig5b-step">Step once</button>
+        <button id="fig5b-reset">Reset chain</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h3 id="annealing"><span class="tag mcmc">mcmc</span> Simulated annealing</h3>
+
+<p>
+Same MH machinery, opposite goal. Fix a target $\pi(x) \propto e^&#123;-U(x)&#125;$, but
+instead of sampling from $\pi$, find its peak (the global minimum of $U$). Introduce a
+temperature $T$ and sample from a tempered distribution
+$\pi_T(x) \propto e^&#123;-U(x)/T&#125;$. The MH accept ratio for a symmetric proposal is
+</p>
+
+$$
+r \;=\; \exp\!\bigl(-(U(x^*) - U(x))/T\bigr).
+$$
+
+<p>
+At $T=1$ this is ordinary MH on $\pi$. At $T \to \infty$ every proposal is accepted:
+the chain ignores the landscape and explores freely. At $T \to 0$ only downhill moves
+are accepted: the chain becomes greedy. <strong>Simulated annealing</strong> starts
+hot and cools: $T_t$ follows a schedule like the logarithmic
+$T_t = T_0/\log(1 + t)$ (slow enough to escape local minima; Geman & Geman, 1984) or
+the more practical exponential $T_t = T_0\,\alpha^t$ with $\alpha$ just below $1$.
+</p>
+
+<p>
+<em>Information-theory aside.</em> The tempered family $\pi_T \propto e^&#123;-U/T&#125;$
+is the Gibbs distribution at temperature $T$, with free energy $F(T) = -T \log Z(T)$.
+SA can be read as free-energy descent along the path of measures connecting the
+uniform distribution ($T \to \infty$) to a delta on the global minimum
+($T \to 0$). The cooling schedule controls how much
+<a href="/math/entropy-mutual-information/">entropy</a> the chain is allowed to keep at
+each step, the same shape as the entropy-regularized argmax that turns up in
+reinforcement learning and rate-distortion.
+</p>
+
+<p>
+Figure 13b runs both walkers on the same triple-well $U(x)$: a fixed-$T$ MH chain that
+samples $\pi$ (it visits all three wells in proportion to their depth), and an SA chain
+that cools exponentially and ends up parked in the global minimum. Watch SA's acceptance
+rate plummet as $T \to 0$, and the rare hot-start jumps that let it escape the
+shallow wells before cooling makes that impossible.
+</p>
+
+<Figure title="Figure 13b · Fixed-T MH samples the distribution; SA cools to find the peak" canvasId="fig-sa" width="780" height="380" readoutId="fig-sa-readout">
+<Fragment slot="controls">
+  <ControlRange id="fig-sa-t0" label="initial temperature $T_0$" valueId="fig-sa-t0-v" min="0.5" max="5" step="0.1" value="3" />
+  <ControlRange id="fig-sa-alpha" label="cooling rate $\alpha$" valueId="fig-sa-alpha-v" min="0.95" max="0.999" step="0.001" value="0.992" />
+  <ControlRange id="fig-sa-speed" label="speed (steps/sec)" valueId="fig-sa-speed-v" min="2" max="80" step="2" value="24" />
+  <PresetRow>
+    <button id="fig-sa-runpause">Pause</button>
+    <button id="fig-sa-step">Step once</button>
+    <button id="fig-sa-reset">Reset</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="side-by-side">4. The algorithms side by side</h2>
+
+<p>
+All of the methods on this page produce the same kind of output (an estimate
+of $\mathbb E_\pi[f]$ or samples from $\pi$) but differ in what they ask of
+$\pi$, how they generate candidate states, and how they update. Lining the
+algorithms up row by row makes the family resemblances and the
+algorithm-specific moves visible at a glance.
+</p>
+
+<div class="pseudocode-table-wrap">
+<table class="pseudocode-table">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Rejection</th>
+      <th>Importance sampling</th>
+      <th>Metropolis</th>
+      <th>Metropolis–Hastings</th>
+      <th>Gibbs</th>
+      <th>HMC</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Family</th>
+      <td>i.i.d., exact</td>
+      <td>i.i.d., weighted</td>
+      <td>MCMC</td>
+      <td>MCMC</td>
+      <td>MCMC</td>
+      <td>MCMC</td>
+    </tr>
+    <tr>
+      <th>Requires</th>
+      <td>envelope $M$ with $M\,q(x) \ge \pi(x)$</td>
+      <td>proposal $q$ with $\mathrm&#123;supp&#125;\,q \supseteq \mathrm&#123;supp&#125;\,\pi$</td>
+      <td>$\pi$ pointwise up to a constant</td>
+      <td>$\pi$ pointwise; proposal $q(x'\mid x)$</td>
+      <td>tractable full conditionals $\pi(x_k\mid x_&#123;-k&#125;)$</td>
+      <td>$\pi$ and $\nabla \log \pi$</td>
+    </tr>
+    <tr>
+      <th>Proposal</th>
+      <td class="code">$x \sim q(\cdot)$</td>
+      <td class="code">$x_i \sim q(\cdot),\ i = 1\ldots N$</td>
+      <td class="code">$x' = x + \varepsilon,\ \varepsilon$ symmetric</td>
+      <td class="code">$x' \sim q(\cdot \mid x)$</td>
+      <td class="code">cycle $k$: $x'_k \sim \pi(x_k\mid x_&#123;-k&#125;)$</td>
+      <td class="code">leapfrog $L$ steps from $(x, p)$</td>
+    </tr>
+    <tr>
+      <th>Accept / weight</th>
+      <td class="code">$u &lt; \dfrac&#123;\pi(x)&#125;&#123;M\,q(x)&#125;$</td>
+      <td class="code">$w_i = \dfrac&#123;\pi(x_i)&#125;&#123;q(x_i)&#125;$</td>
+      <td class="code">$u &lt; \min\!\Bigl(1, \dfrac&#123;\pi(x')&#125;&#123;\pi(x)&#125;\Bigr)$</td>
+      <td class="code">$u &lt; \min\!\Bigl(1, \dfrac&#123;\pi(x')\,q(x\mid x')&#125;&#123;\pi(x)\,q(x'\mid x)&#125;\Bigr)$</td>
+      <td class="code">always (exact draw)</td>
+      <td class="code">$u &lt; \min\!\bigl(1,\, e^&#123;H(x,p) - H(x',p')&#125;\bigr)$</td>
+    </tr>
+    <tr>
+      <th>State update</th>
+      <td>keep $x$ if accepted; else discard and resample</td>
+      <td>no state; reweight each draw</td>
+      <td>$x \leftarrow x'$ if accepted; else stay</td>
+      <td>$x \leftarrow x'$ if accepted; else stay</td>
+      <td>$x_k \leftarrow x'_k$ for each coordinate</td>
+      <td>$x \leftarrow x'$ if accepted; resample momentum $p \sim \mathcal N(0, I)$</td>
+    </tr>
+    <tr>
+      <th>Output</th>
+      <td>i.i.d. samples from $\pi$</td>
+      <td>$\hat&#123;\mathbb E&#125;_\pi[f] = \sum_i \tilde w_i\,f(x_i),\ \tilde w_i \propto w_i$</td>
+      <td>correlated chain $X_0, X_1, \ldots \to \pi$</td>
+      <td>correlated chain $X_0, X_1, \ldots \to \pi$</td>
+      <td>correlated chain $X_0, X_1, \ldots \to \pi$</td>
+      <td>correlated chain with longer effective step</td>
+    </tr>
+    <tr>
+      <th>Main failure mode</th>
+      <td>acceptance rate $1/M$ collapses exponentially in $d$</td>
+      <td>weight degeneracy when $q$ poorly covers $\pi$ or in high $d$</td>
+      <td>symmetric-proposal scale fragility</td>
+      <td>poor $q$ ⇒ sticky chain or mode-trapping</td>
+      <td>strong coordinate correlation ⇒ slow mixing</td>
+      <td>step size and trajectory length need tuning; divergences</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>
+Reading across the <strong>Accept / weight</strong> row is where the family
+shows itself most clearly: rejection accepts or discards; IS accepts every
+sample but reweights; Metropolis and MH accept stochastically by a target-
+density ratio (with MH adding the proposal correction $q(x\mid x')/q(x'\mid x)$
+that the symmetric Metropolis case eliminates); Gibbs accepts always but
+restricts the proposal to one-coordinate conditional draws; HMC accepts by an
+energy ratio rather than a density ratio, because its proposal is a
+trajectory rather than a point. Each row in this table is a single design
+decision; each method is one combination.
+</p>
+
+<p>
+Two methods that share a row stay in the same family of failure modes.
+Reading <strong>Main failure mode</strong> shows why: high-$d$ dimension hurts
+rejection and IS for the same reason (geometric weight-mass concentration in
+the proposal-vs-target ratio), while MH and Gibbs share the symptom
+<em>slow mixing</em> but for different reasons (proposal-scale tuning vs.
+posterior anisotropy in coordinate-aligned axes).
+</p>
+
+<h2 id="pair-changes">5. Pair by pair: what changes between methods</h2>
+
+<p>
+The table above shows the design space at a glance. The four cards below
+zoom in on the single-step changes: <em>this</em> turned into <em>that</em>
+by swapping one line of the inner loop. Pseudocode for each pair shares the
+same outer structure, so the differences are confined to the highlighted
+lines.
+</p>
+
+<div class="pair-card">
+  <div class="pair-header">
+    <h3>Rejection ↔ Importance sampling</h3>
+    <p class="pair-tagline">Both draw from $q$. Rejection discards mismatched samples; IS keeps every sample with a weight.</p>
+  </div>
+  <div class="pair-cols">
+    <div class="pair-col">
+      <div class="pair-col-title">Rejection sampling</div>
+<pre><code>samples = []
+<span class="diff">while |samples| &lt; N:</span>
+    x ~ q(·)
+    <span class="diff">u ~ Uniform(0, 1)
+    if u &lt; π(x) / (M·q(x)):
+        samples.append(x)</span>
+return samples            # i.i.d. from π
+</code></pre>
+    </div>
+    <div class="pair-col">
+      <div class="pair-col-title">Importance sampling</div>
+<pre><code>samples = []; weights = []
+<span class="diff">for i = 1 to N:</span>
+    x ~ q(·)
+    <span class="diff">w = π(x) / q(x)
+    samples.append(x)
+    weights.append(w)</span>
+return Σᵢ w̃ᵢ·f(xᵢ)         # w̃ ∝ w
+</code></pre>
+    </div>
+  </div>
+  <p class="pair-note">
+    The accept-or-discard test (left) becomes a weight assignment (right).
+    Rejection wastes a fraction $1 - 1/M$ of draws but returns honest i.i.d.
+    samples; IS wastes none but returns a weighted estimator whose variance
+    depends on how well $q$ covers $\pi$ (see §2 for the variance algebra).
+  </p>
+</div>
+
+<div class="pair-card">
+  <div class="pair-header">
+    <h3>Metropolis ↔ Metropolis–Hastings</h3>
+    <p class="pair-tagline">Asymmetric proposals need a correction factor in the acceptance ratio.</p>
+  </div>
+  <div class="pair-cols">
+    <div class="pair-col">
+      <div class="pair-col-title">Metropolis (symmetric)</div>
+<pre><code>x = x₀
+chain = [x]
+for t = 1 to T:
+    <span class="diff">x' = x + ε,  ε symmetric</span>
+    u ~ Uniform(0, 1)
+    <span class="diff">if u &lt; min(1, π(x') / π(x)):</span>
+        x = x'
+    chain.append(x)
+return chain
+</code></pre>
+    </div>
+    <div class="pair-col">
+      <div class="pair-col-title">Metropolis–Hastings</div>
+<pre><code>x = x₀
+chain = [x]
+for t = 1 to T:
+    <span class="diff">x' ~ q(·|x)</span>
+    u ~ Uniform(0, 1)
+    <span class="diff">if u &lt; min(1, π(x')·q(x|x') /
+                  (π(x)·q(x'|x))):</span>
+        x = x'
+    chain.append(x)
+return chain
+</code></pre>
+    </div>
+  </div>
+  <p class="pair-note">
+    Two lines change. The proposal becomes a general $q(\cdot \mid x)$
+    instead of a symmetric jump, and the accept test picks up the
+    <strong>Hastings correction</strong> $q(x \mid x')/q(x' \mid x)$ that
+    compensates for proposal asymmetry. Metropolis is MH with $q$ symmetric;
+    the correction equals 1 and cancels.
+  </p>
+</div>
+
+<div class="pair-card">
+  <div class="pair-header">
+    <h3>Metropolis–Hastings ↔ Gibbs</h3>
+    <p class="pair-tagline">Replace "propose then accept/reject" with "draw exactly from a full conditional, always accept."</p>
+  </div>
+  <div class="pair-cols">
+    <div class="pair-col">
+      <div class="pair-col-title">Metropolis–Hastings</div>
+<pre><code>x = x₀
+chain = [x]
+for t = 1 to T:
+    <span class="diff">x' ~ q(·|x)
+    u ~ Uniform(0, 1)
+    if u &lt; min(1, π(x')·q(x|x') /
+                  (π(x)·q(x'|x))):
+        x = x'</span>
+    chain.append(x)
+return chain
+</code></pre>
+    </div>
+    <div class="pair-col">
+      <div class="pair-col-title">Gibbs sampling</div>
+<pre><code>x = x₀
+chain = [x]
+for t = 1 to T:
+    <span class="diff">for k = 1 to d:
+        x_k ~ π(x_k | x_&#123;-k&#125;)</span>
+    chain.append(x)
+return chain
+</code></pre>
+    </div>
+  </div>
+  <p class="pair-note">
+    Gibbs replaces the entire propose/accept block with a coordinate cycle of
+    exact conditional draws. The acceptance probability is identically $1$
+    because each conditional draw is from the right distribution by
+    construction. The price: you need the full conditionals $\pi(x_k \mid x_&#123;-k&#125;)$
+    in closed form. When you don't, MH-within-Gibbs replaces one or more of
+    these conditional draws with a local MH step.
+  </p>
+</div>
+
+<div class="pair-card">
+  <div class="pair-header">
+    <h3>Metropolis–Hastings ↔ HMC</h3>
+    <p class="pair-tagline">Replace random-walk proposals with a Hamiltonian trajectory; replace the density ratio with an energy ratio.</p>
+  </div>
+  <div class="pair-cols">
+    <div class="pair-col">
+      <div class="pair-col-title">Metropolis–Hastings (random walk)</div>
+<pre><code>x = x₀
+chain = [x]
+for t = 1 to T:
+    <span class="diff">x' = x + ε,  ε ~ N(0, Σ)</span>
+
+
+    u ~ Uniform(0, 1)
+    <span class="diff">if u &lt; min(1, π(x') / π(x)):</span>
+        x = x'
+    chain.append(x)
+return chain
+</code></pre>
+    </div>
+    <div class="pair-col">
+      <div class="pair-col-title">Hamiltonian Monte Carlo</div>
+<pre><code>x = x₀
+chain = [x]
+for t = 1 to T:
+    <span class="diff">p ~ N(0, I)
+    (x', p') = leapfrog(x, p, ε, L)
+                                  # uses ∇log π</span>
+    u ~ Uniform(0, 1)
+    <span class="diff">if u &lt; min(1, exp(H(x,p) - H(x',p'))):</span>
+        x = x'
+    chain.append(x)
+return chain
+</code></pre>
+    </div>
+  </div>
+  <p class="pair-note">
+    The proposal step changes from a local random jump to a deterministic
+    leapfrog trajectory of length $L\varepsilon$ using $\nabla\log\pi$. The
+    accept test changes from a density ratio to an energy ratio
+    $\exp(H - H')$ where $H(x, p) = -\log\pi(x) + \tfrac12\|p\|^2$. The
+    leapfrog integrator is reversible and volume-preserving, which is what
+    makes the energy-ratio test correct. HMC trades the need for gradients
+    for much longer effective steps and much better mixing in high $d$.
+  </p>
+</div>
+
+<h2 id="decision">6. What to use where</h2>
+
+<p>
+The table below collapses the static-target methods of this page into a one-glance
+reference. Tags echo the section colors: <span class="tag exact">exact</span> means
+returns-true-samples-from-$\pi$, <span class="tag iid">i.i.d.</span> means draws
+are independent, <span class="tag mcmc">mcmc</span> means correlated chain samples.
+For state-space targets (Kalman, EKF, UKF, particle filter), see
+<a href="/math/state-space-filtering/">Kalman &amp; Particle Filters</a>.
+</p>
+
+<DecisionTable headers={["Method","Use when","Strengths","Pitfalls"]}>
+    <tr data-target-figure="fig0">
+      <td class="method">Inverse CDF<br><span class="tag exact">exact</span><span class="tag iid">i.i.d.</span></td>
+      <td class="use">Univariate target with invertible CDF (exponential, Cauchy, custom 1-D).</td>
+      <td>Exact, zero waste.</td>
+      <td>Useless beyond 1-D or without closed-form $F^&#123;-1&#125;$.</td>
+    </tr>
+    <tr data-target-figure="fig1">
+      <td class="method">Rejection<br><span class="tag exact">exact</span><span class="tag iid">i.i.d.</span></td>
+      <td class="use">Low-dimensional target with a known envelope $M\,q\geq\pi$.</td>
+      <td>Exact i.i.d. samples; simple to implement.</td>
+      <td>Acceptance rate $1/M$ collapses exponentially in dimension.</td>
+    </tr>
+    <tr data-target-figure="fig1">
+      <td class="method">Importance sampling<br><span class="tag iid">i.i.d.</span></td>
+      <td class="use">Computing expectations under an unnormalized target; building block inside SMC.</td>
+      <td>Never rejects; self-normalized version handles unnormalized $\pi$; flexible $q$.</td>
+      <td>Weight degeneracy if $q$ poorly covers $\pi$ or in high $d$; monitor ESS.</td>
+    </tr>
+    <tr data-target-figure="fig2">
+      <td class="method">Metropolis<br><span class="tag mcmc">mcmc</span></td>
+      <td class="use">Static posterior where a symmetric random-walk proposal is adequate.</td>
+      <td>Simpler acceptance ratio; needs only pointwise unnormalized $\pi$.</td>
+      <td>A special case of MH; proposal scale still controls mixing and rejection.</td>
+    </tr>
+    <tr data-target-figure="fig2">
+      <td class="method">Metropolis-Hastings<br><span class="tag mcmc">mcmc</span></td>
+      <td class="use">General-purpose static posterior with no special structure; only ratios $\pi(x')/\pi(x)$ available.</td>
+      <td>Asymptotically exact; needs only pointwise unnormalized $\pi$.</td>
+      <td>Tuning the proposal scale is fiddly; mixes poorly in high $d$ or multimodal $\pi$.</td>
+    </tr>
+    <tr data-target-figure="fig4">
+      <td class="method">Gibbs sampling<br><span class="tag mcmc">mcmc</span></td>
+      <td class="use">Hierarchical/conjugate models where every full conditional has closed form.</td>
+      <td>Zero tuning; acceptance rate 1; natural for graphical models.</td>
+      <td>Slow when variables are correlated; needs tractable conditionals (else MH-within-Gibbs).</td>
+    </tr>
+    <tr data-target-figure="fig5">
+      <td class="method">RJMCMC<br><span class="tag mcmc">mcmc</span></td>
+      <td class="use">Joint inference over model order and parameters (mixture components, change-points, NN architecture).</td>
+      <td>Asymptotically exact across model space; principled Bayesian model selection.</td>
+      <td>Move design and Jacobians are problem-specific; mixing across dimensions is hard.</td>
+    </tr>
+</DecisionTable>
+
+<Aside>
+<strong>Quick decision tree.</strong>
+<ol>
+  <li>1-D target with an invertible CDF? → <strong>inverse CDF</strong>.</li>
+  <li>Low-D target with a known envelope $M\,q\geq\pi$? → <strong>rejection</strong>.</li>
+  <li>Want an expectation under an unnormalized target with a reasonable proposal $q$? → <strong>importance sampling</strong>.</li>
+  <li>High-D static target, only ratios of $\pi$? → symmetric proposal: <strong>Metropolis</strong>; asymmetric: <strong>Metropolis-Hastings</strong>. Conjugate conditionals available? → <strong>Gibbs</strong>. Gradients available? → <strong>HMC/Langevin</strong>.</li>
+  <li>Model order itself is unknown? → <strong>RJMCMC</strong>.</li>
+  <li>Time-evolving hidden state? → see <a href="/math/state-space-filtering/">Kalman &amp; Particle Filters</a>.</li>
+</ol>
+</Aside>
+
+<NextCards heading="What next" intro="Sampling connects most directly to change of measure, approximate inference, dependence testing, and state-space filtering." cards={[{"href":"/state-space-filtering/","tag":"State space","title":"Kalman &amp; Particle Filters","role":"The time-recursive cousin: sequential Monte Carlo and the Kalman family for problems where the target evolves over time."},{"href":"/measure-theory/","tag":"Foundations","title":"Measure Theory &amp; Random Variables","role":"Importance sampling is the Radon–Nikodym derivative identity turned into an estimator."},{"href":"/variational-inference/","tag":"Approximation","title":"Free Energy &amp; Variational Inference","role":"A complementary route to Bayesian computation: optimize a tractable approximation instead of drawing samples."},{"href":"/markov-chains/","tag":"Processes","title":"Markov Chains","role":"Separate the general theory of transition matrices, mixing, recurrence, and CTMCs from their MCMC use here."},{"href":"/distance-correlation/","tag":"Testing","title":"Distance Correlation","role":"See another place resampling appears: permutation tests for nonlinear dependence."}]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>.
+  Companion to <a href="/math/measure-theory/">Measure Theory &amp; Random Variables</a>
+  and <a href="/math/variational-inference/">Free Energy &amp; Variational Inference</a>.
+  Math typeset with KaTeX.
+</div>
+
+<style>
+  .variant-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .variant-tabs button {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--panel);
+    color: var(--text);
+    padding: 0.42rem 0.58rem;
+    font: inherit;
+    font-size: 0.88rem;
+    cursor: pointer;
+  }
+
+  .variant-tabs button[aria-selected="true"] {
+    border-color: #1f4a8c;
+    background: rgba(31, 74, 140, 0.1);
+    color: #163867;
+    font-weight: 700;
+  }
+
+  .pseudocode-table-wrap {
+    overflow-x: auto;
+    margin: 18px 0 24px;
+    border: 1px solid var(--rule, #d8d3c5);
+    border-radius: 6px;
+    background: #ffffff;
+  }
+  .pseudocode-table {
+    width: 100%;
+    min-width: 920px;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  .pseudocode-table thead th {
+    background: rgba(2, 132, 199, 0.08);
+    border-bottom: 2px solid rgba(2, 132, 199, 0.3);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text, #1f2733);
+    white-space: nowrap;
+  }
+  .pseudocode-table thead th:first-child {
+    background: transparent;
+    border-bottom: 2px solid rgba(2, 132, 199, 0.3);
+  }
+  .pseudocode-table tbody th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--panel, #fbfbfa);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    font-weight: 600;
+    font-size: 11.5px;
+    color: var(--text-dim, #5a6577);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    vertical-align: top;
+    width: 132px;
+  }
+  .pseudocode-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    vertical-align: top;
+  }
+  .pseudocode-table tbody tr:last-child th,
+  .pseudocode-table tbody tr:last-child td { border-bottom: none; }
+  .pseudocode-table tbody tr:nth-child(odd) td:not(.code) {
+    background: rgba(0, 0, 0, 0.012);
+  }
+  .pseudocode-table td.code {
+    font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
+    font-size: 11.5px;
+    background: rgba(45, 122, 62, 0.04);
+  }
+
+  .pair-card {
+    border: 1px solid var(--rule, #d8d3c5);
+    border-radius: 6px;
+    background: #ffffff;
+    margin: 20px 0;
+    padding: 14px 16px 12px;
+  }
+  .pair-header h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text, #1f2733);
+  }
+  .pair-header .pair-tagline {
+    margin: 0 0 12px;
+    color: var(--text-dim, #5a6577);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .pair-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 0 0 12px;
+  }
+  @media (max-width: 720px) {
+    .pair-cols { grid-template-columns: 1fr; }
+  }
+  .pair-col {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    background: var(--panel, #fbfbfa);
+    overflow: hidden;
+  }
+  .pair-col-title {
+    padding: 6px 10px;
+    background: rgba(2, 132, 199, 0.06);
+    border-bottom: 1px solid rgba(2, 132, 199, 0.2);
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-dim, #5a6577);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pair-col pre {
+    margin: 0;
+    padding: 10px 12px;
+    overflow-x: auto;
+    background: transparent;
+    line-height: 1.55;
+  }
+  .pair-col code {
+    font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
+    font-size: 12px;
+    color: var(--text, #1f2733);
+    white-space: pre;
+  }
+  .pair-col .diff {
+    background: rgba(251, 191, 36, 0.22);
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+  .pair-note {
+    margin: 8px 4px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text, #1f2733);
+  }
+</style>
+
+
+  <script is:inline src="/math/sampling-methods/sampling.js"></script>
+</ExplainerLayout>

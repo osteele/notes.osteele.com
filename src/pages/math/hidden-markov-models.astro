@@ -1,0 +1,504 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Hidden Markov Models — Interactive Explainer" breadcrumb="Hidden Markov Models" section="bayesian-inference">
+  <Hero title="Hidden Markov Models" subtitle="Filtering, smoothing, and decoding as three different ways to read the same dynamic Bayesian network." />
+
+  <p>
+    A hidden Markov model has a latent state $z_t$, an observation $y_t$, a transition matrix
+    $A = p(z_t\mid z_&#123;t-1&#125;)$, and an emission matrix $C = p(y_t\mid z_t)$. As a Bayesian
+    network the graph is just the static $z\to y$ block repeated across time: the same local
+    structure unrolled.
+  </p>
+
+  <Figure title="Figure 0 · HMM as an unrolled Bayesian network" canvasId="hmm-graph" width="780" height="180">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#1f4a8c"></span>latent state $z_t$</span>
+        <span><span class="swatch" style="background:#b8412a"></span>observation $y_t$</span>
+      </div>
+    </Fragment>
+  </Figure>
+
+  <h2>1. Sample from the model</h2>
+  <p>
+    Start with the generative story. High self-transition probability makes state runs long; high
+    sensor accuracy makes observations reliable. The same sampled observation sequence is used by
+    the inference widgets below.
+  </p>
+
+  <Figure title="Figure 1 · HMM sampler" canvasId="hmm-sampler" width="780" height="260" readoutId="hmm-sampler-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#1f4a8c"></span>hidden state</span>
+        <span><span class="swatch" style="background:#b8412a"></span>observation</span>
+        <span><span class="swatch" style="background:#e3ddd0"></span>mismatch</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <ControlRange id="hmm-stick" label="state persistence" valueId="hmm-stick-v" min="0.55" max="0.98" step="0.01" value="0.82" />
+      <ControlRange id="hmm-sensor" label="sensor accuracy" valueId="hmm-sensor-v" min="0.55" max="0.98" step="0.01" value="0.86" />
+      <ControlRange id="hmm-len" label="sequence length" valueId="hmm-len-v" min="12" max="40" step="1" value="24" />
+      <PresetRow>
+        <button id="hmm-resample">New sequence</button>
+      </PresetRow>
+    </Fragment>
+  </Figure>
+
+  <h2>2. Forward-backward messages</h2>
+  <p>
+    Filtering uses observations up to $t$: $\alpha_t(i) \propto p(y_&#123;1:t&#125;,z_t=i)$.
+    Smoothing multiplies by the backward message:
+    $\gamma_t(i) \propto \alpha_t(i)\beta_t(i) = p(z_t=i\mid y_&#123;1:T&#125;)$.
+    The <em>diff</em> view plots $\gamma_t - \alpha_t$; where it lights up, future evidence
+    changed the belief about $z_t$.
+    <strong>Click a column</strong> to move the time cursor without using the slider.
+  </p>
+
+  <Figure title="Figure 2 · Filter, smoother, and the diff between them" canvasId="hmm-fb" width="780" height="320" readoutId="hmm-fb-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#1f4a8c"></span>$\alpha$ filter / low value</span>
+        <span><span class="swatch" style="background:#b8412a"></span>$\gamma$ smoother / high value</span>
+        <span><span class="swatch" style="background:#2d7a3e"></span>positive correction</span>
+        <span><span class="swatch" style="background:#6b4592"></span>negative correction</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <ControlRange id="hmm-time" label="current time k" valueId="hmm-time-v" min="0" max="23" step="1" value="10" />
+      <PresetRow>
+        <button id="hmm-mode-filter" class="active">Filter $\alpha$</button>
+        <button id="hmm-mode-smooth">Smoother $\gamma$</button>
+        <button id="hmm-mode-diff">Diff $\gamma-\alpha$</button>
+      </PresetRow>
+    </Fragment>
+  </Figure>
+
+  <p>
+    Why work in the log domain? The unnormalized joint $p(y_&#123;1:t&#125;, z_t=i)$ shrinks
+    exponentially with $t$ because every observation multiplies in another factor below one.
+    Figure 2b plots its magnitude two ways. The linear curve crashes through floating-point
+    underflow long before the sequence ends; the log curve is a clean (negative) line.
+  </p>
+
+  <Figure title="Figure 2b · Why log-domain: unnormalized message magnitude over time" canvasId="hmm-underflow" width="780" height="240" readoutId="hmm-underflow-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#b8412a"></span>linear (underflows)</span>
+        <span><span class="swatch" style="background:#1f4a8c"></span>log-domain</span>
+        <span><span class="swatch" style="background:#5a6577"></span>double precision floor $\approx 10^&#123;-308&#125;$</span>
+      </div>
+    </Fragment>
+    <Fragment slot="controls">
+      <ControlRange id="hmm-long" label="sequence length" valueId="hmm-long-v" min="40" max="600" step="20" value="240" />
+    </Fragment>
+  </Figure>
+
+  <h2>3. Viterbi is not marginal smoothing</h2>
+  <p>
+    The smoother chooses the most probable state at each time independently. Viterbi chooses the
+    most probable complete path. Those can disagree because locally-best marginals need not form
+    the best joint sequence. <strong>Click an "obs" cell</strong> below to cycle that observation;
+    on the sampler in Figure 1, clicking the "state" or "observed" cells works the same way.
+  </p>
+
+  <Figure title="Figure 3 · Marginal MAP path versus Viterbi path" canvasId="hmm-viterbi" width="780" height="300" readoutId="hmm-viterbi-readout">
+    <Fragment slot="legend">
+      <div class="legend">
+        <span><span class="swatch" style="background:#6b4592"></span>marginal MAP</span>
+        <span><span class="swatch" style="background:#d4690a"></span>Viterbi joint MAP</span>
+        <span><span class="swatch" style="background:#b8412a"></span>disagreement</span>
+      </div>
+    </Fragment>
+  </Figure>
+
+  <NextCards heading="What next" intro="HMMs are dynamic Bayesian networks, and their inference algorithms are special cases of message passing." cards={[
+    { href: "/bayesian-graphical-models/", tag: "Graphs", title: "Bayesian Graphical Models", role: "See the static DAG ideas that HMMs repeat across time." },
+    { href: "/monte-carlo/", tag: "Computation", title: "Monte Carlo &amp; MCMC", role: "When exact HMM-style messages fail, sampling moves probability mass approximately." },
+    { href: "/markov-chains/", tag: "Processes", title: "Markov Chains", role: "Separate the latent transition dynamics from the observation model." },
+  ]} />
+
+  <div class="footer">Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.</div>
+
+  <script is:inline>
+    (() => {
+      const colors = { bg: "#fff", grid: "#e3ddd0", axis: "#5a6577", text: "#1f2733", dim: "#5a6577", blue: "#1f4a8c", red: "#b8412a", green: "#2d7a3e", orange: "#d4690a", purple: "#6b4592" };
+      const states = ["sunny", "rainy", "foggy"];
+      const obsNames = ["dry", "damp", "wet"];
+      let z = [], y = [], alpha = [], beta = [], gamma = [], vit = [], marginal = [];
+      let displayMode = "filter";
+      // Unnormalized forward joint p(y_{1:t}, z_t) stored in log domain to avoid underflow,
+      // plus a parallel naive linear version that we let underflow on purpose.
+      let logJointMax = [], linearJointMax = [];
+
+      const $ = (id) => document.getElementById(id);
+      function setup(id) {
+        const c = $(id);
+        const ratio = window.devicePixelRatio || 1;
+        const iw = Number(c.getAttribute("width")), ih = Number(c.getAttribute("height"));
+        c.style.width = "100%";
+        c.style.height = `${c.getBoundingClientRect().width * ih / iw}px`;
+        const r = c.getBoundingClientRect();
+        c.width = r.width * ratio; c.height = r.height * ratio;
+        const ctx = c.getContext("2d");
+        ctx.scale(ratio, ratio);
+        return { c, ctx, w: r.width, h: r.height };
+      }
+      function norm(v) { const s = v.reduce((a, b) => a + b, 0) || 1; return v.map((x) => x / s); }
+      function sampleCategorical(ps) { let u = Math.random(); for (let i = 0; i < ps.length; i++) { u -= ps[i]; if (u <= 0) return i; } return ps.length - 1; }
+      function fmt(x) { return x.toFixed(3); }
+      function matrices() {
+        const stick = Number($("hmm-stick").value);
+        const sensor = Number($("hmm-sensor").value);
+        const offA = (1 - stick) / 2;
+        const offC = (1 - sensor) / 2;
+        return {
+          A: [[stick, offA, offA], [offA, stick, offA], [offA, offA, stick]],
+          C: [[sensor, offC, offC], [offC, sensor, offC], [offC, offC, sensor]],
+          pi: [0.45, 0.35, 0.20],
+        };
+      }
+      function recompute() {
+        const { A, C, pi } = matrices();
+        const T = y.length;
+        alpha = Array.from({ length: T }, () => [0, 0, 0]);
+        beta = Array.from({ length: T }, () => [1, 1, 1]);
+        gamma = Array.from({ length: T }, () => [0, 0, 0]);
+        alpha[0] = norm(pi.map((p, i) => p * C[i][y[0]]));
+        for (let t = 1; t < T; t++) {
+          alpha[t] = norm([0, 1, 2].map((j) => C[j][y[t]] * [0, 1, 2].reduce((s, i) => s + alpha[t - 1][i] * A[i][j], 0)));
+        }
+        for (let t = T - 2; t >= 0; t--) {
+          beta[t] = norm([0, 1, 2].map((i) => [0, 1, 2].reduce((s, j) => s + A[i][j] * C[j][y[t + 1]] * beta[t + 1][j], 0)));
+        }
+        for (let t = 0; t < T; t++) gamma[t] = norm(alpha[t].map((a, i) => a * beta[t][i]));
+        marginal = gamma.map((row) => row.indexOf(Math.max(...row)));
+
+        // Track max over states of the unnormalized joint p(y_{1:t}, z_t=i) in log domain.
+        // Recompute linear in parallel to demonstrate underflow.
+        logJointMax = Array(T).fill(0);
+        linearJointMax = Array(T).fill(0);
+        let logAlpha = pi.map((p, i) => Math.log(p) + Math.log(C[i][y[0]]));
+        let linAlpha = pi.map((p, i) => p * C[i][y[0]]);
+        logJointMax[0] = Math.max(...logAlpha);
+        linearJointMax[0] = Math.max(...linAlpha);
+        for (let t = 1; t < T; t++) {
+          const nextLog = [0, 1, 2].map((j) => {
+            const xs = [0, 1, 2].map((i) => logAlpha[i] + Math.log(A[i][j]));
+            const m = Math.max(...xs);
+            return m + Math.log(xs.reduce((s, x) => s + Math.exp(x - m), 0)) + Math.log(C[j][y[t]]);
+          });
+          const nextLin = [0, 1, 2].map((j) => C[j][y[t]] * [0, 1, 2].reduce((s, i) => s + linAlpha[i] * A[i][j], 0));
+          logAlpha = nextLog;
+          linAlpha = nextLin;
+          logJointMax[t] = Math.max(...logAlpha);
+          linearJointMax[t] = Math.max(...linAlpha);
+        }
+
+        const delta = Array.from({ length: T }, () => [0, 0, 0]);
+        const back = Array.from({ length: T }, () => [0, 0, 0]);
+        delta[0] = pi.map((p, i) => Math.log(p) + Math.log(C[i][y[0]]));
+        for (let t = 1; t < T; t++) {
+          for (let j = 0; j < 3; j++) {
+            const vals = [0, 1, 2].map((i) => delta[t - 1][i] + Math.log(A[i][j]));
+            back[t][j] = vals.indexOf(Math.max(...vals));
+            delta[t][j] = Math.max(...vals) + Math.log(C[j][y[t]]);
+          }
+        }
+        vit = Array(T).fill(0);
+        vit[T - 1] = delta[T - 1].indexOf(Math.max(...delta[T - 1]));
+        for (let t = T - 2; t >= 0; t--) vit[t] = back[t + 1][vit[t + 1]];
+      }
+      function resample() {
+        const { A, C, pi } = matrices();
+        const T = Number($("hmm-len").value);
+        z = Array(T); y = Array(T);
+        z[0] = sampleCategorical(pi); y[0] = sampleCategorical(C[z[0]]);
+        for (let t = 1; t < T; t++) { z[t] = sampleCategorical(A[z[t - 1]]); y[t] = sampleCategorical(C[z[t]]); }
+        $("hmm-time").max = String(T - 1);
+        $("hmm-time").value = String(Math.min(Number($("hmm-time").value), T - 1));
+        $("hmm-len-v").textContent = String(T);
+        recompute(); drawAll();
+      }
+      function tile(ctx, x, y0, w, h, p) {
+        const q = Math.max(0, Math.min(1, p));
+        ctx.fillStyle = `rgb(${Math.round(238 - 54 * q)},${Math.round(231 - 166 * q)},${Math.round(223 - 181 * q)})`;
+        ctx.fillRect(x, y0, w, h);
+        ctx.strokeStyle = colors.grid; ctx.strokeRect(x, y0, w, h);
+      }
+      function drawTimeline(canvasId, readoutId) {
+        const { ctx, w, h } = setup(canvasId);
+        ctx.clearRect(0, 0, w, h);
+        const left = 70, top = 36, cell = Math.min(24, (w - left - 20) / y.length), rowH = 42;
+        ctx.font = "12px -apple-system, sans-serif";
+        ctx.textAlign = "right"; ctx.fillStyle = colors.dim;
+        ctx.fillText("state", left - 10, top + 14);
+        ctx.fillText("observed", left - 10, top + rowH + 14);
+        for (let t = 0; t < y.length; t++) {
+          const x0 = left + t * cell;
+          ctx.fillStyle = ["#cfe0f5", "#d9d0eb", "#d8eadc"][z[t]];
+          ctx.fillRect(x0, top, cell - 2, 24);
+          ctx.fillStyle = z[t] === y[t] ? "#f5d4c9" : "#e3ddd0";
+          ctx.fillRect(x0, top + rowH, cell - 2, 24);
+          ctx.fillStyle = colors.text; ctx.textAlign = "center";
+          ctx.fillText(String(z[t] + 1), x0 + cell / 2, top + 16);
+          ctx.fillText(String(y[t] + 1), x0 + cell / 2, top + rowH + 16);
+        }
+        ctx.textAlign = "left"; ctx.fillStyle = colors.dim;
+        ctx.fillText("1=sunny/dry, 2=rainy/damp, 3=foggy/wet", left, h - 28);
+        const mistakes = y.filter((v, i) => v !== z[i]).length;
+        $(readoutId).innerHTML = `<div class="row"><span class="lbl">length / mismatches</span><span>${y.length} / ${mistakes}</span></div>`;
+      }
+      function diffTile(ctx, x, y0, w, h, v) {
+        // v in [-1, 1]: green positive, purple negative, white at zero.
+        const mag = Math.min(1, Math.abs(v));
+        const r = v > 0 ? 255 - Math.round(210 * mag) : 255 - Math.round(150 * mag);
+        const g = v > 0 ? 255 - Math.round(130 * mag) : 255 - Math.round(195 * mag);
+        const b = v > 0 ? 255 - Math.round(190 * mag) : 255 - Math.round(110 * mag);
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.fillRect(x, y0, w, h);
+        ctx.strokeStyle = colors.grid; ctx.strokeRect(x, y0, w, h);
+      }
+      function drawFB() {
+        const { ctx, w, h } = setup("hmm-fb");
+        ctx.clearRect(0, 0, w, h);
+        const k = Number($("hmm-time").value);
+        $("hmm-time-v").textContent = String(k);
+        const matrix = displayMode === "filter" ? alpha : displayMode === "smooth" ? gamma : null;
+        const title = displayMode === "filter" ? "alpha (filter)"
+          : displayMode === "smooth" ? "gamma (smoother)"
+          : "gamma - alpha (smoother correction)";
+        const left = 96, top = 36, cellW = Math.max(8, (w - left - 24) / y.length), cellH = 28;
+        ctx.font = "12px -apple-system, sans-serif";
+        ctx.fillStyle = colors.text; ctx.textAlign = "left"; ctx.fillText(title, left, 18);
+        for (let s = 0; s < 3; s++) {
+          ctx.fillStyle = colors.dim; ctx.textAlign = "right";
+          ctx.fillText(states[s], left - 8, top + 18 + s * cellH);
+          for (let t = 0; t < y.length; t++) {
+            if (displayMode === "diff") {
+              diffTile(ctx, left + t * cellW, top + 4 + s * cellH, cellW, cellH, gamma[t][s] - alpha[t][s]);
+            } else {
+              tile(ctx, left + t * cellW, top + 4 + s * cellH, cellW, cellH, matrix[t][s]);
+            }
+          }
+        }
+        // axis labels
+        ctx.fillStyle = colors.dim; ctx.textAlign = "left"; ctx.font = "11px -apple-system, sans-serif";
+        ctx.fillText("t →", left + y.length * cellW + 4, top + cellH * 3 / 2 + 4);
+        ctx.fillText("obs", left - 32, top + cellH * 3 + 22);
+        // strip of observations
+        for (let t = 0; t < y.length; t++) {
+          ctx.fillStyle = ["#cfe0f5", "#d9d0eb", "#d8eadc"][y[t]];
+          ctx.fillRect(left + t * cellW, top + cellH * 3 + 8, cellW - 1, 14);
+          ctx.fillStyle = colors.dim; ctx.textAlign = "center";
+          ctx.fillText(String(y[t] + 1), left + t * cellW + cellW / 2, top + cellH * 3 + 19);
+        }
+        ctx.strokeStyle = colors.green; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(left + (k + 0.5) * cellW, top - 4); ctx.lineTo(left + (k + 0.5) * cellW, top + cellH * 3 + 26); ctx.stroke();
+        const aRow = alpha[k], gRow = gamma[k], dRow = aRow.map((a, i) => gRow[i] - a);
+        const showRow = displayMode === "filter" ? aRow : displayMode === "smooth" ? gRow : dRow;
+        const best = (displayMode === "diff" ? gRow : showRow).indexOf(Math.max(...(displayMode === "diff" ? gRow : showRow)));
+        const fmtRow = showRow.map((v, i) => `${states[i]} ${v >= 0 ? "+" : ""}${fmt(v)}`).join(" · ");
+        const maxAbsDiff = Math.max(...dRow.map((v) => Math.abs(v)));
+        $("hmm-fb-readout").innerHTML = `<div class="row"><span class="lbl">${displayMode === "filter" ? "alpha" : displayMode === "smooth" ? "gamma" : "gamma - alpha"} at k=${k}</span><span>${fmtRow}</span></div><div class="row"><span class="lbl">most likely state (smoother)</span><span>${states[best]}</span></div><div class="row"><span class="lbl">largest smoother correction across t</span><span>${maxAbsDiff.toFixed(3)} at t=${dRow.indexOf(dRow.find((v) => Math.abs(v) === maxAbsDiff))}</span></div>`;
+      }
+      function drawGraph() {
+        const { ctx, w, h } = setup("hmm-graph"); ctx.clearRect(0, 0, w, h);
+        const N = 6, pad = 70, gap = (w - pad * 2) / (N - 1);
+        const zy = 50, yy = 130;
+        ctx.font = "13px -apple-system, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        for (let i = 0; i < N; i++) {
+          const cx = pad + i * gap;
+          // edge z_{i-1} -> z_i
+          if (i > 0) {
+            ctx.strokeStyle = colors.blue; ctx.lineWidth = 2; ctx.beginPath();
+            ctx.moveTo(pad + (i - 1) * gap + 22, zy);
+            ctx.lineTo(cx - 22, zy);
+            ctx.stroke();
+            const ang = 0; ctx.fillStyle = colors.blue;
+            ctx.beginPath(); ctx.moveTo(cx - 22, zy); ctx.lineTo(cx - 30, zy - 4); ctx.lineTo(cx - 30, zy + 4); ctx.closePath(); ctx.fill();
+          }
+          // edge z_i -> y_i
+          ctx.strokeStyle = colors.red; ctx.lineWidth = 2; ctx.beginPath();
+          ctx.moveTo(cx, zy + 22); ctx.lineTo(cx, yy - 22); ctx.stroke();
+          ctx.fillStyle = colors.red;
+          ctx.beginPath(); ctx.moveTo(cx, yy - 22); ctx.lineTo(cx - 4, yy - 30); ctx.lineTo(cx + 4, yy - 30); ctx.closePath(); ctx.fill();
+          // z node
+          ctx.fillStyle = "#dbe6f6"; ctx.strokeStyle = colors.blue; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(cx, zy, 22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = colors.text; ctx.fillText(`z${i + 1}`, cx, zy);
+          // y node
+          ctx.fillStyle = "#f5d4c9"; ctx.strokeStyle = colors.red;
+          ctx.beginPath(); ctx.arc(cx, yy, 22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = colors.text; ctx.fillText(`y${i + 1}`, cx, yy);
+        }
+        // ellipsis after last
+        ctx.fillStyle = colors.dim; ctx.font = "16px -apple-system, sans-serif";
+        ctx.textAlign = "left"; ctx.textBaseline = "middle";
+        ctx.fillText("...", pad + (N - 1) * gap + 30, zy);
+        // caption
+        ctx.font = "12px -apple-system, sans-serif"; ctx.fillStyle = colors.dim; ctx.textAlign = "center";
+        ctx.fillText("transitions p(z_t | z_{t-1})", w / 2 - 110, h - 18);
+        ctx.fillText("emissions p(y_t | z_t)", w / 2 + 110, h - 18);
+      }
+      function drawUnderflow() {
+        const { ctx, w, h } = setup("hmm-underflow"); ctx.clearRect(0, 0, w, h);
+        const T = Number($("hmm-long").value);
+        $("hmm-long-v").textContent = String(T);
+        // Run a fresh long sequence with current matrices to populate the long underflow curve.
+        const { A, C, pi } = matrices();
+        // Synthesize a representative observation sequence by sampling.
+        const yLong = Array(T);
+        let zPrev = sampleCategorical(pi); yLong[0] = sampleCategorical(C[zPrev]);
+        for (let t = 1; t < T; t++) { zPrev = sampleCategorical(A[zPrev]); yLong[t] = sampleCategorical(C[zPrev]); }
+        const linMax = Array(T), logMax = Array(T);
+        let logA = pi.map((p, i) => Math.log(p) + Math.log(C[i][yLong[0]]));
+        let linA = pi.map((p, i) => p * C[i][yLong[0]]);
+        linMax[0] = Math.max(...linA); logMax[0] = Math.max(...logA);
+        for (let t = 1; t < T; t++) {
+          const nLog = [0, 1, 2].map((j) => {
+            const xs = [0, 1, 2].map((i) => logA[i] + Math.log(A[i][j]));
+            const m = Math.max(...xs);
+            return m + Math.log(xs.reduce((s, x) => s + Math.exp(x - m), 0)) + Math.log(C[j][yLong[t]]);
+          });
+          const nLin = [0, 1, 2].map((j) => C[j][yLong[t]] * [0, 1, 2].reduce((s, i) => s + linA[i] * A[i][j], 0));
+          logA = nLog; linA = nLin; logMax[t] = Math.max(...logA); linMax[t] = Math.max(...linA);
+        }
+        // Plot on a single log10 axis. Linear underflows to 0 => -Infinity; clamp display.
+        const px = 80, py = 24, pw = w - px - 24, ph = h - 64;
+        const yMin = -320, yMax = 0;
+        ctx.strokeStyle = colors.grid;
+        for (let g = 0; g >= yMin; g -= 50) { const yy = py + ph - (g - yMin) / (yMax - yMin) * ph; ctx.beginPath(); ctx.moveTo(px, yy); ctx.lineTo(px + pw, yy); ctx.stroke(); ctx.fillStyle = colors.dim; ctx.font = "11px -apple-system, sans-serif"; ctx.textAlign = "right"; ctx.fillText(`10^${g}`, px - 6, yy + 4); }
+        ctx.strokeStyle = colors.dim; ctx.strokeRect(px, py, pw, ph);
+        // double-precision floor at ~10^-308
+        ctx.strokeStyle = "#5a6577"; ctx.setLineDash([4, 4]);
+        const floorY = py + ph - (-308 - yMin) / (yMax - yMin) * ph;
+        ctx.beginPath(); ctx.moveTo(px, floorY); ctx.lineTo(px + pw, floorY); ctx.stroke();
+        ctx.setLineDash([]);
+        const sx = (t) => px + t / (T - 1) * pw;
+        const sy = (v) => py + ph - (Math.max(yMin, Math.min(yMax, v)) - yMin) / (yMax - yMin) * ph;
+        // linear curve in log10
+        ctx.strokeStyle = colors.red; ctx.lineWidth = 2; ctx.beginPath();
+        let firstUnderflowAt = -1;
+        for (let t = 0; t < T; t++) {
+          const lv = linMax[t] > 0 ? Math.log10(linMax[t]) : -350;
+          if (firstUnderflowAt < 0 && lv <= -308) firstUnderflowAt = t;
+          t === 0 ? ctx.moveTo(sx(t), sy(lv)) : ctx.lineTo(sx(t), sy(lv));
+        }
+        ctx.stroke();
+        // log curve
+        ctx.strokeStyle = colors.blue; ctx.lineWidth = 2; ctx.beginPath();
+        for (let t = 0; t < T; t++) { const lv = logMax[t] / Math.LN10; t === 0 ? ctx.moveTo(sx(t), sy(lv)) : ctx.lineTo(sx(t), sy(lv)); }
+        ctx.stroke();
+        ctx.fillStyle = colors.dim; ctx.textAlign = "left"; ctx.fillText("t", px + pw - 8, h - 32);
+        const finalLog = logMax[T - 1] / Math.LN10;
+        $("hmm-underflow-readout").innerHTML = `<div class="row"><span class="lbl">final log10 magnitude</span><span>${finalLog.toFixed(1)}</span></div><div class="row"><span class="lbl">linear underflow first hits 10⁻³⁰⁸</span><span>${firstUnderflowAt < 0 ? "not within range" : `t ≈ ${firstUnderflowAt}`}</span></div>`;
+      }
+      function drawViterbi() {
+        const { ctx, w, h } = setup("hmm-viterbi");
+        ctx.clearRect(0, 0, w, h);
+        const left = 70, top = 24, cell = (w - left - 24) / y.length, rowH = 36;
+        const rows = [["true", z, colors.blue], ["obs", y, colors.dim], ["marginal", marginal, colors.purple], ["viterbi", vit, colors.orange]];
+        ctx.font = "12px -apple-system, sans-serif"; ctx.textAlign = "right";
+        rows.forEach(([name, path, color], r) => {
+          ctx.fillStyle = colors.dim; ctx.fillText(name, left - 10, top + r * rowH + 18);
+          for (let t = 0; t < y.length; t++) {
+            const x0 = left + t * cell;
+            const disagree = (r === 2 || r === 3) && marginal[t] !== vit[t];
+            ctx.fillStyle = disagree ? "rgba(184,65,42,0.18)" : "#f8f6f2";
+            ctx.fillRect(x0, top + r * rowH, cell - 2, 28);
+            ctx.fillStyle = color; ctx.textAlign = "center"; ctx.fillText(String(path[t] + 1), x0 + cell / 2, top + r * rowH + 18);
+          }
+        });
+        // pick the disagreement closest to the middle, with at least one neighbour to look at
+        const disagreements = [];
+        for (let t = 0; t < y.length; t++) if (vit[t] !== marginal[t]) disagreements.push(t);
+        const disagCount = disagreements.length;
+        let story = "Viterbi and marginal MAP agree on every step.";
+        if (disagreements.length) {
+          const t = disagreements.reduce((a, b) => Math.abs(b - y.length / 2) < Math.abs(a - y.length / 2) ? b : a);
+          const m = marginal[t], v = vit[t];
+          const sticky = (t > 0 && vit[t - 1] === v) || (t + 1 < y.length && vit[t + 1] === v);
+          const stick = Number($("hmm-stick").value);
+          const reason = sticky
+            ? `Viterbi stays in state ${v + 1} because its neighbours on the Viterbi path are also ${v + 1}, and self-transitions have probability ${stick.toFixed(2)}; switching out and back costs two off-diagonal transitions.`
+            : `Viterbi prefers state ${v + 1} because future observations favour a path through it, even though the local smoothing marginal at t=${t + 1} narrowly favours ${m + 1}.`;
+          story = `Disagreement at t=${t + 1}: smoother picks state ${m + 1} (${states[m]}), Viterbi picks state ${v + 1} (${states[v]}). ${reason}`;
+        }
+        $("hmm-viterbi-readout").innerHTML = `<div class="row"><span class="lbl">Viterbi / marginal disagreements</span><span>${disagCount} of ${y.length}</span></div><div class="row"><span class="lbl">why</span><span>${story}</span></div>`;
+      }
+      function setMode(m) {
+        displayMode = m;
+        ["filter", "smooth", "diff"].forEach((id) => {
+          const btn = $(`hmm-mode-${id}`); if (btn) btn.classList.toggle("active", id === m);
+        });
+        drawFB();
+      }
+      function drawAll() { drawGraph(); drawTimeline("hmm-sampler", "hmm-sampler-readout"); drawFB(); drawUnderflow(); drawViterbi(); }
+      // ---- Pointer interactions ------------------------------------------------------------
+      // Sampler row: click a state cell to cycle z_t, click an obs cell to cycle y_t.
+      // FB heatmap: click a column to move the time cursor.
+      // Viterbi: click the obs row to cycle y_t.
+      function bindHmmInteractions() {
+        const cSampler = $("hmm-sampler");
+        cSampler.style.cursor = "pointer";
+        cSampler.addEventListener("click", (event) => {
+          const r = cSampler.getBoundingClientRect();
+          const px = event.clientX - r.left, py = event.clientY - r.top;
+          const cssW = r.width;
+          const left = 70, top = 36, cell = Math.min(24, (cssW - left - 20) / y.length), rowH = 42;
+          if (px < left || px > left + y.length * cell) return;
+          const t = Math.floor((px - left) / cell);
+          if (t < 0 || t >= y.length) return;
+          if (py >= top && py < top + 24) { z[t] = (z[t] + 1) % 3; recompute(); drawAll(); }
+          else if (py >= top + rowH && py < top + rowH + 24) { y[t] = (y[t] + 1) % 3; recompute(); drawAll(); }
+        });
+        const cFB = $("hmm-fb");
+        cFB.style.cursor = "ew-resize";
+        cFB.addEventListener("click", (event) => {
+          const r = cFB.getBoundingClientRect();
+          const px = event.clientX - r.left;
+          const cssW = r.width;
+          const left = 96, cellW = Math.max(8, (cssW - left - 24) / y.length);
+          if (px < left) return;
+          const t = Math.floor((px - left) / cellW);
+          if (t < 0 || t >= y.length) return;
+          $("hmm-time").value = String(t);
+          drawFB();
+        });
+        const cV = $("hmm-viterbi");
+        cV.style.cursor = "pointer";
+        cV.addEventListener("click", (event) => {
+          const r = cV.getBoundingClientRect();
+          const px = event.clientX - r.left, py = event.clientY - r.top;
+          const cssW = r.width;
+          const left = 70, top = 24, cell = (cssW - left - 24) / y.length, rowH = 36;
+          if (px < left || px > left + y.length * cell) return;
+          const t = Math.floor((px - left) / cell);
+          const rowIdx = Math.floor((py - top) / rowH);
+          if (rowIdx !== 1) return;
+          if (t < 0 || t >= y.length) return;
+          y[t] = (y[t] + 1) % 3;
+          recompute(); drawAll();
+        });
+      }
+      ["hmm-stick", "hmm-sensor"].forEach((id) => $(id).addEventListener("input", () => { $(id + "-v").textContent = Number($(id).value).toFixed(2); resample(); }));
+      $("hmm-len").addEventListener("input", resample);
+      $("hmm-resample").addEventListener("click", resample);
+      $("hmm-time").addEventListener("input", drawFB);
+      $("hmm-mode-filter").addEventListener("click", () => setMode("filter"));
+      $("hmm-mode-smooth").addEventListener("click", () => setMode("smooth"));
+      $("hmm-mode-diff").addEventListener("click", () => setMode("diff"));
+      $("hmm-long").addEventListener("input", drawUnderflow);
+      resample();
+      bindHmmInteractions();
+      window.addEventListener("resize", drawAll);
+    })();
+  </script>
+</ExplainerLayout>

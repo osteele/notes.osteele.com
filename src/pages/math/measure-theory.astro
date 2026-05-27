@@ -1,0 +1,732 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import Legend from "../../components/explainer/Legend.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import PresetButton from "../../components/explainer/PresetButton.astro";
+import Readout from "../../components/explainer/Readout.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import VizCard from "../../components/explainer/VizCard.astro";
+import VizCardGrid from "../../components/explainer/VizCardGrid.astro";
+import NotationAside from "../../components/explainer/NotationAside.astro";
+---
+
+<ExplainerLayout title="Measure Theory & Random Variables" breadcrumb="Measure Theory & Random Variables" section="probability-and-statistics">
+
+
+<Hero title="Measure Theory &amp; Random Variables" subtitle="Measurable spaces, measures, pushforwards, and the Radon–Nikodym derivative." />
+
+<p>
+Probability is a <em>measure</em> on a space of outcomes, a random variable is
+a <em>function</em> on that space, and a density is a <em>ratio of two measures</em>.
+This page builds that picture step by step: first the space of events, then
+measures on that space, then random variables as measurable maps, and finally the
+Radon–Nikodym derivative that turns one measure into another.
+</p>
+
+<h2>1. Measurable spaces, measure spaces, and probability measures</h2>
+
+<p>
+A <strong>measurable space</strong> is a pair $(\Omega, \mathcal&#123;F&#125;)$:
+a set $\Omega$ of <em>outcomes</em>, and a $\sigma$-algebra $\mathcal&#123;F&#125;$ of subsets
+of $\Omega$ called <em>measurable sets</em> or <em>events</em>. The $\sigma$-algebra
+says which questions about the outcome are legitimate: it contains $\Omega$, is closed
+under complements, and is closed under countable unions.
+</p>
+
+<p>
+A <strong>measure space</strong> adds a measure:
+$(\Omega,\mathcal&#123;F&#125;,\mu)$ with $\mu\colon\mathcal&#123;F&#125;\to[0,\infty]$ countably additive
+on disjoint unions. A <strong>probability measure</strong> is the special case
+$\mathbb&#123;P&#125;(\Omega)=1$. Then $(\Omega,\mathcal&#123;F&#125;,\mathbb&#123;P&#125;)$ is a probability space.
+</p>
+
+<p>
+In the figure below, $\Omega$ is the unit square. Drag the four events to overlap or
+separate them; the bar chart shows the measure $\mathbb&#123;P&#125;$ of each event (here, area).
+Notice that $\mathbb&#123;P&#125;(A\cup B)=\mathbb&#123;P&#125;(A)+\mathbb&#123;P&#125;(B)$ only when $A$ and $B$ are
+disjoint; overlap eats some of the sum. Switch views to see complement and intersection
+identities drawn on the same measurable space.
+</p>
+
+<Figure title="Figure 1 · A probability measure on measurable events" canvasId="fig1" width="720" height="320" readoutId="fig1-readout">
+<Fragment slot="controls">
+  <PresetRow>
+        <button data-fig1-preset="disjoint">Disjoint</button>
+        <button data-fig1-preset="overlap">Overlapping</button>
+        <button data-fig1-preset="nested">Nested</button>
+      </PresetRow>
+      <PresetRow>
+        <button data-fig1-view="measure" class="active">Measures</button>
+        <button data-fig1-view="complement">Complement $A^c$</button>
+        <button data-fig1-view="intersection">Intersection $A\cap B$</button>
+        <button data-fig1-view="closure">σ-closure</button>
+      </PresetRow>
+      <div style="font-size:11px; color:var(--text-dim);">Drag events to move them.</div>
+</Fragment>
+</Figure>
+
+<h2>2. Random variables as measurable functions</h2>
+
+<p>
+A <strong>random variable</strong> is just a measurable function
+$X\colon\Omega\to\mathbb&#123;R&#125;$. "Measurable" means that whenever $B$ is a measurable
+set of real numbers, its preimage $X^&#123;-1&#125;(B)$ is an event in $\mathcal&#123;F&#125;$. This is
+the condition that lets probabilities of numerical statements such as "$X\in B$" be
+defined.
+</p>
+
+<p>
+Whether $X$ is measurable is a relationship between the function and the σ-field
+$\mathcal&#123;F&#125;$ we are working with. The same function can be measurable with respect
+to one σ-field and fail with respect to a coarser one. In the figure below,
+$\Omega=\&#123;HH,HT,TH,TT\&#125;$ is the outcome of two coin flips and three σ-fields are
+selectable: $\mathcal&#123;F&#125;_1$ ("only the first coin is observable"), $\mathcal&#123;F&#125;_2$
+("only the second coin"), and $2^\Omega$ (every subset is measurable). Pick an $X$,
+brush a Borel set $B$ on $\mathbb&#123;R&#125;$, and watch its preimage light up on $\Omega$.
+The verdict shows whether $X^&#123;-1&#125;(B)\in\mathcal&#123;F&#125;$, which is exactly the condition
+needed for $P(X\in B)$ to be defined.
+</p>
+
+<Figure title={String.raw`Figure 2 · A pre-image must lie in $\mathcal{F}$`} canvasId="sigma-fig" width="720" height="360" readoutId="sigma-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>$\Omega$ outcomes</span>
+      <span><span class="swatch" style="background:rgba(31,74,140,0.18); border:1px solid rgba(31,74,140,0.4)"></span>$\mathcal&#123;F&#125;$ cells</span>
+      <span><span class="swatch" style="background:#168f86"></span>brushed $B$ on $\mathbb&#123;R&#125;$</span>
+      <span><span class="swatch" style="background:#d89a1f"></span>$X^&#123;-1&#125;(B)$ on $\Omega$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <strong style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-right:4px;">σ-field</strong>
+        <button data-sigma-field="first" class="active">$\mathcal&#123;F&#125;_1$: 1st coin</button>
+        <button data-sigma-field="second">$\mathcal&#123;F&#125;_2$: 2nd coin</button>
+        <button data-sigma-field="full">$2^\Omega$: every subset</button>
+      </PresetRow>
+      <PresetRow>
+        <strong style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-right:4px;">$X$</strong>
+        <button data-sigma-x="first" class="active">$X_a$: 1st coin is heads</button>
+        <button data-sigma-x="second">$X_b$: 2nd coin is heads</button>
+        <button data-sigma-x="count">$X_c$: heads count</button>
+      </PresetRow>
+      <div style="font-size:11px; color:var(--text-dim);">Drag on the right number line to select $B$. Click a tick to select that single value. The verdict updates live.</div>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 2b · The σ-field generated by an observation" canvasId="sigma-generated" width="720" height="330" readoutId="sigma-generated-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>outcomes in the same atom of $\sigma(X)$</span>
+      <span><span class="swatch" style="background:#d89a1f"></span>selected event generated by unions of atoms</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <button data-generated-x="first" class="active">$X$: first coin</button>
+        <button data-generated-x="count">$X$: heads count</button>
+        <button data-generated-x="parity">$X$: parity</button>
+      </PresetRow>
+      <ControlRange id="sigma-generated-mask" label="union of atoms" valueId="sigma-generated-mask-v" min="0" max="7" step="1" value="1" />
+</Fragment>
+</Figure>
+
+<Aside>
+<strong>Image vs. support.</strong> The <em>image</em> $X(\Omega)=\&#123;X(\omega):\omega\in\Omega\&#125;$
+is just the range of $X$ as a function: every value $X$ can in principle produce. The
+<em>support</em> of $\mathbb&#123;P&#125;_X$ is the smaller object: the set of values where probability
+actually lives. For $X\sim\mathrm&#123;Uniform&#125;[0,1]$ the image is $[0,1]$, but
+$\mathbb&#123;P&#125;_X(\&#123;x\&#125;)=0$ for every single $x$. The support is the interval, not the
+individual points. Image is a set-theoretic fact about the function; support is a
+probabilistic fact about the pushforward measure.
+</Aside>
+
+<p>
+The "distribution of $X$" is not really a thing that lives on $\Omega$; it lives on
+$\mathbb&#123;R&#125;$. It is the <strong>pushforward measure</strong>
+</p>
+
+$$ \mathbb&#123;P&#125;_X(B) \;=\; \mathbb&#123;P&#125;\bigl(X^&#123;-1&#125;(B)\bigr), \qquad B\subseteq\mathbb&#123;R&#125;. $$
+
+<p>
+That is, the probability that $X$ lands in $B$ is the $\mathbb&#123;P&#125;$-measure of the set
+of outcomes that $X$ sends into $B$. Pushing a measure forward by a function is the
+abstract version of "change of variables."
+</p>
+
+<p>
+In Figure 3, $\Omega=[0,1]$ carries Lebesgue measure (uniform). Drag the function
+$X$, and watch the induced distribution on the $y$-axis appear as a histogram. The
+teal band is a measurable set $B$ in the target space; its highlighted preimage
+$X^&#123;-1&#125;(B)$ is the event in $\Omega$ whose measure defines $\mathbb&#123;P&#125;_X(B)$. A steep
+piece of $X$ stretches a small interval in $\Omega$ over a wide range in $\mathbb&#123;R&#125;$,
+so the pushforward density there is small; a flat piece concentrates mass.
+</p>
+
+<Figure title={String.raw`Figure 3 · Random variable and pushforward measure $\mathbb{P}_X = \mathbb{P}\circ X^{-1}$`} canvasId="fig2" width="720" height="360" readoutId="fig2-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:var(--accent-2)"></span>$X(\omega)$</span>
+      <span><span class="swatch" style="background:var(--accent)"></span>density of $\mathbb&#123;P&#125;_X$</span>
+      <span><span class="swatch" style="background:#d89a1f"></span>one transported interval</span>
+      <span><span class="swatch" style="background:#168f86"></span>target set $B$ and preimage $X^&#123;-1&#125;(B)$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+      <PresetRow>
+        <button data-fig2-preset="identity">$X(\omega)=\omega$</button>
+        <button data-fig2-preset="square">$X(\omega)=\omega^2$</button>
+        <button data-fig2-preset="tent">Tent</button>
+        <button data-fig2-preset="step">Step</button>
+      </PresetRow>
+      <div style="font-size:11px; color:var(--text-dim);">Drag points to edit the spline. Drag the gold interval on $\Omega$; drag the teal band on the value axis to choose $B$. Hover the density axis to see $X^&#123;-1&#125;(\&#123;y\&#125;)$. <span class="keyboard-pointer-help">Option-click to add or remove a point.</span></div>
+</Fragment>
+</Figure>
+
+<style>
+  @media (max-width: 720px), (hover: none) and (pointer: coarse) {
+    .keyboard-pointer-help {
+      display: none;
+    }
+  }
+</style>
+
+<Aside>
+<strong>Why bother?</strong> Two reasons. First, on uncountable spaces you cannot
+just "assign probability to each outcome": almost every singleton has measure zero,
+so densities are the only way to talk about likelihood. Second, treating $X$ as a
+function lets us cleanly compose: $g(X)$ is just another random variable, and its
+distribution is the pushforward of $\mathbb&#123;P&#125;_X$ by $g$.
+</Aside>
+
+<p>
+The pushforward is <em>functorial</em>: a single measurable map $X\colon\Omega\to E$
+acts simultaneously on three layers. Sample spaces transform covariantly
+($\omega\mapsto X(\omega)$), $\sigma$-algebras transform <em>contra</em>variantly
+(events on the target pull back to events on the source via $X^&#123;-1&#125;$), and
+measures transform covariantly again (each $\mu$ on $\Omega$ produces $X_*\mu$
+on $E$). The diagram below shows all three flavors of the same map.
+</p>
+
+<Figure title={String.raw`Figure 3c · Pushforward as a functor: $X$ acting on spaces, $\sigma$-algebras, and measures`} canvasId="fig-pushforward-cat" width="760" height="320">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>covariant (forward) arrow</span>
+      <span><span class="swatch" style="background:#b8412a"></span>contravariant (pulled back) arrow</span>
+    </div>
+</Fragment>
+</Figure>
+
+<script is:inline>
+(() => {
+  const canvas = document.getElementById("fig-pushforward-cat");
+  if (!canvas) return;
+
+  function setup(c) {
+    const ratio = window.devicePixelRatio || 1;
+    const iw = +c.getAttribute("width"), ih = +c.getAttribute("height");
+    c.style.width = "100%";
+    c.style.height = `${c.getBoundingClientRect().width * ih / iw}px`;
+    const r = c.getBoundingClientRect();
+    c.width = r.width * ratio; c.height = r.height * ratio;
+    const ctx = c.getContext("2d"); ctx.scale(ratio, ratio);
+    return { ctx, w: r.width, h: r.height };
+  }
+
+  function drawNode(ctx, x, y, label, sub, fill) {
+    ctx.font = "bold 16px -apple-system, system-ui, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const tw = ctx.measureText(label).width;
+    const bw = Math.max(tw + 28, 72), bh = 36;
+    ctx.fillStyle = fill || "#fff";
+    ctx.strokeStyle = "#1f2733"; ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    const rad = 6;
+    ctx.moveTo(x - bw/2 + rad, y - bh/2);
+    ctx.lineTo(x + bw/2 - rad, y - bh/2);
+    ctx.quadraticCurveTo(x + bw/2, y - bh/2, x + bw/2, y - bh/2 + rad);
+    ctx.lineTo(x + bw/2, y + bh/2 - rad);
+    ctx.quadraticCurveTo(x + bw/2, y + bh/2, x + bw/2 - rad, y + bh/2);
+    ctx.lineTo(x - bw/2 + rad, y + bh/2);
+    ctx.quadraticCurveTo(x - bw/2, y + bh/2, x - bw/2, y + bh/2 - rad);
+    ctx.lineTo(x - bw/2, y - bh/2 + rad);
+    ctx.quadraticCurveTo(x - bw/2, y - bh/2, x - bw/2 + rad, y - bh/2);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#0f172a";
+    ctx.fillText(label, x, y);
+    if (sub) {
+      ctx.fillStyle = "#64748b";
+      ctx.font = "11px -apple-system, system-ui, sans-serif";
+      ctx.fillText(sub, x, y + bh/2 + 12);
+    }
+    return { halfW: bw / 2 };
+  }
+
+  function drawArrow(ctx, x1, y1, x2, y2, color, label, sublabel, halfWStart, halfWEnd) {
+    ctx.strokeStyle = color; ctx.lineWidth = 2;
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+    const ux = dx / len, uy = dy / len;
+    const sx = x1 + ux * (halfWStart + 6);
+    const sy = y1 + uy * (halfWStart + 6);
+    const ex = x2 - ux * (halfWEnd + 6);
+    const ey = y2 - uy * (halfWEnd + 6);
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+    const ah = 9;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - ux * ah - uy * ah * 0.5, ey - uy * ah + ux * ah * 0.5);
+    ctx.lineTo(ex - ux * ah + uy * ah * 0.5, ey - uy * ah - ux * ah * 0.5);
+    ctx.closePath(); ctx.fill();
+    const mx = (sx + ex) / 2, my = (sy + ey) / 2;
+    if (label) {
+      ctx.fillStyle = color;
+      ctx.font = "bold 13px -apple-system, system-ui, sans-serif";
+      ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+      ctx.fillText(label, mx, my - 10);
+    }
+    if (sublabel) {
+      ctx.fillStyle = "#64748b";
+      ctx.font = "italic 11px -apple-system, system-ui, sans-serif";
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.fillText(sublabel, mx, my + 8);
+    }
+  }
+
+  function draw() {
+    const { ctx, w, h } = setup(canvas);
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+
+    const labelX = 92;
+    const lX = labelX + (w - labelX) * 0.30;
+    const rX = labelX + (w - labelX) * 0.78;
+    const y1 = h * 0.18, y2 = h * 0.50, y3 = h * 0.82;
+
+    ctx.fillStyle = "#334155";
+    ctx.font = "italic 12px -apple-system, system-ui, sans-serif";
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    ctx.fillText("sample spaces", labelX - 6, y1);
+    ctx.fillText("σ-algebras", labelX - 6, y2);
+    ctx.fillText("measures", labelX - 6, y3);
+
+    const srcFill = "#eef2f7", tgtFill = "#fde9e2";
+
+    const n1L = drawNode(ctx, lX, y1, "Ω", "outcomes", srcFill);
+    const n1R = drawNode(ctx, rX, y1, "E", "values", tgtFill);
+    drawArrow(ctx, lX, y1, rX, y1, "#1f4a8c", "X", "ω ↦ X(ω)", n1L.halfW, n1R.halfW);
+
+    const n2L = drawNode(ctx, lX, y2, "ℱ", "events on Ω", srcFill);
+    const n2R = drawNode(ctx, rX, y2, "ℰ", "events on E", tgtFill);
+    drawArrow(ctx, rX, y2, lX, y2, "#b8412a", "X⁻¹", "B ↦ X⁻¹(B)", n2R.halfW, n2L.halfW);
+
+    const n3L = drawNode(ctx, lX, y3, "M(Ω)", "P lives here", srcFill);
+    const n3R = drawNode(ctx, rX, y3, "M(E)", "X∗P lives here", tgtFill);
+    drawArrow(ctx, lX, y3, rX, y3, "#1f4a8c", "X∗", "μ ↦ μ ∘ X⁻¹", n3L.halfW, n3R.halfW);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", draw);
+  } else {
+    draw();
+  }
+  window.addEventListener("resize", draw);
+})();
+</script>
+
+<Figure title="Figure 3b · Bayes' theorem as areas in the unit square" canvasId="fig-bayes-area" width="720" height="340" readoutId="fig-bayes-area-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>prior event $H$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>evidence event $E$</span>
+      <span><span class="swatch" style="background:#6b4592"></span>$H\cap E$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig-bayes-prior" label="prior $P(H)$" valueId="fig-bayes-prior-v" min="0.05" max="0.95" step="0.01" value="0.30" />
+      <ControlRange id="fig-bayes-hit" label="likelihood $P(E|H)$" valueId="fig-bayes-hit-v" min="0.05" max="0.95" step="0.01" value="0.80" />
+      <ControlRange id="fig-bayes-false" label="false alarm $P(E|H^c)$" valueId="fig-bayes-false-v" min="0.01" max="0.80" step="0.01" value="0.12" />
+</Fragment>
+</Figure>
+
+<h2>3. Absolute continuity between two measures</h2>
+
+<p>
+Now suppose we have <em>two</em> measures on the same measurable space
+$(\Omega,\mathcal&#123;F&#125;)$; call them <span class="mtag mu">$\mu$</span> and
+<span class="mtag nu">$\nu$</span>. We say $\nu$ is
+<strong>absolutely continuous</strong> with respect to $\mu$, written
+$\nu\ll\mu$, if every $\mu$-null set is also $\nu$-null:
+</p>
+
+$$ \mu(A)=0 \;\Longrightarrow\; \nu(A)=0. $$
+
+<p>
+Intuitively, $\nu$ cannot put mass where the reference measure $\mu$ refuses to look.
+If $\mu$ is
+Lebesgue measure on $\mathbb&#123;R&#125;$ and $\nu$ has a point mass at $x_0$, then
+$\nu\not\ll\mu$ because $\&#123;x_0\&#125;$ has $\mu$-measure zero but $\nu$-measure positive.
+</p>
+
+<p>
+Drag the two distributions below. The shaded regions show where each measure puts
+mass. The red badge lights up when $\nu\ll\mu$ fails: when $\nu$ has positive
+mass in a region where $\mu$ has none.
+</p>
+
+<Figure title={String.raw`Figure 4 · Absolute continuity $\nu \ll \mu$`} canvasId="fig3" width="720" height="280" readoutId="fig3-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:var(--accent-2); opacity:0.45"></span>$\mu$ (reference)</span>
+      <span><span class="swatch" style="background:var(--accent); opacity:0.55"></span>$\nu$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig3-muc" label={String.raw`$\mu$ center`} valueId="fig3-muc-v" min="0.10" max="0.90" step="0.01" value="0.30" />
+      <ControlRange id="fig3-muw" label={String.raw`$\mu$ width`} valueId="fig3-muw-v" min="0.04" max="0.40" step="0.01" value="0.18" />
+      <ControlRange id="fig3-nuc" label={String.raw`$\nu$ center`} valueId="fig3-nuc-v" min="0.10" max="0.90" step="0.01" value="0.55" />
+      <ControlRange id="fig3-nuw" label={String.raw`$\nu$ width`} valueId="fig3-nuw-v" min="0.04" max="0.40" step="0.01" value="0.12" />
+      <PresetRow>
+        <button data-fig3-hole="pass">ν vanishes in μ hole</button>
+        <button data-fig3-hole="fail">ν ignores μ hole</button>
+      </PresetRow>
+      <div style="font-size:11px; color:var(--text-dim);">Drag the red support hole inside μ.</div>
+</Fragment>
+</Figure>
+
+<h2 id="rn-derivative">4. The Radon–Nikodym derivative</h2>
+
+<p>
+Absolute continuity is exactly the condition that makes a density relative to
+$\mu$ possible. If $\nu\ll\mu$ (and both are $\sigma$-finite), the
+<strong>Radon–Nikodym theorem</strong> says there exists an essentially-unique
+measurable function $f = \dfrac&#123;d\nu&#125;&#123;d\mu&#125;\colon\Omega\to[0,\infty)$ such that
+</p>
+
+$$ \nu(A) \;=\; \int_A f \, d\mu \qquad \text&#123;for every &#125; A\in\mathcal&#123;F&#125;. $$
+
+<p>
+This $f$ is the <strong>density of $\nu$ with respect to $\mu$</strong>. When $\mu$
+is Lebesgue measure on $\mathbb&#123;R&#125;$, this is the ordinary probability density
+function. When $\mu$ is counting measure on a discrete set, $f$ is the probability
+mass function. The Radon–Nikodym derivative <em>unifies</em> these into one object.
+It is also the ratio inside the measure-theoretic form of
+<a href="/math/kl-divergence/">KL divergence</a>: when $\nu\ll\mu$,
+$\mathrm&#123;KL&#125;[\nu\Vert\mu]=\int \log(d\nu/d\mu)\,d\nu$.
+</p>
+
+<NotationAside label="Density-form translation">
+  <p>
+    Other texts and other pages on this site write the same object as
+    $p(x)\,dx$ — silently using Lebesgue measure as the reference $\mu$. When
+    you see $\int f(x)\,p(x)\,dx$ elsewhere, read it as
+    $\int f\,d\pi$ here; when you see $p(x)$, read it as $d\pi/d\lambda$.
+    Conversely, expressions on this page that use $d\pi$ or $d\nu/d\mu$ can
+    be specialized to ordinary densities by picking $\mu = \lambda$. See the
+    <a href="/math/notation/">notation page</a> for the full dictionary.
+  </p>
+</NotationAside>
+
+<Aside>
+<strong>Mass and density are the same object in different coordinates.</strong> A
+probability measure $\mathbb&#123;P&#125;$ is the invariant object; "mass function" and "density
+function" are two ways of writing it relative to a choice of base measure $\mu$.
+$$
+\text&#123;PMF&#125; \;=\; \frac&#123;d\mathbb&#123;P&#125;&#125;&#123;d\#&#125;, \qquad
+\text&#123;PDF&#125; \;=\; \frac&#123;d\mathbb&#123;P&#125;&#125;&#123;d\lambda&#125;,
+$$
+where $\#$ is counting measure and $\lambda$ is Lebesgue. The discrete-vs-continuous
+split is not a property of $\mathbb&#123;P&#125;$; it is a property of the reference measure you
+chose to express it. Change the base and the "density" rescales:
+$\frac&#123;d\mathbb&#123;P&#125;&#125;&#123;d\tilde\mu&#125; = \frac&#123;d\mathbb&#123;P&#125;&#125;&#123;d\mu&#125;\cdot\frac&#123;d\mu&#125;&#123;d\tilde\mu&#125;$.
+Same vector, new basis.
+</Aside>
+
+<p>
+The figure shows $\mu$ and $\nu$ as densities (top), and their ratio
+$f = d\nu/d\mu$ (bottom). Where $\nu$ is large relative to $\mu$, $f$ is large.
+Where $\mu$ is large relative to $\nu$, $f$ is small. Where $\mu$ is zero and $\nu$ is
+not, $f$ blows up, which is just the statement that $\nu\not\ll\mu$ there.
+</p>
+
+<Figure title={String.raw`Figure 5 · The density $d\nu/d\mu$`} canvasId="fig4" width="720" height="380">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:var(--accent-2)"></span>$\mu$</span>
+      <span><span class="swatch" style="background:var(--accent)"></span>$\nu$</span>
+      <span><span class="swatch" style="background:var(--purple)"></span>$d\nu/d\mu$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <button data-fig4-preset="shift">Mean shift</button>
+        <button data-fig4-preset="scale">Variance change</button>
+        <button data-fig4-preset="skew">Tilted (exp)</button>
+        <button data-fig4-preset="break">Singular tail</button>
+      </PresetRow>
+      <ControlRange id="fig4-p" label="parameter" valueId="fig4-p-v" min="0" max="1" step="0.01" value="0.5" />
+</Fragment>
+</Figure>
+
+<Figure title="Figure 5b · Shrinking-ball view of the Radon-Nikodym derivative" canvasId="fig-rn-ball" width="720" height="330" readoutId="fig-rn-ball-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:var(--accent-2)"></span>$\mu(B_r(x))$</span>
+      <span><span class="swatch" style="background:var(--accent)"></span>$\nu(B_r(x))$</span>
+      <span><span class="swatch" style="background:var(--purple)"></span>$\nu(B_r)/\mu(B_r)$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig-rn-ball-x" label="center $x$" valueId="fig-rn-ball-x-v" min="-3" max="3" step="0.05" value="0.8" />
+      <ControlRange id="fig-rn-ball-r" label="radius $r$" valueId="fig-rn-ball-r-v" min="0.05" max="2.0" step="0.05" value="0.6" />
+</Fragment>
+</Figure>
+
+<Aside>
+<strong>Notation that bites.</strong> The symbol $d\nu/d\mu$ looks like a derivative
+because in one familiar case ($\mu$ Lebesgue on $\mathbb&#123;R&#125;$) it really is one:
+$f(x) = F_\nu'(x)$ where $F_\nu$ is the CDF. But in general it is not a limit of
+ratios of intervals; it is the function whose integral against $\mu$ reproduces $\nu$.
+The Lebesgue differentiation theorem links the two views: for $\mu$-a.e. $x$,
+$f(x) = \lim_&#123;r\to 0&#125; \nu(B_r(x))/\mu(B_r(x))$.
+</Aside>
+
+<h2 id="change-of-variables">5. Change of variables: where the Jacobian comes from</h2>
+
+<p>
+Combining the pushforward (Section 2) with the Radon–Nikodym derivative gives the
+classical density transformation formula. Let $X$ take values in $\mathbb&#123;R&#125;^n$
+with density $f_X$ against Lebesgue measure $\lambda$, and let $Y = g(X)$ for a
+$C^1$ diffeomorphism $g\colon U \to V$. The distribution of $Y$ is the pushforward
+$\mathbb&#123;P&#125;_Y = g_*\mathbb&#123;P&#125;_X$. For any target set $B\subseteq V$,
+</p>
+
+$$ \mathbb&#123;P&#125;_Y(B) \;=\; \mathbb&#123;P&#125;_X\bigl(g^&#123;-1&#125;(B)\bigr)
+   \;=\; \int_&#123;g^&#123;-1&#125;(B)&#125; f_X(x)\,d\lambda(x). $$
+
+<p>
+Substituting $x = g^&#123;-1&#125;(y)$ multiplies $d\lambda$ by the Jacobian factor
+$|\det Dg^&#123;-1&#125;(y)|$, so
+</p>
+
+$$ f_Y(y) \;=\; f_X\bigl(g^&#123;-1&#125;(y)\bigr)\,\bigl|\det Dg^&#123;-1&#125;(y)\bigr|
+        \;=\; \frac&#123;f_X\bigl(g^&#123;-1&#125;(y)\bigr)&#125;&#123;\bigl|\det Dg\bigl(g^&#123;-1&#125;(y)\bigr)\bigr|&#125;. $$
+
+<p>
+In one dimension this reduces to $f_Y(y) = f_X(g^&#123;-1&#125;(y))/|g'(g^&#123;-1&#125;(y))|$. The
+Jacobian is a local volume ratio: a small region around $x$ has image of
+$\lambda$-volume $|\det Dg(x)|$ times larger, so the same probability mass
+spreads over more volume on the $Y$-side and the density there is diluted by
+that factor. Figure 3 already shows this in one dimension: a steep slope of $X$
+stretches a small interval in $\Omega$ over a wide range in $\mathbb&#123;R&#125;$, and the
+pushforward density drops accordingly.
+</p>
+
+<p>
+In two dimensions the determinant is unmistakably a <em>matrix</em> quantity, not
+just a derivative. The figure below shows a reference grid on the source $U$ and
+its image on the target $V$ under four choices of $g$. By default the source
+carries a Gaussian-bump input density $f_X$ and the target shows the resulting
+$f_Y = f_X/|\det Dg|$, so for every preset you can see how the map reshapes the
+input distribution — the shear skews it, uniform scaling squashes it, polar
+maps an $(r, \theta)$-rectangle bump into a curved swath in the Cartesian
+plane, and reflection flips it. The draggable focus cell shows the local
+Jacobian image as a small parallelogram, spanned by the two columns of $Dg$ at
+that point. Toggling the bump off switches the source panel to a shading of
+$|\det Dg|$ itself — flat for the linear presets (constant Jacobian), and
+fading from contraction at small $r$ to expansion at large $r$ in the polar
+case.
+</p>
+
+<Figure title="Figure 5a · The Jacobian as a local area ratio" canvasId="fig-cov-2d" width="760" height="420" readoutId="fig-cov-2d-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#6b4592"></span>source: $|\det Dg|$ (or $f_X$ when bump is on); target: $f_Y$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>focus cell and its image</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>columns of $Dg$ at the focus</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <strong style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-right:4px;">map $g$</strong>
+        <button data-fig-cov-preset="shear">Shear</button>
+        <button data-fig-cov-preset="scale">Scale</button>
+        <button data-fig-cov-preset="polar">Polar</button>
+        <button data-fig-cov-preset="reflection">Reflection</button>
+      </PresetRow>
+      <label style="font-size:12px; color:var(--text-dim); display:inline-flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="fig-cov-orient"> show orientation marker (F inside focus cell — mirrored when $\det Dg &lt; 0$)
+      </label>
+      <label style="font-size:12px; color:var(--text-dim); display:inline-flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="fig-cov-bump"> non-uniform $f_X$ (Gaussian bump)
+      </label>
+      <div style="font-size:11px; color:var(--text-dim);">Drag inside the source panel to move the focus cell.</div>
+</Fragment>
+</Figure>
+
+<Aside>
+<strong>Why the absolute value?</strong> Probability density is non-negative even
+when $g$ reverses orientation. The signed determinant $\det Dg$ records
+orientation, which matters for integrating differential forms but is invisible
+to a measure. Only the magnitude of the local volume scaling enters the density
+formula. The reflection preset in Figure 5a makes the distinction visible:
+enable the orientation marker and the "F" inside the focus cell appears as a
+mirrored F on the target, but the density shading is unchanged.
+</Aside>
+
+<p>
+This is Radon–Nikodym applied along a coordinate change. Pushing Lebesgue forward
+under $g$ gives the measure $g_*\lambda$ on $V$ with Radon–Nikodym derivative
+$d(g_*\lambda)/d\lambda(y) = |\det Dg^&#123;-1&#125;(y)|$; the density formula is the chain
+rule $\tfrac&#123;d\mathbb&#123;P&#125;_Y&#125;&#123;d\lambda&#125; = \tfrac&#123;d\mathbb&#123;P&#125;_Y&#125;&#123;d(g_*\lambda)&#125; \cdot \tfrac&#123;d(g_*\lambda)&#125;&#123;d\lambda&#125;$
+with $d\mathbb&#123;P&#125;_Y/d(g_*\lambda) = f_X \circ g^&#123;-1&#125;$.
+</p>
+
+<h2 id="lebesgue-decomposition">6. Mixed and singular: the Lebesgue decomposition</h2>
+
+<p>
+The clean discrete-vs-continuous picture covers the textbook cases, but real
+distributions don't always pick a side. The <strong>Lebesgue decomposition</strong> says
+that relative to any $\sigma$-finite reference $\mu$, every $\sigma$-finite measure $\nu$
+splits uniquely as
+</p>
+
+$$ \nu \;=\; \nu_&#123;\mathrm&#123;ac&#125;&#125; \;+\; \nu_&#123;\mathrm&#123;sing&#125;&#125;, $$
+
+<p>
+where $\nu_&#123;\mathrm&#123;ac&#125;&#125;\ll\mu$ has a Radon–Nikodym derivative (a true density), and
+$\nu_&#123;\mathrm&#123;sing&#125;&#125;$ lives on a $\mu$-null set. The singular part further splits into
+<em>atomic</em> mass (point masses, $\delta_&#123;x_0&#125;$) and a <em>continuous singular</em>
+piece (no atoms, but supported on a Lebesgue-null set; the Cantor distribution is the
+canonical example).
+</p>
+
+<p>
+A <strong>spike-and-slab</strong> mixture is the everyday example: the prior puts
+probability $\alpha$ on the point $\theta=0$ and spreads the remaining $1-\alpha$ as a
+Gaussian slab. Its CDF has both a jump (the spike) and a smooth rise (the slab); no
+single density w.r.t. Lebesgue can represent it.
+</p>
+
+<Figure title="Figure 6 · Lebesgue decomposition: spike-and-slab mixture" canvasId="fig-lebesgue" width="720" height="320" readoutId="fig-lebesgue-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>atomic mass at $0$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>continuous slab</span>
+      <span><span class="swatch" style="background:#6b4592"></span>CDF $F(x)$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig-lebesgue-alpha" label={String.raw`atom weight $\alpha$`} valueId="fig-lebesgue-alpha-v" min="0" max="1" step="0.01" value="0.3" />
+      <ControlRange id="fig-lebesgue-sigma" label={String.raw`slab width $\sigma$`} valueId="fig-lebesgue-sigma-v" min="0.2" max="2" step="0.05" value="0.8" />
+      <PresetRow>
+        <button data-fig-lebesgue-preset="continuous">Pure continuous</button>
+        <button data-fig-lebesgue-preset="atomic">Pure atom</button>
+        <button data-fig-lebesgue-preset="mix">50/50 mixture</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<p>
+"Discrete or continuous?" is the wrong organizing question. The right one is how
+$\nu$ sits relative to $\mu$: fully absolutely continuous, fully singular, or
+somewhere in between. The same measure can look one way against
+Lebesgue and a different way against counting measure or a Gaussian reference. The
+next figure makes that change-of-base concrete.
+</p>
+
+<Figure title={String.raw`Figure 7 · Same $\mathbb{P}$, different reference measures`} canvasId="fig-basemeasure" width="720" height="340" readoutId="fig-basemeasure-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>$\mathbb&#123;P&#125;$ (target)</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>reference $\mu$</span>
+      <span><span class="swatch" style="background:#6b4592"></span>$d\mathbb&#123;P&#125;/d\mu$</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <strong style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-right:4px;">$\mathbb&#123;P&#125;$</strong>
+        <button data-fig-basemeasure-target="normal" class="active">Gaussian</button>
+        <button data-fig-basemeasure-target="discrete">7 atoms</button>
+        <button data-fig-basemeasure-target="mixture">Spike-and-slab</button>
+      </PresetRow>
+      <PresetRow>
+        <strong style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-right:4px;">base $\mu$</strong>
+        <button data-fig-basemeasure-ref="lebesgue" class="active">Lebesgue $\lambda$</button>
+        <button data-fig-basemeasure-ref="counting">Counting $\#$</button>
+        <button data-fig-basemeasure-ref="gaussian">Std. Gaussian</button>
+      </PresetRow>
+      <div style="font-size:11px; color:var(--text-dim);">The same $\mathbb&#123;P&#125;$ is one object; the "density" rescales when you change reference. Mismatch (e.g., counting $\#$ for Gaussian $\mathbb&#123;P&#125;$) means $\mathbb&#123;P&#125;\not\ll\mu$, so no density exists.</div>
+</Fragment>
+</Figure>
+
+<h2>7. Change of measure for expectations</h2>
+
+<p>
+The most useful consequence of the Radon–Nikodym theorem is the <strong>change-of-measure
+formula</strong>. For any $\nu$-integrable $g$,
+</p>
+
+$$ \mathbb&#123;E&#125;_\nu[g(X)] \;=\; \int g\,d\nu \;=\; \int g \cdot \frac&#123;d\nu&#125;&#123;d\mu&#125;\, d\mu \;=\; \mathbb&#123;E&#125;_\mu\!\left[g(X)\,\frac&#123;d\nu&#125;&#123;d\mu&#125;(X)\right]. $$
+
+<p>
+You can compute an expectation under $\nu$ by sampling under $\mu$ and reweighting
+each sample by the density ratio. This is the entire foundation of:
+<strong>importance sampling</strong>, <strong>likelihood-ratio tests</strong>,
+<strong>Girsanov's theorem</strong> in stochastic calculus, and modern
+<strong>off-policy evaluation</strong> in reinforcement learning.
+</p>
+
+<p>
+The figure below estimates $\mathbb&#123;E&#125;_\nu[g]$ in two ways: directly under $\nu$
+(left), and by importance sampling from $\mu$ with weights $d\nu/d\mu$ (right). Both
+converge to the same number, but with very different variance. When $\mu$ and $\nu$
+disagree sharply, the importance weights become heavy-tailed and the right-hand
+estimator gets noisy; that's the practical bite of "absolute continuity is necessary
+but not sufficient."
+</p>
+
+<Figure title={String.raw`Figure 8 · Importance sampling via $d\nu/d\mu$`} canvasId="fig5" width="720" height="320" readoutId="fig5-readout">
+<Fragment slot="controls">
+  <ControlRange id="fig5-shift" label={String.raw`$\nu$ mean shift $\Delta$`} valueId="fig5-shift-v" min="-2" max="2" step="0.05" value="0.5" />
+      <ControlRange id="fig5-n" label="# samples" valueId="fig5-n-v" min="50" max="5000" step="50" value="500" />
+      <PresetRow>
+        <button id="fig5-resample">Resample</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>Where this goes next</h2>
+
+<p>
+The same measure-change identity appears in several places:
+</p>
+
+<ul>
+  <li><strong>Statistics.</strong> The likelihood ratio in a Neyman–Pearson test is a Radon–Nikodym derivative of one hypothesis's law with respect to another.</li>
+  <li><strong>Stochastic calculus.</strong> Girsanov's theorem says that under mild conditions you can change the drift of a Brownian motion by multiplying by an explicit exponential martingale, and that martingale is exactly $dQ/dP$.</li>
+  <li><strong>Machine learning.</strong> The KL divergence is $\mathbb&#123;E&#125;_\nu[\log d\nu/d\mu]$. Importance sampling, off-policy correction, and most "reweighting" tricks are change-of-measure in disguise.</li>
+  <li><strong>Information theory.</strong> Mutual information is a KL divergence between the joint and the product of marginals, a Radon–Nikodym derivative on a product space.</li>
+</ul>
+
+<p>
+Once you stop thinking of a density as <em>the</em> probability and start thinking of
+it as <em>a relationship between two measures</em>, several formulas collapse to one
+statement:
+$\int g\, d\nu = \int g \cdot \tfrac&#123;d\nu&#125;&#123;d\mu&#125;\, d\mu$.
+</p>
+
+<NextCards heading="What next" intro="The same change-of-measure machinery reappears in information, approximation, and simulation." cards={[{"href":"/kl-divergence/","tag":"Divergence","title":"KL Divergence","role":"Turn the density ratio idea into a directed mismatch between probability laws."},{"href":"/entropy-mutual-information/","tag":"Information","title":"Entropy &amp; Mutual Information","role":"Mutual information is a KL divergence between two measures: the joint law and the product of marginals."},{"href":"/variational-inference/","tag":"Approximation","title":"Free Energy &amp; Variational Inference","role":"Use KL to turn an intractable posterior measure into a tractable optimization problem."},{"href":"/monte-carlo/","tag":"Simulation","title":"Monte Carlo &amp; MCMC","role":"Importance sampling is the Radon–Nikodym derivative turned into an estimator; the particle-filter version is on the state-space-filtering page."}]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+
+  <script is:inline src="/math/measure-theory/rn-derivative.js"></script>
+  <script is:inline src="/math/measure-theory/change-of-variables.js"></script>
+</ExplainerLayout>

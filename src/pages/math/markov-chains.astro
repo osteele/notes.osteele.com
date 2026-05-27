@@ -1,0 +1,259 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import Legend from "../../components/explainer/Legend.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import PresetButton from "../../components/explainer/PresetButton.astro";
+import Readout from "../../components/explainer/Readout.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import VizCard from "../../components/explainer/VizCard.astro";
+import VizCardGrid from "../../components/explainer/VizCardGrid.astro";
+---
+
+<ExplainerLayout title="Markov Chains" breadcrumb="Markov Chains" section="random-processes">
+
+<Hero title="Markov Chains" subtitle="Transition matrices, stationary distributions, mixing, recurrence, periodicity, and continuous time." />
+
+<p>
+A Markov chain is a stochastic process whose next state depends on the present state,
+not on the whole path that led there. In discrete time, a transition matrix $P$
+contains one probability distribution per row:
+</p>
+
+$$ P_&#123;ij&#125; = \Pr(X_&#123;t+1&#125;=j\mid X_t=i), \qquad \sum_j P_&#123;ij&#125;=1. $$
+
+<p>
+The same object can be read as a simulator, a graph, a linear operator on
+distributions, and a long-run averaging machine. The figures below keep those views
+side by side.
+</p>
+
+<Aside>
+  <strong>Connection.</strong> The <a href="https://viz.osteele.com/chord-progressions/">Chord Progressions</a>
+  page uses Markov chains audibly over diatonic functions. In
+  <a href="/math/monte-carlo/">MCMC</a>, the question is inverted: design a
+  chain whose stationary distribution is the distribution you want to sample.
+</Aside>
+
+<h2>1. States, transition matrix, and trajectories</h2>
+
+<p>
+Each row of $P$ is the outgoing distribution from one state. A sample path repeatedly
+draws from the current row. When the chain is irreducible and aperiodic, its empirical
+occupation histogram settles toward the stationary distribution $\pi=\pi P$.
+</p>
+
+<Figure title="Figure 1 · Editable transition graph and occupation mass" canvasId="fig1" width="760" height="390" readoutId="fig1-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>transition edges</span>
+      <span><span class="swatch" style="background:#b8412a"></span>current state</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>visit histogram</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig1-ab" label="A→B" valueId="fig1-ab-v" min="0" max="0.85" step="0.01" value="0.30" />
+      <ControlRange id="fig1-ac" label="A→C" valueId="fig1-ac-v" min="0" max="0.85" step="0.01" value="0.10" />
+      <ControlRange id="fig1-ba" label="B→A" valueId="fig1-ba-v" min="0" max="0.85" step="0.01" value="0.15" />
+      <ControlRange id="fig1-bc" label="B→C" valueId="fig1-bc-v" min="0" max="0.85" step="0.01" value="0.35" />
+      <ControlRange id="fig1-ca" label="C→A" valueId="fig1-ca-v" min="0" max="0.85" step="0.01" value="0.45" />
+      <ControlRange id="fig1-cb" label="C→B" valueId="fig1-cb-v" min="0" max="0.85" step="0.01" value="0.15" />
+      <ControlRange id="fig1-speed" label="steps/sec" valueId="fig1-speed-v" min="1" max="20" step="1" value="5" />
+      <PresetRow>
+        <button id="fig1-reset">Reset path</button>
+        <button data-fig1-preset="mixing">Mixing chain</button>
+        <button data-fig1-preset="sticky">Sticky chain</button>
+        <button data-fig1-preset="directed">Directed cycle</button>
+        <button data-fig1-preset="reducible">Near-reducible</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>2. Matrix powers and stationary distribution</h2>
+
+<p>
+The entry $(P^n)_&#123;ij&#125;$ is the probability of being in state $j$ after $n$ steps, given
+that you started in state $i$. For a regular finite chain, the rows of $P^n$ converge
+to the same row: the stationary distribution $\pi$.
+</p>
+
+<Figure title="Figure 2 · Powers of P collapse toward 1πᵀ" canvasId="fig2" width="760" height="330" readoutId="fig2-readout">
+<Fragment slot="controls">
+  <div class="control">
+        <label>power n <span class="v" id="fig2-n-v">16</span></label>
+        <input type="range" id="fig2-n" min="1" max="64" step="1" value="16">
+      </div>
+</Fragment>
+</Figure>
+
+<h2>3. Mixing, spectral gap, and detailed balance</h2>
+
+<p>
+Different starting distributions can approach stationarity at different speeds, but
+the slowest visible decay is controlled by the subdominant eigenvalue. The plot uses
+total variation distance
+$\|\mu P^n-\pi\|_&#123;\mathrm&#123;TV&#125;&#125;=\frac12\sum_i|\mu_iP^n-\pi_i|$.
+</p>
+
+<Figure title="Figure 3 · Three initial distributions racing toward stationarity" canvasId="fig3" width="760" height="330" readoutId="fig3-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>start at A</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>start at B</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>start uniform</span>
+    </div>
+</Fragment>
+</Figure>
+
+<p>
+Figure 3 shows the race; Figure 3b shows the speed limit. Total-variation distance to
+$\pi$ decays at worst geometrically, hugging the envelope $|\lambda_2|^n$ set by the
+subdominant eigenvalue. The <em>spectral gap</em> $1-|\lambda_2|$ is the mixing budget:
+a wider gap means the chain forgets its starting point sooner.
+</p>
+
+<Figure title="Figure 3b · Spectral gap controls the slow mixing envelope" canvasId="fig3-gap" width="760" height="330" readoutId="fig3-gap-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>TV distance from A</span>
+      <span><span class="swatch" style="background:#b8412a"></span>$|\lambda_2|^n$ envelope</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>spectral gap $1-|\lambda_2|$</span>
+    </div>
+</Fragment>
+</Figure>
+
+<h3 id="detailed-balance">Detailed balance and reversibility</h3>
+
+<p>
+Stationarity needs only <em>global balance</em>: at every state, total probability
+flowing in equals total flowing out. <strong>Detailed balance</strong> is the stronger,
+pairwise condition — for every pair of states the two directed flows match:
+</p>
+
+$$ \pi_i\,P_&#123;ij&#125; \;=\; \pi_j\,P_&#123;ji&#125;. $$
+
+<p>
+A chain whose stationary distribution satisfies this is <strong>reversible</strong>: the
+sequence of states looks the same run forwards or backwards. Detailed balance implies
+stationarity — sum both sides over $i$ and use the row-sum $\sum_i P_&#123;ji&#125;=1$ to get
+$\sum_i \pi_i P_&#123;ij&#125; = \pi_j$, which is exactly $\pi=\pi P$. The converse fails: a chain
+can hold $\pi$ fixed while probability steadily <em>circulates</em>.
+</p>
+
+<p>
+Figure 3c draws each directed flow $\pi_i P_&#123;ij&#125;$ as a moving stream of probability.
+For a three-state chain at stationarity the net flow on every edge is forced to one
+shared value $J$, the circulation. <strong>Symmetrize flow</strong> drives $J$ to zero:
+opposing streams match, every edge is a wash, the chain is reversible.
+<strong>Add circulation</strong> builds a chain that is still stationary — inflow still
+equals outflow at every node — yet probability cycles $A\to B\to C\to A$ forever. Global
+balance holds in both cases; detailed balance is the extra structure the second chain
+lacks.
+</p>
+
+<p>
+That extra structure is what makes MCMC work. Detailed balance is sufficient but not
+necessary for stationarity, and it is <em>local</em>: you can engineer a transition rule
+one edge at a time from $\pi$ alone, never solving $\pi=\pi P$ globally. Every
+Metropolis-style sampler on the <a href="/math/monte-carlo/">Monte Carlo &amp; Bayesian
+Sampling</a> page is constructed exactly this way.
+</p>
+
+<Figure title="Figure 3c · Probability flow — detailed balance versus circulation" canvasId="fig3-balance" width="760" height="330" readoutId="fig3-balance-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>probability flow $\pi_iP_&#123;ij&#125;$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>net circulation $J$, zero under detailed balance</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <PresetRow>
+        <button id="fig3-balance-sym">Symmetrize flow</button>
+        <button id="fig3-balance-cycle">Add circulation</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2>4. Recurrence, transience, and absorption</h2>
+
+<p>
+In an absorbing chain, some states trap mass forever. Gambler's ruin is the clean
+example: a fortune walks up or down until it hits 0 or $N$, and both endpoints are
+absorbing.
+</p>
+
+<Figure title="Figure 4 · Gambler's ruin: mass flows into absorbing states" canvasId="fig4" width="760" height="330" readoutId="fig4-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>current distribution</span>
+      <span><span class="swatch" style="background:#b8412a"></span>absorbing states</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig4-p" label="win probability p" valueId="fig4-p-v" min="0.1" max="0.9" step="0.01" value="0.5" />
+      <ControlRange id="fig4-start" label="start fortune" valueId="fig4-start-v" min="1" max="9" step="1" value="5" />
+      <ControlRange id="fig4-steps" label="steps" valueId="fig4-steps-v" min="0" max="120" step="1" value="0" />
+</Fragment>
+</Figure>
+
+<h2>5. Periodicity</h2>
+
+<p>
+An irreducible chain can fail to converge if it is periodic. A two-state chain that
+always alternates has period 2: $P^n$ flips forever. Cesaro averages
+$\frac1N\sum_&#123;n\lt N&#125;P^n$ still converge to stationarity.
+</p>
+
+<Figure title="Figure 5 · Period 2 oscillation versus averaged convergence" canvasId="fig5" width="760" height="300" readoutId="fig5-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>ordinary Pⁿ</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>Cesaro average</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig5-eps" label="laziness ε" valueId="fig5-eps-v" min="0" max="0.45" step="0.01" value="0" />
+</Fragment>
+</Figure>
+
+<h2>6. Continuous-time chains</h2>
+
+<p>
+A continuous-time Markov chain uses a rate matrix $Q$. Off-diagonal entries
+$Q_&#123;ij&#125;$ are jump rates, rows sum to zero, and the holding time in state $i$ is
+exponential with rate $-Q_&#123;ii&#125;=\sum_&#123;j\neq i&#125;Q_&#123;ij&#125;$. Conditional on leaving, the
+embedded discrete jump chooses $j$ with probability $Q_&#123;ij&#125;/(-Q_&#123;ii&#125;)$.
+</p>
+
+<Figure title="Figure 6 · Rate matrix Q, holding times, and embedded chain" canvasId="fig6" width="760" height="340" readoutId="fig6-readout">
+<Fragment slot="controls">
+  <ControlRange id="fig6-ra" label="A leave rate" valueId="fig6-ra-v" min="0.1" max="4" step="0.05" value="1" />
+      <ControlRange id="fig6-rb" label="B leave rate" valueId="fig6-rb-v" min="0.1" max="4" step="0.05" value="0.7" />
+      <ControlRange id="fig6-rc" label="C leave rate" valueId="fig6-rc-v" min="0.1" max="4" step="0.05" value="1.4" />
+</Fragment>
+</Figure>
+
+<h2>What to remember</h2>
+
+<div class="compare">
+  <div data-target-figure="fig1"><strong>Transition matrix</strong>Each row is the next-state distribution from one state.</div>
+  <div data-target-figure="fig2" data-hint-control="fig2-n"><strong>Stationary distribution</strong>A distribution that is unchanged by one step: $\pi=\pi P$.</div>
+  <div data-target-figure="fig3"><strong>Mixing</strong>For irreducible aperiodic finite chains, starting conditions wash out.</div>
+  <div data-target-figure="fig3-balance"><strong>Detailed balance</strong>Reversible chains match flow edge by edge, $\pi_iP_&#123;ij&#125;=\pi_jP_&#123;ji&#125;$; MCMC is engineered to satisfy it.</div>
+  <div data-target-figure="fig5" data-hint-control="fig5-eps"><strong>Classification</strong>Absorbing, transient, recurrent, and periodic states explain failure modes.</div>
+  <div data-target-figure="fig6"><strong>Continuous time</strong>Rates set exponential holding times; embedded jumps form a discrete chain.</div>
+</div>
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Related:
+  <a href="https://viz.osteele.com/chord-progressions/">Chord Progressions</a>,
+  <a href="/math/monte-carlo/">Monte Carlo &amp; MCMC</a>.
+</div>
+
+  <script is:inline src="/math/markov-chains/markov.js"></script>
+</ExplainerLayout>

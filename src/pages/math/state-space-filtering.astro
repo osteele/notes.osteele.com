@@ -1,0 +1,696 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import DecisionTable from "../../components/explainer/DecisionTable.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Kalman & Particle Filters" breadcrumb="Kalman & Particle Filters" section="bayesian-inference">
+
+
+<Hero title="Kalman &amp; Particle Filters" subtitle="
+    State-space inference: hidden state evolves over time, observations arrive one
+    step at a time. From the linear-Gaussian closed form (Kalman) through local
+    linearization (EKF, UKF) to fully nonlinear, non-Gaussian particle filters.
+  " />
+
+<p>
+Filtering is the time-recursive cousin of posterior inference. The unknown is a
+<em>hidden state</em> $x_k$ that evolves over time according to some dynamics
+$x_k = f(x_&#123;k-1&#125;) + w_k$; what you see are noisy observations
+$y_k = h(x_k) + v_k$. At each step, the goal is the filtering posterior
+$p(x_k \mid y_&#123;1:k&#125;)$ — the belief over the current state given everything
+observed so far. The four methods below differ in what they assume about
+$f$, $h$, and the noise, and in how they represent the belief.
+</p>
+
+<Aside>
+  <strong>Why this is a separate page.</strong> The
+  <a href="/math/monte-carlo/">Monte Carlo & MCMC</a> page covers <em>static</em>
+  targets — a posterior $p(\theta \mid y)$ that doesn't change as new data
+  arrives. Filtering is a different problem shape: the target moves with time
+  and you want a recursive update, not a batch sampler. The two pages share
+  the importance-sampling machinery (the particle filter is sequential IS with
+  resampling), but otherwise solve different problems.
+</Aside>
+
+<h2 id="state-space">1. The state-space model</h2>
+
+<p>
+A discrete-time state-space model is two equations:
+</p>
+
+$$
+x_k = f(x_&#123;k-1&#125;) + w_k,\qquad
+y_k = h(x_k) + v_k,
+$$
+
+<p>
+where $w_k$ and $v_k$ are process and observation noise. The filtering job is
+to compute $p(x_k \mid y_&#123;1:k&#125;)$ sequentially, updating the belief by one
+observation at a time. Two recursions do the work:
+</p>
+
+<ul>
+  <li><strong>Predict</strong>: push the belief forward through the dynamics.
+  $p(x_k \mid y_&#123;1:k-1&#125;) = \int p(x_k \mid x_&#123;k-1&#125;)\,p(x_&#123;k-1&#125; \mid y_&#123;1:k-1&#125;)\,dx_&#123;k-1&#125;$.</li>
+  <li><strong>Update</strong>: tilt the prediction by the new observation's
+  likelihood. $p(x_k \mid y_&#123;1:k&#125;) \propto p(y_k \mid x_k)\,p(x_k \mid y_&#123;1:k-1&#125;)$.</li>
+</ul>
+
+<p>
+Whether either integral has a closed form depends on the assumptions about
+$f$, $h$, and the noise. The four methods below sit on a tradeoff ladder:
+start with an exact Gaussian closed form, then relax linearity, then relax the
+local-linearization requirement, then finally relax the Gaussian-belief
+restriction entirely.
+</p>
+
+<DecisionTable tableClass="decision arc" headers={["Step","What changes","Requirement","What can fail"]}>
+<tr>
+      <td>Kalman</td>
+      <td>Compute the filtering posterior exactly as mean and covariance.</td>
+      <td>Linear dynamics, linear observations, Gaussian noise.</td>
+      <td>Nonlinear or non-Gaussian systems violate the model.</td>
+    </tr>
+    <tr>
+      <td>EKF</td>
+      <td>Allow nonlinear dynamics/observations by linearizing locally.</td>
+      <td>Jacobians and a posterior narrow enough for local linearization.</td>
+      <td>Curvature over the uncertainty region can bias or destabilize the filter.</td>
+    </tr>
+    <tr>
+      <td>UKF</td>
+      <td>Push sigma points through the nonlinear functions instead of using Jacobians.</td>
+      <td>A unimodal Gaussian belief is still a good summary.</td>
+      <td>Multimodal or heavy-tailed posteriors get collapsed into one Gaussian.</td>
+    </tr>
+    <tr>
+      <td>Particle filter</td>
+      <td>Represent the posterior with weighted samples instead of one Gaussian.</td>
+      <td>Enough particles, likelihood evaluations, and resampling control.</td>
+      <td>Weight collapse, sample impoverishment, and poor scaling with state dimension.</td>
+    </tr>
+</DecisionTable>
+
+<h2 id="kalman">2. Closed-form filtering: the Kalman family</h2>
+
+<h3><span class="tag closed">closed-form</span> Kalman filter (linear-Gaussian)</h3>
+
+<p>
+If $f$ and $h$ are linear ($x_k = Fx_&#123;k-1&#125; + w_k,\ y_k = Hx_k + v_k$) and the noises
+are Gaussian, the filtering distribution stays Gaussian forever and is given exactly
+by:
+</p>
+
+$$
+\begin&#123;aligned&#125;
+\hat x_k^- &= F\hat x_&#123;k-1&#125;, \quad P_k^- = F P_&#123;k-1&#125; F^\top + Q & \text&#123;(predict)&#125; \\
+K_k &= P_k^- H^\top (H P_k^- H^\top + R)^&#123;-1&#125; & \text&#123;(gain)&#125; \\
+\hat x_k &= \hat x_k^- + K_k(y_k - H\hat x_k^-) \\
+P_k &= (I - K_k H)\,P_k^- & \text&#123;(update)&#125;
+\end&#123;aligned&#125;
+$$
+
+<p>
+This is not a Monte Carlo method; it is the closed-form posterior for the
+linear-Gaussian special case. Use it when you can.
+</p>
+
+<h3><span class="tag closed">closed-form</span> Extended Kalman filter (EKF)</h3>
+
+<p>
+For mildly nonlinear $f,h$, linearize at the current mean:
+$F_k = \partial f/\partial x\big|_&#123;\hat x_&#123;k-1&#125;&#125;$,
+$H_k = \partial h/\partial x\big|_&#123;\hat x_k^-&#125;$, then apply the standard Kalman
+equations. Cheap and widely deployed, but a poor approximation when the local linearization
+disagrees with the true function over the spread of the prior.
+</p>
+
+<h3><span class="tag closed">closed-form</span> Unscented Kalman filter (UKF)</h3>
+
+<p>
+Instead of linearizing the function, propagate a deterministic set of $2n+1$
+<em>sigma points</em> through the true nonlinear $f,h$ and refit a Gaussian to their
+image. Second-order accurate, requires no Jacobians, same cost as EKF. Still
+fundamentally Gaussian, and fails for multimodal or heavy-tailed posteriors.
+</p>
+
+<p>
+Figure 1 compares the filtering approximations on one nonlinear update. Kalman-style
+methods keep only a Gaussian belief; the difference is how they push that Gaussian
+through nonlinear dynamics and observations.
+</p>
+
+<Figure title="Figure 1 · Kalman, EKF, and UKF through a nonlinear observation" canvasId="fig6" width="780" height="340" readoutId="fig6-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#b8412a"></span>true posterior shape</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>EKF Gaussian</span>
+      <span><span class="swatch" style="background:#6b4592"></span>UKF Gaussian</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig6-y" label="observation $y$" valueId="fig6-y-v" min="0.0" max="2.8" step="0.05" value="1.2" />
+      <ControlRange id="fig6-noise" label="observation noise" valueId="fig6-noise-v" min="0.1" max="1.0" step="0.05" value="0.3" />
+      <ControlRange id="fig6-spread" label="prior spread" valueId="fig6-spread-v" min="0.4" max="2.0" step="0.05" value="1.0" />
+</Fragment>
+</Figure>
+
+<h2 id="smc">3. Sequential Monte Carlo</h2>
+
+<p>
+When the state-space model is genuinely nonlinear or non-Gaussian, no closed form
+exists and Gaussian approximations break. SMC represents $p(x_&#123;0:k&#125;\mid y_&#123;1:k&#125;)$ by a
+weighted cloud of <em>particles</em> $\&#123;(x^&#123;(i)&#125;_&#123;0:k&#125;, w^&#123;(i)&#125;_k)\&#125;_&#123;i=1&#125;^N$ and
+updates the cloud as each new observation arrives.
+</p>
+
+<h3><span class="tag smc">smc</span> Sequential importance sampling (SIS)</h3>
+
+<p>
+Apply <a href="/math/monte-carlo/#iid">importance sampling</a> step by step. With
+proposal $\pi(x_k\mid x_&#123;0:k-1&#125;, y_&#123;1:k&#125;)$, the weights update recursively:
+</p>
+
+$$ w_k^&#123;(i)&#125; \propto w_&#123;k-1&#125;^&#123;(i)&#125; \cdot \frac&#123;p(y_k\mid x_k^&#123;(i)&#125;)\,p(x_k^&#123;(i)&#125;\mid x_&#123;k-1&#125;^&#123;(i)&#125;)&#125;&#123;\pi(x_k^&#123;(i)&#125;\mid x_&#123;0:k-1&#125;^&#123;(i)&#125;, y_&#123;1:k&#125;)&#125;. $$
+
+<p>
+The catastrophe: after a few steps almost all weight ends up on one particle. This is
+<strong>weight degeneracy</strong>, and it is the reason SIS by itself is essentially
+never used.
+</p>
+
+<h3><span class="tag smc">smc</span> Particle filter / SIR (bootstrap)</h3>
+
+<p>
+Add a <strong>resampling</strong> step: whenever the effective sample size drops
+below a threshold, draw $N$ new particles with replacement from the weighted cloud,
+duplicating heavy particles and killing light ones, and reset all weights to $1/N$.
+The simplest variant, the <strong>bootstrap filter</strong>, uses the prior
+$p(x_k\mid x_&#123;k-1&#125;^&#123;(i)&#125;)$ as the proposal, which collapses the weight update to
+just the likelihood:
+</p>
+
+$$ w_k^&#123;(i)&#125; \propto p(y_k\mid x_k^&#123;(i)&#125;). $$
+
+<div class="algo">
+  <div class="algo-title">Bootstrap particle filter</div>
+  <ol>
+    <li>For each particle $i$: draw $x_k^&#123;(i)&#125; \sim p(x_k \mid x_&#123;k-1&#125;^&#123;(i)&#125;)$ from the dynamics.</li>
+    <li>Reweight: $w_k^&#123;(i)&#125; \propto p(y_k \mid x_k^&#123;(i)&#125;)$.</li>
+    <li>Normalize weights; compute ESS.</li>
+    <li>If ESS &lt; threshold: resample $N$ particles $\propto w_k^&#123;(i)&#125;$ and reset weights to $1/N$.</li>
+  </ol>
+</div>
+
+<p>
+Variants improve on the bootstrap proposal: the <strong>optimal proposal</strong>
+$\pi(x_k\mid x_&#123;k-1&#125;^&#123;(i)&#125;, y_k)$ minimizes weight variance but is tractable only for
+special models; <strong>local-linearization proposals</strong> use an EKF or UKF on
+each particle to construct a locally near-optimal Gaussian proposal. Resampling
+itself has variants (multinomial, stratified, systematic, residual) that differ in
+variance.
+</p>
+
+<p>
+Resampling cures weight degeneracy but introduces <strong>sample impoverishment</strong>:
+heavy particles get duplicated and the cloud loses diversity. Roughening (jittering
+particles by a small noise) and MCMC moves between resampling steps are the standard
+remedies.
+</p>
+
+<p>Figure 2 runs SIS and a bootstrap particle filter on the same nonlinear tracking problem, so the weight-collapse failure and the resampling fix are visible side by side.</p>
+
+<Figure title="Figure 2 · Bootstrap particle filter on a nonlinear scalar SSM" canvasId="fig3" width="780" height="380" readoutId="fig3-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>true state</span>
+      <span><span class="swatch" style="background:#d4690a"></span>observation $y_k$</span>
+      <span><span class="swatch" style="background:#6b4592"></span>particle cloud</span>
+      <span><span class="swatch" style="background:#b8412a"></span>posterior mean</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig3-n" label="# particles" valueId="fig3-n-v" min="20" max="2000" step="20" value="200" />
+      <ControlRange id="fig3-sv" label={String.raw`obs noise $\sigma_v$`} valueId="fig3-sv-v" min="0.2" max="3.0" step="0.05" value="1.0" />
+      <ControlRange id="fig3-ess" label="resample threshold (ESS/N)" valueId="fig3-ess-v" min="0.0" max="1.0" step="0.05" value="0.5" />
+      <PresetRow>
+        <button id="fig3-sis">SIS: no resampling</button>
+        <button id="fig3-pf" class="active">Particle filter</button>
+        <button id="fig3-runpause">Pause</button>
+        <button id="fig3-reset">Reset run</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<Figure title="Figure 3 · Particle genealogy after repeated resampling" canvasId="fig3genealogy" width="780" height="330" readoutId="fig3genealogy-readout">
+<Fragment slot="legend">
+  <div class="legend">
+      <span><span class="swatch" style="background:#6b4592"></span>surviving lineages</span>
+      <span><span class="swatch" style="background:#bfb9aa"></span>extinct lineages</span>
+    </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="fig3genealogy-resample" label="resampling pressure" valueId="fig3genealogy-resample-v" min="0" max="1" step="0.05" value="0.65" />
+      <PresetRow>
+        <button id="fig3genealogy-rerun">New genealogy</button>
+      </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="side-by-side">4. The algorithms side by side</h2>
+
+<p>
+All four algorithms share the same predict-then-update recursion. They
+differ in <em>how</em> the predict pushes the belief forward, <em>how</em>
+the update incorporates $y_k$, and what kind of belief they carry.
+</p>
+
+<div class="pseudocode-table-wrap">
+<table class="pseudocode-table">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Kalman filter</th>
+      <th>EKF</th>
+      <th>UKF</th>
+      <th>Particle filter (SIR)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Family</th>
+      <td>linear-Gaussian closed form</td>
+      <td>local-linearization closed form</td>
+      <td>sigma-point closed form</td>
+      <td>weighted-sample SMC</td>
+    </tr>
+    <tr>
+      <th>Requires</th>
+      <td>linear $f, h$; Gaussian noise</td>
+      <td>smooth $f, h$; Jacobians $\partial f, \partial h$</td>
+      <td>$f, h$ evaluable (no Jacobians)</td>
+      <td>$f$ sampleable; $p(y\mid x)$ evaluable</td>
+    </tr>
+    <tr>
+      <th>Belief</th>
+      <td>Gaussian $(\hat x, P)$</td>
+      <td>Gaussian $(\hat x, P)$</td>
+      <td>Gaussian $(\hat x, P)$</td>
+      <td>weighted cloud $\&#123;(x^&#123;(i)&#125;, w^&#123;(i)&#125;)\&#125;$</td>
+    </tr>
+    <tr>
+      <th>Predict</th>
+      <td class="code">$\hat x^- = F\hat x;\ P^- = F P F^\top + Q$</td>
+      <td class="code">$F_k = \partial f/\partial x;\ \hat x^- = f(\hat x);\ P^- = F_k P F_k^\top + Q$</td>
+      <td class="code">$\sigma_j \leftarrow$ sigma points; $\sigma'_j = f(\sigma_j)$; refit Gaussian</td>
+      <td class="code">$x^&#123;(i)&#125;_k \sim p(x_k \mid x^&#123;(i)&#125;_&#123;k-1&#125;)$</td>
+    </tr>
+    <tr>
+      <th>Update</th>
+      <td class="code">Kalman gain on $y_k - H\hat x^-$</td>
+      <td class="code">Kalman gain with $H_k = \partial h/\partial x$</td>
+      <td class="code">Kalman gain via $\gamma_j = h(\sigma'_j)$</td>
+      <td class="code">$w^&#123;(i)&#125; \propto w^&#123;(i)&#125;_&#123;k-1&#125;\,p(y_k \mid x^&#123;(i)&#125;_k)$</td>
+    </tr>
+    <tr>
+      <th>Resample</th>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td class="code">if $\mathrm&#123;ESS&#125;(w) &lt; \tau$: resample $\propto w$; reset $w \leftarrow 1/N$</td>
+    </tr>
+    <tr>
+      <th>Main failure</th>
+      <td>any departure from linearity / Gaussianity</td>
+      <td>local-linearization error; divergence under strong nonlinearity</td>
+      <td>still Gaussian; fails on multimodal / heavy-tailed posteriors</td>
+      <td>weight degeneracy; sample impoverishment after resampling</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>
+Each column relaxes one assumption from the column to its left. Reading
+across <strong>Predict</strong> shows the relaxation explicitly: matrix
+multiply by a fixed $F$ becomes a Jacobian-at-the-mean, then a Jacobian-free
+sigma-point propagation, then a non-Gaussian particle propagation. The
+following cards zoom in on each step.
+</p>
+
+<h2 id="pair-changes">5. Pair by pair: what changes between methods</h2>
+
+<p>
+Three transitions, each a single design swap. The pseudocode bodies have
+the same structure; only the highlighted lines change.
+</p>
+
+<div class="pair-card">
+  <div class="pair-header">
+    <h3>Kalman ↔ Extended Kalman filter</h3>
+    <p class="pair-tagline">Replace the linear $F, H$ with their Jacobians at the current mean.</p>
+  </div>
+  <div class="pair-cols">
+    <div class="pair-col">
+      <div class="pair-col-title">Kalman filter</div>
+<pre><code>x̂_0, P_0 = prior
+for k = 1 to K:
+    # predict
+    <span class="diff">x̂⁻ = F · x̂_&#123;k-1&#125;</span>
+    <span class="diff">P⁻ = F · P_&#123;k-1&#125; · Fᵀ + Q</span>
+    # update
+    <span class="diff">K = P⁻ · Hᵀ · (H · P⁻ · Hᵀ + R)⁻¹</span>
+    <span class="diff">x̂_k = x̂⁻ + K · (y_k − H · x̂⁻)</span>
+    <span class="diff">P_k = (I − K · H) · P⁻</span>
+return chain (x̂_k, P_k)
+</code></pre>
+    </div>
+    <div class="pair-col">
+      <div class="pair-col-title">Extended Kalman filter</div>
+<pre><code>x̂_0, P_0 = prior
+for k = 1 to K:
+    # predict (linearize dynamics)
+    <span class="diff">F_k = ∂f/∂x |_&#123;x̂_&#123;k-1&#125;&#125;</span>
+    <span class="diff">x̂⁻ = f(x̂_&#123;k-1&#125;)</span>
+    <span class="diff">P⁻ = F_k · P_&#123;k-1&#125; · F_kᵀ + Q</span>
+    # update (linearize observation)
+    <span class="diff">H_k = ∂h/∂x |_&#123;x̂⁻&#125;</span>
+    <span class="diff">K = P⁻ · H_kᵀ · (H_k · P⁻ · H_kᵀ + R)⁻¹</span>
+    <span class="diff">x̂_k = x̂⁻ + K · (y_k − h(x̂⁻))</span>
+    <span class="diff">P_k = (I − K · H_k) · P⁻</span>
+return chain (x̂_k, P_k)
+</code></pre>
+    </div>
+  </div>
+  <p class="pair-note">
+    Most of the differences are local substitutions: $F \to F_k$, $H \to H_k$
+    (now computed at each step rather than constant), and the state-mean
+    propagations $F\hat x$ and $H\hat x$ are replaced by the nonlinear
+    function evaluations $f(\hat x)$ and $h(\hat x)$. Two Jacobian lines are
+    added. The Kalman-gain formula and the covariance update are
+    structurally identical; they just use the Jacobians in place of the
+    constant matrices.
+  </p>
+</div>
+
+<div class="pair-card">
+  <div class="pair-header">
+    <h3>Extended Kalman ↔ Unscented Kalman filter</h3>
+    <p class="pair-tagline">Replace Jacobian linearization with deterministic sigma-point propagation through the true nonlinear functions.</p>
+  </div>
+  <div class="pair-cols">
+    <div class="pair-col">
+      <div class="pair-col-title">Extended Kalman filter</div>
+<pre><code>x̂_0, P_0 = prior
+for k = 1 to K:
+    # predict
+    <span class="diff">F_k = ∂f/∂x |_&#123;x̂_&#123;k-1&#125;&#125;
+    x̂⁻ = f(x̂_&#123;k-1&#125;)
+    P⁻ = F_k · P_&#123;k-1&#125; · F_kᵀ + Q</span>
+    # update
+    <span class="diff">H_k = ∂h/∂x |_&#123;x̂⁻&#125;
+    K = P⁻ · H_kᵀ · (H_k · P⁻ · H_kᵀ + R)⁻¹
+    x̂_k = x̂⁻ + K · (y_k − h(x̂⁻))
+    P_k = (I − K · H_k) · P⁻</span>
+return chain (x̂_k, P_k)
+</code></pre>
+    </div>
+    <div class="pair-col">
+      <div class="pair-col-title">Unscented Kalman filter</div>
+<pre><code>x̂_0, P_0 = prior
+for k = 1 to K:
+    # predict
+    <span class="diff">σ_j = sigma_points(x̂_&#123;k-1&#125;, P_&#123;k-1&#125;)
+    σ'_j = f(σ_j)        # pass through true f
+    x̂⁻ = Σ_j w_j · σ'_j
+    P⁻ = Σ_j w_j · (σ'_j − x̂⁻)(σ'_j − x̂⁻)ᵀ + Q</span>
+    # update
+    <span class="diff">γ_j = h(σ'_j)        # pass through true h
+    C = Σ_j w_j · (σ'_j − x̂⁻)(γ_j − γ̄)ᵀ
+    S = Σ_j w_j · (γ_j − γ̄)(γ_j − γ̄)ᵀ + R
+    K = C · S⁻¹
+    x̂_k = x̂⁻ + K · (y_k − γ̄)
+    P_k = P⁻ − K · S · Kᵀ</span>
+return chain (x̂_k, P_k)
+</code></pre>
+    </div>
+  </div>
+  <p class="pair-note">
+    The Jacobian-and-multiply pattern is replaced by sigma-point-and-sample-cov:
+    instead of approximating $f$ by its first-order Taylor expansion at the
+    mean, the UKF picks $2n+1$ deterministic points around the mean, pushes
+    each through the <em>true</em> $f$ and $h$, and refits a Gaussian to the
+    image. The Kalman-gain identity reappears in the update, but built from
+    sample covariances of the propagated sigma points rather than from
+    Jacobian-and-prior products. Same cost as EKF, second-order accurate, no
+    Jacobians needed.
+  </p>
+</div>
+
+<div class="pair-card">
+  <div class="pair-header">
+    <h3>Unscented Kalman ↔ Particle filter (bootstrap)</h3>
+    <p class="pair-tagline">Replace the Gaussian belief with a weighted particle cloud; replace Kalman gain with likelihood reweighting; add resampling.</p>
+  </div>
+  <div class="pair-cols">
+    <div class="pair-col">
+      <div class="pair-col-title">Unscented Kalman filter</div>
+<pre><code><span class="diff">x̂_0, P_0 = prior Gaussian</span>
+for k = 1 to K:
+    # predict
+    <span class="diff">σ_j = sigma_points(x̂_&#123;k-1&#125;, P_&#123;k-1&#125;)
+    σ'_j = f(σ_j)
+    x̂⁻, P⁻ = mean & cov of σ'_j;  P⁻ += Q</span>
+    # update
+    <span class="diff">γ_j = h(σ'_j)
+    K = cov(σ'_j, γ_j) · (cov(γ_j) + R)⁻¹
+    x̂_k = x̂⁻ + K · (y_k − mean(γ_j))
+    P_k = P⁻ − K · cov(γ_j, σ'_j)</span>
+
+return chain (x̂_k, P_k)
+</code></pre>
+    </div>
+    <div class="pair-col">
+      <div class="pair-col-title">Particle filter (bootstrap)</div>
+<pre><code><span class="diff">&#123;x^(i)_0&#125;_&#123;i=1..N&#125;, w^(i) = 1/N    # cloud, not Gaussian</span>
+for k = 1 to K:
+    # predict
+    <span class="diff">for each i:
+        x^(i)_k ~ p(x_k | x^(i)_&#123;k-1&#125;)
+                                  # sample from dynamics</span>
+    # update
+    <span class="diff">for each i:
+        w^(i) ∝ w^(i)_&#123;k-1&#125; · p(y_k | x^(i)_k)
+    normalize w^(i)
+    if ESS(w) &lt; τ:
+        resample N particles ∝ w
+        w^(i) ← 1/N</span>
+return chain of clouds &#123;x^(i)_k, w^(i)_k&#125;
+</code></pre>
+    </div>
+  </div>
+  <p class="pair-note">
+    The largest of the three transitions: the belief representation changes
+    (Gaussian sufficient statistics → weighted particle cloud), the predict
+    step changes from deterministic sigma-point propagation to actual
+    samples from the dynamics, the update step changes from a Kalman gain to
+    a likelihood reweighting, and a resampling step is added to fight weight
+    degeneracy. The shared structure is just the outer `for k` loop and the
+    predict/update labels. This is what it takes to leave the Gaussian world.
+  </p>
+</div>
+
+<h2 id="decision">6. What to use where</h2>
+
+<p>
+The decision is mostly about how nonlinear the dynamics are and whether the
+posterior stays unimodal. Tags echo the section colors:
+<span class="tag closed">closed-form</span> means a Gaussian closed-form
+posterior (no sampling), <span class="tag smc">smc</span> means weighted
+particles updated sequentially.
+</p>
+
+<DecisionTable headers={["Method","Use when","Strengths","Pitfalls"]}>
+    <tr data-target-figure="fig6">
+      <td class="method">Kalman filter<br><span class="tag closed">closed-form</span></td>
+      <td class="use">Linear-Gaussian state-space model. Filtering / smoothing of $x_&#123;0:T&#125;$ given $y_&#123;1:T&#125;$.</td>
+      <td>Exact; closed-form $O(d^3)$ per step.</td>
+      <td>Restricted to linear dynamics and Gaussian noise.</td>
+    </tr>
+    <tr data-target-figure="fig6">
+      <td class="method">EKF<br><span class="tag closed">closed-form</span></td>
+      <td class="use">Mildly nonlinear state-space; tracking, robotics, navigation.</td>
+      <td>Drop-in replacement for KF; cheap.</td>
+      <td>First-order linearization error; can diverge under strong nonlinearity.</td>
+    </tr>
+    <tr data-target-figure="fig6">
+      <td class="method">UKF<br><span class="tag closed">closed-form</span></td>
+      <td class="use">More nonlinear state-space than EKF can handle but still unimodal Gaussian.</td>
+      <td>Second-order accurate; no Jacobians required.</td>
+      <td>Still a Gaussian approximation; fails for multimodal / heavy-tailed posteriors.</td>
+    </tr>
+    <tr data-target-figure="fig3">
+      <td class="method">Particle filter (SIR)<br><span class="tag smc">smc</span></td>
+      <td class="use">Nonlinear, non-Gaussian state-space; tracking, robotics, gene networks, anything multimodal over time.</td>
+      <td>Asymptotically exact for fully general SSMs; handles multimodal posteriors.</td>
+      <td>Sample impoverishment after resampling; scales poorly with state dimension.</td>
+    </tr>
+</DecisionTable>
+
+<Aside>
+<strong>Quick decision tree.</strong>
+<ol>
+  <li>Linear dynamics and Gaussian noise? → <strong>Kalman filter</strong>.</li>
+  <li>Mildly nonlinear, Jacobians cheap and well-behaved? → <strong>EKF</strong>.</li>
+  <li>More nonlinear but still unimodal Gaussian belief is OK? → <strong>UKF</strong>.</li>
+  <li>Genuinely nonlinear / non-Gaussian / multimodal posterior? → <strong>particle filter</strong>.</li>
+  <li>Need to do inference on a <em>static</em> posterior (no time dimension)? → see <a href="/math/monte-carlo/">Monte Carlo &amp; MCMC</a>.</li>
+</ol>
+</Aside>
+
+<NextCards heading="What next" intro="Filtering connects to static-posterior sampling, dependency structure, and the linear systems story." cards={[{"href":"/monte-carlo/","tag":"Static","title":"Monte Carlo &amp; MCMC","role":"Same change-of-measure machinery, applied to a static posterior rather than a time-evolving state."},{"href":"/hidden-markov-models/","tag":"Discrete state","title":"Hidden Markov Models","role":"The discrete-state analogue of Kalman filtering: forward–backward messages and Viterbi over a finite state alphabet."},{"href":"/lti-random-inputs/","tag":"Systems","title":"LTI Systems on Random Inputs","role":"The frequency-domain view of state-space dynamics; the Kalman filter is the time-domain inference complement."},{"href":"/measure-theory/","tag":"Foundations","title":"Measure Theory &amp; Random Variables","role":"Importance sampling — including the particle filter's sequential version — is the Radon–Nikodym identity made computational."}]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>.
+  Companion to <a href="/math/monte-carlo/">Monte Carlo &amp; MCMC</a>.
+  Math typeset with KaTeX.
+</div>
+
+
+  <script is:inline src="/math/sampling-methods/sampling.js"></script>
+
+<style>
+  .pseudocode-table-wrap {
+    overflow-x: auto;
+    margin: 18px 0 24px;
+    border: 1px solid var(--rule, #d8d3c5);
+    border-radius: 6px;
+    background: #ffffff;
+  }
+  .pseudocode-table {
+    width: 100%;
+    min-width: 920px;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  .pseudocode-table thead th {
+    background: rgba(2, 132, 199, 0.08);
+    border-bottom: 2px solid rgba(2, 132, 199, 0.3);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text, #1f2733);
+    white-space: nowrap;
+  }
+  .pseudocode-table thead th:first-child {
+    background: transparent;
+    border-bottom: 2px solid rgba(2, 132, 199, 0.3);
+  }
+  .pseudocode-table tbody th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--panel, #fbfbfa);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    font-weight: 600;
+    font-size: 11.5px;
+    color: var(--text-dim, #5a6577);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    vertical-align: top;
+    width: 132px;
+  }
+  .pseudocode-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    vertical-align: top;
+  }
+  .pseudocode-table tbody tr:last-child th,
+  .pseudocode-table tbody tr:last-child td { border-bottom: none; }
+  .pseudocode-table tbody tr:nth-child(odd) td:not(.code) {
+    background: rgba(0, 0, 0, 0.012);
+  }
+  .pseudocode-table td.code {
+    font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
+    font-size: 11.5px;
+    background: rgba(45, 122, 62, 0.04);
+  }
+
+  .pair-card {
+    border: 1px solid var(--rule, #d8d3c5);
+    border-radius: 6px;
+    background: #ffffff;
+    margin: 20px 0;
+    padding: 14px 16px 12px;
+  }
+  .pair-header h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text, #1f2733);
+  }
+  .pair-header .pair-tagline {
+    margin: 0 0 12px;
+    color: var(--text-dim, #5a6577);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .pair-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 0 0 12px;
+  }
+  @media (max-width: 720px) {
+    .pair-cols { grid-template-columns: 1fr; }
+  }
+  .pair-col {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    background: var(--panel, #fbfbfa);
+    overflow: hidden;
+  }
+  .pair-col-title {
+    padding: 6px 10px;
+    background: rgba(2, 132, 199, 0.06);
+    border-bottom: 1px solid rgba(2, 132, 199, 0.2);
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-dim, #5a6577);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pair-col pre {
+    margin: 0;
+    padding: 10px 12px;
+    overflow-x: auto;
+    background: transparent;
+    line-height: 1.55;
+  }
+  .pair-col code {
+    font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
+    font-size: 12px;
+    color: var(--text, #1f2733);
+    white-space: pre;
+  }
+  .pair-col .diff {
+    background: rgba(251, 191, 36, 0.22);
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+  .pair-note {
+    margin: 8px 4px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text, #1f2733);
+  }
+</style>
+</ExplainerLayout>

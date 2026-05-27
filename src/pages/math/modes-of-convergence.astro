@@ -1,0 +1,439 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import Legend from "../../components/explainer/Legend.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import PresetButton from "../../components/explainer/PresetButton.astro";
+import Readout from "../../components/explainer/Readout.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import NotationAside from "../../components/explainer/NotationAside.astro";
+---
+
+<ExplainerLayout
+  title="Modes of Convergence — An Interactive Explainer"
+  breadcrumb="Modes of Convergence"
+  section="probability-and-statistics"
+>
+
+<Hero
+  title="Modes of Convergence"
+  subtitle="Almost sure, in probability, in distribution, in $L^p$ — the same sample paths, four different lenses."
+/>
+
+<p>
+A sequence of random variables $X_1, X_2, \ldots$ can approach a limit $X$ in
+several non-equivalent senses. Textbooks usually present the lattice of
+implications and a few hand-picked counterexamples in passing. Here the
+counterexamples are the centerpiece: each one is a recipe for sample paths
+$X_n(\omega)$, and the same paths are read four different ways.
+</p>
+
+<p>
+Start by dragging the step $n$ — directly on the canvas, or with the slider —
+and watch the readouts. Then switch presets — each one is the canonical example
+of one mode of convergence failing while another succeeds.
+</p>
+
+<h2 id="scrubber">1. Convergence of random variables</h2>
+
+<p>
+Each colored trace is one sample path $X_n(\omega_k)$ — same $\omega_k$ across
+all $n$, different $\omega_k$ per path. The horizontal axis is $n$; the shaded
+band is the $\varepsilon$-tube around the limit $X$. Four readouts measure the
+four modes:
+</p>
+
+<ul>
+  <li><strong>Almost sure</strong> ($X_n \to^&#123;\text&#123;a.s.&#125;&#125; X$). Fraction of paths
+  that have <em>ever</em> been outside the tube for some $m \geq n$ visible on
+  the canvas — should shrink to $0$.</li>
+  <li><strong>In probability</strong> ($X_n \to^p X$). Fraction of paths currently
+  outside the tube — should shrink to $0$.</li>
+  <li><strong>In $L^p$</strong> ($X_n \to^&#123;L^p&#125; X$). Sample $\mathbb&#123;E&#125;|X_n - X|^p$ for $p \in \&#123;1, 2\&#125;$.</li>
+  <li><strong>In distribution</strong> ($X_n \to^d X$). Lévy distance between
+  the law of $X_n$ and the law of $X$ — unlike the Kolmogorov distance, it
+  vanishes even when the limit $X$ is degenerate.</li>
+</ul>
+
+<NotationAside label="Density form (partial)">
+  <p>
+    These four modes are defined as conditions on random variables and on
+    laws, not on densities. Density-form translations exist for the
+    absolutely-continuous cases — pointwise convergence of densities implies
+    convergence in distribution (Scheffé's lemma gives $L^1$ convergence of
+    densities $\Rightarrow$ total-variation convergence of measures) — but
+    the convergence modes themselves are not density notions. Convergence in
+    distribution to a point mass, for instance, is a perfectly well-defined
+    statement with no density on either side. See the
+    <a href="/math/notation/#convergence">notation page</a>.
+  </p>
+</NotationAside>
+
+<Figure title="Figure 1 · Sample paths, four lenses" canvasId="fig-scrubber" width="820" height="520" readoutId="scrubber-readout">
+  <Fragment slot="legend">
+    <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>sample paths $X_n(\omega_k)$</span>
+      <span><span class="swatch" style="background:rgba(184,65,42,0.18); border:1px solid #b8412a"></span>$\varepsilon$-tube around $X$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>currently outside tube</span>
+      <span><span class="swatch" style="background:rgba(184,65,42,0.5)"></span>future escapes ($m \geq n$)</span>
+      <span><span class="swatch" style="background:transparent;border:2px solid #6b4592"></span>largest deviation ($L^p$ driver)</span>
+    </div>
+  </Fragment>
+  <Fragment slot="controls">
+    <PresetRow>
+      <PresetButton id="preset-lln" active>LLN (Bernoulli mean)</PresetButton>
+      <PresetButton id="preset-typewriter">Typewriter</PresetButton>
+      <PresetButton id="preset-spike">Spike</PresetButton>
+      <PresetButton id="preset-signflip">Sign flip</PresetButton>
+      <PresetButton id="preset-cauchy">Cauchy mean</PresetButton>
+    </PresetRow>
+    <ControlRange id="scrub-n" label="step $n$" valueId="scrub-n-v" min="1" max="256" step="1" value="32" />
+    <ControlRange id="scrub-eps" label={String.raw`tube radius $\varepsilon$`} valueId="scrub-eps-v" min="0.02" max="1.5" step="0.01" value="0.2" />
+    <ControlRange id="scrub-paths" label="visible paths" valueId="scrub-paths-v" min="4" max="32" step="1" value="12" />
+    <button id="scrub-reroll">Re-roll paths</button>
+  </Fragment>
+</Figure>
+
+<div class="preset-blurb" id="preset-blurb"></div>
+
+<h2 id="lattice">2. The implication lattice</h2>
+
+<p>
+Five strict implications hold; nothing else does. Click any node to load the
+preset where that mode is the headline example; click any dashed (non-)arrow to
+load the canonical counterexample that breaks it. Each node is tinted by the
+loaded preset — green where that mode converges, red where it fails.
+</p>
+
+<Figure title="Figure 2 · Modes of convergence — what implies what">
+  <div slot="default" class="lattice-host">
+    <svg id="lattice-svg" viewBox="0 0 820 320" role="img" aria-label="Implication lattice between modes of convergence"></svg>
+    <div class="lattice-caption" id="lattice-caption">
+      Hover or click an edge to see what it claims (or what counterexample disproves the converse). Node tint shows which modes hold for the loaded preset.
+    </div>
+  </div>
+</Figure>
+
+<Aside>
+  <strong>Reading the diagram.</strong> A solid arrow $A \Rightarrow B$ means
+  every sequence that converges in mode $A$ also converges in mode $B$. A dashed
+  arrow $A \not\Rightarrow B$ means a counterexample exists — clicking it
+  loads that counterexample into Figure 1. The lattice has a sharp asymmetry:
+  almost-sure and $L^p$ are <em>both</em> stronger than convergence in
+  probability, but <em>neither</em> implies the other (the typewriter sits in
+  one gap, the spike sits in the other).
+</Aside>
+
+<h2 id="inequalities">3. Why the modes shrink: Markov, Chebyshev, Chernoff</h2>
+
+<p>
+The escape rate $\mathbb&#123;P&#125;(|X_n - X| \geq \varepsilon)$ is the central object
+behind convergence in probability. Three inequalities bound it from above,
+each using progressively more information:
+</p>
+
+<ul>
+  <li><strong>Markov:</strong> $\mathbb&#123;P&#125;(|X_n - X| \geq \varepsilon) \leq \mathbb&#123;E&#125;|X_n - X| / \varepsilon$. Uses the first moment.</li>
+  <li><strong>Chebyshev:</strong> $\mathbb&#123;P&#125;(|X_n - X| \geq \varepsilon) \leq \mathrm&#123;Var&#125;(X_n - X)/\varepsilon^2$. Uses the second moment.</li>
+  <li><strong>Chernoff:</strong> $\mathbb&#123;P&#125;(S_n - n\mu \geq n t) \leq e^&#123;-n \cdot I(t)&#125;$ where $I$ is the rate function. Uses the whole MGF.</li>
+</ul>
+
+<p>
+Figure 3 overlays the Markov and Chebyshev bounds on the empirical escape rate
+from Figure 1 — they should sit <em>above</em> the dots, sometimes tightly,
+sometimes wastefully. The Cauchy preset is the dramatic failure case: the
+second moment is infinite, so Chebyshev gives an empty bound, and the LLN
+itself fails.
+</p>
+
+<Figure title="Figure 3 · Empirical escape rate vs. Markov &amp; Chebyshev bounds" canvasId="fig-bounds" width="820" height="360" readoutId="bounds-readout">
+  <Fragment slot="legend">
+    <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>empirical $\mathbb&#123;P&#125;(|X_n - X|\geq\varepsilon)$</span>
+      <span><span class="swatch" style="background:#d4690a"></span>Markov bound</span>
+      <span><span class="swatch" style="background:#6b4592"></span>Chebyshev bound</span>
+    </div>
+  </Fragment>
+  <Fragment slot="controls">
+    <PresetRow>
+      <PresetButton id="bounds-preset-lln" active>LLN</PresetButton>
+      <PresetButton id="bounds-preset-spike">Spike</PresetButton>
+      <PresetButton id="bounds-preset-cauchy">Cauchy</PresetButton>
+    </PresetRow>
+    <ControlRange id="bounds-eps" label={String.raw`$\varepsilon$`} valueId="bounds-eps-v" min="0.02" max="1" step="0.01" value="0.2" />
+    <ControlRange id="bounds-reps" label="paths" valueId="bounds-reps-v" min="100" max="2000" step="100" value="600" />
+  </Fragment>
+</Figure>
+
+<p>
+Markov bounds are usually loose because they only see the first moment.
+Chebyshev tightens them by squaring, but the next level — Chernoff — buys an
+<em>exponential</em> drop by exponentiating before taking expectation. Figure 4
+shows the same tail $\mathbb&#123;P&#125;(\bar S_n - \mu \geq t)$ on a log scale, with
+all three bounds and the empirical rate. The Chernoff curve pulls away in a
+straight line; Chebyshev sags slowly like $1/n$.
+</p>
+
+<Figure title={String.raw`Figure 4 · Concentration of $\bar S_n$ on a log scale`} canvasId="fig-chernoff" width="820" height="360" readoutId="chernoff-readout">
+  <Fragment slot="legend">
+    <div class="legend">
+      <span><span class="swatch" style="background:#1f4a8c"></span>empirical tail</span>
+      <span><span class="swatch" style="background:#d4690a"></span>Markov</span>
+      <span><span class="swatch" style="background:#6b4592"></span>Chebyshev</span>
+      <span><span class="swatch" style="background:#b8412a"></span>Chernoff</span>
+    </div>
+  </Fragment>
+  <Fragment slot="controls">
+    <ControlSelect id="chern-dist" label="distribution" valueId="chern-dist-v" options={[{"value":"bernoulli","label":"Bernoulli(p)"},{"value":"gauss","label":"Gaussian"}]} />
+    <ControlRange id="chern-p" label="parameter" valueId="chern-p-v" min="0.1" max="0.9" step="0.05" value="0.5" />
+    <ControlRange id="chern-t" label="deviation $t$" valueId="chern-t-v" min="0.05" max="0.5" step="0.01" value="0.15" />
+    <ControlRange id="chern-nmax" label="max $n$" valueId="chern-nmax-v" min="50" max="500" step="10" value="200" />
+    <ControlRange id="chern-reps" label="paths" valueId="chern-reps-v" min="500" max="5000" step="100" value="2000" />
+  </Fragment>
+</Figure>
+
+<p>
+A subtler use of Chernoff: pair the bound with the <strong>Borel–Cantelli
+lemma</strong> ($\sum_n \mathbb&#123;P&#125;(A_n) &lt; \infty \Rightarrow \mathbb&#123;P&#125;(A_n \text&#123; i.o.&#125;) = 0$).
+Exponential decay of $\mathbb&#123;P&#125;(|\bar S_n - \mu| \geq \varepsilon)$ is more
+than summable, so the strong law follows. Chebyshev's $1/n$ rate is <em>not</em>
+summable, which is why proving the strong LLN from Chebyshev alone requires the
+extra subsequence trick.
+</p>
+
+<h2 id="swap">4. When can you swap limit and expectation?</h2>
+
+<p>
+Almost-sure convergence does not imply $L^1$ convergence — the spike preset
+shows $X_n \to 0$ a.s. while $\mathbb&#123;E&#125; X_n = 1$ for every $n$. Three
+theorems give sufficient conditions for $\mathbb&#123;E&#125; X_n \to \mathbb&#123;E&#125; X$:
+</p>
+
+<ul>
+  <li><strong>Monotone convergence (MCT).</strong> If $0 \leq X_n \uparrow X$,
+  then $\mathbb&#123;E&#125; X_n \uparrow \mathbb&#123;E&#125; X$. No domination needed.</li>
+  <li><strong>Dominated convergence (DCT).</strong> If $X_n \to X$ a.s. and
+  $|X_n| \leq g$ for some integrable $g$, then $\mathbb&#123;E&#125; X_n \to \mathbb&#123;E&#125; X$.</li>
+  <li><strong>Fatou.</strong> Always: $\mathbb&#123;E&#125;[\liminf X_n] \leq \liminf \mathbb&#123;E&#125; X_n$. The inequality can be strict — the spike preset has $\liminf \mathbb&#123;E&#125; X_n = 1$ versus $\mathbb&#123;E&#125;[\liminf X_n] = 0$.</li>
+</ul>
+
+<p>
+Figure 5 lets you propose a dominating function $g(\omega)$ for the spike. The
+canvas plots all the $X_n(\omega) = n\cdot\mathbf&#123;1&#125;_&#123;[0,1/n]&#125;(\omega)$ on the
+same axes; you adjust $g$ as a power-law envelope $g(\omega) = c \cdot \omega^&#123;-\alpha&#125;$ and
+the readout reports $\int_0^1 g$. The point is to see why no integrable $g$
+dominates: $g$ must satisfy $g(\omega) \geq n$ on $[0, 1/n]$ for every $n$,
+which forces $g(\omega) \geq 1/\omega$ near $0$ — and $\int_0^1 1/\omega \,d\omega = \infty$.
+</p>
+
+<Figure title="Figure 5 · Can you dominate the spike?" canvasId="fig-dct" width="820" height="360" readoutId="dct-readout">
+  <Fragment slot="legend">
+    <div class="legend">
+      <span><span class="swatch" style="background:rgba(31,74,140,0.4)"></span>$X_n(\omega) = n\cdot\mathbf&#123;1&#125;_&#123;[0,1/n]&#125;$</span>
+      <span><span class="swatch" style="background:#b8412a"></span>candidate envelope $g(\omega) = c\,\omega^&#123;-\alpha&#125;$</span>
+    </div>
+  </Fragment>
+  <Fragment slot="controls">
+    <ControlRange id="dct-alpha" label={String.raw`exponent $\alpha$`} valueId="dct-alpha-v" min="0" max="1.5" step="0.01" value="0.6" />
+    <ControlRange id="dct-c" label="scale $c$" valueId="dct-c-v" min="0.5" max="20" step="0.1" value="2" />
+    <ControlRange id="dct-nmax" label="show up to $n =$" valueId="dct-nmax-v" min="2" max="40" step="1" value="12" />
+  </Fragment>
+</Figure>
+
+<p>
+The MCT story is gentler. Figure 6 picks an integrable $f$ on $[0,1]$ and lets
+$X_n = f \cdot \mathbf&#123;1&#125;_&#123;[0, 1 - 1/n]&#125;$ — a sequence that fills in toward $f$
+from the left. Because $X_n \uparrow f$ pointwise, MCT gives
+$\mathbb&#123;E&#125; X_n \uparrow \mathbb&#123;E&#125; f$ with no other hypothesis. Flip the
+monotonicity off and the guarantee disappears.
+</p>
+
+<Figure title="Figure 6 · MCT: monotone fill-up" canvasId="fig-mct" width="820" height="320" readoutId="mct-readout">
+  <Fragment slot="legend">
+    <div class="legend">
+      <span><span class="swatch" style="background:#2d7a3e"></span>limit $f(\omega)$</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>current $X_n$</span>
+    </div>
+  </Fragment>
+  <Fragment slot="controls">
+    <ControlRange id="mct-n" label="step $n$" valueId="mct-n-v" min="1" max="40" step="1" value="6" />
+    <ControlSelect id="mct-fn" label="$f$" valueId="mct-fn-v" options={[{"value":"hump","label":"hump"},{"value":"slope","label":"linear ramp"},{"value":"sin","label":"sinusoid"}]} />
+    <label class="control"><input type="checkbox" id="mct-mono" checked /> enforce monotone fill (else: random window)</label>
+  </Fragment>
+</Figure>
+
+<h2 id="tour">5. A guided tour through the lattice</h2>
+
+<p>
+The four counterexamples occupy specific positions in the lattice. Working
+them out by hand once is rewarding; clicking through them quickly is the next
+best thing.
+</p>
+
+<ul>
+  <li>
+    <strong>Spike</strong> — a.s. and in probability, but not in $L^1$.
+    The path $X_n(\omega) = n\cdot\mathbf&#123;1&#125;_&#123;[0,1/n]&#125;(\omega)$ has
+    $\mathbb&#123;E&#125; X_n = 1$ for all $n$. (Breaks: a.s. $\Rightarrow L^1$, in prob $\Rightarrow L^1$.)
+  </li>
+  <li>
+    <strong>Typewriter</strong> — in probability and in $L^p$, but not almost surely.
+    For each $\omega \in [0,1]$, infinitely many of the sliding indicators
+    $\mathbf&#123;1&#125;_&#123;[(n-2^k)/2^k, (n-2^k+1)/2^k]&#125;$ light up. (Breaks: in prob $\Rightarrow$ a.s., $L^p \Rightarrow$ a.s.)
+  </li>
+  <li>
+    <strong>Sign flip</strong> — in distribution, but not in probability.
+    With $X$ a fair $\pm 1$ and $X_n = (-1)^n X$, every $X_n$ has the same
+    distribution as $X$, so $X_n \overset&#123;d&#125;&#123;\to&#125; X$, but $|X_n - X|$ takes
+    only the values $0$ or $2$. (Breaks: in dist $\Rightarrow$ in prob.)
+  </li>
+  <li>
+    <strong>Cauchy mean</strong> — fails the LLN entirely.
+    The running mean of iid Cauchy is itself Cauchy with the same scale,
+    not contracting. Chebyshev cannot help: $\mathrm&#123;Var&#125; = \infty$.
+  </li>
+</ul>
+
+<Aside>
+  <strong>What this page is not.</strong> It is not a proof gallery — the
+  inequalities and implications are quoted, not derived. It is also not the CLT
+  story; the CLT lives more comfortably with the
+  <a href="/math/named-distributions/#gaussian">named distributions</a> and Berry–Esseen, which is
+  itself a refinement of convergence in distribution rather than a separate mode.
+</Aside>
+
+<NextCards
+  heading="What next"
+  cards={[
+    {"href":"/named-distributions/","tag":"Distributions","title":"Named Distributions","role":"The limit objects: Gaussian (CLT), Cauchy (LLN-violator), and the relationships."},
+    {"href":"/measure-theory/","tag":"Foundations","title":"Measure Theory","role":"Where convergence almost-everywhere and $L^p$ live; sets up DCT and Fatou rigorously."},
+    {"href":"/sufficient-statistics/","tag":"Statistics","title":"Sufficient Statistics","role":"Concentration of $T(X)$ around its mean — another consequence of the inequalities used here."}
+  ]}
+/>
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<style>
+  .preset-blurb {
+    font-style: italic;
+    color: var(--text-dim);
+    margin: 4px 0 24px;
+    padding: 10px 14px;
+    border-left: 3px solid var(--accent);
+    background: var(--panel);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .lattice-host {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  #lattice-svg {
+    width: 100%;
+    height: auto;
+    user-select: none;
+  }
+  .lattice-caption {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    padding: 4px 6px;
+    min-height: 40px;
+  }
+  .lattice-caption strong { color: var(--text); }
+  .control input[type="checkbox"] {
+    margin-right: 6px;
+    vertical-align: -2px;
+  }
+</style>
+
+<style is:global>
+  /* Lattice SVG rules apply to elements created at runtime by
+     /modes-of-convergence/convergence.js via createElementNS, which do not
+     carry Astro's scoped data-astro-cid attribute. Keep these global. */
+  #lattice-svg .lattice-node {
+    cursor: pointer;
+  }
+  #lattice-svg .lattice-node rect {
+    fill: var(--panel);
+    stroke: var(--rule);
+    stroke-width: 1.5;
+    transition: fill 0.18s, stroke 0.18s;
+  }
+  #lattice-svg .lattice-node[data-holds="true"] rect {
+    fill: #e3f3e6;
+    stroke: #2d7a3e;
+  }
+  #lattice-svg .lattice-node[data-holds="false"] rect {
+    fill: #f7e3de;
+    stroke: #b8412a;
+  }
+  #lattice-svg .lattice-node .mode-mark {
+    font-size: 13px;
+    font-weight: 700;
+  }
+  #lattice-svg .lattice-node[data-holds="true"] .mode-mark { fill: #2d7a3e; }
+  #lattice-svg .lattice-node[data-holds="false"] .mode-mark { fill: #b8412a; }
+  #lattice-svg .lattice-node:hover rect,
+  #lattice-svg .lattice-node.active rect {
+    fill: #fbe9e1;
+    stroke: var(--accent);
+  }
+  #lattice-svg .lattice-node text {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    fill: var(--text);
+    pointer-events: none;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  #lattice-svg .lattice-node .sub {
+    font-size: 10.5px;
+    font-weight: 500;
+    fill: var(--text-dim);
+  }
+  #lattice-svg .lattice-edge {
+    cursor: pointer;
+    stroke-width: 1.8;
+    fill: none;
+    transition: stroke 0.18s, stroke-width 0.18s;
+  }
+  #lattice-svg .lattice-edge.solid {
+    stroke: var(--accent-2);
+  }
+  #lattice-svg .lattice-edge.dashed {
+    stroke: var(--accent);
+    stroke-dasharray: 5 4;
+    opacity: 0.7;
+  }
+  #lattice-svg .lattice-edge:hover {
+    stroke-width: 3;
+    opacity: 1;
+  }
+  #lattice-svg .edge-hit {
+    stroke: transparent;
+    stroke-width: 16;
+    fill: none;
+    cursor: pointer;
+  }
+  #lattice-svg .edge-label {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 11px;
+    fill: var(--text-dim);
+    pointer-events: none;
+    text-anchor: middle;
+  }
+</style>
+
+<script is:inline src="/math/modes-of-convergence/convergence.js"></script>
+</ExplainerLayout>

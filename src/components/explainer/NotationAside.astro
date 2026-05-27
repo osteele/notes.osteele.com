@@ -1,0 +1,43 @@
+---
+// Inline notation-translation aside, used selectively where density form and
+// measure-theoretic form tell different stories. Renders as a styled aside
+// today; the `disclosure` prop is reserved so we can later switch to a
+// <details> disclosure rendering without changing call sites.
+interface Props {
+  label?: string;
+  disclosure?: boolean;
+}
+const { label = "Measure-theoretic form", disclosure = false } = Astro.props;
+---
+
+<aside class="notation-aside" data-disclosure={disclosure ? "true" : "false"}>
+  <div class="notation-aside__label">≡ {label}</div>
+  <div class="notation-aside__body">
+    <slot />
+  </div>
+</aside>
+
+<style>
+  .notation-aside {
+    border-left: 3px solid var(--rule, #d8d3c5);
+    background: var(--panel, #fbfbfa);
+    padding: 8px 14px;
+    margin: 10px 0 16px;
+    font-size: 0.94em;
+    line-height: 1.55;
+    color: var(--text-dim, #5a6577);
+    border-radius: 0 3px 3px 0;
+  }
+  .notation-aside__label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-2, #1f4a8c);
+    margin-bottom: 4px;
+  }
+  .notation-aside__body :global(p) { margin: 0 0 0.4em; }
+  .notation-aside__body :global(p:last-child) { margin-bottom: 0; }
+  .notation-aside__body :global(.katex) { color: var(--text, #1f2733); }
+  .notation-aside__body :global(.katex-display) { margin: 0.3em 0; }
+</style>

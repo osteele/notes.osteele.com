@@ -1,0 +1,251 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+---
+
+<ExplainerLayout title="Variational Bayes for Gaussian Mixtures" breadcrumb="VB-GMM" section="bayesian-inference">
+<Hero title="Variational Bayes for Gaussian Mixtures" subtitle="Mean-field VI on a mixture model: closed-form coordinate updates, a Dirichlet prior that prunes unused components automatically, and the ELBO as the convergence handle." />
+
+<OrientationNote>
+  <p>
+    The Gaussian mixture is the canonical worked example for mean-field VI. Unlike
+    EM, the variational treatment puts priors on every parameter and updates a
+    factored variational posterior $q$ over assignments, mixing weights, and
+    component parameters. The result inherits a feature EM does not have:
+    <strong>components with no data evidence shrink to zero mixing weight</strong>
+    and are effectively removed.
+  </p>
+</OrientationNote>
+
+<h2 id="model">1. The model</h2>
+
+<p>
+Observations $\mathbf x_1, \ldots, \mathbf x_N \in \mathbb R^D$ are modelled as a
+mixture of $K$ Gaussians. Latent assignments $\mathbf z_n \in \&#123;1,\ldots,K\&#125;$
+say which component each $\mathbf x_n$ came from. With conjugate priors,
+</p>
+
+$$
+\begin&#123;aligned&#125;
+\boldsymbol\pi &\sim \mathrm&#123;Dir&#125;(\alpha_0, \ldots, \alpha_0), \\
+(\boldsymbol\mu_k, \boldsymbol\Lambda_k) &\sim \mathrm&#123;NW&#125;(\mathbf m_0, \beta_0, \mathbf W_0, \nu_0), \\
+\mathbf z_n \mid \boldsymbol\pi &\sim \mathrm&#123;Cat&#125;(\boldsymbol\pi), \\
+\mathbf x_n \mid \mathbf z_n = k, \boldsymbol\mu_k, \boldsymbol\Lambda_k &\sim \mathcal N(\boldsymbol\mu_k, \boldsymbol\Lambda_k^&#123;-1&#125;).
+\end&#123;aligned&#125;
+$$
+
+<p>
+$\mathrm&#123;NW&#125;$ is the Normal–Wishart prior, conjugate for an unknown
+Gaussian mean and precision. The exact posterior
+$p(\mathbf Z, \boldsymbol\pi, \boldsymbol\mu, \boldsymbol\Lambda \mid \mathbf X)$
+is intractable because the latents $\mathbf Z$ couple the component parameters
+through the data.
+</p>
+
+<h2 id="vfamily">2. The variational family</h2>
+
+<p>
+Pick the mean-field factorization
+</p>
+
+$$
+q(\mathbf Z, \boldsymbol\pi, \boldsymbol\mu, \boldsymbol\Lambda)
+\;=\; q(\mathbf Z)\,q(\boldsymbol\pi)\,\prod_&#123;k=1&#125;^&#123;K&#125; q(\boldsymbol\mu_k, \boldsymbol\Lambda_k).
+$$
+
+<p>
+The standard CAVI derivation (Bishop §10.2) recovers the same parametric forms as
+the prior:
+</p>
+
+<ul>
+  <li>$q(\mathbf Z) = \prod_n \mathrm&#123;Cat&#125;(\mathbf z_n \mid \mathbf r_n)$, a
+      responsibility vector $\mathbf r_n$ per data point.</li>
+  <li>$q(\boldsymbol\pi) = \mathrm&#123;Dir&#125;(\boldsymbol\alpha)$, one
+      pseudo-count $\alpha_k$ per component.</li>
+  <li>$q(\boldsymbol\mu_k, \boldsymbol\Lambda_k) = \mathrm&#123;NW&#125;(\mathbf m_k, \beta_k, \mathbf W_k, \nu_k)$, Normal–Wishart per component.</li>
+</ul>
+
+<p>
+This is the simplest case where mean field gives genuinely closed-form updates for
+all factors. The price is the independence assumption between $\mathbf Z$ and the
+parameters. VB systematically underestimates posterior correlations, just as in
+the
+<a href="/math/variational-inference/#mean-field-regression">regression case</a>.
+</p>
+
+<h2 id="updates">3. The CAVI updates</h2>
+
+<p>
+The variational expectations needed for the E-step are
+</p>
+
+$$
+\begin&#123;aligned&#125;
+\mathbb E\!\bigl[\ln \pi_k\bigr]                 &= \psi(\alpha_k) - \psi(\textstyle\sum_j \alpha_j), \\
+\mathbb E\!\bigl[\ln |\boldsymbol\Lambda_k|\bigr] &= \sum_&#123;d=1&#125;^D \psi\!\Bigl(\tfrac&#123;\nu_k + 1 - d&#125;&#123;2&#125;\Bigr) + D\ln 2 + \ln |\mathbf W_k|, \\
+\mathbb E\!\bigl[(\mathbf x_n - \boldsymbol\mu_k)^\top \boldsymbol\Lambda_k (\mathbf x_n - \boldsymbol\mu_k)\bigr]
+                                                  &= \tfrac&#123;D&#125;&#123;\beta_k&#125; + \nu_k\,(\mathbf x_n - \mathbf m_k)^\top \mathbf W_k (\mathbf x_n - \mathbf m_k).
+\end&#123;aligned&#125;
+$$
+
+<p>
+The responsibilities update is
+</p>
+
+$$
+\ln\rho_&#123;nk&#125; \;=\; \mathbb E[\ln\pi_k] + \tfrac12 \mathbb E[\ln|\boldsymbol\Lambda_k|]
+                  - \tfrac&#123;D&#125;&#123;2&#125;\ln(2\pi) - \tfrac12 \mathbb E[\Delta_&#123;nk&#125;],
+\qquad r_&#123;nk&#125; \;=\; \frac&#123;\rho_&#123;nk&#125;&#125;&#123;\sum_j \rho_&#123;nj&#125;&#125;.
+$$
+
+<p>
+The M-step computes weighted sufficient statistics
+$N_k = \sum_n r_&#123;nk&#125;$,
+$\bar&#123;\mathbf x&#125;_k = \frac1&#123;N_k&#125;\sum_n r_&#123;nk&#125;\mathbf x_n$,
+$\mathbf S_k = \frac1&#123;N_k&#125;\sum_n r_&#123;nk&#125; (\mathbf x_n - \bar&#123;\mathbf x&#125;_k)(\mathbf x_n - \bar&#123;\mathbf x&#125;_k)^\top$,
+and updates the variational hyperparameters:
+</p>
+
+$$
+\begin&#123;aligned&#125;
+\alpha_k   &= \alpha_0 + N_k, \\
+\beta_k    &= \beta_0 + N_k, \\
+\nu_k      &= \nu_0 + N_k, \\
+\mathbf m_k &= \frac&#123;\beta_0 \mathbf m_0 + N_k \bar&#123;\mathbf x&#125;_k&#125;&#123;\beta_k&#125;, \\
+\mathbf W_k^&#123;-1&#125; &= \mathbf W_0^&#123;-1&#125; + N_k \mathbf S_k + \frac&#123;\beta_0 N_k&#125;&#123;\beta_k&#125;(\bar&#123;\mathbf x&#125;_k - \mathbf m_0)(\bar&#123;\mathbf x&#125;_k - \mathbf m_0)^\top.
+\end&#123;aligned&#125;
+$$
+
+<p>
+The whole iteration is closed-form: no sampling, no inner Newton. Each step is
+guaranteed not to decrease the ELBO.
+</p>
+
+<h2 id="pruning">4. Automatic pruning</h2>
+
+<p>
+The Dirichlet concentration $\alpha_0$ is the load-bearing knob. The posterior
+mean mixing weight is
+$\mathbb E[\pi_k] = \alpha_k/(\sum_j \alpha_j) = (\alpha_0 + N_k)/(K\alpha_0 + N)$.
+With $\alpha_0 \lt 1$, the Dirichlet prior actively pushes mass off components that
+attract few data points. Empirically, starting with more components than the data
+need and a small $\alpha_0$ (e.g. $10^&#123;-3&#125;$) drives unused components to
+near-zero $\pi_k$ within a few iterations. They "die out" automatically without
+any model-selection step.
+</p>
+
+<p>
+This is the main thing VB-GMM gives you that classical EM does not. EM has no
+mechanism to remove components; you would have to fit a sequence of models with
+$K = 1, 2, 3, \ldots$ and compare on an information criterion. Variational Bayes
+does it inside one fit.
+</p>
+
+<p>
+<em>Information-theory aside.</em> The ELBO decomposes as
+$\mathcal L(q) = \mathbb E_q[\log p(\mathbf X, \mathbf Z, \boldsymbol\theta)] + H[q]$,
+the expected complete-data log-likelihood plus the
+<a href="/math/entropy-mutual-information/">entropy</a> of $q$. The entropy
+contribution from $q(\mathbf Z)$ is exactly the soft assignment entropy
+$-\sum_&#123;n,k&#125; r_&#123;nk&#125; \log r_&#123;nk&#125;$. Read through this lens, pruning is a
+<em>rate-distortion</em> phenomenon: small $\alpha_0$ raises the Dirichlet KL
+cost of keeping a component "alive" (high rate), and CAVI trades that against the
+log-likelihood improvement (low distortion). When a component cannot earn its
+rate by reducing distortion, it is killed. CAVI itself is
+<a href="/math/variational-inference/">I-projection</a> onto each coordinate
+slice of the mean-field manifold.
+</p>
+
+<h2 id="figure">5. Watching VB-GMM converge</h2>
+
+<p>
+Figure 1 runs the CAVI iteration on a 2-D dataset. Start with up to $K = 10$
+components placed by random initialization on a small dataset drawn from 2–4 true
+Gaussian clusters. Watch:
+</p>
+
+<ul>
+  <li>The component ellipses (one-sigma contours of
+      $\mathbb E[\boldsymbol\mu_k]$ and
+      $\mathbb E[\boldsymbol\Lambda_k]^&#123;-1&#125;$) settle onto the data
+      clusters.</li>
+  <li>The right-side bar chart of $\mathbb E[\pi_k]$: components with no support
+      shrink to near zero. With $\alpha_0 \lt 1$ the surviving components match the
+      true cluster count.</li>
+  <li>The ELBO trace at the bottom climbs and plateaus.</li>
+  <li>Data points are coloured by their argmax responsibility; the dimmer dots are
+      points where no component has a confident claim.</li>
+</ul>
+
+<Figure title="Figure 1 · CAVI updates on a 2-D Gaussian mixture" canvasId="fig-vbgmm" width="780" height="540" readoutId="vbgmm-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c;border-radius:50%"></span>data, coloured by argmax responsibility</span>
+    <span><span class="swatch" style="background:#fbbf24"></span>true cluster means</span>
+    <span><span class="swatch" style="background:#111827;height:2px"></span>component 1-σ ellipses, opacity = $\pi_k$</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="vb-true-k" label="true clusters" valueId="vb-true-k-v" min="2" max="5" step="1" value="3" />
+  <ControlRange id="vb-n" label="data points per cluster" valueId="vb-n-v" min="20" max="200" step="10" value="80" />
+  <ControlRange id="vb-K" label="initial components $K$" valueId="vb-K-v" min="2" max="10" step="1" value="8" />
+  <ControlRange id="vb-alpha" label="Dirichlet $\alpha_0$ (log10)" valueId="vb-alpha-v" min="-4" max="1" step="0.1" value="-2" />
+  <ControlRange id="vb-speed" label="iterations / second" valueId="vb-speed-v" min="1" max="20" step="1" value="4" />
+  <PresetRow>
+    <button id="vb-step" type="button">Step</button>
+    <button id="vb-runpause" type="button">Run</button>
+    <button id="vb-reinit" type="button">Reinitialize</button>
+    <button id="vb-resample" type="button">Resample data</button>
+  </PresetRow>
+</Fragment>
+</Figure>
+
+<h2 id="vs-em">6. VB vs. EM</h2>
+
+<p>
+The CAVI updates above reduce to EM in a specific limit: set
+$\alpha_0 \to 0$, $\beta_0 \to 0$, $\nu_0 \to D-1$, and replace the variational
+expectations with the corresponding MAP values. You recover the familiar EM E and
+M steps for a GMM with maximum-likelihood point estimates of $\pi_k$,
+$\boldsymbol\mu_k$, $\boldsymbol\Lambda_k$. What VB adds:
+</p>
+
+<ul>
+  <li><strong>Regularization.</strong> The Normal–Wishart prior keeps
+      $\boldsymbol\Lambda_k$ from collapsing to a delta on a single point. EM is
+      vulnerable to this singularity; VB is not.</li>
+  <li><strong>Automatic component pruning.</strong> See above.</li>
+  <li><strong>An ELBO.</strong> Stopping criterion, convergence diagnostic, and
+      lower bound on the log-marginal likelihood, all from the same quantity.</li>
+  <li><strong>Approximate posterior uncertainty.</strong> $q(\boldsymbol\mu_k,
+      \boldsymbol\Lambda_k)$ gives parameter uncertainty, not just point
+      estimates. This is mean-field underestimated, but it's something.</li>
+</ul>
+
+<p>
+What you lose: correlations between assignments and component parameters, and
+between component parameters across components. For mixture problems where
+component identifiability matters (label-switching, near-degenerate components),
+mean field's symmetry-breaking is brittle. MCMC or normalizing-flow VI handles
+this better at the cost of more compute.
+</p>
+
+<NextCards heading="What next" cards={[
+  { href: "/variational-inference/", tag: "Foundations", title: "Free Energy & Variational Inference", role: "The ELBO / free-energy identity that justifies the CAVI updates derived here." },
+  { href: "/variational-inference/#mean-field-regression", tag: "Regression", title: "Mean-Field VI in Bayesian Regression", role: "The Bayesian linear regression cousin, with exact posterior available so the mean-field underestimation of variance is visible directly." },
+  { href: "/hierarchical-bayes/", tag: "Hierarchy", title: "Hierarchical Bayes", role: "VB-GMM is hierarchical: components share a Dirichlet hyperprior. Pulling unused components toward the prior is the same dynamic." },
+  { href: "/monte-carlo/", tag: "Alternative", title: "Monte Carlo & MCMC", role: "Collapsed Gibbs and HMC are the sampling alternatives; slower but recover correlations VB misses." },
+]} />
+
+<div class="footer">
+  Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
+</div>
+
+<script is:inline src="/math/vb-gaussian-mixture/vb-gaussian-mixture.js"></script>
+</ExplainerLayout>

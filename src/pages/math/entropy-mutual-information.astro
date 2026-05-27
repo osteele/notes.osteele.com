@@ -1,0 +1,1701 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import InteractivePanel from "../../components/explainer/InteractivePanel.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+import OrientationNote from "../../components/explainer/OrientationNote.astro";
+import PresetRow from "../../components/explainer/PresetRow.astro";
+---
+
+<ExplainerLayout title="Entropy & Mutual Information — An Interactive Explainer" breadcrumb="Entropy & Mutual Information" section="information-theory">
+  <style>
+    :root {
+      --bg: #f7f8f5;
+      --surface: #ffffff;
+      --surface-alt: #ecefe8;
+      --border: #cbd2c4;
+      --text: #202620;
+      --text-dim: #5b6658;
+      --accent: #0f766e;
+      --accent-2: #b45309;
+      --accent-soft: #d9f2ee;
+      --blue: #2563eb;
+      --red: #dc2626;
+      --grid: #dde4d6;
+    }
+    .page {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+    .explainer { min-width: 0; }
+    h2 {
+      margin: 40px 0 10px;
+      font-size: 20px;
+      letter-spacing: -0.25px;
+    }
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--accent);
+    }
+    p {
+      margin: 0 0 13px;
+      font-size: 14px;
+    }
+    .lead { font-size: 15px; }
+    .math {
+      font-family: "Times New Roman", Times, serif;
+      font-style: italic;
+      font-size: 15px;
+    }
+    .formula {
+      overflow-x: auto;
+      margin: 12px 0 16px;
+      padding: 11px 14px;
+      border-radius: 5px;
+      background: var(--surface-alt);
+      font-family: "Times New Roman", Times, serif;
+      font-size: 16px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .toc {
+      display: none;
+      font-size: 13px;
+    }
+    @media (min-width: 960px) {
+      .toc {
+        display: block;
+        position: sticky;
+        top: 18px;
+        align-self: start;
+        max-height: calc(100vh - 36px);
+        overflow: auto;
+        padding-top: 4px;
+      }
+      .toc h4 {
+        margin: 0 0 8px;
+        color: var(--text-dim);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+      .toc ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-left: 2px solid var(--border);
+      }
+      .toc li { margin: 0; }
+      .toc a {
+        display: block;
+        margin-left: -2px;
+        padding: 5px 12px;
+        border-left: 2px solid transparent;
+        color: var(--text-dim);
+        text-decoration: none;
+        transition: border-color 0.15s, color 0.15s;
+      }
+      .toc a:hover,
+      .toc a.active {
+        border-left-color: var(--accent);
+        color: var(--accent);
+      }
+      .toc a.active { font-weight: 600; }
+    }
+    .panel {
+      margin: 18px 0 22px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .panel-head {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-alt);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .panel-body { padding: 16px; }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 12px;
+    }
+    .controls label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-dim);
+    }
+    input[type="range"] { width: 150px; }
+    input[type="range"] { touch-action: pan-y; }
+    button {
+      font: inherit;
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    button:hover { border-color: var(--accent); }
+    .preset-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 12px;
+    }
+    .preset-row button.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: #064e47;
+      font-weight: 700;
+    }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+      align-items: start;
+    }
+    .readout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
+      gap: 9px;
+      margin-top: 12px;
+    }
+    .stat {
+      min-height: 74px;
+      padding: 9px 10px;
+      border-radius: 5px;
+      background: var(--surface-alt);
+    }
+    .stat .label {
+      color: var(--text-dim);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat .value {
+      margin-top: 3px;
+      font-size: 21px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat .note {
+      color: var(--text-dim);
+      font-size: 11px;
+    }
+    svg {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+    .axis {
+      stroke: var(--border);
+      stroke-width: 1;
+    }
+    .grid {
+      stroke: var(--grid);
+      stroke-width: 1;
+    }
+    .axis-label {
+      fill: var(--text-dim);
+      font-family: inherit;
+      font-size: 11px;
+    }
+    .caption {
+      margin-top: 6px;
+      color: var(--text-dim);
+      font-size: 12px;
+      text-align: center;
+    }
+    .bar-label {
+      fill: var(--text-dim);
+      font-family: inherit;
+      font-size: 11px;
+    }
+    .bar-value {
+      fill: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+    }
+    .tile-label {
+      fill: #fff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .tile-label.dark { fill: var(--text); }
+    .venn-label {
+      fill: var(--text);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+    #info-venn { cursor: pointer; touch-action: manipulation; }
+    .venn-chips {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin: 12px 0 0; padding: 0;
+    }
+    .venn-chips button {
+      appearance: none; border: 1px solid var(--rule);
+      background: #fff; color: var(--text);
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      padding: 5px 10px; border-radius: 999px; cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+    .venn-chips button:hover { border-color: var(--accent-2); }
+    .venn-chips button.active {
+      background: var(--accent-2); border-color: var(--accent-2); color: #fff;
+    }
+    .stat.venn-region-stat {
+      background: rgba(31, 74, 140, 0.06);
+      border: 1px solid rgba(31, 74, 140, 0.20);
+      border-radius: 6px;
+      padding: 8px 12px;
+    }
+    @media (max-width: 560px) {
+      .page { padding: 26px 18px 64px; }
+      .panel-body { padding: 12px; }
+      .controls {
+        align-items: stretch;
+        gap: 10px;
+      }
+      .controls label {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .preset-row button {
+        flex: 1 1 128px;
+      }
+      input[type="range"] {
+        flex: 1;
+        min-width: 120px;
+        width: auto;
+      }
+      .row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .formula {
+        text-align: left;
+      }
+    }
+  </style>
+
+  <div class="page">
+    <article class="explainer"><Hero title="Entropy &amp; Mutual Information" subtitle="Entropy measures uncertainty; mutual information measures uncertainty removed by another variable." />
+
+    <p class="lead">
+      Entropy measures uncertainty before you observe an outcome. Mutual information measures how much uncertainty about one variable disappears after you observe another. Both are measured in <strong>bits</strong> when we use log base 2.
+    </p>
+
+    <h2 id="entropy">1. Entropy: average surprise</h2>
+    <p>
+      A rare event is more surprising than a common one. Information theory writes the surprise of an event with probability $p$ as $-&bsol;log_2 p$ bits. Entropy is the probability-weighted average surprise:
+    </p>
+
+    <div class="formula">
+      $$H(X) = - &bsol;sum_x p(x)&bsol;log_2 p(x)$$
+    </div>
+
+    <p>
+      For a yes/no variable, entropy is zero when the answer is certain and one bit when both answers are equally likely. Move the slider to see the curve.
+    </p>
+
+    <InteractivePanel title="Binary Entropy" labelledBy="binary-title">
+<div class="controls">
+          <label>Probability of 1
+            <input id="p-slider" type="range" min="0" max="100" value="50" />
+            <span id="p-value" class="mono">0.50</span>
+          </label>
+        </div>
+        <div class="row">
+          <div>
+            <svg id="entropy-curve" viewBox="0 0 360 240" width="360" height="240" role="img" aria-label="Binary entropy curve"></svg>
+            <div class="caption">Entropy peaks when neither outcome is predictable.</div>
+          </div>
+          <div>
+            <svg id="coin-bars" viewBox="0 0 360 240" width="360" height="240" role="img" aria-label="Probability and surprise bars"></svg>
+            <div class="caption">Probability and surprise move in opposite directions.</div>
+          </div>
+        </div>
+        <div class="readout">
+          <div class="stat">
+            <div class="label">H(X)</div>
+            <div class="value" id="entropy-value">1.000</div>
+            <div class="note">bits per observation</div>
+          </div>
+          <div class="stat">
+            <div class="label">Surprise if 0 occurs</div>
+            <div class="value" id="surprise-zero">1.000</div>
+            <div class="note">bits</div>
+          </div>
+          <div class="stat">
+            <div class="label">Surprise if 1 occurs</div>
+            <div class="value" id="surprise-one">1.000</div>
+            <div class="note">bits</div>
+          </div>
+        </div>
+</InteractivePanel>
+
+    <p>
+      Entropy is the <em>average</em> surprise over many draws. Sample from the current distribution and watch the running mean of $-&bsol;log_2 p(x)$ approach $H(X)$. Adjust the slider above to change $p$; both lines on the trace will adjust live.
+    </p>
+
+    <InteractivePanel title="Sampling: surprise converges to entropy" labelledBy="samples-title">
+<div class="controls">
+          <label>Probability of 1
+            <input id="sample-p-slider" type="range" min="0" max="100" value="50" />
+            <span id="sample-p-value" class="mono">0.50</span>
+          </label>
+          <button id="sample-step" type="button">+1 sample</button>
+          <button id="sample-batch" type="button">+50 samples</button>
+          <button id="sample-play" type="button">Play</button>
+          <button id="sample-reset" type="button">Reset</button>
+          <span class="mono" id="sample-count">0 draws</span>
+        </div>
+        <svg id="sample-stream" viewBox="0 0 720 56" width="720" height="56" role="img" aria-label="Stream of sampled outcomes"></svg>
+        <svg id="surprise-trace" viewBox="0 0 720 200" width="720" height="200" role="img" aria-label="Running mean surprise vs entropy"></svg>
+        <div class="caption">Each dot above is one draw (blue = 0, green = 1). The dark line below is the running mean surprise; the orange line is $H(X)$.</div>
+        <div class="readout">
+          <div class="stat">
+            <div class="label">Avg. surprise</div>
+            <div class="value" id="avg-surprise">—</div>
+            <div class="note">bits / sample observed</div>
+          </div>
+          <div class="stat">
+            <div class="label">H(X)</div>
+            <div class="value" id="target-entropy">1.000</div>
+            <div class="note">bits / sample expected</div>
+          </div>
+          <div class="stat">
+            <div class="label">Frequency of 1</div>
+            <div class="value" id="freq-one">—</div>
+            <div class="note">vs. p = <span class="mono" id="freq-target">0.50</span></div>
+          </div>
+        </div>
+</InteractivePanel>
+
+    <Aside>
+      Entropy is not disorder in the everyday sense. It is the expected number of yes/no questions needed to identify the outcome, assuming an ideal code.
+    </Aside>
+
+    <h2 id="joint">2. Joint and conditional entropy</h2>
+    <p>
+      With two variables, $H(X,Y)$ measures uncertainty about the pair. Conditional entropy $H(Y&bsol;mid X)$ measures what remains uncertain about $Y$ once $X$ is known.
+    </p>
+
+    <div class="formula">
+      $$H(X,Y) = H(X) + H(Y&bsol;mid X) = H(Y) + H(X&bsol;mid Y)$$
+    </div>
+
+    <p>
+      The next figure uses a simple channel: $X$ is a bit, and $Y$ is a noisy copy of $X$. At zero noise, knowing $X$ tells you $Y$ exactly. At 50% noise, $Y$ is just a fresh coin flip.
+    </p>
+
+    <InteractivePanel title="Noisy Copy Channel" labelledBy="channel-title">
+<PresetRow>
+          <button id="preset-copy" type="button">Perfect copy</button>
+          <button id="preset-noisy" type="button" class="active">Noisy copy</button>
+          <button id="preset-independent" type="button">Independent</button>
+          <button id="preset-skewed" type="button">Rare signal</button>
+        </PresetRow>
+        <div class="controls">
+          <label>Probability X = 1
+            <input id="px-slider" type="range" min="0" max="100" value="50" />
+            <span id="px-value" class="mono">0.50</span>
+          </label>
+          <label>Flip probability
+            <input id="noise-slider" type="range" min="0" max="50" value="18" />
+            <span id="noise-value" class="mono">0.18</span>
+          </label>
+        </div>
+        <div class="row">
+          <div>
+            <svg id="joint-grid" viewBox="0 0 360 300" width="360" height="300" role="img" aria-label="Joint probability grid"></svg>
+            <div class="caption">Joint distribution $p(x,y)$.</div>
+          </div>
+          <div>
+            <svg id="entropy-bars" viewBox="0 0 360 300" width="360" height="300" role="img" aria-label="Entropy decomposition bars"></svg>
+            <div class="caption">The shared part is mutual information.</div>
+          </div>
+        </div>
+        <div class="readout">
+          <div class="stat">
+            <div class="label">H(X)</div>
+            <div class="value" id="hx-value">1.000</div>
+            <div class="note">uncertainty in input</div>
+          </div>
+          <div class="stat">
+            <div class="label">H(Y)</div>
+            <div class="value" id="hy-value">1.000</div>
+            <div class="note">uncertainty in output</div>
+          </div>
+          <div class="stat">
+            <div class="label">H(Y|X)</div>
+            <div class="value" id="hygx-value">0.680</div>
+            <div class="note">noise left after X</div>
+          </div>
+          <div class="stat">
+            <div class="label">H(X,Y)</div>
+            <div class="value" id="hxy-value">1.680</div>
+            <div class="note">uncertainty in pair</div>
+          </div>
+        </div>
+</InteractivePanel>
+
+    <InteractivePanel title="Binary symmetric channel graph" labelledBy="bsc-title">
+<p style="margin-top:0">
+          The binary symmetric channel sends a bit across two straight arrows with probability $1-\epsilon$ and across two crossover arrows with probability $\epsilon$.
+        </p>
+        <PresetRow>
+          <button id="bsc-clean" type="button">Clean channel</button>
+          <button id="bsc-noisy" type="button" class="active">Noisy channel</button>
+          <button id="bsc-useless" type="button">Useless channel</button>
+        </PresetRow>
+        <div class="controls">
+          <label>Flip probability ε
+            <input id="bsc-eps" type="range" min="0" max="50" value="18" />
+            <span id="bsc-eps-v" class="mono">0.18</span>
+          </label>
+        </div>
+        <svg id="bsc-graph" viewBox="0 0 720 280" width="720" height="280" role="img" aria-label="Binary symmetric channel graph"></svg>
+        <div class="readout">
+          <div class="stat"><div class="label">H(Y|X)</div><div class="value" id="bsc-hygx">0.680</div><div class="note">bits lost to noise</div></div>
+          <div class="stat"><div class="label">Capacity</div><div class="value" id="bsc-capacity">0.320</div><div class="note">bits per channel use</div></div>
+          <div class="stat"><div class="label">Limit case</div><div class="value" id="bsc-note">partial</div><div class="note">clean to useless</div></div>
+        </div>
+</InteractivePanel>
+
+    <h2 id="mutual">3. Mutual information</h2>
+    <p>
+      Mutual information is the overlap between the uncertainty in $X$ and the uncertainty in $Y$. It is the amount you learn about one variable by observing the other:
+    </p>
+
+    <div class="formula">
+      $$I(X;Y) = H(X) + H(Y) - H(X,Y) = H(Y) - H(Y&bsol;mid X)$$
+    </div>
+
+    <p>
+      It is always non-negative and symmetric. It is zero exactly when the variables are independent. For the channel above, the most mutual information is one bit: one clean bit goes in, one clean bit comes out.
+    </p>
+
+    <InteractivePanel title="Mutual information as KL between two measures" labelledBy="mi-kl-title">
+<p style="margin-top:0">
+          The joint law $P_&#123;XY&#125;$ and the product of marginals $P_XP_Y$ live on the same four-cell outcome space. Mutual information is the KL divergence between them:
+          $I(X;Y)=\mathrm&#123;KL&#125;(P_&#123;XY&#125;\Vert P_XP_Y)$.
+        </p>
+        <PresetRow>
+          <button id="mi-kl-copy" type="button">Perfect copy</button>
+          <button id="mi-kl-noisy" type="button" class="active">Noisy copy</button>
+          <button id="mi-kl-independent" type="button">Independent</button>
+        </PresetRow>
+        <div class="controls">
+          <label>Probability X = 1
+            <input id="mi-kl-px" type="range" min="5" max="95" value="50" />
+            <span id="mi-kl-px-v" class="mono">0.50</span>
+          </label>
+          <label>Flip probability
+            <input id="mi-kl-noise" type="range" min="0" max="50" value="18" />
+            <span id="mi-kl-noise-v" class="mono">0.18</span>
+          </label>
+        </div>
+        <svg id="mi-kl-grid" viewBox="0 0 720 310" width="720" height="310" role="img" aria-label="Joint distribution, product of marginals, and KL cell contributions"></svg>
+        <div class="readout">
+          <div class="stat"><div class="label">KL(PXY ‖ PX PY)</div><div class="value" id="mi-kl-value">0.000</div><div class="note">bits</div></div>
+          <div class="stat"><div class="label">I(X;Y)</div><div class="value" id="mi-kl-mi">0.000</div><div class="note">same number</div></div>
+          <div class="stat"><div class="label">largest cell contribution</div><div class="value" id="mi-kl-max">0.000</div><div class="note">bits</div></div>
+        </div>
+</InteractivePanel>
+
+    <InteractivePanel title="Information Venn diagram" labelledBy="mi-title">
+<p style="margin-top:0">
+          The <strong style="color:var(--blue)">$H(X)$</strong> circle and the <strong style="color:var(--accent)">$H(Y)$</strong> circle overlap by exactly $I(X;Y)$. The crescents are the conditional entropies $H(X\mid Y)$ and $H(Y\mid X)$; the union is the joint entropy $H(X,Y)$.
+        </p>
+        <PresetRow>
+          <button id="preset2-copy" type="button">Perfect copy</button>
+          <button id="preset2-noisy" type="button" class="active">Noisy copy</button>
+          <button id="preset2-independent" type="button">Independent</button>
+          <button id="preset2-skewed" type="button">Rare signal</button>
+        </PresetRow>
+        <div class="controls">
+          <label>Probability X = 1
+            <input id="px-slider-2" type="range" min="0" max="100" value="50" />
+            <span id="px-value-2" class="mono">0.50</span>
+          </label>
+          <label>Flip probability
+            <input id="noise-slider-2" type="range" min="0" max="50" value="18" />
+            <span id="noise-value-2" class="mono">0.18</span>
+          </label>
+        </div>
+        <svg id="info-venn" viewBox="0 0 720 320" width="720" height="320" role="img" aria-label="Information Venn diagram: H(X) and H(Y) circles overlap by I(X;Y)"></svg>
+        <div class="venn-chips" id="venn-chips" role="tablist" aria-label="Highlight a region of the Venn diagram">
+          <button type="button" data-venn-region="hx">H(X)</button>
+          <button type="button" data-venn-region="hxgy">H(X|Y)</button>
+          <button type="button" data-venn-region="mi" class="active">I(X;Y)</button>
+          <button type="button" data-venn-region="hygx">H(Y|X)</button>
+          <button type="button" data-venn-region="hy">H(Y)</button>
+          <button type="button" data-venn-region="hxy">H(X,Y)</button>
+        </div>
+        <div class="caption">Hover or tap a region (or chip above) to see its formula and current value. Click to lock the highlight; click outside the circles to release it.</div>
+        <div class="readout">
+          <div class="stat venn-region-stat">
+            <div class="label" id="venn-region-name">I(X;Y)</div>
+            <div class="value" id="venn-region-value">0.320</div>
+            <div class="note" id="venn-region-note">mutual information: bits learned about X from Y</div>
+          </div>
+          <div class="stat">
+            <div class="label">I(X;Y)</div>
+            <div class="value" id="mi-value">0.320</div>
+            <div class="note">bits</div>
+          </div>
+          <div class="stat">
+            <div class="label">Normalized MI</div>
+            <div class="value" id="nmi-value">0.320</div>
+            <div class="note">fraction of H(X)</div>
+          </div>
+          <div class="stat">
+            <div class="label">Channel capacity used</div>
+            <div class="value" id="capfrac-value">0.32</div>
+            <div class="note">I(X;Y) / 1 bit (max)</div>
+          </div>
+        </div>
+        <p id="channel-explanation" style="margin-top:14px;font-size:13px;color:var(--text-dim)">
+          The output is a noisy copy, so observing it removes part of the input uncertainty but not all of it.
+        </p>
+    </InteractivePanel>
+
+    <InteractivePanel title="Nonlinear dependence: correlation can vanish while MI remains" labelledBy="mi-nonlinear-title">
+<PresetRow>
+          <button data-mi-shape="linear" type="button">Linear</button>
+          <button data-mi-shape="quadratic" type="button" class="active">$X^2$</button>
+          <button data-mi-shape="sine" type="button">Sine</button>
+          <button data-mi-shape="circle" type="button">Circle</button>
+          <button data-mi-shape="independent" type="button">Independent</button>
+        </PresetRow>
+        <div class="controls">
+          <label>Noise
+            <input id="mi-nonlinear-noise" type="range" min="0" max="60" value="15" />
+            <span id="mi-nonlinear-noise-v" class="mono">0.15</span>
+          </label>
+        </div>
+        <svg id="mi-nonlinear-scatter" viewBox="0 0 720 280" width="720" height="280" role="img" aria-label="Scatter plot with Pearson correlation and estimated mutual information"></svg>
+        <div class="readout">
+          <div class="stat"><div class="label">Pearson r</div><div class="value" id="mi-nonlinear-r">0.000</div><div class="note">linear association</div></div>
+          <div class="stat"><div class="label">estimated MI</div><div class="value" id="mi-nonlinear-mi">0.000</div><div class="note">binned estimate, bits</div></div>
+          <div class="stat"><div class="label">reading</div><div class="value" id="mi-nonlinear-note">—</div><div class="note">dependence type</div></div>
+        </div>
+</InteractivePanel>
+
+    <InteractivePanel title="Channel capacity sweep" labelledBy="capacity-title">
+<p style="margin-top:0">
+          For a binary symmetric channel with flip probability $\epsilon$, capacity is $1-H_2(\epsilon)$ bits. Biased inputs usually leave some capacity unused.
+        </p>
+        <div class="controls">
+          <label>Input probability P(X = 1)
+            <input id="capacity-px" type="range" min="1" max="99" value="50" />
+            <span id="capacity-px-v" class="mono">0.50</span>
+          </label>
+        </div>
+        <svg id="capacity-curve" viewBox="0 0 720 250" width="720" height="250" role="img" aria-label="Mutual information over channel noise and channel capacity"></svg>
+        <div class="caption">The upper curve is channel capacity. The lower curve is the information transmitted by the selected input distribution.</div>
+</InteractivePanel>
+
+    <h2 id="legendre">4. Entropy is the convex dual of log-sum-exp</h2>
+
+    <OrientationNote>
+      <p>
+        The first three sections follow the usual information-theory path. This
+        section switches to the convex-analysis view that connects entropy with
+        exponential families, maximum entropy, and variational inference.
+      </p>
+    </OrientationNote>
+
+    <p>
+      Entropy doesn't only measure uncertainty. It has a precise mathematical role
+      as the convex conjugate of the log-partition function. For any function $f(x)$
+      on a measurable space, the
+      <strong>variational identity</strong> says:
+    </p>
+
+    <div class="formula">
+      $$
+      \log\!\int e^&#123;f(x)&#125;\,dx
+      \;=\;
+      \sup_q\!\left(\mathbb&#123;E&#125;_q[f(X)] + H(q)\right),
+      $$
+    </div>
+
+    <p>
+      with equality achieved by the <strong>Gibbs distribution</strong>
+      $q^\ast(x) \propto e^&#123;f(x)&#125;$. Read left to right: the log of a normalizing integral
+      equals the best achievable tradeoff between "tracking $f$" and "keeping $q$
+      spread out." Read right to left: maximizing $\mathbb&#123;E&#125;_q[f] + H(q)$ forces an
+      exponential answer.
+    </p>
+
+    <p>
+      This identity does real work elsewhere on the site. Three examples:
+    </p>
+    <ul>
+      <li><strong>Exponential families.</strong> Set $f(x) = \eta^\top T(x)$. The left side becomes the log-partition $A(\eta)$ on the <a href="/math/fisher-information/#score-as-tilt">Fisher information page</a>; the supremum is achieved by the exp-family member with natural parameter $\eta$. Convexity of $A$ is the same statement as positivity of Fisher information.</li>
+      <li><strong>Maximum-entropy priors.</strong> Treat the supremum as a primal problem with moment constraints; the multipliers are the natural parameters. This is the route to the <a href="/math/fisher-information/#max-entropy">max-entropy section</a>.</li>
+      <li><strong>Variational inference.</strong> Set $f(\theta) = \log p(y,\theta)$. The left side is $\log p(y)$; the evidence is a log-partition function. The supremum is the <a href="/math/variational-inference/">ELBO</a>, achieved when $q$ equals the posterior.</li>
+    </ul>
+
+    <InteractivePanel title="Log-sum-exp ↔ entropy as a Legendre pair" labelledBy="legendre-title">
+      <div class="controls">
+        <label>natural parameter η
+          <input id="legendre-eta" type="range" min="-30" max="30" value="0" />
+          <span id="legendre-eta-v" class="mono">0.00</span>
+        </label>
+        <label>support size K
+          <input id="legendre-k" type="range" min="2" max="8" value="4" />
+          <span id="legendre-k-v" class="mono">4</span>
+        </label>
+      </div>
+      <div class="row">
+        <div>
+          <svg id="legendre-A" viewBox="0 0 360 240" width="360" height="240" role="img" aria-label="Log-sum-exp curve A(η) with tangent at chosen η"></svg>
+          <div class="caption">$A(\eta) = \log\sum_k e^&#123;\eta k&#125;$ on $\&#123;0,1,\dots,K-1\&#125;$. The tangent at $\eta$ has slope $A'(\eta) = \mathbb&#123;E&#125;_q[k]$.</div>
+        </div>
+        <div>
+          <svg id="legendre-H" viewBox="0 0 360 240" width="360" height="240" role="img" aria-label="Negative entropy as the Legendre conjugate of A"></svg>
+          <div class="caption">Conjugate $A^*(\mu) = \sup_\eta(\eta\mu - A(\eta))$. On the simplex it equals $-H(q^*)$ at the matching $q^*$.</div>
+        </div>
+      </div>
+      <div class="readout">
+        <div class="stat">
+          <div class="label">A(η)</div>
+          <div class="value" id="legendre-A-v">—</div>
+          <div class="note">log-partition</div>
+        </div>
+        <div class="stat">
+          <div class="label">μ = E_q[k] = A′(η)</div>
+          <div class="value" id="legendre-mu-v">—</div>
+          <div class="note">mean of sufficient stat</div>
+        </div>
+        <div class="stat">
+          <div class="label">H(q*)</div>
+          <div class="value" id="legendre-H-v">—</div>
+          <div class="note">entropy at optimum</div>
+        </div>
+        <div class="stat">
+          <div class="label">A*(μ) = η·μ − A(η)</div>
+          <div class="value" id="legendre-Astar-v">—</div>
+          <div class="note">= −H(q*)</div>
+        </div>
+      </div>
+    </InteractivePanel>
+
+    <h2 id="takeaways">5. What to remember</h2>
+    <p>
+      Entropy is uncertainty in a variable. Conditional entropy is uncertainty that remains after another variable is known. Mutual information is the uncertainty removed by that knowledge.
+    </p>
+    <p>
+      Correlation asks whether two numbers move together in a particular geometric way. Mutual information asks whether observing one variable changes the distribution you should assign to the other.
+    </p>
+
+    <NextCards heading="What next" intro="These pages pick up the same ideas from nearby angles." cards={[{"href":"/distance-correlation/","tag":"Dependence","title":"Distance Correlation","role":"Compare mutual information's distribution-level view of dependence with a distance-based test that catches nonlinear relationships Pearson misses."},{"href":"/measure-theory/index.html","tag":"Measure theory","title":"Measure Theory &amp; Random Variables","role":"See why mutual information is a KL divergence between the joint law and the product of marginals."},{"href":"/kl-divergence/index.html","tag":"Divergence","title":"KL Divergence","role":"Connect entropy and cross-entropy to directed distribution mismatch."},{"href":"/variational-inference/index.html","tag":"Inference","title":"Free Energy &amp; Variational Inference","role":"Follow entropy and KL into the optimization identity behind variational Bayesian inference."}]} />
+
+    <div class="footer">
+      Built by <a href="https://osteele.com">Oliver Steele</a>.
+    </div>
+      </article>
+  </div>
+
+  <script is:inline>
+    const log2 = (x) => Math.log(x) / Math.LN2;
+    const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+    const fmt = (x) => Number.isFinite(x) ? x.toFixed(3) : "inf";
+
+    function entropy(probs) {
+      let h = 0;
+      for (const p of probs) {
+        if (p > 0) h -= p * log2(p);
+      }
+      return h;
+    }
+
+    function surprise(p) {
+      return p <= 0 ? Infinity : -log2(p);
+    }
+
+    function el(id) {
+      return document.getElementById(id);
+    }
+
+    function setText(id, value) {
+      el(id).textContent = value;
+    }
+
+    function clear(svg) {
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+    }
+
+    function node(name, attrs = {}, text) {
+      const n = document.createElementNS("http://www.w3.org/2000/svg", name);
+      for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+      if (text !== undefined) n.textContent = text;
+      return n;
+    }
+
+    function drawEntropyCurve(p) {
+      const svg = el("entropy-curve");
+      clear(svg);
+      const w = 360, h = 240;
+      const m = { left: 42, right: 14, top: 16, bottom: 34 };
+      const x = (v) => m.left + v * (w - m.left - m.right);
+      const y = (v) => h - m.bottom - v * (h - m.top - m.bottom);
+
+      for (let i = 0; i <= 4; i++) {
+        const yy = y(i / 4);
+        svg.appendChild(node("line", { x1: m.left, y1: yy, x2: w - m.right, y2: yy, class: "grid" }));
+      }
+      svg.appendChild(node("line", { x1: m.left, y1: h - m.bottom, x2: w - m.right, y2: h - m.bottom, class: "axis" }));
+      svg.appendChild(node("line", { x1: m.left, y1: m.top, x2: m.left, y2: h - m.bottom, class: "axis" }));
+      svg.appendChild(node("text", { x: w / 2, y: h - 7, class: "axis-label", "text-anchor": "middle" }, "p(X = 1)"));
+      svg.appendChild(node("text", { x: 10, y: 17, class: "axis-label" }, "bits"));
+
+      let d = "";
+      for (let i = 0; i <= 100; i++) {
+        const q = i / 100;
+        const hv = entropy([1 - q, q]);
+        d += `${i === 0 ? "M" : "L"} ${x(q)} ${y(hv)} `;
+      }
+      svg.appendChild(node("path", { d, fill: "none", stroke: "var(--accent)", "stroke-width": "3" }));
+      svg.appendChild(node("line", { x1: x(p), y1: y(0), x2: x(p), y2: y(entropy([1 - p, p])), stroke: "var(--accent-2)", "stroke-width": "2", "stroke-dasharray": "4 4" }));
+      svg.appendChild(node("circle", { cx: x(p), cy: y(entropy([1 - p, p])), r: 5, fill: "var(--accent-2)" }));
+      svg.appendChild(node("text", { x: x(0), y: h - 17, class: "axis-label", "text-anchor": "middle" }, "0"));
+      svg.appendChild(node("text", { x: x(0.5), y: h - 17, class: "axis-label", "text-anchor": "middle" }, "0.5"));
+      svg.appendChild(node("text", { x: x(1), y: h - 17, class: "axis-label", "text-anchor": "middle" }, "1"));
+      svg.appendChild(node("text", { x: 28, y: y(1) + 4, class: "axis-label", "text-anchor": "end" }, "1"));
+      svg.appendChild(node("text", { x: 28, y: y(0) + 4, class: "axis-label", "text-anchor": "end" }, "0"));
+    }
+
+    function drawCoinBars(p) {
+      const svg = el("coin-bars");
+      clear(svg);
+      const probs = [1 - p, p];
+      const labels = ["X = 0", "X = 1"];
+      const colors = ["var(--blue)", "var(--accent)"];
+      const maxSurprise = 6;
+
+      labels.forEach((label, i) => {
+        const y = 42 + i * 82;
+        const probW = 210 * probs[i];
+        const s = Math.min(maxSurprise, surprise(probs[i]));
+        const surpriseW = 210 * (Number.isFinite(s) ? s / maxSurprise : 1);
+        svg.appendChild(node("text", { x: 16, y: y + 14, class: "bar-label" }, label));
+        svg.appendChild(node("rect", { x: 82, y, width: 210, height: 18, rx: 3, fill: "var(--surface-alt)" }));
+        svg.appendChild(node("rect", { x: 82, y, width: probW, height: 18, rx: 3, fill: colors[i], opacity: "0.8" }));
+        svg.appendChild(node("text", { x: 302, y: y + 14, class: "bar-value" }, `p=${probs[i].toFixed(2)}`));
+
+        svg.appendChild(node("text", { x: 16, y: y + 47, class: "bar-label" }, "surprise"));
+        svg.appendChild(node("rect", { x: 82, y: y + 33, width: 210, height: 18, rx: 3, fill: "var(--surface-alt)" }));
+        svg.appendChild(node("rect", { x: 82, y: y + 33, width: surpriseW, height: 18, rx: 3, fill: "var(--accent-2)", opacity: "0.8" }));
+        svg.appendChild(node("text", { x: 302, y: y + 47, class: "bar-value" }, Number.isFinite(s) ? `${surprise(probs[i]).toFixed(2)}b` : "inf"));
+      });
+    }
+
+    function updateBinaryEntropy() {
+      const p = Number(el("p-slider").value) / 100;
+      const h = entropy([1 - p, p]);
+      setText("p-value", p.toFixed(2));
+      setText("sample-p-value", p.toFixed(2));
+      setText("entropy-value", fmt(h));
+      setText("surprise-zero", Number.isFinite(surprise(1 - p)) ? fmt(surprise(1 - p)) : "inf");
+      setText("surprise-one", Number.isFinite(surprise(p)) ? fmt(surprise(p)) : "inf");
+      drawEntropyCurve(p);
+      drawCoinBars(p);
+      setText("target-entropy", fmt(h));
+      setText("freq-target", p.toFixed(2));
+      drawSampleStream();
+      drawSurpriseTrace();
+    }
+
+    // ===== Sampling interactive =====
+    const sampleState = {
+      samples: [],          // each: {x: 0|1}; surprise is derived from the current slider value
+      playing: false,
+      timer: null,
+    };
+
+    function currentP() {
+      return Number(el("p-slider").value) / 100;
+    }
+
+    function setBinaryProbabilityFromSlider(sourceSlider) {
+      const value = sourceSlider.value;
+      el("p-slider").value = value;
+      el("sample-p-slider").value = value;
+      setPlaying(false);
+      updateBinaryEntropy();
+      updateSampleStats();
+    }
+
+    function pushSample() {
+      const p = currentP();
+      const x = Math.random() < p ? 1 : 0;
+      sampleState.samples.push({ x });
+    }
+
+    function sampleSurprise(sample, p = currentP()) {
+      const pObs = sample.x === 1 ? p : 1 - p;
+      // Cap surprise for numerical sanity at impossible outcomes.
+      return pObs > 0 ? -log2(pObs) : 20;
+    }
+
+    function cumulativeSampleSurprise(p = currentP()) {
+      return sampleState.samples.reduce((sum, sample) => sum + sampleSurprise(sample, p), 0);
+    }
+
+    function resetSamples() {
+      sampleState.samples = [];
+    }
+
+    function setPlaying(playing) {
+      sampleState.playing = playing;
+      const btn = el("sample-play");
+      if (btn) btn.textContent = playing ? "Pause" : "Play";
+      if (playing) {
+        sampleState.timer = setInterval(() => {
+          for (let i = 0; i < 4; i++) pushSample();
+          if (sampleState.samples.length > 2000) setPlaying(false);
+          drawSampleStream();
+          drawSurpriseTrace();
+          updateSampleStats();
+        }, 80);
+      } else if (sampleState.timer) {
+        clearInterval(sampleState.timer);
+        sampleState.timer = null;
+      }
+    }
+
+    function updateSampleStats() {
+      const n = sampleState.samples.length;
+      setText("sample-count", `${n} draw${n === 1 ? "" : "s"}`);
+      if (n === 0) {
+        setText("avg-surprise", "—");
+        setText("freq-one", "—");
+      } else {
+        setText("avg-surprise", fmt(cumulativeSampleSurprise() / n));
+        const ones = sampleState.samples.reduce((a, b) => a + b.x, 0);
+        setText("freq-one", (ones / n).toFixed(3));
+      }
+    }
+
+    function drawSampleStream() {
+      const svg = el("sample-stream");
+      if (!svg) return;
+      clear(svg);
+      const w = 720, h = 56;
+      const cell = 8, gap = 1;
+      const stride = cell + gap;
+      // Reserve room for label on left and legend on right.
+      const labelW = 84;
+      const legendW = 130;
+      const available = w - labelW - legendW;
+      const maxDots = Math.floor((available + gap) / stride);
+      const recent = sampleState.samples.slice(-maxDots);
+      svg.appendChild(node("text", { x: 8, y: 36, class: "axis-label" }, `Last ${recent.length}/${sampleState.samples.length}`));
+      recent.forEach((sample, i) => {
+        const x = labelW + i * stride;
+        const fill = sample.x === 1 ? "var(--accent)" : "var(--blue)";
+        svg.appendChild(node("rect", { x, y: 24, width: cell, height: 22, rx: 1.5, fill, opacity: "0.85" }));
+      });
+      // Legend
+      const legX = w - legendW + 8;
+      svg.appendChild(node("rect", { x: legX, y: 26, width: 10, height: 10, fill: "var(--blue)", opacity: "0.85" }));
+      svg.appendChild(node("text", { x: legX + 14, y: 35, class: "axis-label" }, "X=0"));
+      svg.appendChild(node("rect", { x: legX + 56, y: 26, width: 10, height: 10, fill: "var(--accent)", opacity: "0.85" }));
+      svg.appendChild(node("text", { x: legX + 70, y: 35, class: "axis-label" }, "X=1"));
+    }
+
+    function drawSurpriseTrace() {
+      const svg = el("surprise-trace");
+      if (!svg) return;
+      clear(svg);
+      const w = 720, h = 200;
+      const m = { left: 48, right: 16, top: 18, bottom: 30 };
+      const p = currentP();
+      const hTarget = entropy([1 - p, p]);
+      // Y range: max of 1.0 or 1.2 * peak surprise so far, capped.
+      const peak = Math.max(1.05, hTarget * 1.4, ...sampleState.samples.slice(-200).map((s) => sampleSurprise(s, p)));
+      const yMax = Math.min(6, Math.max(1.2, peak));
+      const X = (i, n) => m.left + (n <= 1 ? 0 : (i / (n - 1)) * (w - m.left - m.right));
+      const Y = (v) => h - m.bottom - (v / yMax) * (h - m.top - m.bottom);
+
+      // Grid
+      for (let i = 0; i <= 4; i++) {
+        const yv = (i / 4) * yMax;
+        const yy = Y(yv);
+        svg.appendChild(node("line", { x1: m.left, y1: yy, x2: w - m.right, y2: yy, class: "grid" }));
+        svg.appendChild(node("text", { x: m.left - 6, y: yy + 4, class: "axis-label", "text-anchor": "end" }, yv.toFixed(1)));
+      }
+      svg.appendChild(node("line", { x1: m.left, y1: h - m.bottom, x2: w - m.right, y2: h - m.bottom, class: "axis" }));
+      svg.appendChild(node("line", { x1: m.left, y1: m.top, x2: m.left, y2: h - m.bottom, class: "axis" }));
+      svg.appendChild(node("text", { x: m.left, y: 12, class: "axis-label" }, "bits / sample"));
+      svg.appendChild(node("text", { x: w - m.right, y: h - 8, class: "axis-label", "text-anchor": "end" }, "sample number →"));
+
+      // Target H(X) horizontal line
+      const yH = Y(hTarget);
+      svg.appendChild(node("line", { x1: m.left, y1: yH, x2: w - m.right, y2: yH, stroke: "var(--accent-2)", "stroke-width": "2", "stroke-dasharray": "6 4" }));
+      svg.appendChild(node("text", { x: w - m.right - 6, y: yH - 6, class: "axis-label", "text-anchor": "end", fill: "var(--accent-2)" }, `H(X) = ${fmt(hTarget)} b`));
+
+      // Running mean curve
+      const n = sampleState.samples.length;
+      if (n > 0) {
+        let cum = 0;
+        let d = "";
+        // Draw at most 600 points for performance.
+        const stride = Math.max(1, Math.floor(n / 600));
+        // Per-sample surprise scatter (subsampled)
+        for (let i = 0; i < n; i += Math.max(1, Math.floor(n / 240))) {
+          const s = sampleState.samples[i];
+          svg.appendChild(node("circle", { cx: X(i, n), cy: Y(Math.min(yMax, sampleSurprise(s, p))), r: 1.5, fill: "var(--text-dim)", opacity: "0.35" }));
+        }
+        for (let i = 0; i < n; i++) {
+          cum += sampleSurprise(sampleState.samples[i], p);
+          if (i % stride === 0 || i === n - 1) {
+            const mean = cum / (i + 1);
+            d += `${d ? "L" : "M"} ${X(i, n).toFixed(1)} ${Y(Math.min(yMax, mean)).toFixed(1)} `;
+          }
+        }
+        svg.appendChild(node("path", { d, fill: "none", stroke: "var(--accent)", "stroke-width": "2.4" }));
+        const lastMean = cumulativeSampleSurprise(p) / n;
+        svg.appendChild(node("circle", { cx: X(n - 1, n), cy: Y(Math.min(yMax, lastMean)), r: 4, fill: "var(--accent)" }));
+        svg.appendChild(node("text", { x: w - m.right - 6, y: Y(Math.min(yMax, lastMean)) + 14, class: "axis-label", "text-anchor": "end", fill: "var(--accent)" }, `mean ≈ ${fmt(lastMean)} b`));
+      } else {
+        svg.appendChild(node("text", { x: w / 2, y: h / 2, class: "axis-label", "text-anchor": "middle" }, "Draw samples to start the running mean."));
+      }
+    }
+
+    function refreshSamples() {
+      drawSampleStream();
+      drawSurpriseTrace();
+      updateSampleStats();
+    }
+
+    function channelState() {
+      const px = Number(el("px-slider").value) / 100;
+      const e = Number(el("noise-slider").value) / 100;
+      const p0 = 1 - px;
+      const p1 = px;
+      const p00 = p0 * (1 - e);
+      const p01 = p0 * e;
+      const p10 = p1 * e;
+      const p11 = p1 * (1 - e);
+      const py0 = p00 + p10;
+      const py1 = p01 + p11;
+      const hx = entropy([p0, p1]);
+      const hy = entropy([py0, py1]);
+      const hxy = entropy([p00, p01, p10, p11]);
+      const hygx = hxy - hx;
+      const hxgy = hxy - hy;
+      const mi = hx + hy - hxy;
+      return { px, e, p00, p01, p10, p11, py0, py1, hx, hy, hxy, hygx, hxgy, mi };
+    }
+
+    function drawJointGrid(s) {
+      const svg = el("joint-grid");
+      clear(svg);
+      const x0 = 82, y0 = 54, cell = 88;
+      const probs = [
+        { x: 0, y: 0, p: s.p00 },
+        { x: 1, y: 0, p: s.p10 },
+        { x: 0, y: 1, p: s.p01 },
+        { x: 1, y: 1, p: s.p11 },
+      ];
+      svg.appendChild(node("text", { x: x0 + cell, y: 24, class: "axis-label", "text-anchor": "middle" }, "X"));
+      svg.appendChild(node("text", { x: 28, y: y0 + cell, class: "axis-label", "text-anchor": "middle", transform: `rotate(-90 28 ${y0 + cell})` }, "Y"));
+      svg.appendChild(node("text", { x: x0 + cell * 0.5, y: 44, class: "axis-label", "text-anchor": "middle" }, "0"));
+      svg.appendChild(node("text", { x: x0 + cell * 1.5, y: 44, class: "axis-label", "text-anchor": "middle" }, "1"));
+      svg.appendChild(node("text", { x: 66, y: y0 + cell * 0.5 + 5, class: "axis-label", "text-anchor": "middle" }, "0"));
+      svg.appendChild(node("text", { x: 66, y: y0 + cell * 1.5 + 5, class: "axis-label", "text-anchor": "middle" }, "1"));
+
+      for (const d of probs) {
+        const shade = Math.round(245 - 190 * clamp(d.p / 0.5, 0, 1));
+        const fill = `rgb(${shade - 10}, ${Math.max(95, shade + 15)}, ${Math.max(85, shade + 5)})`;
+        const x = x0 + d.x * cell;
+        const y = y0 + d.y * cell;
+        svg.appendChild(node("rect", { x, y, width: cell, height: cell, fill, stroke: "white", "stroke-width": "2" }));
+        svg.appendChild(node("text", { x: x + cell / 2, y: y + cell / 2, class: d.p > 0.22 ? "tile-label" : "tile-label dark" }, d.p.toFixed(3)));
+      }
+      svg.appendChild(node("text", { x: x0 + cell * 2 + 18, y: y0 + cell * 0.5 + 5, class: "bar-value" }, `p(Y=0) ${s.py0.toFixed(2)}`));
+      svg.appendChild(node("text", { x: x0 + cell * 2 + 18, y: y0 + cell * 1.5 + 5, class: "bar-value" }, `p(Y=1) ${s.py1.toFixed(2)}`));
+      svg.appendChild(node("text", { x: x0 + cell * 0.5, y: y0 + cell * 2 + 24, class: "bar-value", "text-anchor": "middle" }, `${(1 - s.px).toFixed(2)}`));
+      svg.appendChild(node("text", { x: x0 + cell * 1.5, y: y0 + cell * 2 + 24, class: "bar-value", "text-anchor": "middle" }, `${s.px.toFixed(2)}`));
+    }
+
+    function drawEntropyBars(s) {
+      const svg = el("entropy-bars");
+      clear(svg);
+      const w = 360, h = 300;
+      const padL = 70, padR = 18;
+      const maxBits = 2;
+      const scale = (w - padL - padR) / maxBits;
+
+      // Three rows, each a horizontal bar that totals to its quantity.
+      // Row 1: H(X) = H(X|Y) + I
+      // Row 2: H(Y) = I + H(Y|X)
+      // Row 3: H(X,Y) = H(X|Y) + I + H(Y|X)
+      const rows = [
+        {
+          label: "H(X)",
+          total: s.hx,
+          segs: [
+            { w: s.hxgy, fill: "var(--blue)", op: 0.35, text: "H(X|Y)" },
+            { w: s.mi, fill: "var(--accent-2)", op: 0.85, text: "I" },
+          ],
+        },
+        {
+          label: "H(Y)",
+          total: s.hy,
+          segs: [
+            { w: s.mi, fill: "var(--accent-2)", op: 0.85, text: "I" },
+            { w: s.hygx, fill: "var(--accent)", op: 0.35, text: "H(Y|X)" },
+          ],
+        },
+        {
+          label: "H(X,Y)",
+          total: s.hxy,
+          segs: [
+            { w: s.hxgy, fill: "var(--blue)", op: 0.35, text: "H(X|Y)" },
+            { w: s.mi, fill: "var(--accent-2)", op: 0.85, text: "I" },
+            { w: s.hygx, fill: "var(--accent)", op: 0.35, text: "H(Y|X)" },
+          ],
+        },
+      ];
+
+      svg.appendChild(node("text", { x: w / 2, y: 22, class: "axis-label", "text-anchor": "middle" }, "Chain rule: H(X,Y) = H(X) + H(Y|X) = H(Y) + H(X|Y)"));
+
+      // x-axis scale at bottom
+      const baseY = 60;
+      const rowGap = 70;
+
+      rows.forEach((row, ri) => {
+        const y = baseY + ri * rowGap;
+        // label
+        svg.appendChild(node("text", { x: padL - 8, y: y + 17, class: "bar-label", "text-anchor": "end" }, row.label));
+        // background rail
+        svg.appendChild(node("rect", { x: padL, y, width: maxBits * scale, height: 26, rx: 4, fill: "var(--surface-alt)" }));
+        // segments
+        let cx = padL;
+        for (const seg of row.segs) {
+          const sw = seg.w * scale;
+          if (sw > 0.5) {
+            svg.appendChild(node("rect", { x: cx, y, width: sw, height: 26, fill: seg.fill, opacity: String(seg.op) }));
+            if (sw > 34) {
+              svg.appendChild(node("text", {
+                x: cx + sw / 2,
+                y: y + 17,
+                class: "axis-label",
+                "text-anchor": "middle",
+                fill: seg.op > 0.7 ? "white" : "var(--text)",
+                "font-size": "10",
+              }, seg.text));
+            }
+          }
+          cx += sw;
+        }
+        // total value
+        svg.appendChild(node("text", { x: padL + row.total * scale + 4, y: y + 17, class: "bar-value" }, `${fmt(row.total)}b`));
+      });
+
+      // axis ticks
+      const axisY = baseY + rows.length * rowGap;
+      svg.appendChild(node("line", { x1: padL, y1: axisY, x2: padL + maxBits * scale, y2: axisY, class: "axis" }));
+      for (let i = 0; i <= 4; i++) {
+        const bits = (i / 4) * maxBits;
+        const tx = padL + bits * scale;
+        svg.appendChild(node("line", { x1: tx, y1: axisY, x2: tx, y2: axisY + 4, class: "axis" }));
+        svg.appendChild(node("text", { x: tx, y: axisY + 16, class: "axis-label", "text-anchor": "middle" }, bits.toFixed(1)));
+      }
+      svg.appendChild(node("text", { x: padL + (maxBits * scale) / 2, y: axisY + 30, class: "axis-label", "text-anchor": "middle" }, "bits"));
+    }
+
+    // ===== Information Venn diagram =====
+    const VENN_REGIONS = {
+      hx:   { name: "H(X)",     get: (s) => s.hx,   note: "entropy of X — uncertainty in the input" },
+      hy:   { name: "H(Y)",     get: (s) => s.hy,   note: "entropy of Y — uncertainty in the output" },
+      hxgy: { name: "H(X|Y)",   get: (s) => s.hxgy, note: "conditional entropy — uncertainty in X that remains after observing Y" },
+      hygx: { name: "H(Y|X)",   get: (s) => s.hygx, note: "conditional entropy — uncertainty in Y that remains after observing X (channel noise)" },
+      mi:   { name: "I(X;Y)",   get: (s) => s.mi,   note: "mutual information: bits learned about X from Y" },
+      hxy:  { name: "H(X,Y)",   get: (s) => s.hxy, note: "joint entropy — total uncertainty in the pair (X, Y)" },
+    };
+    const vennState = { highlight: "mi", locked: false, geom: null };
+
+    function regionsActiveForHighlight(hl) {
+      // Each highlight maps to which of the three disjoint pieces lights up.
+      switch (hl) {
+        case "hxgy": return { leftOnly: true, lens: false, rightOnly: false };
+        case "hygx": return { leftOnly: false, lens: false, rightOnly: true };
+        case "mi":   return { leftOnly: false, lens: true,  rightOnly: false };
+        case "hx":   return { leftOnly: true,  lens: true,  rightOnly: false };
+        case "hy":   return { leftOnly: false, lens: true,  rightOnly: true };
+        case "hxy":  return { leftOnly: true,  lens: true,  rightOnly: true };
+        default:     return { leftOnly: false, lens: false, rightOnly: false };
+      }
+    }
+
+    function drawInfoVenn(s) {
+      const svg = el("info-venn");
+      clear(svg);
+      const w = 720, h = 320;
+      const cy = 160;
+      const r = 110;
+      const cx = w / 2;
+      // Distance between centers: 0 = concentric (perfect copy), 2r = tangent (independence).
+      const maxH = Math.max(s.hx, s.hy, 1e-9);
+      const overlapFrac = clamp(s.mi / maxH, 0, 1);
+      const d = 2 * r * (1 - overlapFrac);
+      const cxL = cx - d / 2;
+      const cxR = cx + d / 2;
+
+      vennState.geom = { cxL, cxR, cy, r, w, h };
+
+      // Masks that carve the three disjoint regions out of the two circles.
+      const defs = node("defs");
+      const mkMask = (id, rectFill, holeCircle) => {
+        const m = node("mask", { id });
+        m.appendChild(node("rect", { x: 0, y: 0, width: w, height: h, fill: rectFill }));
+        m.appendChild(node("circle", { ...holeCircle }));
+        return m;
+      };
+      defs.appendChild(mkMask("venn-lens",       "black", { cx: cxR, cy, r, fill: "white" }));
+      defs.appendChild(mkMask("venn-left-only",  "white", { cx: cxR, cy, r, fill: "black" }));
+      defs.appendChild(mkMask("venn-right-only", "white", { cx: cxL, cy, r, fill: "black" }));
+      svg.appendChild(defs);
+
+      const active = regionsActiveForHighlight(vennState.highlight);
+      const fill = (on, base, hot) => (on ? hot : base);
+
+      // Left-only crescent
+      svg.appendChild(node("circle", {
+        cx: cxL, cy, r,
+        fill: "var(--blue)",
+        opacity: fill(active.leftOnly, 0.22, 0.62),
+        mask: "url(#venn-left-only)",
+        "pointer-events": "none",
+      }));
+      // Right-only crescent
+      svg.appendChild(node("circle", {
+        cx: cxR, cy, r,
+        fill: "var(--accent)",
+        opacity: fill(active.rightOnly, 0.22, 0.62),
+        mask: "url(#venn-right-only)",
+        "pointer-events": "none",
+      }));
+      // Lens (intersection)
+      svg.appendChild(node("circle", {
+        cx: cxL, cy, r,
+        fill: "var(--accent-2)",
+        opacity: fill(active.lens, 0.32, 0.78),
+        mask: "url(#venn-lens)",
+        "pointer-events": "none",
+      }));
+
+      // Outlines
+      svg.appendChild(node("circle", { cx: cxL, cy, r, fill: "none", stroke: "var(--blue)", "stroke-width": 1.5, "pointer-events": "none" }));
+      svg.appendChild(node("circle", { cx: cxR, cy, r, fill: "none", stroke: "var(--accent)", "stroke-width": 1.5, "pointer-events": "none" }));
+
+      // External circle labels
+      svg.appendChild(node("text", { x: cxL - r + 14, y: cy - r - 10, class: "venn-label", fill: "var(--blue)", "text-anchor": "start", "pointer-events": "none" }, `H(X) = ${fmt(s.hx)}`));
+      svg.appendChild(node("text", { x: cxR + r - 14, y: cy - r - 10, class: "venn-label", fill: "var(--accent)", "text-anchor": "end", "pointer-events": "none" }, `H(Y) = ${fmt(s.hy)}`));
+
+      // Region labels — only shown when there is room.
+      const crescentRoom = d > 38;
+      const lensRoom = 2 * r - d > 38;
+      if (crescentRoom) {
+        const lx = (cxL - r + cx - r) / 2 + r * 0.05; // center of left crescent (approx)
+        const lxApprox = cxL - r / 2 - d * 0.05;
+        svg.appendChild(node("text", { x: lxApprox, y: cy - 4, class: "venn-label", "pointer-events": "none" }, "H(X|Y)"));
+        svg.appendChild(node("text", { x: lxApprox, y: cy + 14, class: "venn-label", "font-size": 11, "font-weight": 500, fill: "var(--text-dim)", "pointer-events": "none" }, fmt(s.hxgy)));
+        const rxApprox = cxR + r / 2 + d * 0.05;
+        svg.appendChild(node("text", { x: rxApprox, y: cy - 4, class: "venn-label", "pointer-events": "none" }, "H(Y|X)"));
+        svg.appendChild(node("text", { x: rxApprox, y: cy + 14, class: "venn-label", "font-size": 11, "font-weight": 500, fill: "var(--text-dim)", "pointer-events": "none" }, fmt(s.hygx)));
+      }
+      if (lensRoom) {
+        svg.appendChild(node("text", { x: cx, y: cy - 4, class: "venn-label", fill: "var(--accent-2)", "pointer-events": "none" }, "I(X;Y)"));
+        svg.appendChild(node("text", { x: cx, y: cy + 14, class: "venn-label", "font-size": 11, "font-weight": 500, fill: "var(--text-dim)", "pointer-events": "none" }, fmt(s.mi)));
+      }
+
+      // Bracket spanning H(X,Y) along the bottom
+      const brY = cy + r + 18;
+      const brLeft = cxL - r;
+      const brRight = cxR + r;
+      svg.appendChild(node("path", {
+        d: `M ${brLeft} ${brY} L ${brLeft} ${brY + 8} L ${brRight} ${brY + 8} L ${brRight} ${brY}`,
+        fill: "none",
+        stroke: "var(--text-dim)",
+        "stroke-width": 1.2,
+        "pointer-events": "none",
+      }));
+      svg.appendChild(node("text", { x: cx, y: brY + 24, class: "axis-label", "text-anchor": "middle", "pointer-events": "none" }, `H(X,Y) = ${fmt(s.hxy)} bits`));
+    }
+
+    function vennRegionAtSvgPoint(p) {
+      const g = vennState.geom;
+      if (!g) return null;
+      const dL = Math.hypot(p.x - g.cxL, p.y - g.cy);
+      const dR = Math.hypot(p.x - g.cxR, p.y - g.cy);
+      const inL = dL <= g.r;
+      const inR = dR <= g.r;
+      if (inL && inR) return "mi";
+      if (inL) return "hxgy";
+      if (inR) return "hygx";
+      return null;
+    }
+
+    function svgCoords(event, svg) {
+      const pt = svg.createSVGPoint();
+      pt.x = event.clientX;
+      pt.y = event.clientY;
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return { x: 0, y: 0 };
+      const inv = ctm.inverse();
+      const r = pt.matrixTransform(inv);
+      return { x: r.x, y: r.y };
+    }
+
+    function setVennHighlight(region, lock) {
+      vennState.highlight = region;
+      if (typeof lock === "boolean") vennState.locked = lock;
+      updateChannel();
+    }
+
+    function updateVennChips() {
+      document.querySelectorAll("[data-venn-region]").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.vennRegion === vennState.highlight);
+      });
+    }
+
+    function updateVennReadout(s) {
+      const def = VENN_REGIONS[vennState.highlight] || VENN_REGIONS.mi;
+      setText("venn-region-name", def.name);
+      setText("venn-region-value", fmt(def.get(s)));
+      setText("venn-region-note", def.note);
+      updateVennChips();
+    }
+
+    function explainChannel(s) {
+      if (s.hx < 0.08) return "X is almost certain, so there is little uncertainty available to share. Mutual information is small even if the copy is clean.";
+      if (s.e === 0) return "Y is a perfect copy of X. Observing Y removes all uncertainty about X, so mutual information equals H(X).";
+      if (s.e >= 0.49) return "The output is independent of the input. Observing Y tells you essentially nothing about X, so mutual information is zero.";
+      if (s.e < 0.08) return "The output is a mostly reliable copy. Most input uncertainty is preserved in Y, with only a small conditional-entropy penalty.";
+      return "The output is a noisy copy, so observing it removes part of the input uncertainty but not all of it.";
+    }
+
+    function syncSliderPair(primaryId, mirrorId, valueId, mirrorValueId, value) {
+      el(primaryId).value = value;
+      el(mirrorId).value = value;
+    }
+
+    function updateChannel(activePreset) {
+      const s = channelState();
+      setText("px-value", s.px.toFixed(2));
+      setText("px-value-2", s.px.toFixed(2));
+      setText("noise-value", s.e.toFixed(2));
+      setText("noise-value-2", s.e.toFixed(2));
+      // Mirror both slider pairs to the current values.
+      el("px-slider-2").value = el("px-slider").value;
+      el("noise-slider-2").value = el("noise-slider").value;
+      setText("hx-value", fmt(s.hx));
+      setText("hy-value", fmt(s.hy));
+      setText("hygx-value", fmt(s.hygx));
+      setText("hxy-value", fmt(s.hxy));
+      setText("mi-value", fmt(s.mi));
+      setText("nmi-value", s.hx > 0 ? fmt(s.mi / s.hx) : "0.000");
+      setText("capfrac-value", s.mi.toFixed(2));
+      setText("channel-explanation", explainChannel(s));
+      drawJointGrid(s);
+      drawEntropyBars(s);
+      drawInfoVenn(s);
+      updateVennReadout(s);
+
+      if (activePreset) {
+        // activePreset values look like "preset-copy" or "preset2-copy" — normalize both.
+        const key = activePreset.replace(/^preset2?-/, "");
+        for (const variant of ["preset", "preset2"]) {
+          for (const k of ["copy", "noisy", "independent", "skewed"]) {
+            el(`${variant}-${k}`).classList.toggle("active", k === key);
+          }
+        }
+      }
+    }
+
+    function setChannel(px, noise, presetId) {
+      el("px-slider").value = String(Math.round(px * 100));
+      el("noise-slider").value = String(Math.round(noise * 100));
+      el("px-slider-2").value = el("px-slider").value;
+      el("noise-slider-2").value = el("noise-slider").value;
+      updateChannel(presetId);
+    }
+
+    el("p-slider").addEventListener("input", (event) => setBinaryProbabilityFromSlider(event.currentTarget));
+    el("sample-p-slider").addEventListener("input", (event) => setBinaryProbabilityFromSlider(event.currentTarget));
+    el("px-slider").addEventListener("input", () => updateChannel());
+    el("noise-slider").addEventListener("input", () => updateChannel());
+    el("px-slider-2").addEventListener("input", () => {
+      el("px-slider").value = el("px-slider-2").value;
+      updateChannel();
+    });
+    el("noise-slider-2").addEventListener("input", () => {
+      el("noise-slider").value = el("noise-slider-2").value;
+      updateChannel();
+    });
+    el("preset-copy").addEventListener("click", () => setChannel(0.5, 0, "preset-copy"));
+    el("preset-noisy").addEventListener("click", () => setChannel(0.5, 0.18, "preset-noisy"));
+    el("preset-independent").addEventListener("click", () => setChannel(0.5, 0.5, "preset-independent"));
+    el("preset-skewed").addEventListener("click", () => setChannel(0.08, 0.04, "preset-skewed"));
+    el("preset2-copy").addEventListener("click", () => setChannel(0.5, 0, "preset-copy"));
+    el("preset2-noisy").addEventListener("click", () => setChannel(0.5, 0.18, "preset-noisy"));
+    el("preset2-independent").addEventListener("click", () => setChannel(0.5, 0.5, "preset-independent"));
+    el("preset2-skewed").addEventListener("click", () => setChannel(0.08, 0.04, "preset-skewed"));
+
+    // Venn diagram interaction: hover to peek, click to lock; chips below also drive highlight.
+    {
+      const vennSvg = el("info-venn");
+      vennSvg.addEventListener("pointermove", (event) => {
+        if (vennState.locked) return;
+        const region = vennRegionAtSvgPoint(svgCoords(event, vennSvg));
+        const next = region || "mi";
+        if (next !== vennState.highlight) setVennHighlight(next, false);
+      });
+      vennSvg.addEventListener("pointerleave", () => {
+        if (vennState.locked) return;
+        if (vennState.highlight !== "mi") setVennHighlight("mi", false);
+      });
+      vennSvg.addEventListener("click", (event) => {
+        const region = vennRegionAtSvgPoint(svgCoords(event, vennSvg));
+        if (region) setVennHighlight(region, true);
+        else setVennHighlight("mi", false); // click outside circles → release lock
+      });
+      document.querySelectorAll("[data-venn-region]").forEach((btn) => {
+        btn.addEventListener("click", () => setVennHighlight(btn.dataset.vennRegion, true));
+      });
+    }
+
+    el("sample-step").addEventListener("click", () => {
+      setPlaying(false);
+      pushSample();
+      refreshSamples();
+    });
+    el("sample-batch").addEventListener("click", () => {
+      setPlaying(false);
+      for (let i = 0; i < 50; i++) pushSample();
+      refreshSamples();
+    });
+    el("sample-play").addEventListener("click", () => {
+      setPlaying(!sampleState.playing);
+    });
+    el("sample-reset").addEventListener("click", () => {
+      setPlaying(false);
+      resetSamples();
+      refreshSamples();
+    });
+
+    function drawBscGraph(eps = 0.18) {
+      const svg = el("bsc-graph");
+      if (!svg) return;
+      clear(svg);
+      setText("bsc-eps-v", eps.toFixed(2));
+      const cap = 1 - entropy([eps, 1 - eps]);
+      setText("bsc-hygx", entropy([eps, 1 - eps]).toFixed(3));
+      setText("bsc-capacity", cap.toFixed(3));
+      setText("bsc-note", eps === 0 ? "perfect" : eps === 0.5 ? "independent" : "partial");
+      const left = [{ x: 150, y: 80, label: "X=0" }, { x: 150, y: 200, label: "X=1" }];
+      const right = [{ x: 570, y: 80, label: "Y=0" }, { x: 570, y: 200, label: "Y=1" }];
+      svg.appendChild(node("defs", {}, undefined));
+      const defs = svg.querySelector("defs");
+      const marker = node("marker", { id: "arrow-bsc", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" });
+      marker.appendChild(node("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "var(--text-dim)" }));
+      defs.appendChild(marker);
+      function edge(a, b, p, cross) {
+        const c = cross ? "var(--accent-2)" : "var(--blue)";
+        const width = 1.5 + 8 * p;
+        const opacity = 0.2 + 0.75 * p;
+        svg.appendChild(node("line", { x1: a.x + 34, y1: a.y, x2: b.x - 34, y2: b.y, stroke: c, "stroke-width": width, opacity, "marker-end": "url(#arrow-bsc)" }));
+        svg.appendChild(node("text", { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - (cross ? 8 : 12), "font-size": 13, "text-anchor": "middle", fill: c }, p.toFixed(2)));
+      }
+      edge(left[0], right[0], 1 - eps, false);
+      edge(left[1], right[1], 1 - eps, false);
+      edge(left[0], right[1], eps, true);
+      edge(left[1], right[0], eps, true);
+      for (const n of [...left, ...right]) {
+        svg.appendChild(node("circle", { cx: n.x, cy: n.y, r: 34, fill: "white", stroke: "var(--text)", "stroke-width": 2 }));
+        svg.appendChild(node("text", { x: n.x, y: n.y + 5, "font-size": 15, "font-weight": 700, "text-anchor": "middle", fill: "var(--text)" }, n.label));
+      }
+      svg.appendChild(node("text", { x: 360, y: 248, "font-size": 13, "text-anchor": "middle", fill: "var(--text-dim)" }, "as ε moves from 0 to 0.5, crossover arrows thicken and capacity falls to zero"));
+    }
+
+    function setBsc(eps, id) {
+      el("bsc-eps").value = String(Math.round(eps * 100));
+      for (const k of ["clean", "noisy", "useless"]) el(`bsc-${k}`).classList.toggle("active", `bsc-${k}` === id);
+      drawBscGraph(eps);
+    }
+    el("bsc-eps").addEventListener("input", () => drawBscGraph(+el("bsc-eps").value / 100));
+    el("bsc-clean").addEventListener("click", () => setBsc(0, "bsc-clean"));
+    el("bsc-noisy").addEventListener("click", () => setBsc(0.18, "bsc-noisy"));
+    el("bsc-useless").addEventListener("click", () => setBsc(0.5, "bsc-useless"));
+
+    function drawMiAsKl(px = 0.5, noise = 0.18) {
+      const svg = el("mi-kl-grid");
+      if (!svg) return;
+      clear(svg);
+      const joint = [
+        [(1 - px) * (1 - noise), (1 - px) * noise],
+        [px * noise, px * (1 - noise)],
+      ];
+      const pxs = [1 - px, px];
+      const pys = [joint[0][0] + joint[1][0], joint[0][1] + joint[1][1]];
+      const product = [[pxs[0] * pys[0], pxs[0] * pys[1]], [pxs[1] * pys[0], pxs[1] * pys[1]]];
+      const contrib = joint.map((row, i) => row.map((p, j) => p > 0 ? p * log2(p / product[i][j]) : 0));
+      const mi = contrib.flat().reduce((a, b) => a + b, 0);
+      const maxC = Math.max(...contrib.flat().map(Math.abs), 1e-6);
+      function cellGrid(x0, title, values, colorScale) {
+        svg.appendChild(node("text", { x: x0, y: 24, "font-size": 13, "font-weight": 700, fill: "var(--text)" }, title));
+        for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+          const v = values[i][j];
+          const x = x0 + j * 72, y = 48 + i * 72;
+          svg.appendChild(node("rect", { x, y, width: 66, height: 66, rx: 4, fill: colorScale(v), stroke: "var(--border)" }));
+          svg.appendChild(node("text", { x: x + 33, y: y + 31, "font-size": 13, "text-anchor": "middle", fill: "var(--text)" }, v.toFixed(3)));
+          svg.appendChild(node("text", { x: x + 33, y: y + 49, "font-size": 10, "text-anchor": "middle", fill: "var(--text-dim)" }, `x=${i}, y=${j}`));
+        }
+      }
+      cellGrid(44, "joint PXY", joint, (v) => `rgba(37,99,235,${0.12 + 0.75 * v / 0.5})`);
+      cellGrid(282, "product PX PY", product, (v) => `rgba(15,118,110,${0.10 + 0.70 * v / 0.5})`);
+      cellGrid(520, "cell KL terms", contrib, (v) => v >= 0 ? `rgba(180,83,9,${0.12 + 0.75 * v / maxC})` : `rgba(37,99,235,${0.16 + 0.55 * -v / maxC})`);
+      setText("mi-kl-px-v", px.toFixed(2));
+      setText("mi-kl-noise-v", noise.toFixed(2));
+      setText("mi-kl-value", mi.toFixed(3));
+      setText("mi-kl-mi", mi.toFixed(3));
+      setText("mi-kl-max", Math.max(...contrib.flat()).toFixed(3));
+    }
+
+    function setMiKl(px, noise, id) {
+      el("mi-kl-px").value = String(Math.round(px * 100));
+      el("mi-kl-noise").value = String(Math.round(noise * 100));
+      for (const k of ["copy", "noisy", "independent"]) el(`mi-kl-${k}`).classList.toggle("active", `mi-kl-${k}` === id);
+      drawMiAsKl(px, noise);
+    }
+    el("mi-kl-px").addEventListener("input", () => drawMiAsKl(+el("mi-kl-px").value / 100, +el("mi-kl-noise").value / 100));
+    el("mi-kl-noise").addEventListener("input", () => drawMiAsKl(+el("mi-kl-px").value / 100, +el("mi-kl-noise").value / 100));
+    el("mi-kl-copy").addEventListener("click", () => setMiKl(0.5, 0, "mi-kl-copy"));
+    el("mi-kl-noisy").addEventListener("click", () => setMiKl(0.5, 0.18, "mi-kl-noisy"));
+    el("mi-kl-independent").addEventListener("click", () => setMiKl(0.5, 0.5, "mi-kl-independent"));
+
+    let nonlinearShape = "quadratic";
+    function normalSample() {
+      const u = Math.max(1e-9, Math.random()), v = Math.random();
+      return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    }
+    function estimateBinnedMi(points, bins = 12) {
+      const grid = Array.from({ length: bins }, () => Array(bins).fill(0));
+      for (const [x, y] of points) {
+        const i = clamp(Math.floor((x + 2.8) / 5.6 * bins), 0, bins - 1);
+        const j = clamp(Math.floor((y + 2.8) / 5.6 * bins), 0, bins - 1);
+        grid[i][j]++;
+      }
+      const n = points.length;
+      const rx = grid.map((row) => row.reduce((a, b) => a + b, 0));
+      const cy = Array.from({ length: bins }, (_, j) => grid.reduce((s, row) => s + row[j], 0));
+      let mi = 0;
+      for (let i = 0; i < bins; i++) for (let j = 0; j < bins; j++) {
+        if (grid[i][j]) mi += (grid[i][j] / n) * log2((grid[i][j] * n) / (rx[i] * cy[j]));
+      }
+      return mi;
+    }
+    function drawNonlinearMi() {
+      const svg = el("mi-nonlinear-scatter");
+      clear(svg);
+      const noise = +el("mi-nonlinear-noise").value / 100;
+      setText("mi-nonlinear-noise-v", noise.toFixed(2));
+      const pts = [];
+      for (let i = 0; i < 260; i++) {
+        const x = normalSample();
+        let y;
+        if (nonlinearShape === "linear") y = 0.95 * x + noise * 2.0 * normalSample();
+        else if (nonlinearShape === "quadratic") y = x * x - 1 + noise * 2.0 * normalSample();
+        else if (nonlinearShape === "sine") y = Math.sin(2.4 * x) + noise * 2.0 * normalSample();
+        else if (nonlinearShape === "circle") { const a = Math.random() * Math.PI * 2; const r = 1.5 + noise * normalSample(); pts.push([r * Math.cos(a), r * Math.sin(a)]); continue; }
+        else y = normalSample();
+        pts.push([x, y]);
+      }
+      const sx = (x) => 360 + x * 90;
+      const sy = (y) => 140 - y * 44;
+      svg.appendChild(node("rect", { x: 0, y: 0, width: 720, height: 280, fill: "white" }));
+      svg.appendChild(node("line", { x1: 40, y1: 140, x2: 680, y2: 140, stroke: "var(--grid)" }));
+      svg.appendChild(node("line", { x1: 360, y1: 22, x2: 360, y2: 258, stroke: "var(--grid)" }));
+      for (const [x, y] of pts) svg.appendChild(node("circle", { cx: sx(x), cy: sy(y), r: 2.3, fill: "rgba(37,99,235,0.48)" }));
+      const mx = pts.reduce((s, p) => s + p[0], 0) / pts.length;
+      const my = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+      const cov = pts.reduce((s, p) => s + (p[0] - mx) * (p[1] - my), 0);
+      const vx = pts.reduce((s, p) => s + (p[0] - mx) ** 2, 0);
+      const vy = pts.reduce((s, p) => s + (p[1] - my) ** 2, 0);
+      const r = cov / Math.sqrt(vx * vy || 1);
+      const mi = estimateBinnedMi(pts);
+      setText("mi-nonlinear-r", r.toFixed(3));
+      setText("mi-nonlinear-mi", mi.toFixed(3));
+      setText("mi-nonlinear-note", Math.abs(r) < 0.15 && mi > 0.25 ? "nonlinear" : nonlinearShape);
+    }
+    document.querySelectorAll("[data-mi-shape]").forEach((button) => button.addEventListener("click", () => {
+      nonlinearShape = button.dataset.miShape;
+      document.querySelectorAll("[data-mi-shape]").forEach((b) => b.classList.toggle("active", b === button));
+      drawNonlinearMi();
+    }));
+    el("mi-nonlinear-noise").addEventListener("input", drawNonlinearMi);
+
+    function drawCapacity() {
+      const svg = el("capacity-curve");
+      clear(svg);
+      const px = +el("capacity-px").value / 100;
+      setText("capacity-px-v", px.toFixed(2));
+      const x0 = 48, y0 = 26, w0 = 620, h0 = 180;
+      svg.appendChild(node("rect", { x: 0, y: 0, width: 720, height: 250, fill: "white" }));
+      svg.appendChild(node("line", { x1: x0, y1: y0 + h0, x2: x0 + w0, y2: y0 + h0, stroke: "var(--text-dim)" }));
+      svg.appendChild(node("line", { x1: x0, y1: y0, x2: x0, y2: y0 + h0, stroke: "var(--text-dim)" }));
+      function miAt(eps) {
+        const py1 = px * (1 - eps) + (1 - px) * eps;
+        return entropy([py1, 1 - py1]) - entropy([eps, 1 - eps]);
+      }
+      function pathFor(fn) {
+        let d = "";
+        for (let i = 0; i <= 120; i++) {
+          const eps = i / 120 * 0.5;
+          const x = x0 + eps / 0.5 * w0;
+          const y = y0 + h0 - fn(eps) * h0;
+          d += `${i ? "L" : "M"}${x},${y}`;
+        }
+        return d;
+      }
+      svg.appendChild(node("path", { d: pathFor((eps) => 1 - entropy([eps, 1 - eps])), fill: "none", stroke: "var(--accent-2)", "stroke-width": 3 }));
+      svg.appendChild(node("path", { d: pathFor(miAt), fill: "none", stroke: "var(--blue)", "stroke-width": 3 }));
+      svg.appendChild(node("text", { x: x0 + w0 - 120, y: y0 + 18, "font-size": 12, fill: "var(--accent-2)" }, "capacity"));
+      svg.appendChild(node("text", { x: x0 + w0 - 160, y: y0 + h0 - miAt(0.18) * h0 - 8, "font-size": 12, fill: "var(--blue)" }, "selected input"));
+    }
+    el("capacity-px").addEventListener("input", drawCapacity);
+
+    updateBinaryEntropy();
+    updateChannel("preset-noisy");
+    drawBscGraph();
+    drawMiAsKl();
+    drawNonlinearMi();
+    drawCapacity();
+
+    function drawLegendre() {
+      const eta = +el("legendre-eta").value / 10;
+      const K = +el("legendre-k").value;
+      setText("legendre-eta-v", eta.toFixed(2));
+      setText("legendre-k-v", String(K));
+      // A(η) = log Σ_{k=0..K-1} exp(η k);  q*_k = exp(η k)/Z;  μ = E[k];  H = -Σ q log q (nats).
+      function A(e) {
+        let m = -Infinity;
+        for (let k = 0; k < K; k++) if (e * k > m) m = e * k;
+        let s = 0;
+        for (let k = 0; k < K; k++) s += Math.exp(e * k - m);
+        return m + Math.log(s);
+      }
+      function meanAndH(e) {
+        let m = -Infinity;
+        for (let k = 0; k < K; k++) if (e * k > m) m = e * k;
+        let Z = 0, sumK = 0;
+        const w = [];
+        for (let k = 0; k < K; k++) { const v = Math.exp(e * k - m); w.push(v); Z += v; sumK += v * k; }
+        const mean = sumK / Z;
+        let H = 0;
+        for (let k = 0; k < K; k++) { const q = w[k] / Z; if (q > 0) H -= q * Math.log(q); }
+        return { mean, H };
+      }
+
+      // Left panel: A(η) curve with tangent at chosen η.
+      const svgA = el("legendre-A"); clear(svgA);
+      const W = 360, Hp = 240, m = { left: 42, right: 14, top: 18, bottom: 28 };
+      const etaMin = -3, etaMax = 3;
+      const samples = [];
+      for (let i = 0; i <= 80; i++) {
+        const e = etaMin + i / 80 * (etaMax - etaMin);
+        samples.push({ e, A: A(e) });
+      }
+      const aMin = Math.min(...samples.map((s) => s.A));
+      const aMax = Math.max(...samples.map((s) => s.A));
+      const aPad = (aMax - aMin) * 0.1 + 0.05;
+      const x = (e) => m.left + (e - etaMin) / (etaMax - etaMin) * (W - m.left - m.right);
+      const y = (v) => Hp - m.bottom - (v - aMin + aPad) / (aMax - aMin + 2 * aPad) * (Hp - m.top - m.bottom);
+      for (let i = 0; i <= 4; i++) {
+        const yy = m.top + i / 4 * (Hp - m.top - m.bottom);
+        svgA.appendChild(node("line", { x1: m.left, y1: yy, x2: W - m.right, y2: yy, stroke: "var(--rule, #e3ddd0)" }));
+      }
+      svgA.appendChild(node("line", { x1: m.left, y1: Hp - m.bottom, x2: W - m.right, y2: Hp - m.bottom, stroke: "var(--text-dim)" }));
+      svgA.appendChild(node("line", { x1: m.left, y1: m.top, x2: m.left, y2: Hp - m.bottom, stroke: "var(--text-dim)" }));
+      let d = "";
+      samples.forEach((s, i) => { d += `${i ? "L" : "M"}${x(s.e)},${y(s.A)}`; });
+      svgA.appendChild(node("path", { d, fill: "none", stroke: "var(--blue)", "stroke-width": 2.4 }));
+      const { mean, H } = meanAndH(eta);
+      const a0 = A(eta);
+      // tangent slope = mean
+      const tanLeft = Math.max(etaMin, eta - 1.2);
+      const tanRight = Math.min(etaMax, eta + 1.2);
+      const yTanL = a0 + mean * (tanLeft - eta);
+      const yTanR = a0 + mean * (tanRight - eta);
+      svgA.appendChild(node("line", { x1: x(tanLeft), y1: y(yTanL), x2: x(tanRight), y2: y(yTanR), stroke: "var(--accent-2)", "stroke-width": 1.6, "stroke-dasharray": "5 4" }));
+      svgA.appendChild(node("circle", { cx: x(eta), cy: y(a0), r: 5, fill: "var(--accent-2)" }));
+      svgA.appendChild(node("text", { x: m.left + 4, y: m.top + 12, "font-size": 11, fill: "var(--text-dim)" }, "A(η)"));
+      svgA.appendChild(node("text", { x: W - m.right - 6, y: Hp - 8, "font-size": 11, fill: "var(--text-dim)", "text-anchor": "end" }, "η"));
+
+      // Right panel: q*_k distribution
+      const svgH = el("legendre-H"); clear(svgH);
+      let Z = 0; const probs = [];
+      for (let k = 0; k < K; k++) probs.push(Math.exp(eta * k));
+      for (const p of probs) Z += p;
+      for (let k = 0; k < K; k++) probs[k] /= Z;
+      const x2 = (k) => m.left + (k + 0.5) / K * (W - m.left - m.right);
+      const peak = Math.max(...probs) * 1.2;
+      const y2 = (p) => Hp - m.bottom - p / peak * (Hp - m.top - m.bottom);
+      for (let i = 0; i <= 4; i++) {
+        const yy = m.top + i / 4 * (Hp - m.top - m.bottom);
+        svgH.appendChild(node("line", { x1: m.left, y1: yy, x2: W - m.right, y2: yy, stroke: "var(--rule, #e3ddd0)" }));
+      }
+      svgH.appendChild(node("line", { x1: m.left, y1: Hp - m.bottom, x2: W - m.right, y2: Hp - m.bottom, stroke: "var(--text-dim)" }));
+      svgH.appendChild(node("line", { x1: m.left, y1: m.top, x2: m.left, y2: Hp - m.bottom, stroke: "var(--text-dim)" }));
+      const barW = (W - m.left - m.right) / K * 0.55;
+      for (let k = 0; k < K; k++) {
+        svgH.appendChild(node("rect", { x: x2(k) - barW / 2, y: y2(probs[k]), width: barW, height: y2(0) - y2(probs[k]), fill: "var(--blue)" }));
+        svgH.appendChild(node("text", { x: x2(k), y: Hp - 10, "font-size": 10, fill: "var(--text-dim)", "text-anchor": "middle" }, String(k)));
+      }
+      svgH.appendChild(node("text", { x: m.left + 4, y: m.top + 12, "font-size": 11, fill: "var(--text-dim)" }, `Gibbs q*_k ∝ exp(${eta.toFixed(2)}·k)`));
+
+      const Astar = eta * mean - a0;
+      setText("legendre-A-v", a0.toFixed(3));
+      setText("legendre-mu-v", mean.toFixed(3));
+      setText("legendre-H-v", H.toFixed(3));
+      setText("legendre-Astar-v", Astar.toFixed(3));
+    }
+    el("legendre-eta").addEventListener("input", drawLegendre);
+    el("legendre-k").addEventListener("input", drawLegendre);
+    drawLegendre();
+  </script>
+</ExplainerLayout>

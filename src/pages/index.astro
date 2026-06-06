@@ -3,117 +3,80 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout title="Oliver's Notes">
-  <div class="home-grid">
-    <div class="home-card blue">
-      <h3>Creative Coding</h3>
-      <ul class="page-list">
-        <li><a href="/creative-coding/">Creative Coding</a></li>
-        <li>
-          <a href="https://creative-coding.osteele.com/"
-            >Creative Coding with p5.js</a
-          >
-        </li>
-        <li>
-          <a href="/processing/">Creative Coding with Processing</a>
-        </li>
-      </ul>
-      <h4>Tutorials</h4>
-      <ul class="page-list">
-        <li>
-          <a href="https://creative-coding.osteele.com/arranging-items-in-a-line/"
-            >Arranging Items in a Line</a>
-        </li>
-        <li>
-          <a href="https://creative-coding.osteele.com/arranging-items-in-a-circle-or-spiral/"
-            >Arranging Items in a Circle or Spiral</a>
-        </li>
-        <li>
-          <a href="https://creative-coding.osteele.com/arranging-items-in-a-grid/"
-            >Arranging Items in a Grid</a>
-        </li>
-        <li>
-          <a href="https://creative-coding.osteele.com/iteration-notes/">Iteration Notes</a>
-        </li>
-        <li>
-          <a href="https://creative-coding.osteele.com/refactoring-into-functions/"
-            >Refactoring into Functions</a>
-        </li>
-        <li>
-          <a href="https://creative-coding.osteele.com/animation-and-randomness/"
-            >Animation and Randomness</a>
-        </li>
-        <li>
-          <a href="/processing/processing-and-animation/"
-            >Processing and Animation</a>
-        </li>
-        <li>
-          <a href="/processing/processing-arrays-and-animation/"
-            >Processing Arrays and Animation</a>
-        </li>
-      </ul>
-    </div>
+  <div class="section-header blue">Creative Coding</div>
+  <ul class="page-list">
+    <li><a href="/creative-coding/">Creative Coding</a></li>
+    <li><a href="https://creative-coding.osteele.com/">Creative Coding with p5.js</a></li>
+    <li><a href="/processing/">Creative Coding with Processing</a></li>
+  </ul>
+  <div class="subhead">Tutorials</div>
+  <ul class="page-list">
+    <li><a href="https://creative-coding.osteele.com/arranging-items-in-a-line/">Arranging Items in a Line</a></li>
+    <li><a href="https://creative-coding.osteele.com/arranging-items-in-a-circle-or-spiral/">Arranging Items in a Circle or Spiral</a></li>
+    <li><a href="https://creative-coding.osteele.com/arranging-items-in-a-grid/">Arranging Items in a Grid</a></li>
+    <li><a href="https://creative-coding.osteele.com/iteration-notes/">Iteration Notes</a></li>
+    <li><a href="https://creative-coding.osteele.com/refactoring-into-functions/">Refactoring into Functions</a></li>
+    <li><a href="https://creative-coding.osteele.com/animation-and-randomness/">Animation and Randomness</a></li>
+    <li><a href="/processing/processing-and-animation/">Processing and Animation</a></li>
+    <li><a href="/processing/processing-arrays-and-animation/">Processing Arrays and Animation</a></li>
+  </ul>
 
-    <div class="home-card blue">
-      <h3>JavaScript &amp; p5.js</h3>
+  <div class="two-column">
+    <div>
+      <div class="section-header blue">JavaScript &amp; p5.js</div>
       <ul class="page-list">
         <li><a href="/javascript/">JavaScript Resources</a></li>
         <li><a href="/javascript/arrays/">JavaScript Arrays</a></li>
         <li><a href="/p5js/">p5.js Resources</a></li>
-        <li>
-          <a href="/vscode/">Visual Studio Code for P5.js</a>
-        </li>
+        <li><a href="/vscode/">Visual Studio Code for p5.js</a></li>
         <li><a href="/posenet/">PoseNet</a></li>
       </ul>
     </div>
-
-    <div class="home-card blue">
-      <h3>Physical Computing</h3>
+    <div>
+      <div class="section-header blue">Physical Computing</div>
       <ul class="page-list">
-        <li>
-          <a href="/physical-computing/">Physical Computing</a>
-        </li>
+        <li><a href="/physical-computing/">Physical Computing</a></li>
         <li><a href="/arduino/">Arduino</a></li>
         <li><a href="/raspberry-pi/">Raspberry Pi</a></li>
       </ul>
     </div>
+  </div>
 
-    <div class="home-card purple">
-      <h3>Teaching</h3>
+  <div class="two-column">
+    <div>
+      <div class="section-header purple"><a href="/math/">Math</a></div>
       <ul class="page-list">
-        <li><a href="/courses/">Course Notes</a></li>
-        <li><a href="/nyush/">NYUSH</a></li>
-      </ul>
-    </div>
-
-    <div class="home-card purple">
-      <h3>Math</h3>
-      <ul class="page-list">
-        <li><a href="/math/">Math Notes</a></li>
         <li><a href="/math/#probability-and-statistics">Probability &amp; Statistics</a></li>
         <li><a href="/math/#information-theory">Information Theory</a></li>
         <li><a href="/math/#random-processes">Random Processes</a></li>
         <li><a href="/math/#bayesian-inference">Bayesian Inference</a></li>
+        <li><a href="/math/#machine-learning">Machine Learning</a></li>
       </ul>
     </div>
+    <div>
+      <div class="section-header purple">Teaching</div>
+      <ul class="page-list">
+        <li><a href="/courses/">Course Notes</a></li>
+        <li><a href="/nyush/">NYU Shanghai</a></li>
+        <li><a href="/education/">Education Tools &amp; Materials</a></li>
+      </ul>
+    </div>
+  </div>
 
-    <div class="home-card gray">
-      <h3>Tools &amp; Reference</h3>
+  <div class="two-column">
+    <div>
+      <div class="section-header gray">Tools &amp; Reference</div>
       <ul class="page-list">
         <li><a href="/tools/">Tools</a></li>
         <li><a href="/reference/">Reference</a></li>
-        <li>
-          <a href="/education/">Education Tools and Materials</a>
-        </li>
-        <li><a href="/uses/">I Use</a></li>
+        <li><a href="/uses/">Uses</a> — what I use</li>
       </ul>
     </div>
-
-    <div class="home-card gray">
-      <h3>Other</h3>
+    <div>
+      <div class="section-header gray">Miscellaneous</div>
       <ul class="page-list">
         <li><a href="/woodworking/">Woodworking</a></li>
       </ul>
     </div>
   </div>
-
 </BaseLayout>

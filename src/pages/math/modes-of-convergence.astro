@@ -41,10 +41,12 @@ of one mode of convergence failing while another succeeds.
 <h2 id="scrubber">1. Convergence of random variables</h2>
 
 <p>
-Each colored trace is one sample path $X_n(\omega_k)$ — same $\omega_k$ across
-all $n$, different $\omega_k$ per path. The horizontal axis is $n$; the shaded
-band is the $\varepsilon$-tube around the limit $X$. Four readouts measure the
-four modes:
+Figure 1 separates the same sequence into three synchronized carriers. The
+outcome-space lens shows the bad set $B_n(\varepsilon)$, the tail set
+$A_n(\varepsilon)$, and the limiting exceptional set $\limsup B_n$. The path
+lens asks whether individual $\omega$-rows eventually stay inside the
+$\varepsilon$-tube. The value-space lens compares the law of $X_n$ with the
+target law of $X$.
 </p>
 
 <ul>
@@ -73,14 +75,14 @@ four modes:
   </p>
 </NotationAside>
 
-<Figure title="Figure 1 · Sample paths, four lenses" canvasId="fig-scrubber" width="820" height="520" readoutId="scrubber-readout">
+<Figure title="Figure 1 · Three lenses for convergence" canvasId="fig-scrubber" width="820" height="620" readoutId="scrubber-readout">
   <Fragment slot="legend">
     <div class="legend">
-      <span><span class="swatch" style="background:#1f4a8c"></span>sample paths $X_n(\omega_k)$</span>
-      <span><span class="swatch" style="background:rgba(184,65,42,0.18); border:1px solid #b8412a"></span>$\varepsilon$-tube around $X$</span>
-      <span><span class="swatch" style="background:#b8412a"></span>currently outside tube</span>
-      <span><span class="swatch" style="background:rgba(184,65,42,0.5)"></span>future escapes ($m \geq n$)</span>
-      <span><span class="swatch" style="background:transparent;border:2px solid #6b4592"></span>largest deviation ($L^p$ driver)</span>
+      <span><span class="swatch" style="background:#b8412a"></span>$B_n(\varepsilon)$: currently bad</span>
+      <span><span class="swatch" style="background:#d4690a"></span>$A_n(\varepsilon)$: tail bad</span>
+      <span><span class="swatch" style="background:#6b4592"></span>$\limsup B_n$: exceptional set</span>
+      <span><span class="swatch" style="background:#1f4a8c"></span>sample paths</span>
+      <span><span class="swatch" style="background:#2d7a3e"></span>$\mathrm&#123;law&#125;(X_n)$ vs. $\mathrm&#123;law&#125;(X)$</span>
     </div>
   </Fragment>
   <Fragment slot="controls">
@@ -90,6 +92,13 @@ four modes:
       <PresetButton id="preset-spike">Spike</PresetButton>
       <PresetButton id="preset-signflip">Sign flip</PresetButton>
       <PresetButton id="preset-cauchy">Cauchy mean</PresetButton>
+    </PresetRow>
+    <PresetRow>
+      <PresetButton id="view-all" active>All</PresetButton>
+      <PresetButton id="view-as">Almost sure</PresetButton>
+      <PresetButton id="view-prob">In probability</PresetButton>
+      <PresetButton id="view-dist">In distribution</PresetButton>
+      <PresetButton id="view-lp">$L^p$</PresetButton>
     </PresetRow>
     <ControlRange id="scrub-n" label="step $n$" valueId="scrub-n-v" min="1" max="256" step="1" value="32" />
     <ControlRange id="scrub-eps" label={String.raw`tube radius $\varepsilon$`} valueId="scrub-eps-v" min="0.02" max="1.5" step="0.01" value="0.2" />

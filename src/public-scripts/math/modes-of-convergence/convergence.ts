@@ -233,10 +233,18 @@ const PRESETS = {
     signflip: document.getElementById("preset-signflip"),
     cauchy: document.getElementById("preset-cauchy"),
   };
+  const viewButtons = {
+    all: document.getElementById("view-all"),
+    as: document.getElementById("view-as"),
+    prob: document.getElementById("view-prob"),
+    dist: document.getElementById("view-dist"),
+    lp: document.getElementById("view-lp"),
+  };
 
   let presetKey = "lln";
+  let viewMode = "all";
   let seedBase = 1;
-  let cache = null; // { paths: [{omega, values}], limitPerPath }
+  let cache = null; // { paths, outcomes, limits, outcomeLimits }
   let geom = null; // { padL, padT, plotW, plotH, maxN } in CSS px — for canvas dragging
   let dragging = false;
 
@@ -254,7 +262,18 @@ const PRESETS = {
       paths.push({ omega, values });
       limits.push(limit);
     }
-    cache = { paths, limits };
+    const outcomes = [];
+    const outcomeLimits = [];
+    const outcomeCount = 360;
+    for (let k = 0; k < outcomeCount; k++) {
+      const omega = (k + 0.5) / outcomeCount;
+      const localRng = seeded((seedBase * 104729 + k * 8191 + 13) | 0);
+      const values = preset.makePath(omega, preset.maxN, localRng);
+      const limit = preset.pathLimit ? preset.pathLimit(omega) : preset.limit;
+      outcomes.push({ omega, values });
+      outcomeLimits.push(limit);
+    }
+    cache = { paths, outcomes, limits, outcomeLimits };
   }
 
   function selectPreset(key) {
@@ -348,7 +367,7 @@ const PRESETS = {
     return ` · settling index n* = ${n == null ? "—" : n}`;
   }
 
-  function draw() {
+  function drawLegacy() {
     const preset = PRESETS[presetKey];
     const nCurrent = +nIn.value;
     const eps = +epsIn.value;
@@ -677,6 +696,319 @@ const PRESETS = {
     return "";
   }
 
+  function modeAlpha(mode) {
+    return viewMode === "all" || viewMode === mode ? 1 : 0.28;
+  }
+
+  function isBad(values, limit, n, eps) {
+    return Math.abs(values[n - 1] - limit) > eps;
+  }
+
+  function analyticTailBad(key, omega, n, eps) {
+    if (key === "typewriter") return eps < 1;
+    if (key === "signflip") return eps < 2;
+    if (key === "cauchy") return true;
+    if (key === "spike") {
+      const firstBad = Math.max(n, Math.floor(eps) + 1);
+      return omega < 1 / firstBad;
+    }
+    return null;
+  }
+
+  function tailBad(row, limit, n, eps) {
+    const analytic = analyticTailBad(presetKey, row.omega, n, eps);
+    if (analytic != null) return analytic;
+    const maxN = PRESETS[presetKey].maxN;
+    for (let m = n; m <= maxN; m++) {
+      if (isBad(row.values, limit, m, eps)) return true;
+    }
+    return false;
+  }
+
+  function limsupBad(key, omega, eps) {
+    if (key === "typewriter") return eps < 1;
+    if (key === "signflip") return eps < 2;
+    if (key === "cauchy") return true;
+    if (key === "spike") return omega === 0;
+    return false;
+  }
+
+  function targetCdf(preset, limit) {
+    if (preset === PRESETS.signflip) {
+      return (x) => (x < -1 ? 0 : x < 1 ? 0.5 : 1);
+    }
+    return (x) => (x < limit ? 0 : 1);
+  }
+
+  function computeLensMetrics(n, eps) {
+    const preset = PRESETS[presetKey];
+    const rows = cache.outcomes;
+    const limits = cache.outcomeLimits;
+    let bad = 0;
+    let tail = 0;
+    let limsup = 0;
+    let l1 = 0;
+    let l2 = 0;
+    const samples = [];
+    for (let k = 0; k < rows.length; k++) {
+      const row = rows[k];
+      const limit = limits[k];
+      const value = row.values[n - 1];
+      const d = Math.abs(value - limit);
+      if (d > eps) bad++;
+      if (tailBad(row, limit, n, eps)) tail++;
+      if (limsupBad(presetKey, row.omega, eps)) limsup++;
+      l1 += d;
+      l2 += d * d;
+      samples.push(value);
+    }
+    return {
+      pBad: bad / rows.length,
+      pTail: tail / rows.length,
+      pLimsup: limsup / rows.length,
+      l1: l1 / rows.length,
+      l2: l2 / rows.length,
+      levy: levyDistance(samples, targetCdf(preset, limits[0])),
+      samples,
+    };
+  }
+
+  function drawScrubLine(ctx, x, y0, y1) {
+    ctx.strokeStyle = "rgba(184,65,42,0.62)";
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(x, y0);
+    ctx.lineTo(x, y1);
+    ctx.stroke();
+  }
+
+  function drawOutcomeLens(ctx, x, y, w, h, n, eps) {
+    const rows = cache.outcomes;
+    const limits = cache.outcomeLimits;
+    const stripH = 22;
+    const gap = 9;
+    const names = [
+      { key: "B_n(eps)", color: C.red, mode: "prob", test: (row, limit) => isBad(row.values, limit, n, eps) },
+      { key: "A_n(eps)", color: C.orange, mode: "as", test: (row, limit) => tailBad(row, limit, n, eps) },
+      { key: "limsup B_n", color: C.purple, mode: "as", test: (row) => limsupBad(presetKey, row.omega, eps) },
+    ];
+    label(ctx, "Outcome space Ω=[0,1]: current bad sets, tail bad sets, exceptional set",
+      x, y - 15, C.text, "left");
+    plotBox(ctx, x, y, w, h);
+    for (let r = 0; r < names.length; r++) {
+      const rowY = y + 13 + r * (stripH + gap);
+      ctx.fillStyle = "rgba(227,221,208,0.48)";
+      ctx.fillRect(x + 76, rowY, w - 88, stripH);
+      const alpha = modeAlpha(names[r].mode);
+      for (let k = 0; k < rows.length; k++) {
+        if (!names[r].test(rows[k], limits[k])) continue;
+        const x0 = x + 76 + (k / rows.length) * (w - 88);
+        const x1 = x + 76 + ((k + 1) / rows.length) * (w - 88);
+        ctx.fillStyle = hexToRgba(names[r].color, 0.18 + 0.72 * alpha);
+        ctx.fillRect(x0, rowY, Math.max(1, x1 - x0), stripH);
+      }
+      ctx.strokeStyle = C.grid;
+      ctx.strokeRect(x + 76, rowY, w - 88, stripH);
+      label(ctx, names[r].key, x + 66, rowY + stripH / 2, C.textDim, "right", "middle");
+    }
+    label(ctx, "0", x + 76, y + h - 12, C.textDim, "left");
+    label(ctx, "1", x + w - 12, y + h - 12, C.textDim, "right");
+  }
+
+  function drawPathLens(ctx, x, y, w, h, nCurrent, eps, numPaths) {
+    const preset = PRESETS[presetKey];
+    const paths = cache.paths.slice(0, numPaths);
+    const [yMin, yMax] = preset.yRange;
+    const maxN = preset.maxN;
+    const xToPx = (n) => x + ((n - 1) / (maxN - 1)) * w;
+    const yToPx = (v) => y + (1 - (v - yMin) / (yMax - yMin)) * h;
+    const xStep = maxN <= 64 ? 8 : 32;
+
+    label(ctx, "Sample paths: does this ω eventually stay inside the ε-tube?",
+      x, y - 15, C.text, "left");
+    plotBox(ctx, x, y, w, h);
+    ctx.strokeStyle = C.grid;
+    for (const yt of makeTicks(yMin, yMax, 5)) {
+      const py = yToPx(yt);
+      ctx.beginPath();
+      ctx.moveTo(x, py);
+      ctx.lineTo(x + w, py);
+      ctx.stroke();
+      label(ctx, formatTick(yt), x - 7, py, C.textDim, "right", "middle");
+    }
+    for (let n = xStep; n <= maxN; n += xStep) {
+      const px = xToPx(n);
+      ctx.fillStyle = C.grid;
+      ctx.fillRect(px, y, 1, h);
+      label(ctx, String(n), px, y + h + 6, C.textDim, "center", "top");
+    }
+    label(ctx, "n", x + w / 2, y + h + 22, C.text, "center");
+
+    drawScrubLine(ctx, xToPx(nCurrent), y, y + h);
+    const limitForBand = preset.pathLimit ? 0 : preset.limit;
+    const bandTop = clamp(yToPx(limitForBand + eps), y, y + h);
+    const bandBot = clamp(yToPx(limitForBand - eps), y, y + h);
+    ctx.fillStyle = "rgba(184,65,42,0.09)";
+    ctx.fillRect(x, Math.min(bandTop, bandBot), w, Math.abs(bandBot - bandTop));
+    ctx.strokeStyle = "rgba(184,65,42,0.42)";
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(x, bandTop);
+    ctx.lineTo(x + w, bandTop);
+    ctx.moveTo(x, bandBot);
+    ctx.lineTo(x + w, bandBot);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    let lpOutlier = { dev: -1, x: 0, y: 0 };
+    for (let k = 0; k < paths.length; k++) {
+      const path = paths[k];
+      const limit = cache.limits[k];
+      const willLeave = tailBad(path, limit, nCurrent, eps);
+      const currentBad = isBad(path.values, limit, nCurrent, eps);
+      const alpha = willLeave ? 0.72 * modeAlpha("as") : 0.18;
+      ctx.strokeStyle = willLeave ? `rgba(31,74,140,${alpha})` : `rgba(90,101,119,${0.55 * modeAlpha("as")})`;
+      ctx.lineWidth = willLeave ? 1.3 : 1;
+      ctx.beginPath();
+      for (let n = 1; n <= maxN; n++) {
+        const px = xToPx(n);
+        const py = yToPx(path.values[n - 1]);
+        if (n === 1) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      const curVal = path.values[nCurrent - 1];
+      const px = xToPx(nCurrent);
+      const py = yToPx(curVal);
+      const dev = Math.abs(curVal - limit);
+      if (dev > lpOutlier.dev) lpOutlier = { dev, x: px, y: py };
+      ctx.fillStyle = currentBad ? hexToRgba(C.red, modeAlpha("prob")) : hexToRgba(C.blue, 0.82);
+      ctx.beginPath();
+      ctx.arc(px, py, currentBad ? 4.2 : 3, 0, Math.PI * 2);
+      ctx.fill();
+      if (!currentBad && willLeave) {
+        ctx.fillStyle = hexToRgba(C.orange, modeAlpha("as"));
+        ctx.beginPath();
+        ctx.moveTo(px + 7, py);
+        ctx.lineTo(px + 13, py - 5);
+        ctx.lineTo(px + 13, py + 5);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    if (lpOutlier.dev >= 0) {
+      ctx.strokeStyle = hexToRgba(C.purple, modeAlpha("lp"));
+      ctx.lineWidth = 2.1;
+      ctx.beginPath();
+      ctx.arc(lpOutlier.x, lpOutlier.y, 8.5, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  function drawDistributionLens(ctx, x, y, w, h, samples, levy) {
+    const preset = PRESETS[presetKey];
+    const [lo, hi] = preset.yRange;
+    const bins = 28;
+    const counts = new Array(bins).fill(0);
+    for (const sample of samples) {
+      const idx = clamp(Math.floor(((sample - lo) / (hi - lo)) * bins), 0, bins - 1);
+      counts[idx]++;
+    }
+    const maxCount = Math.max(1, ...counts);
+    const axisY = y + h - 24;
+    label(ctx, "Value space: law(X_n)=P∘X_n^{-1} versus law(X)",
+      x, y - 15, C.text, "left");
+    plotBox(ctx, x, y, w, h);
+    for (let i = 0; i < bins; i++) {
+      const barX = x + 12 + (i / bins) * (w - 24);
+      const barW = (w - 24) / bins - 2;
+      const barH = (counts[i] / maxCount) * (h - 50);
+      ctx.fillStyle = hexToRgba(C.green, 0.22 + 0.58 * modeAlpha("dist"));
+      ctx.fillRect(barX, axisY - barH, barW, barH);
+    }
+    const valueToPx = (value) => x + 12 + ((value - lo) / (hi - lo)) * (w - 24);
+    ctx.strokeStyle = C.axis;
+    ctx.beginPath();
+    ctx.moveTo(x + 12, axisY);
+    ctx.lineTo(x + w - 12, axisY);
+    ctx.stroke();
+    for (const tick of makeTicks(lo, hi, 4)) {
+      const px = valueToPx(tick);
+      ctx.strokeStyle = C.grid;
+      ctx.beginPath();
+      ctx.moveTo(px, axisY);
+      ctx.lineTo(px, axisY + 5);
+      ctx.stroke();
+      label(ctx, formatTick(tick), px, axisY + 8, C.textDim, "center", "top");
+    }
+    ctx.strokeStyle = hexToRgba(C.red, modeAlpha("dist"));
+    ctx.lineWidth = 2.2;
+    ctx.setLineDash([5, 4]);
+    const targetXs = preset === PRESETS.signflip ? [-1, 1] : [preset.limit];
+    for (const target of targetXs) {
+      const px = clamp(valueToPx(target), x + 12, x + w - 12);
+      ctx.beginPath();
+      ctx.moveTo(px, y + 12);
+      ctx.lineTo(px, axisY);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    label(ctx, `d_L = ${levy.toFixed(3)}`, x + w - 10, y + 10, C.green, "right");
+  }
+
+  function hexToRgba(hex, alpha) {
+    const n = parseInt(hex.slice(1), 16);
+    const r = (n >> 16) & 255;
+    const g = (n >> 8) & 255;
+    const b = n & 255;
+    return `rgba(${r},${g},${b},${clamp(alpha, 0, 1)})`;
+  }
+
+  function draw() {
+    const preset = PRESETS[presetKey];
+    const nCurrent = +nIn.value;
+    const eps = +epsIn.value;
+    const numPaths = +pathsIn.value;
+    setText("scrub-n-v", String(nCurrent));
+    setText("scrub-eps-v", eps.toFixed(2));
+    setText("scrub-paths-v", String(numPaths));
+    for (const k of Object.keys(viewButtons)) {
+      viewButtons[k]?.classList.toggle("active", k === viewMode);
+    }
+
+    const { ctx, w, h } = setupCanvas(canvas);
+    clear(ctx, w, h);
+    const padL = 72;
+    const padR = 24;
+    const padT = 30;
+    const gap = 38;
+    const plotW = w - padL - padR;
+    const outcomeH = 110;
+    const pathH = Math.max(210, h * 0.37);
+    const distH = h - padT - outcomeH - pathH - gap * 2 - 30;
+    const outcomeY = padT;
+    const pathY = outcomeY + outcomeH + gap;
+    const distY = pathY + pathH + gap;
+    geom = { padL, padT: pathY, plotW, plotH: pathH, maxN: preset.maxN };
+
+    const metrics = computeLensMetrics(nCurrent, eps);
+    drawOutcomeLens(ctx, padL, outcomeY, plotW, outcomeH, nCurrent, eps);
+    drawPathLens(ctx, padL, pathY, plotW, pathH, nCurrent, eps, numPaths);
+    drawDistributionLens(ctx, padL, distY, plotW, Math.max(120, distH), metrics.samples, metrics.levy);
+
+    const tailNote = presetKey === "lln" ? " (finite visible horizon)" : "";
+    readoutRows("scrubber-readout", [
+      ["preset", preset.name + " (limit X = " + (preset.pathLimit ? "±1" : preset.limit) + ")"],
+      ["P(B_n(ε)) current bad set", formatPct(metrics.pBad) + verdict(presetKey, "prob", metrics.pBad, nCurrent)],
+      ["P(A_n(ε)) tail bad set" + tailNote, formatPct(metrics.pTail) + verdict(presetKey, "as", metrics.pTail, nCurrent)],
+      ["P(limsup B_n) exceptional set", formatPct(metrics.pLimsup)],
+      ["d_L(law(X_n), law(X))", metrics.levy.toFixed(3) + verdict(presetKey, "dist", metrics.levy, nCurrent)],
+      ["E|X_n − X|", metrics.l1.toFixed(3) + verdict(presetKey, "Lp", metrics.l1, nCurrent)],
+      ["E|X_n − X|²", metrics.l2.toFixed(3)],
+    ]);
+  }
+
   // Lévy distance between the empirical CDF of `samples` and a reference CDF.
   // The Kolmogorov (sup |F_n − F|) distance does NOT metrize convergence in
   // distribution when the limit law has an atom: at a jump of F the sup never
@@ -733,6 +1065,9 @@ const PRESETS = {
 
   for (const [k, btn] of Object.entries(presetButtons)) {
     if (btn) btn.addEventListener("click", () => selectPreset(k));
+  }
+  for (const [k, btn] of Object.entries(viewButtons)) {
+    if (btn) btn.addEventListener("click", () => { viewMode = k; draw(); });
   }
   nIn.addEventListener("input", draw);
   epsIn.addEventListener("input", draw);

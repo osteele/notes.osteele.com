@@ -5,9 +5,13 @@ interface Props {
   title: string;
   description?: string;
   enableMath?: boolean;
+  // Last breadcrumb crumb in the site nav. Defaults to the math index; the /ml/
+  // index passes its own label/href.
+  crumbLabel?: string;
+  crumbHref?: string;
 }
 
-const { title, description, enableMath = false } = Astro.props;
+const { title, description, enableMath = false, crumbLabel = "math", crumbHref = "/math/" } = Astro.props;
 const metaDescription = description ?? descriptionForPath(Astro.url.pathname);
 const katexOnload = "renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\\\[',right:'\\\\]',display:true},{left:'\\\\(',right:'\\\\)',display:false}]});";
 ---
@@ -91,7 +95,7 @@ const katexOnload = "renderMathInElement(document.body,{delimiters:[{left:'$$',r
       <span class="sep">/</span>
       <a href="/">notes</a>
       <span class="sep">/</span>
-      <a class="current" href="/math/">math</a>
+      <a class="current" href={crumbHref}>{crumbLabel}</a>
     </nav>
     <slot />
   </body>

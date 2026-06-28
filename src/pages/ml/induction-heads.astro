@@ -1,0 +1,171 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Induction Heads" breadcrumb="Induction Heads" section="phenomena-and-circuits">
+<Hero title="Induction Heads" subtitle="An induction head uses a repeated prefix to copy the token that followed the earlier occurrence." />
+
+<p>
+An induction head implements one rule. When a sequence contains the pair
+<code>[A][B]</code> and the token <code>[A]</code> appears again later, the head
+predicts <code>[B]</code> as the continuation. It does this by attending from the
+second <code>A</code> back to the position just after the first <code>A</code>,
+then writing a vector that promotes whatever token sat there. The result is
+prompt-local copying: the model continues a repeated pattern using evidence from
+the prompt rather than from its weights.
+</p>
+
+<p>
+The rule is narrow, but it is one of the few transformer behaviors with a
+mechanism that has been traced end to end. It also marks a transition in what a
+model can do. A network that notices "this token followed that token earlier" has
+the smallest useful form of in-context learning.
+</p>
+
+<Figure title="Figure 1 · Prefix match then copy" canvasId="induction-canvas" width="760" height="390" readoutId="induction-readout">
+<Fragment slot="controls">
+  <ControlRange id="induction-step" label="step" valueId="induction-step-v" min="0" max="5" step="1" value="3" />
+</Fragment>
+</Figure>
+
+<h2>1. The copy rule</h2>
+
+<p>
+Take the toy sequence <code>A B x y A ?</code>. The head sits at the final
+position, where the current token is the repeated <code>A</code>. The step
+control walks through what it does: match the current <code>A</code> against the
+earlier <code>A</code>, shift attention by one position to the <code>B</code> that
+followed it, and copy <code>B</code> into the prediction. The earlier
+<code>B</code> is the answer because it is what came next last time the prefix
+appeared.
+</p>
+
+<p>
+The offset is the part worth pausing on. The head does not attend to the matching
+<code>A</code>; it attends to the token <em>after</em> it. A pattern that pointed
+at the match itself would predict another <code>A</code>, which is useless for
+continuation. The one-position shift is what turns a repeat detector into a copy
+mechanism.
+</p>
+
+<h2>2. Two heads in composition</h2>
+
+<p>
+A single attention head cannot both find the earlier <code>A</code> and read the
+token after it, because its keys describe individual positions, not their
+neighbors. The mechanism needs two heads in different layers, and the earlier one
+sets up the later one.
+</p>
+
+<table class="formula-table">
+  <tbody>
+    <tr>
+      <th>Layer $\ell$</th>
+      <td>previous-token head</td>
+      <td>At each position $t$, attend to $t-1$ and write the identity of $x_&#123;t-1&#125;$ into the stream. Position $t$ now carries a tag, "the token before me was $x_&#123;t-1&#125;$".</td>
+    </tr>
+    <tr>
+      <th>Layer $\ell+1$</th>
+      <td>induction head</td>
+      <td>At the repeated $A$, form a query from $A$ and match it against those tags. The position holding $B$ tags itself "previous token was $A$", so the query lands there. OV copies $B$ toward the output.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+This is QK-composition, the handoff described on the
+<a href="/ml/qk-ov-circuits/">QK and OV circuits</a> page. The previous-token
+head's write becomes part of the induction head's key, so the second head attends
+by a relationship the first head computed rather than by raw token content. The
+copy itself is the induction head's OV path: it writes in a direction that the
+unembedding reads as <code>B</code>. Routing and writing stay separable, which is
+why the same head can copy correctly or, in a copy-suppression variant, push a
+repeated token down instead.
+</p>
+
+<Aside>
+  <strong>Prefix match, not literal token match.</strong> The query and key live
+  in learned coordinates, so the match tolerates near-repeats: a different casing,
+  a synonym, or a token that plays the same role. Heads that generalize the rule
+  this way are sometimes called fuzzy or semantic induction heads. The crisp
+  <code>[A][B]</code> case is the cleanest instance, not the only one.
+</Aside>
+
+<h2>3. The induction bump</h2>
+
+<p>
+Induction heads tend to appear suddenly during training rather than fading in.
+Across a short window of training, the model's loss drops faster than the
+surrounding trend, and a separate measurement of in-context ability rises at the
+same time. The in-context score is the gap between the loss on a late token and
+the loss on an early token in the same sequence: a model that uses the prompt
+predicts later tokens better, so the gap grows once copying is available.
+</p>
+
+<Figure title="Figure 2 · In-context score forms across a narrow window" canvasId="induction-bump-canvas" width="760" height="390" readoutId="induction-bump-readout">
+<Fragment slot="controls">
+  <ControlRange id="induction-bump-step" label="training progress" valueId="induction-bump-step-v" min="0" max="100" step="1" value="50" />
+</Fragment>
+</Figure>
+
+<p>
+Slide the marker through training. Before the shaded window the in-context score
+is flat: the model has no mechanism for using a repeated prefix. Inside the
+window the score climbs sharply while the loss curve dips below its own trend,
+the small acceleration that gives the phenomenon its name. After the window the
+score sits at a higher plateau, and copying is part of the model's behavior. The
+two measurements move together because the same circuit drives both.
+</p>
+
+<h2>4. What induction does and does not cover</h2>
+
+<p>
+Induction is a real lower bound on in-context learning, not an account of all of
+it. The mechanism is symbolic and local: when $A$ recurs, continue with what
+followed $A$ before. That explains exact and near-exact repetition, and it
+plausibly seeds richer abilities, since later heads can read the same
+previous-token tags for other purposes.
+</p>
+
+<p>
+It does not explain in-context learning that has no surface repeat to match, such
+as inferring a format from a few labeled examples or following an instruction
+stated once. Those behaviors involve representations that the prefix-match rule
+does not name. The value of the induction story is its specificity: it shows that
+at least one in-context behavior is implemented by an identifiable circuit, which
+makes it a model for what a mechanistic account of a harder behavior would need.
+</p>
+
+<Aside>
+  <strong>Induction heads have a specified copy circuit.</strong> The prefix
+  match and the copy are each tied to a concrete component. Most attention-head
+  labels name a looser family of patterns whose mechanism has not been pinned
+  down to the same degree.
+</Aside>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>Olsson, Elhage, Nanda, Joseph, DasSarma, Henighan, Mann, and coauthors (2022), <a href="https://arxiv.org/abs/2209.11895">"In-context Learning and Induction Heads"</a>, for the induction-head account, the in-context score, and the formation bump.</li>
+    <li>Elhage, Nanda, Olsson, and coauthors (2021), <a href="https://transformer-circuits.pub/2021/framework/index.html">"A Mathematical Framework for Transformer Circuits"</a>, for the two-layer attention-only setting and QK-composition.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/qk-ov-circuits/">QK and OV Circuits</a> for the composition handoff the two heads use.</li>
+    <li><a href="/ml/attention/">Attention</a> for the softmax read operation behind the prefix match.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/qk-ov-circuits/", tag: "Before", title: "QK and OV Circuits", role: "The decomposition behind the copy mechanism." },
+  { href: "/ml/variable-binding/", tag: "Next", title: "Variable Binding", role: "Copying as a building block for resolving nonlocal references." },
+  { href: "/ml/attention-head-types/", tag: "Labels", title: "Attention Head Labels", role: "Why induction is unusually crisp among labels." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

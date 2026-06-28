@@ -37,7 +37,7 @@ filters, Kalman family) is a different problem shape and gets
 <a href="/math/state-space-filtering/">its own page</a>.
 </p>
 
-<h2 id="big-picture">1. The big picture</h2>
+<h2 id="big-picture">1. Sampling methods estimate expectations under a target</h2>
 
 <p>
 Every method below evaluates an expectation against some target $\pi(x)$, typically a
@@ -60,8 +60,7 @@ They differ in three axes:
 </ul>
 
 <p>
-The "What to use" table at the bottom of this page collapses the choice into one
-view.
+The decision table at the end reduces the choice to one view.
 </p>
 
 <Figure title="Figure 1 · How the sampler creates probability mass" readoutId="fig0-readout">
@@ -790,10 +789,10 @@ shallow wells before cooling makes that impossible.
 </Fragment>
 </Figure>
 
-<h2 id="side-by-side">4. The algorithms side by side</h2>
+<h2 id="side-by-side">4. Shared algorithm structure</h2>
 
 <p>
-All of the methods on this page produce the same kind of output (an estimate
+These methods produce the same kind of output (an estimate
 of $\mathbb E_\pi[f]$ or samples from $\pi$) but differ in what they ask of
 $\pi$, how they generate candidate states, and how they update. Lining the
 algorithms up row by row makes the family resemblances and the
@@ -1082,11 +1081,11 @@ return chain
   </p>
 </div>
 
-<h2 id="decision">6. What to use where</h2>
+<h2 id="decision">6. Method choice by target</h2>
 
 <p>
-The table below collapses the static-target methods of this page into a one-glance
-reference. Tags echo the section colors: <span class="tag exact">exact</span> means
+The decision table summarizes static-target methods. Tags echo the section colors:
+<span class="tag exact">exact</span> means
 returns-true-samples-from-$\pi$, <span class="tag iid">i.i.d.</span> means draws
 are independent, <span class="tag mcmc">mcmc</span> means correlated chain samples.
 For state-space targets (Kalman, EKF, UKF, particle filter), see

@@ -3,6 +3,25 @@
 Prospective work for the `/math/` notes on `notes.osteele.com`. Items live here
 until they ship; once shipped they leave the roadmap and live in the commit log.
 
+## Mechanistic Interpretability — deferred deep dives
+
+The shipped `/math/` Mechanistic Interpretability section covers standing
+concepts and methods only; each page stops before any of my own results. The
+following deep dives were scoped out of that section because they only make
+sense as an account of a specific research program, and are deferred to the
+companion `papers` site rather than the general `/math/` notes:
+
+- **Cross-model representation geometry** — stitching, relative representations,
+  the Platonic representation hypothesis, affine-in-subspace alignment.
+- **Tensor-product / DisCoCat composition** — structured compositional
+  representations beyond the additive–bilinear–nonlinear probe families.
+- **Named circuits & motifs** — IOI, greater-than, docstring; path patching as
+  the localization method.
+- **Inference circuits** — syllogism; recall vs. reasoning.
+
+Pull any one onto this site only if it earns a standalone interactive figure on
+its own merits.
+
 ## Explainer-page consolidation
 
 Additional consolidation still worth doing:

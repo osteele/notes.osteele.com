@@ -38,7 +38,7 @@ move together. Regression is just conditioning that joint Gaussian on observed v
   pinches near observations and expands away from them.
 </Aside>
 
-<h2>1. Kernel zoo</h2>
+<h2>1. Common kernels</h2>
 
 <p>
 The kernel encodes smoothness, length-scale, signal variance, periodicity, and
@@ -172,7 +172,7 @@ where posterior uncertainty is high. Drag training points to reshape the surface
 
 <Figure title="Figure 5 · 2-D posterior mean with uncertainty transparency" canvasId="fig5" width="760" height="420" readoutId="fig5-readout" />
 
-<h2>6. Acquisition teaser</h2>
+<h2>6. Acquisition functions select the next point</h2>
 
 <p>
 Bayesian optimization uses the GP posterior to choose where to evaluate next. Expected
@@ -189,7 +189,7 @@ improvement is high where the mean is promising, the uncertainty is large, or bo
 </Fragment>
 </Figure>
 
-<h2>What to remember</h2>
+<h2>GP regression objects</h2>
 
 <div class="compare">
   <div data-target-figure="fig1" data-hint-control="fig1-ell"><strong>GP prior</strong>Every finite set of function values is jointly Gaussian.</div>

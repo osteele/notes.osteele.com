@@ -1,0 +1,136 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Dependency Trees & Structural Probes" breadcrumb="Structural Probes" section="interpretability-methods">
+<Hero title="Dependency Trees & Structural Probes" subtitle="Structural probes test whether dependency-tree distance and depth are readable as geometry." />
+
+<p>
+Dependency grammar represents a sentence as a tree. Each word depends on a head.
+For example, an adjective depends on the noun it modifies, a subject depends on
+its verb, and a determiner depends on its noun. This gives two geometric
+targets: distance between words in the tree, and depth of each word from the
+root.
+</p>
+
+<p>
+A structural probe asks whether a linear transformation of contextual word
+representations can make those syntactic quantities visible. In the original
+version, squared distance in the transformed space is trained to match tree
+distance, and squared norm is trained to match tree depth. If the transformed
+geometry recovers a dependency tree, syntax is not just linearly classifiable one
+edge at a time; a whole tree-like structure is present in the representation.
+</p>
+
+<Figure title="Figure 1 · Structural probe as tree geometry" canvasId="structural-probe-canvas" width="760" height="440" readoutId="structural-probe-readout">
+<Fragment slot="controls">
+  <ControlRange id="structural-layer" label="layer" valueId="structural-layer-v" min="0" max="12" step="1" value="6" />
+</Fragment>
+</Figure>
+
+<h2>1. The syntactic object</h2>
+
+<p>
+A dependency tree is sparse: a sentence with five words has four dependency
+edges. But the structural probe trains against richer quantities. Every pair of
+words has a tree distance, and every word has a depth. Those targets turn the
+tree into a geometry problem.
+</p>
+
+<p>
+For a concrete case, take "The cat sat on the mat." The tree distance from cat
+to sat is 1, and from cat to mat is 3, following the path from cat to sat to on
+to mat. Depth counts from the root, so sat has depth 0 and cat has depth 1.
+</p>
+
+<dl class="definition-list">
+  <dt>Tree distance</dt>
+  <dd>The number of dependency edges on the shortest path between two words. In "The cat sat on the mat," cat to mat is 3, along cat to sat to on to mat. The distance probe learns a linear map B so the squared distance $\lVert B(h_i - h_j)\rVert^2$ between contextual vectors approximates this count for every pair of words.</dd>
+  <dt>Tree depth</dt>
+  <dd>The number of edges from a word to the root. The root has depth 0; in the same sentence sat is the root and cat has depth 1. A separately fit probe matches the squared norm $\lVert B h_i\rVert^2$ to depth, which orders words from root to leaves.</dd>
+  <dt>MST extraction</dt>
+  <dd>Predicted pairwise distances do not by themselves form a tree. The minimum spanning tree over them gives the unrooted, unlabeled tree the probe is scored on, compared edge for edge against the gold parse.</dd>
+</dl>
+
+<table class="axis-grid">
+  <caption>Attachment scores, by what they require</caption>
+  <thead>
+    <tr><th></th><th>Directed (head → dependent)</th><th>Undirected</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Unlabeled</th>
+      <td><strong>UAS</strong> Correct head and direction for each word.</td>
+      <td><strong>UUAS</strong> Correct edge, ignoring direction. What structural probes are scored on, because the extracted MST is unrooted.</td>
+    </tr>
+    <tr>
+      <th>Labeled</th>
+      <td><strong>LAS</strong> Correct head plus the relation label (nsubj, obj, …).</td>
+      <td class="na">Not standard. Structural probes recover geometry, not labels, so neither labeled score applies to them.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>2. Middle-layer peak</h2>
+
+<p>
+Many probing studies find that syntactic information is easiest to decode in
+middle layers. Early layers are close to surface form, while later layers are
+closer to task-specific or next-token-output information. Syntax is an
+intermediate abstraction, so it often peaks in the middle. The layer slider uses
+a schematic curve; it is not a measurement from a particular model.
+</p>
+
+<p>
+In Hewitt and Manning's original setup, a rank-128 distance probe on BERT-base
+recovers roughly 82% UUAS on the Penn Treebank test set, read from around layer
+7.
+</p>
+
+<Aside>
+  <strong>Geometry is not parsing.</strong> A probe that recovers a tree is not
+  the same thing as showing the model runs a parser internally. It shows that
+  parse-like structure can be read from the representation under the probe's
+  assumptions.
+</Aside>
+
+<h2>3. Controls and limitations</h2>
+
+<p>
+Structural probes inherit the general probe-validity problem. Baselines, control
+tasks, and data splits affect the interpretation. A model may encode word
+position, lexical association, or local adjacency in ways that help tree
+recovery without amounting to syntactic knowledge. Lexical controls and
+controlled syntactic phenomena reduce semantic shortcuts.
+</p>
+
+<p>
+The conditional conclusion is narrower: under this transformation and
+evaluation, dependency-like geometry is more available than in the chosen
+baselines.
+</p>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>Hewitt and Manning (2019), <a href="https://aclanthology.org/N19-1419/">"A Structural Probe for Finding Syntax in Word Representations"</a>, for the distance/depth probe.</li>
+    <li>Hall Maudslay and Cotterell (2021), <a href="https://arxiv.org/abs/2106.02559">"Do Syntactic Probes Probe Syntax?"</a>, for lexical controls.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/probes-validity/">Probes and Validity</a> for the broader probe-evidence framework.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/semantic-composition-probes/", tag: "Next", title: "Compositionality & Semantic Probes", role: "Semantic probes test how meanings combine." },
+  { href: "/ml/variable-binding/", tag: "Related", title: "Variable Binding", role: "Nonlocal dependencies across language, code, and logic." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

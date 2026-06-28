@@ -14,9 +14,9 @@ import NotationAside from "../../components/explainer/NotationAside.astro";
 
 <OrientationNote>
   <p>
-    This page treats hypothesis tests as comparisons between two probability
-    measures. The usual threshold, significance, power, and ROC diagrams are here,
-    but the organizing object is the likelihood ratio between the two laws.
+    Hypothesis tests compare two probability measures. The usual threshold,
+    significance, power, and ROC diagrams remain, but the organizing object is
+    the likelihood ratio between the two laws.
   </p>
 </OrientationNote>
 
@@ -24,8 +24,8 @@ import NotationAside from "../../components/explainer/NotationAside.astro";
 Classical hypothesis testing compares a statistic against a threshold. Under the null
 hypothesis $H_0$, crossing the threshold is a false positive with probability
 $\alpha$. Under the alternative $H_1$, failing to cross is a false negative with
-probability $\beta$, and the power is $1-\beta$. Below the surface, every panel on
-this page is a different view of the same pair of distributions $(P_0, P_1)$.
+probability $\beta$, and the power is $1-\beta$. Below the surface, every panel is
+a different view of the same pair of distributions $(P_0, P_1)$.
 </p>
 
 <h2 id="overlap">1. The α/β overlap</h2>
@@ -72,7 +72,7 @@ This view makes the measure-theoretic story explicit: the rule depends on the da
 only through $\Lambda$, which is a Radon–Nikodym derivative $dP_1/dP_0$.
 </p>
 
-<NotationAside label="Why this matters">
+<NotationAside label="Likelihood ratios as Radon-Nikodym derivatives">
   <p>
     Writing $\Lambda = dP_1/dP_0$ rather than $p_1/p_0$ is not just notation.
     The Radon–Nikodym derivative is well-defined whenever $P_1 \ll P_0$, with

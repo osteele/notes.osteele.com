@@ -1,16 +1,22 @@
-// Single source of truth for the curated math-notes directory shown on the
-// /math/ index page. Layouts also consult this to look up a page's description
-// for `<meta name="description">` / Open Graph tags via `descriptionForPath`.
+// Single source of truth for the curated notes directories. Two sibling
+// indexes consume these arrays: `/math/` (mathematics) renders `mathSections`,
+// and `/ml/` (machine learning) renders `mlSections`. Layouts also consult this
+// to look up a page's description for `<meta name="description">` / Open Graph
+// tags via `descriptionForPath`, which is built from BOTH arrays.
 //
 // Ported from viz.osteele.com (where these pages originated as interactive
-// visualizations). On notes.osteele.com the same pages are treated as study
-// notes that happen to be interactive; they live under /math/<slug>/.
+// visualizations). Here the same pages are treated as study notes that happen
+// to be interactive; they live under /math/<slug>/ or /ml/<slug>/.
 
 export interface SectionItem {
   href: string;
   title: string;
   desc: string;
   badge?: string;
+  // Optional arc/sub-section id, matched against `Section.groups[].id`. When a
+  // section defines `groups`, the index renders items under their group's
+  // sub-header; items without a group fall through to an ungrouped run.
+  group?: string;
 }
 
 export interface Section {
@@ -22,28 +28,32 @@ export interface Section {
   accent: string;
   tint: string;
   glyph: string;
+  // Optional ordered sub-sections. When present, the index groups `items` by
+  // `item.group` under these headers; when absent, items render as one grid.
+  groups?: { id: string; title: string }[];
   items: SectionItem[];
 }
 
-const caveatBase = "These pages aren't a complete or standard treatment of the subject. Each sits at the intersection of a topic from coursework, a topic I wanted to study more closely, and a topic I thought an interactive figure could make more accessible.";
-const caveatMeasure = "Some also take a more measure-theoretic angle than the course, or than a typical introduction.";
-const caveatWip = "All are works in progress — not externally reviewed, and in places I haven't finished checking the implementation against the math.";
+const caveatBase = "Selective study notes; not externally reviewed.";
+const caveatMeasure = "Some use measure-theoretic notation alongside density notation.";
+const caveatWip = "Some derivations and implementations still need checking.";
 export const courseCaveat = `${caveatBase} ${caveatWip}`;
 export const courseCaveatMeasure = `${caveatBase} ${caveatMeasure} ${caveatWip}`;
-export const selfStudyCaveat = "Unlike the coursework sections, these pages aren't tied to a class — they're topics I studied on my own. Like everything here, they're works in progress, not externally reviewed.";
+export const selfStudyCaveat = "Self-study notes; not externally reviewed. Some derivations and implementations still need checking.";
+export const mlCaveat = "Work in progress; not externally reviewed.";
 
-export const sections: Section[] = [
+export const mathSections: Section[] = [
   {
     id: "probability-and-statistics",
     title: "Probability & Statistics",
-    description: "Foundations, estimation, and dependence. Visualizations I built while working these out for myself.",
+    description: "Foundations, estimation, dependence, and convergence.",
     caveat: courseCaveat,
     accent: "#0d9488",
     tint: "#ccfbf1",
     glyph: "∑",
     items: [
       { href: "/math/measure-theory/", title: "Measure Theory & Random Variables", desc: "Measurable spaces, probability measures, pushforward measures, densities, and importance sampling" },
-      { href: "/math/notation/", title: "Notation: density form vs. measure-theoretic form", desc: "A bilingual dictionary for the two ways probability is written on this site, plus the four places where the choice of language actually matters" },
+      { href: "/math/notation/", title: "Notation: density form vs. measure-theoretic form", desc: "Density notation, measure-theoretic notation, and the places where the choice changes the statement" },
       { href: "/math/named-distributions/", title: "Named Distributions", desc: "How Bernoulli, Poisson, Gaussian, Cauchy, chi-square, t, F, conjugate priors, and heavy-tail laws are related" },
       { href: "/math/modes-of-convergence/", title: "Modes of Convergence", desc: "Almost sure, in probability, in distribution, in L^p — the implication lattice, counterexamples as sample paths, Markov/Chebyshev/Chernoff bounds, and MCT/DCT/Fatou" },
       { href: "/math/calculus-of-variations/", title: "Calculus of Variations", desc: "First variations, Euler-Lagrange residuals, curve relaxation, and the brachistochrone race" },
@@ -57,7 +67,7 @@ export const sections: Section[] = [
   {
     id: "information-theory",
     title: "Information Theory",
-    description: "Surprise, divergence, and the geometry of distributions. Visualizations I built while working these out for myself.",
+    description: "Surprise, divergence, and the geometry of distributions.",
     caveat: selfStudyCaveat,
     accent: "#b45309",
     tint: "#fef3c7",
@@ -72,7 +82,7 @@ export const sections: Section[] = [
   {
     id: "random-processes",
     title: "Random Processes",
-    description: "Stochastic processes in time, frequency, and function space. Visualizations I built while working these out for myself.",
+    description: "Stochastic processes in time, frequency, and function space.",
     attribution: "Topics guided by (but not strictly following) Prof. Ercan Kuruoğlu's Fall 2025 Random Processes course at Tsinghua SIGS.",
     caveat: courseCaveat,
     accent: "#7c3aed",
@@ -89,7 +99,7 @@ export const sections: Section[] = [
   {
     id: "bayesian-inference",
     title: "Bayesian Inference",
-    description: "Approximating intractable posteriors by sampling and by optimization. Visualizations I built while working these out for myself.",
+    description: "Approximating intractable posteriors by sampling and by optimization.",
     attribution: "Material draws on Prof. Ercan Kuruoğlu's Spring 2026 Bayesian Inference and Monte Carlo Simulation course at Tsinghua SIGS.",
     caveat: courseCaveatMeasure,
     accent: "#0284c7",
@@ -110,18 +120,59 @@ export const sections: Section[] = [
       { href: "/math/bayesian-neural-networks/", title: "Bayesian Neural Networks", desc: "Weight posteriors, predictive function ensembles, Laplace approximation, evidence, Occam's hill, and prior mismatch" },
     ],
   },
+];
+
+export const mlSections: Section[] = [
   {
-    id: "machine-learning",
-    title: "Machine Learning",
-    description: "Language models, deep nets, and learned representations.",
+    id: "transformer-internals",
+    title: "Transformer Internals",
+    description: "The moving parts of a transformer: the attention operation, the residual stream it reads and writes, and the QK/OV decomposition of a head.",
     accent: "#059669",
     tint: "#d1fae5",
     glyph: "∇",
     items: [
-      { href: "/math/attention/", title: "Attention", desc: "A weighted sum read as an adaptive sufficient statistic, Nadaraya–Watson kernel regression, and entropy-regularized retrieval" },
+      { href: "/ml/attention/", title: "Attention", desc: "A weighted sum read as an adaptive sufficient statistic, Nadaraya–Watson kernel regression, and entropy-regularized retrieval" },
+      { href: "/ml/residual-stream-directions/", title: "Residual Stream & Directions", desc: "The transformer residual stream as a shared workspace; features as directions; superposition as sparse feature packing" },
+      { href: "/ml/qk-ov-circuits/", title: "QK and OV Circuits", desc: "An attention head has separate routing and residual-write components" },
+    ],
+  },
+  {
+    id: "interpretability-methods",
+    title: "Interpretability Methods",
+    description: "Readouts, probes, model-selection checks, and interventions for separating decodability from causal use.",
+    caveat: mlCaveat,
+    accent: "#be123c",
+    tint: "#ffe4e6",
+    glyph: "λ",
+    items: [
+      { href: "/ml/probes-validity/", title: "Probes and Validity", desc: "Probe scores, selectivity controls, lexical controls, and the distinction between decodability and causal use" },
+      { href: "/ml/logit-lens-tuned-lens/", title: "Logit Lens & Tuned Lens", desc: "Layerwise vocabulary readouts, tuned affine decoders, and the difference between depth and cognitive time" },
+      { href: "/ml/structural-probes/", title: "Dependency Trees & Structural Probes", desc: "Dependency grammar, tree distance and depth, structural-probe geometry, MST extraction, and syntactic controls" },
+      { href: "/ml/semantic-composition-probes/", title: "Compositionality & Semantic Probes", desc: "Compositional meaning as a relation between head and dependent vectors, from additive to bilinear and nonlinear probes" },
+      { href: "/ml/bayesian-mdl-probes/", title: "Bayesian / MDL Evidence for Probes", desc: "Probe evaluation as model selection: fit, complexity penalties, evidence, and codelength" },
+      { href: "/ml/causal-interventions/", title: "Causal Interventions", desc: "Ablation, activation patching, path patching, attribution patching, and self-repair under component removal" },
+    ],
+  },
+  {
+    id: "phenomena-and-circuits",
+    title: "Phenomena & Circuits",
+    description: "Attention-head labels, copying circuits, variable binding, and gaps between internal state and output behavior.",
+    caveat: mlCaveat,
+    accent: "#7c3aed",
+    tint: "#ede9fe",
+    glyph: "ψ",
+    items: [
+      { href: "/ml/attention-head-types/", title: "Attention Head Labels", desc: "Positional, induction, syntactic, rare-word, copy-suppression, and name-mover labels as hypotheses rather than stable kinds" },
+      { href: "/ml/induction-heads/", title: "Induction Heads", desc: "The prefix-match then copy mechanism behind the [A][B] ... [A] -> [B] transformer circuit" },
+      { href: "/ml/variable-binding/", title: "Variable Binding", desc: "Nonlocal dependency resolution across natural language, code, and logic, with minimal pairs and distractor controls" },
+      { href: "/ml/represented-vs-expressed-knowledge/", title: "Represented vs. Expressed Knowledge", desc: "Surprisal, internal readouts, and cases where a model carries information that does not surface in the output distribution" },
     ],
   },
 ];
+
+// Combined list, used to build the description lookup below. The two index
+// pages import `mathSections` / `mlSections` directly.
+export const sections: Section[] = [...mathSections, ...mlSections];
 
 // Normalize a path or href to a canonical form for lookup: strip query/hash,
 // strip trailing slash (except root), and lowercase.

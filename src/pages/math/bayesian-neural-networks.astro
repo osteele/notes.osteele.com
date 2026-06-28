@@ -7,7 +7,7 @@ import PresetRow from "../../components/explainer/PresetRow.astro";
 import NextCards from "../../components/explainer/NextCards.astro";
 ---
 
-<ExplainerLayout title="Bayesian Neural Networks — Interactive Explainer" breadcrumb="Bayesian Neural Networks" section="bayesian-inference">
+<ExplainerLayout title="Bayesian Neural Networks" breadcrumb="Bayesian Neural Networks" section="bayesian-inference">
   <Hero title="Bayesian Neural Networks" subtitle="Weight uncertainty, predictive distributions, Laplace approximation, and evidence in the smallest neural net that still shows the ideas." />
 
   <p>
@@ -310,10 +310,10 @@ import NextCards from "../../components/explainer/NextCards.astro";
     </Fragment>
   </Figure>
 
-  <h2>6. Where Laplace stops working</h2>
+  <h2>6. Laplace fails for multimodality, deep networks, and large Hessians</h2>
   <p>
-    Everything on this page assumes the Gaussian Laplace approximation around a single mode
-    is a reasonable picture of the posterior. That assumption fails when the posterior is
+    The discussion above assumes the Gaussian Laplace approximation around a
+    single mode is a reasonable picture of the posterior. That assumption fails when the posterior is
     genuinely multimodal in ways that <em>do</em> change the predictive distribution, when
     the network is deep enough that the central-limit argument no longer justifies Gaussianity,
     or when the dataset is too big to compute the full Hessian. The alternatives: sample the

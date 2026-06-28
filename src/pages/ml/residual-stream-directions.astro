@@ -1,0 +1,121 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Residual Stream & Directions" breadcrumb="Residual Stream & Directions" section="transformer-internals">
+<Hero title="Residual Stream & Directions" subtitle="The residual stream is a shared vector workspace. A feature can often be approximated by a direction in that space." />
+
+<p>
+The residual-stream framing treats a transformer as a sequence of components
+that read from and write to a shared vector stream.<sup class="cite-ref"><a href="#rs-fn-1" id="rs-fnref-1">1</a></sup>
+Each token position carries a vector forward through the stack. Attention heads
+and MLPs read from that vector, compute updates, and write new vectors back into
+the stream. Many interpretability analyses focus on this stream because
+different computations coexist in the same vector space.
+</p>
+
+<p>
+The phrase "a feature is a direction" is a common approximation. If a model has
+a direction for "is a city", then projecting the residual vector onto that
+direction estimates how strongly the current token or context carries that
+feature.<sup class="cite-ref"><a href="#rs-fn-2" id="rs-fnref-2">2</a></sup>
+The approximation is incomplete: directions can be shared, curved, split across
+subspaces, or active only in the right context. The direction view is still a
+useful local approximation because attention heads, MLPs, probes, lenses, and
+steering methods all read from or write to vectors.<sup class="cite-ref"><a href="#rs-fn-3" id="rs-fnref-3">3</a></sup>
+</p>
+
+<Figure title="Figure 1 · A residual stream accumulating writes" canvasId="residual-stream-canvas" width="760" height="430" readoutId="residual-stream-readout">
+<Fragment slot="controls">
+  <ControlRange id="residual-layer" label="layer" valueId="residual-layer-v" min="0" max="8" step="1" value="4" />
+  <ControlRange id="residual-sparsity" label="feature activity" valueId="residual-sparsity-v" min="0.05" max="0.95" step="0.05" value="0.30" />
+</Fragment>
+</Figure>
+
+<h2>1. The shared workspace</h2>
+
+<p>
+In the transformer-circuits account, embeddings, attention heads, MLPs, and the
+unembedding are analyzed as reads from or writes to the residual stream. Token
+identity, position, local syntax, long-range references, partial semantic
+hypotheses, and output-relevant information all share that vector space. Some
+components write small corrections. Others write features that downstream
+components can read many layers later.
+</p>
+
+<dl class="definition-list">
+  <dt>Embedding write</dt>
+  <dd>Before the first block, a token embedding plus a positional embedding are added at each position, setting the stream's starting value. Every later component edits this vector rather than replacing it.</dd>
+  <dt>Attention write</dt>
+  <dd>A head reads from other positions (QK selects where to look, OV selects what to bring) and adds the result at the destination position. This is the main way information moves between positions.</dd>
+  <dt>MLP write</dt>
+  <dd>A position-wise MLP reads the current vector and adds a nonlinear function of it. MLPs compute many features, and factual associations appear to live largely in them (Meng et al., 2022).</dd>
+  <dt>Unembedding read</dt>
+  <dd>A final normalization and the unembedding matrix project the last vector onto the vocabulary to produce logits. The logit lens applies this same read at earlier layers to see a partial prediction.</dd>
+</dl>
+
+<p>
+Each block adds to the stream rather than overwriting it, so the writes
+accumulate: $x_&#123;\ell+1&#125; = x_\ell + \text&#123;sublayer&#125;(x_\ell)$. Reading the
+stream at any depth means reading a running sum of every write before it.
+</p>
+
+<h2>2. Directions make features available to linear readouts</h2>
+
+<p>
+If a feature is linearly readable, a probe, lens, or unembedding vector can pull
+it out with a dot product. Linear probes test the corresponding
+model-compatible question: whether some property is present in a form that
+downstream linear reads could plausibly use. They do not prove that the model
+actually uses it; that requires causal evidence. They locate a candidate
+coordinate system.
+</p>
+
+<Aside>
+  <strong>Linear does not mean simple.</strong> A linear direction can represent
+  an abstract property if the model has already done the nonlinear work needed to
+  place examples along that axis. The hard computation may live upstream; the
+  final readout can still be linear.
+</Aside>
+
+<h2>3. Superposition</h2>
+
+<p>
+The residual stream has finite dimension, but the model may represent many more
+features than there are independent axes. If features are
+sparse, a model can pack many of them into the same space and tolerate some
+interference. Elhage et al. call this arrangement superposition: features are
+not always assigned one clean coordinate each. They can be arranged as
+overlapping directions whose collisions are manageable because only a few are
+active at once.<sup class="cite-ref"><a href="#rs-fn-4" id="rs-fnref-4">4</a></sup>
+</p>
+
+<p>
+For interpretation, a neuron or coordinate can look polysemantic
+because it participates in several feature directions. Conversely, a feature can
+be real even when no single neuron lines up with it. As more directions are
+active together, off-axis interference grows.
+</p>
+
+<div class="source-list">
+  <strong>Citation notes</strong>
+  <ol>
+    <li id="rs-fn-1">Elhage, Nanda, Olsson, Henighan, Joseph, Mann, Askell, Bai, Chen, Conerly, Drain, Ganguli, Hatfield-Dodds, Hernandez, Jones, Kernion, Lovitt, Ndousse, Petrov, Sellitto, Shlegeris, Sodhi, Tow-Arnett, Trenton, Voss, Watkins, Xu, and Olah (2021), <a href="https://transformer-circuits.pub/2021/framework/index.html">"A Mathematical Framework for Transformer Circuits"</a>, introduces the residual-stream and QK/OV circuit framing used here. <a class="citation-back" href="#rs-fnref-1">back</a></li>
+    <li id="rs-fn-2">Park, Choe, and Veitch (2024), <a href="https://arxiv.org/abs/2311.03658">"The Linear Representation Hypothesis and the Geometry of Large Language Models"</a>, formalizes linear representations and relates them to probes and steering vectors. <a class="citation-back" href="#rs-fnref-2">back</a></li>
+    <li id="rs-fn-3">Alain and Bengio (2018), "Understanding Intermediate Layers Using Linear Classifier Probes"; nostalgebraist (2020), <a href="https://www.alignmentforum.org/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens">"Interpreting GPT: The Logit Lens"</a>; and Belrose, Furman, Smith, Halawi, Ostrovsky, McKinney, Biderman, and Steinhardt (2023), <a href="https://arxiv.org/abs/2303.08112">"Eliciting Latent Predictions from Transformers with the Tuned Lens"</a>, are examples of linear readouts from intermediate representations. <a class="citation-back" href="#rs-fnref-3">back</a></li>
+    <li id="rs-fn-4">Elhage, Henighan, Olah, and coauthors (2022), <a href="https://transformer-circuits.pub/2022/toy_model/index.html">"Toy Models of Superposition"</a>, develops the sparse-feature packing account of superposition. <a class="citation-back" href="#rs-fnref-4">back</a></li>
+  </ol>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/qk-ov-circuits/", tag: "Next", title: "QK and OV Circuits", role: "Split an attention head into where it looks and what it writes." },
+  { href: "/ml/probes-validity/", tag: "Method", title: "Probes and Validity", role: "Decodability, selectivity, and causal use." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

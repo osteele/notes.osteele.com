@@ -6,24 +6,22 @@ import OrientationNote from "../../components/explainer/OrientationNote.astro";
 ---
 
 <ExplainerLayout title="Notation: density form vs. measure-theoretic form" breadcrumb="Notation" section="probability-and-statistics">
-<Hero title="Notation: density form vs. measure-theoretic form" subtitle="A bilingual dictionary for the two ways probability is written on this site, and a short tour of the places where they diverge." />
+<Hero title="Notation: density form vs. measure-theoretic form" subtitle="A dictionary for density notation and measure-theoretic notation, with the places where they diverge." />
 
 <OrientationNote>
   <p>
-    Most pages on this site use <em>density form</em>:
-    write $p(\theta)$, integrate $\int f(\theta)\,p(\theta)\,d\theta$. A few
-    pages — and a handful of asides on others — use
-    <em>measure-theoretic form</em>: write the probability measure $\pi$
-    directly, integrate $\int f\,d\pi$, and reach for the Radon–Nikodym
-    derivative $d\pi/d\nu$ when a density is needed.
+    <em>Density form</em> writes $p(\theta)$ and integrates
+    $\int f(\theta)\,p(\theta)\,d\theta$. <em>Measure-theoretic form</em>
+    writes the probability measure $\pi$ directly, integrates $\int f\,d\pi$,
+    and uses the Radon–Nikodym derivative $d\pi/d\nu$ when a density is needed.
   </p>
   <p>
-    Almost everything is the same in both languages. This page is for the
-    cases where they are not.
+    Most routine calculations are the same in both languages. The differences
+    matter in a few specific cases.
   </p>
 </OrientationNote>
 
-<h2 id="why">1. Why both notations exist</h2>
+<h2 id="why">1. Densities depend on reference measures</h2>
 
 <p>
 A density $p(\theta)$ is not an absolute object — it depends on a
@@ -114,7 +112,7 @@ difference is <em>not</em> cosmetic are catalogued in §4.
   </table>
 </div>
 
-<h2 id="agree">3. Where they agree</h2>
+<h2 id="agree">3. Routine calculations agree</h2>
 
 <p>
 For laws absolutely continuous with respect to Lebesgue measure on $\mathbb R^d$
@@ -127,18 +125,15 @@ $p(\theta)\,d\theta$ replaced verbatim by $d\pi(\theta)$.
 </p>
 
 <p>
-The pages on this site that use density form throughout
-(<a href="/math/conjugate-priors/">conjugate-priors</a>,
-<a href="/math/monte-carlo/">monte-carlo</a>,
-<a href="/math/vb-gaussian-mixture/">vb-gaussian-mixture</a>) lose nothing by
-doing so. They could be reprinted in measure-theoretic form without changing
-a result.
+Routine conjugate-prior, Monte Carlo, variational-Bayes, and Gaussian-process
+calculations usually lose nothing in density form. They can be rewritten in
+measure-theoretic form without changing a result.
 </p>
 
-<h2 id="disagree">4. Where they disagree</h2>
+<h2 id="disagree">4. Modes, KL, changes of variables, and convergence differ</h2>
 
 <p>
-The four places on this site where the language choice matters substantively:
+The language choice matters substantively in four places:
 </p>
 
 <h3 id="mode">The mode requires a reference measure</h3>
@@ -200,7 +195,7 @@ converge in measure. See
 <a href="/math/modes-of-convergence/">Modes of Convergence</a>.
 </p>
 
-<h2 id="when">5. When to reach for which</h2>
+<h2 id="when">5. Notation choice by task</h2>
 
 <ul>
   <li><strong>Default to density form.</strong> Conjugate updates, sampling-method

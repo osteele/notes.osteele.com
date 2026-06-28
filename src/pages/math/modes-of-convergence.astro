@@ -14,7 +14,7 @@ import NotationAside from "../../components/explainer/NotationAside.astro";
 ---
 
 <ExplainerLayout
-  title="Modes of Convergence — An Interactive Explainer"
+  title="Modes of Convergence"
   breadcrumb="Modes of Convergence"
   section="probability-and-statistics"
 >
@@ -137,7 +137,7 @@ loaded preset — green where that mode converges, red where it fails.
   one gap, the spike sits in the other).
 </Aside>
 
-<h2 id="inequalities">3. Why the modes shrink: Markov, Chebyshev, Chernoff</h2>
+<h2 id="inequalities">3. Markov, Chebyshev, and Chernoff shrink tail bounds</h2>
 
 <p>
 The escape rate $\mathbb&#123;P&#125;(|X_n - X| \geq \varepsilon)$ is the central object
@@ -214,7 +214,7 @@ summable, which is why proving the strong LLN from Chebyshev alone requires the
 extra subsequence trick.
 </p>
 
-<h2 id="swap">4. When can you swap limit and expectation?</h2>
+<h2 id="swap">4. Dominated convergence permits swapping limit and expectation</h2>
 
 <p>
 Almost-sure convergence does not imply $L^1$ convergence — the spike preset
@@ -308,9 +308,8 @@ best thing.
 </ul>
 
 <Aside>
-  <strong>What this page is not.</strong> It is not a proof gallery — the
-  inequalities and implications are quoted, not derived. It is also not the CLT
-  story; the CLT lives more comfortably with the
+  <strong>Scope.</strong> The inequalities and implications are quoted rather
+  than derived. The central limit theorem lives more comfortably with the
   <a href="/math/named-distributions/#gaussian">named distributions</a> and Berry–Esseen, which is
   itself a refinement of convergence in distribution rather than a separate mode.
 </Aside>

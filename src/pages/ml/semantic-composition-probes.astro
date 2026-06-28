@@ -1,0 +1,138 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Compositionality & Semantic Probes" breadcrumb="Semantic Probes" section="interpretability-methods">
+<Hero title="Compositionality & Semantic Probes" subtitle="Phrase meaning depends on relations between words, not only on word-level vectors." />
+
+<p>
+The principle of compositionality says that the meaning of a complex expression
+depends on the meanings of its parts and the way those parts are combined. In
+formal semantics this is usually expressed with types, functions, arguments, and
+lambda-style composition. In neural representations, the same question becomes
+geometric: can we read the meaning of a phrase or parent constituent from the
+representations of its children?
+</p>
+
+<p>
+Semantic probes are harder to interpret than simple label probes because meaning
+is relational. A noun phrase, a verb-object pair, and a modifier construction are
+not just two vectors sitting next to each other. Composition probes therefore
+often operate on pairs: head and dependent, function and argument, modifier and
+modified phrase.
+</p>
+
+<Figure title="Figure 1 · Three hypotheses for semantic composition" canvasId="semantic-composition-canvas" width="760" height="390" readoutId="semantic-composition-readout">
+<Fragment slot="controls">
+  <ControlSelect id="composition-form" label="composition form" valueId="composition-form-v" options={[
+    { value: "add", label: "additive", selected: true },
+    { value: "bilinear", label: "bilinear" },
+    { value: "nonlinear", label: "nonlinear" },
+  ]} />
+</Fragment>
+</Figure>
+
+<h2>1. Probe form changes the hypothesis</h2>
+
+<p>
+An additive probe predicts the phrase vector as $c = A h + B d$ from the head $h$
+and dependent $d$, composition as a sum of two linear maps. A bilinear probe adds
+a multiplicative term $h^\top W d$, which lets the dependent reshape the head's
+contribution in a relation-specific way. A nonlinear probe gives the readout still
+more freedom. The choice is not
+only engineering; it expresses a hypothesis about how much structure is already
+present in the representation. The additive form echoes vector-averaging models
+of phrase meaning, while the bilinear form echoes tensor-product and categorical
+models, where a relation acts multiplicatively on its arguments.
+</p>
+
+<p>
+If an additive probe works well, the model's representation may already place
+parts in a space where composition is close to linear. If only a flexible
+nonlinear probe works, the probe may be doing more of the semantic work itself.
+As with syntactic probes, the interpretation depends on capacity, controls, and
+interventions.
+</p>
+
+<h2>2. Types and argument structure</h2>
+
+<p>
+Formal semantics distinguishes predicates, arguments, quantifiers, modifiers,
+and type-shifting operations. This vocabulary separates semantic tasks that
+would otherwise collapse into a vague "meaning" label. A subject relation, an
+object relation, and an adjunct relation are not automatically the same
+composition operation.
+</p>
+
+<dl class="definition-list">
+  <dt>Head</dt>
+  <dd>The word that fixes a phrase's category and what it can combine with, such as the verb in a verb phrase or the noun in a noun phrase. Composition is described relative to the head.</dd>
+  <dt>Dependent</dt>
+  <dd>A word or phrase attached to the head: a subject, object, or modifier. A composition probe takes a head-dependent pair as input rather than a single token.</dd>
+  <dt>Dependency relation</dt>
+  <dd>The typed head-dependent link. Universal Dependencies labels such as nsubj, obj, amod, and nmod name the composition site: a head, a dependent, and the relation between them. A bilinear probe can condition on the relation, not just the two words.</dd>
+  <dt>Argument</dt>
+  <dd>An expression that fills a role a predicate requires, as "the door" fills the object of "open." In Montague-style semantics a predicate is a function and its arguments are the inputs it applies to, written f(x).</dd>
+  <dt>Type shift</dt>
+  <dd>A change of semantic type so an expression can compose where a different type is expected, for example coercing a proper name (type e) into a quantifier-like meaning (type ⟨⟨e,t⟩,t⟩). Type shifting keeps composition well-typed when surface forms do not line up.</dd>
+</dl>
+
+<h2>3. Where additive composition breaks down</h2>
+
+<p>
+Intersective modifiers are the case additive composition handles well. A "red
+car" is a thing that is both red and a car, so a meaning built by adding a "red"
+component to a "car" vector lands in roughly the right place. Adjectives that work
+this way are why simple vector-averaging models of phrase meaning get as far as
+they do.
+</p>
+
+<p>
+Privative modifiers break that. A "fake gun" is not a gun, and a "former senator"
+is not currently a senator, so the modifier moves the result outside the head's
+own category rather than adding a feature to it. Addition cannot move the result
+off the line between the two word vectors, which is what these phrases require.
+Privatives are one non-intersective class; subsective adjectives are another and
+fail additivity for a softer reason. A "skillful surgeon" is still a surgeon, but
+"skillful" means something different for surgeons than for violinists, so its
+contribution depends on the head it attaches to. A bilinear term handles both,
+because $h^\top W d$ lets the modifier apply a head-dependent transformation
+instead of a fixed offset. When an additive probe fails on such phrases and a
+bilinear one succeeds, the gap is evidence that the representation encodes the
+modifier as an operation, not as a direction to add.
+</p>
+
+<Aside>
+  <strong>The schematic is not a result.</strong> The additive, bilinear, and nonlinear forms
+  illustrate different composition hypotheses. They are not results for a
+  particular model or dataset.
+</Aside>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>Montague (1973), "The Proper Treatment of Quantification in Ordinary English", for the type-theoretic compositionality tradition.</li>
+    <li>Partee (1986), "Noun Phrase Interpretation and Type-Shifting Principles", for type-shifting operations.</li>
+    <li>Mitchell and Lapata (2010), <a href="https://doi.org/10.1111/j.1551-6709.2010.01106.x">"Composition in Distributional Models of Semantics"</a>, for additive and multiplicative vector composition.</li>
+    <li>Smolensky (1990), <a href="https://doi.org/10.1016/0004-3702(90)90007-M">"Tensor Product Variable Binding and the Representation of Symbolic Structures in Connectionist Systems"</a>, for multiplicative role-filler binding.</li>
+    <li>Coecke, Sadrzadeh, and Clark (2010), <a href="https://arxiv.org/abs/1003.4394">"Mathematical Foundations for a Compositional Distributional Model of Meaning"</a>, for tensorial distributional semantics.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/structural-probes/">Dependency Trees & Structural Probes</a> for the syntax side of the same problem.</li>
+    <li><a href="/ml/probes-validity/">Probes and Validity</a> for capacity controls when the semantic readout is flexible.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/structural-probes/", tag: "Before", title: "Structural Probes", role: "Tree geometry before semantic composition." },
+  { href: "/ml/variable-binding/", tag: "Related", title: "Variable Binding", role: "A different relational problem: matching uses to sources." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

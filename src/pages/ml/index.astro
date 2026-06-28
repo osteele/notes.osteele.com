@@ -1,0 +1,19 @@
+---
+import MathIndexLayout from "../../layouts/MathIndexLayout.astro";
+import NotesIndex from "../../components/NotesIndex.astro";
+import { mlSections } from "../../lib/page-index";
+---
+
+<MathIndexLayout
+  title="notes.osteele.com / ml"
+  description="These notes cover transformer internals and interpretability methods for representations, circuits, probes, and interventions."
+  crumbLabel="ml"
+  crumbHref="/ml/"
+>
+  <NotesIndex
+    eyebrow="notes.osteele.com / ml"
+    h1="Machine Learning"
+    subtitle="These notes cover transformer internals and interpretability methods for representations, circuits, probes, and interventions."
+    sections={mlSections}
+  />
+</MathIndexLayout>

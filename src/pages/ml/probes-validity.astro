@@ -1,0 +1,142 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Probes and Validity" breadcrumb="Probes and Validity" section="interpretability-methods">
+<Hero title="Probes and Validity" subtitle="Probe scores measure decodability. Selectivity controls and interventions test different claims." />
+
+<p>
+A probe is a small supervised model trained on internal representations. Give it
+hidden states from a frozen language model and labels such as part of speech,
+dependency edge, semantic role, truth value, or grammatical number. If the probe
+predicts the labels well, something about the representation supports that
+prediction.
+</p>
+
+<p>
+A high probe score does not automatically mean the base model represents the
+property in a clean way, or uses it when making predictions. The probe might
+exploit shallow lexical cues, memorize word types, learn the task itself, or
+read a feature that is present but causally irrelevant.
+</p>
+
+<Figure title="Figure 1 · Accuracy can survive the wrong control" canvasId="probe-validity-canvas" width="760" height="330" readoutId="probe-validity-readout">
+<Fragment slot="controls">
+  <ControlRange id="probe-capacity" label="probe capacity" valueId="probe-capacity-v" min="0" max="1" step="0.05" value="0.35" />
+  <label class="control"><span>word-type control</span><input id="probe-control" type="checkbox" /></label>
+</Fragment>
+</Figure>
+
+<h2>1. What a probe can say</h2>
+
+<p>
+The cleanest probe question is linear decodability: can a simple readout recover
+the property from a frozen representation? If yes, the property is available in
+some form to a downstream linear read. The evidential weight depends on probe
+capacity, test distribution, and baseline strength.
+</p>
+
+<p>
+Decodability is still not causality. A model may carry a feature as a side
+effect. It may carry a feature too late to affect behavior. It may carry a
+feature in a subspace that the final output never reads. Probes find readable
+signals; interventions test use.
+</p>
+
+<h2>2. Selectivity and control tasks</h2>
+
+<p>
+Hewitt and Liang's control-task idea asks whether a probe can also solve a task
+that the representation does not genuinely encode. A common version assigns
+random labels by word type. If a high-capacity probe performs well on the real
+task and also performs well on the control, the raw score is less impressive: it
+may reflect lexical memorization or probe capacity rather than model knowledge.
+</p>
+
+<p>
+In the control setting, increasing probe capacity can keep the raw score high
+while selectivity collapses. The raw score and the control gap are different
+quantities.
+</p>
+
+<Aside>
+  <strong>Train/test split.</strong> A random-label control only exposes
+  memorization if the train/test split lets the same word types recur. If the
+  split prevents that, control accuracy falls toward chance. The control
+  tests a particular failure mode.
+</Aside>
+
+<p>
+One control keeps syntax but removes much of the ordinary lexical semantics by
+replacing content words with nonce words. If a syntactic probe works on normal
+sentences but drops sharply under that control, the probe may have relied on
+semantic plausibility rather than syntax alone. If the score survives, the
+evidence for a syntactic representation is stronger.
+</p>
+
+<h2>3. Three separate claims</h2>
+
+<div class="figure">
+  <div class="figure-title">Figure 2 · Each claim is a stronger, rarer subset</div>
+  <div class="figure-body">
+    <svg class="mech-svg" viewBox="0 0 760 210" role="img" aria-label="Nested sets: causal inside selective inside decodable, with each step adding a test">
+      <rect x="18" y="20" width="430" height="174" rx="10" fill="#eef2f7" stroke="#b9cce8" />
+      <rect x="44" y="52" width="378" height="110" rx="9" fill="#dbeafe" stroke="#9bb8e0" />
+      <rect x="70" y="84" width="326" height="46" rx="8" fill="#fde2d4" stroke="#e9b39d" />
+      <text x="30" y="40" font-size="13" font-weight="700" fill="#1f4a8c" font-family="-apple-system, sans-serif">Decodable</text>
+      <text x="56" y="72" font-size="13" font-weight="700" fill="#1f4a8c" font-family="-apple-system, sans-serif">Selective</text>
+      <text x="233" y="112" font-size="13" font-weight="700" fill="#b8412a" font-family="-apple-system, sans-serif" text-anchor="middle">Causal</text>
+      <text x="492" y="60" font-size="12" font-weight="700" fill="#1f2733" font-family="-apple-system, sans-serif">Outer to inner</text>
+      <text x="492" y="86" font-size="11.5" fill="#5a6577" font-family="-apple-system, sans-serif">a control task narrows</text>
+      <text x="492" y="104" font-size="11.5" fill="#5a6577" font-family="-apple-system, sans-serif">decodable to selective;</text>
+      <text x="492" y="130" font-size="11.5" fill="#5a6577" font-family="-apple-system, sans-serif">an intervention narrows</text>
+      <text x="492" y="148" font-size="11.5" fill="#5a6577" font-family="-apple-system, sans-serif">selective to causal.</text>
+      <text x="492" y="178" font-size="11.5" fill="#5a6577" font-family="-apple-system, sans-serif">Each step rules out more.</text>
+    </svg>
+  </div>
+</div>
+
+<dl class="definition-list">
+  <dt>Decodable</dt>
+  <dd>A trained readout recovers the property from frozen activations, above a baseline. This is the weakest claim: the information is present in an accessible form, not necessarily computed or used. A part-of-speech probe at 95% says POS is readable, nothing more.</dd>
+  <dt>Selective</dt>
+  <dd>The probe scores higher on the real task than on a matched control, such as random labels assigned by word type, or nonce-word sentences. The gap rules out a probe that wins by raw capacity or lexical memorization. It is reported as the selectivity gap: real minus control.</dd>
+  <dt>Causal</dt>
+  <dd>Editing the representation along the probe's direction changes model behavior under a stated metric, through activation patching, ablation, or steering. This is the strongest claim, and the only one about use rather than availability.</dd>
+</dl>
+
+<p>
+These claims can come apart. A feature can be decodable without being selective,
+and selective without being causal.
+</p>
+
+<p>
+A probe score is a proxy for representational structure. When extra capacity
+lets the probe reach the score by memorizing word types instead, the proxy and
+the property come apart, a probe-level case of Goodhart's law.
+</p>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>Hewitt and Liang (2019), <a href="https://arxiv.org/abs/1909.03368">"Designing and Interpreting Probes with Control Tasks"</a>, for selectivity and word-type controls.</li>
+    <li>Hall Maudslay and Cotterell (2021), <a href="https://arxiv.org/abs/2106.02559">"Do Syntactic Probes Probe Syntax?"</a>, for nonce-word lexical controls.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/math/hypothesis-testing/">Hypothesis Testing</a> for the baseline-and-null logic behind control tasks.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/bayesian-mdl-probes/", tag: "Next", title: "Bayesian / MDL Evidence for Probes", role: "Model evidence and codelength penalize probe complexity." },
+  { href: "/ml/causal-interventions/", tag: "Causal", title: "Causal Interventions", role: "Interventions turn readable signals into behavioral tests." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

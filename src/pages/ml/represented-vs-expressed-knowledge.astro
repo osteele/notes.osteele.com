@@ -1,0 +1,144 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Represented vs. Expressed Knowledge" breadcrumb="Represented vs. Expressed" section="phenomena-and-circuits">
+<Hero title="Represented vs. Expressed Knowledge" subtitle="A model can carry information internally without making it visible in the next-token distribution." />
+
+<p>
+Most measurements of a language model are taken at the output: token
+probabilities, loss, accuracy, calibration, refusal rate, generated text.
+Mechanistic interpretability adds a second vantage point and reads what is
+present inside the model before the output is formed. The two views can agree or
+come apart, and the cases where they come apart are the object of study.
+</p>
+
+<p>
+The represented-versus-expressed distinction names that gap. A feature can be
+decodable from an intermediate activation while the output distribution barely
+moves. The reverse also happens: an output behavior can appear without any clean
+internal feature that current tools can read. The first case, an internal readout
+that the output does not reflect, is the one with the sharper handle.
+</p>
+
+<Figure title="Figure 1 · Internal and output margins can diverge" canvasId="represented-expressed-canvas" width="760" height="400" readoutId="represented-expressed-readout">
+<Fragment slot="controls">
+  <ControlRange id="knowledge-divergence" label="internal/output gap" valueId="knowledge-divergence-v" min="0" max="1" step="0.05" value="0.70" />
+</Fragment>
+</Figure>
+
+<h2>1. Surprisal is an output measurement</h2>
+
+<p>
+Surprisal is negative log probability, $-\log p(\text&#123;token&#125;)$. A token the model
+rates unlikely has high surprisal. This is a behavioral quantity: it depends only
+on the output distribution, and it is the per-token term in language-model loss.
+Averaged over a corpus it is the model's cross-entropy.
+</p>
+
+<p>
+Because surprisal is read from the final distribution, it cannot see state that
+never reaches the output. In Figure 1 the gauges separate an internal margin,
+how strongly an intermediate layer favors the target token, from the output
+margin on the same token. Raising the gap widens the distance between them: the
+internal readout climbs while the emitted probability stays low.
+</p>
+
+<Aside>
+  <strong>Measure and behavior can diverge at the output too.</strong> Adding the
+  same constant to every logit leaves the softmax unchanged, so the next-token
+  probabilities, the argmax, sampling, and the KL between two such distributions
+  are all invariant. Only the unnormalized log-sum-exp of the logits shifts. A
+  score read from raw logits can move while the output behavior does not.
+</Aside>
+
+<h2>2. Internal readouts: lenses and probes</h2>
+
+<p>
+The <a href="/ml/logit-lens-tuned-lens/">logit and tuned lenses</a> and
+task-specific <a href="/ml/probes-validity/">probes</a> read intermediate
+activations. They can show that a candidate token, an attribute, a grammatical
+feature, or a semantic relation is present at some layer. When that internal
+margin disagrees with the output margin, the live question is why the information
+failed to surface: the model may not route it to the output, a later component
+may suppress it, or the prompt format may override it.
+</p>
+
+<h2>3. Why the views come apart</h2>
+
+<p>
+Consider the prompt "The capital of France is". A logit lens may rank
+<em>Paris</em> at the top several layers before the end, yet the emitted
+probability can still be lower than that internal margin suggests. A few
+mechanisms produce this pattern.
+</p>
+
+<dl class="definition-list">
+  <dt>Suppression</dt>
+  <dd>A later head can write against a token. Copy-suppression heads lower the score of a token that already appeared, so a candidate that was promoted mid-stack is pushed down before the output.</dd>
+  <dt>Incomplete routing</dt>
+  <dd>A feature decodable at layer $\ell$ may need further layers to move it into the output-reading direction. If those layers do other work, the readout never fully transfers.</dd>
+  <dt>Format and calibration</dt>
+  <dd>Spreading probability across paraphrases, punctuation, or continuations can keep any single target token's probability modest even when the model clearly favors that content.</dd>
+  <dt>Overriding objectives</dt>
+  <dd>Instruction tuning or refusal behavior can divert the output away from a token the base computation supports, leaving the internal trace intact.</dd>
+</dl>
+
+<p>
+Each of these keeps an internal readout high while holding the output low, so the
+gap in Figure 1 is not a single phenomenon. Naming which mechanism produced it is
+the work, and it usually takes a causal test rather than a readout alone.
+</p>
+
+<h2>4. What "the model knows" means here</h2>
+
+<Aside>
+  <strong>Knowledge is shorthand.</strong> "The model knows X" compresses a more
+  specific claim: X is decodable from internal activations under a stated readout,
+  while the output distribution does not express X in the corresponding way. The
+  claim is relative to the readout and the layer, not an absolute property of the
+  model.
+</Aside>
+
+<p>
+The distinction matters for evaluation. A benchmark scored at the output reports
+expressed behavior. A model that represents an answer but suppresses or misroutes
+it will look ignorant under that benchmark while a probe or lens finds the answer
+inside. The two results are both correct about different things, and conflating
+them produces claims about capability that the evidence does not support.
+</p>
+
+<p>
+Turning a represented-versus-expressed observation into a mechanism claim needs
+the same discipline as any internal readout. The lens or probe locates the gap; a
+<a href="/ml/causal-interventions/">causal intervention</a> tests whether the
+internal state, once changed, changes the output. Decodability shows the
+information is there. Only intervention shows what it does.
+</p>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>Meng, Bau, Andonian, and Belinkov (2022), <a href="https://arxiv.org/abs/2202.05262">"Locating and Editing Factual Associations in GPT"</a>, for internal localization of factual recall.</li>
+    <li>Belrose, Furman, Smith, Halawi, Ostrovsky, McKinney, Biderman, and Steinhardt (2023), <a href="https://arxiv.org/abs/2303.08112">"Eliciting Latent Predictions from Transformers with the Tuned Lens"</a>, for latent prediction trajectories.</li>
+    <li>McDougall, Conmy, Rushing, McGrath, and Nanda (2023), <a href="https://arxiv.org/abs/2310.04625">"Copy Suppression"</a>, for heads that write against an already-promoted token.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/logit-lens-tuned-lens/">Logit Lens & Tuned Lens</a> for layerwise vocabulary readouts.</li>
+    <li><a href="/math/entropy-mutual-information/">Entropy & Mutual Information</a> for surprisal as negative log probability.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/logit-lens-tuned-lens/", tag: "Before", title: "Logit Lens & Tuned Lens", role: "The internal readout tool." },
+  { href: "/ml/causal-interventions/", tag: "Next", title: "Causal Interventions", role: "Testing whether internal state matters for behavior." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

@@ -54,10 +54,10 @@ single identity</p>
 
 $$ \ln p(y) \;=\; \underbrace&#123;\mathrm&#123;KL&#125;\!\bigl[\,q(\theta)\,\Vert\,p(\theta\mid y)\,\bigr]&#125;_&#123;\geq 0&#125; \;+\; F(q,y). $$
 
-<p>This page uses KL as a building block. For the standalone intuition behind KL,
-including categorical examples and forward-vs-reverse behavior, see
-<a href="/math/kl-divergence/">KL Divergence</a>. Three interactive figures below
-show how the same directed gap becomes an inference algorithm.</p>
+<p>Variational inference uses KL as a building block. For the standalone intuition
+behind KL, including categorical examples and forward-vs-reverse behavior, see
+<a href="/math/kl-divergence/">KL Divergence</a>. The same directed gap becomes an
+inference algorithm.</p>
 
 <h2>1. KL inside variational inference</h2>
 
@@ -440,7 +440,7 @@ KL chooses a smaller axis-aligned ellipse — the same phenomenon as Figure 4,
 but here you can see exactly which data placements force it.
 </p>
 
-<h2>Where this goes next</h2>
+<h2>Related constructions</h2>
 
 <ul>
   <li><strong>Mean-field variational inference.</strong> If $q(\theta) = \prod_i q_i(\theta_i)$ factorizes, coordinate ascent on $F$ has a closed-form update for each $q_i$. This is VI for graphical models, topic models, latent Dirichlet allocation, and more.</li>

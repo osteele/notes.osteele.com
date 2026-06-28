@@ -4,7 +4,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Oliver's Notes"
-  description="Teaching and project notes by Oliver Steele — creative coding, p5.js, physical computing, math, teaching, and woodworking."
+  description="Teaching and project notes by Oliver Steele — creative coding, p5.js, physical computing, math, machine learning, teaching, and woodworking."
 >
   <p class="intro">
     Notes and resources from teaching and projects — pick a topic below.
@@ -30,6 +30,11 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <div class="cover"><canvas id="feat-math" width="280" height="120"></canvas></div>
       <div class="featured-title">Math Notes</div>
       <div class="featured-sub">Probability, information theory &amp; Bayesian inference — with live visualizations</div>
+    </a>
+    <a class="section-card featured-card" href="/ml/">
+      <div class="cover"><canvas id="feat-ml" width="280" height="120"></canvas></div>
+      <div class="featured-title">Machine Learning</div>
+      <div class="featured-sub">Transformers, attention &amp; mechanistic interpretability — with interactive figures</div>
     </a>
     <a class="section-card featured-card" href="/teaching/">
       <div class="cover"><canvas id="feat-teach" width="280" height="120"></canvas></div>
@@ -264,8 +269,32 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       mathRaf = requestAnimationFrame(frame);
     }
 
+    // Machine Learning — attention motif: two token rows linked by weighted edges
+    function drawML() {
+      var s = sized('feat-ml');
+      if (!s) return;
+      var ctx = s.ctx, w = s.w, h = s.h, n = 6;
+      var topY = h * 0.30, botY = h * 0.72, pad = 26, span = w - pad * 2;
+      function px(i) { return pad + span * (i / (n - 1)); }
+      ctx.lineWidth = 1.4;
+      for (var i = 0; i < n; i++) {
+        for (var j = 0; j < n; j++) {
+          var wgt = Math.exp(-Math.abs(i - j) * 0.8);
+          if (wgt < 0.12) continue;
+          ctx.strokeStyle = 'rgba(106,74,138,' + (0.10 + wgt * 0.5) + ')';
+          ctx.beginPath(); ctx.moveTo(px(j), topY); ctx.lineTo(px(i), botY); ctx.stroke();
+        }
+      }
+      for (var k = 0; k < n; k++) {
+        ctx.fillStyle = '#327DA9';
+        ctx.beginPath(); ctx.arc(px(k), topY, 3.4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#6a4a8a';
+        ctx.beginPath(); ctx.arc(px(k), botY, 3.4, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
     function render() {
-      drawCC(); drawJS(); drawPC(); drawTeach(); drawWood(); drawMath();
+      drawCC(); drawJS(); drawPC(); drawTeach(); drawWood(); drawMath(); drawML();
     }
 
     render();

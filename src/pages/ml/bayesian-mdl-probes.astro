@@ -1,0 +1,127 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Bayesian / MDL Evidence for Probes" breadcrumb="Bayesian / MDL Evidence" section="interpretability-methods">
+<Hero title="Bayesian / MDL Evidence for Probes" subtitle="Bayesian evidence and MDL evaluate a probe by balancing label fit against model complexity." />
+
+<p>
+Probe accuracy answers one question: how well does this probe predict the labels?
+Bayesian evidence and minimum description length ask a different one: how much
+prediction did the probe buy per unit of complexity, relative to a baseline? The
+complexity term matters for interpretation because a high-capacity readout can fit
+structure that belongs to the probe rather than to the representation.
+</p>
+
+<p>
+A flexible probe can keep raising training or even test accuracy by fitting
+accidental regularities. A model-selection criterion charges for that flexibility.
+Evidence rises when extra parameters explain real structure and falls when they
+mostly memorize, so the criterion and raw accuracy can point in opposite
+directions.
+</p>
+
+<Figure title="Figure 1 · Evidence peaks before raw fit stops improving" canvasId="mdl-evidence-canvas" width="760" height="420" readoutId="mdl-evidence-readout">
+<Fragment slot="controls">
+  <ControlRange id="mdl-complexity" label="probe complexity" valueId="mdl-complexity-v" min="0.02" max="1" step="0.02" value="0.45" />
+</Fragment>
+</Figure>
+
+<h2>1. The Occam factor</h2>
+
+<p>
+Bayesian model evidence integrates the likelihood over the parameters instead of
+keeping the single best setting. A simple model that fits the data across much of
+its parameter space can beat a complex model that fits only in a tiny region. The
+Occam factor is that comparison made quantitative: a ratio of volumes measuring
+how far the data shrink the plausible region of parameter space. A parameter the
+data leave unconstrained keeps its prior volume and adds neither fit nor penalty;
+a parameter the data pin down sharply has to improve the fit enough to pay for the
+volume it surrenders.
+</p>
+
+<p>
+In the large-sample limit this reduces to the BIC penalty, about
+$\tfrac&#123;1&#125;&#123;2&#125;\log n$ of cost per parameter for $n$ examples. Doubling a probe's
+parameter count adds a fixed log-likelihood budget it must earn back through
+better fit. Figure 1 makes the tradeoff visible: raw fit keeps climbing with
+complexity while the penalty grows faster, so evidence peaks at an intermediate
+capacity and then declines even as accuracy improves.
+</p>
+
+<h2>2. MDL as a coding story</h2>
+
+<p>
+Minimum description length tells the same story in bits. To transmit the labels,
+send a model and then send the residual mistakes. A more complex probe costs more
+model bits but can save residual bits. The best probe minimizes the total message,
+not the residual term alone, which is the same balance the Occam factor strikes in
+a different currency.
+</p>
+
+<p>
+Putting model bits and residual bits on one ledger is what disciplines the
+comparison. If accuracy keeps rising while total codelength also rises, the probe
+is spending capacity faster than it is finding structure, and the apparent gain is
+the probe fitting itself rather than reading the representation.
+</p>
+
+<h2>3. Online codelength makes the penalty operational</h2>
+
+<p>
+The version used for probing is prequential, or online, description length.
+Process the labeled examples in order; at each step, predict the next label using
+a probe trained only on the examples seen so far, and pay the surprisal
+$-\log p(\text&#123;label&#125;)$ of the true label. The accumulated surprisal is the
+codelength, and no separate model-bits term is needed because the early
+predictions, made from little data, automatically carry the cost of a probe that
+needs many examples to work.
+</p>
+
+<p>
+Voita and Titov report compression, the ratio of a uniform code's length to the
+model's codelength. With $K$ label classes, transmitting $n$ labels blind costs
+$n \log_2 K$ bits, so a probe whose codelength falls well below that has found
+predictive structure. A
+flexible probe that only memorizes pays heavily in the early, data-poor steps, so
+its online codelength stays long even when its final-epoch accuracy is high. The
+measure separates a representation that makes a property easy to read from a probe
+that learns the property itself, and it does so without a held-out split or a
+separately designed control task.
+</p>
+
+<Aside>
+  <strong>Complexity is only one axis.</strong> Bayesian evidence and MDL penalize
+  complexity. They do not rule out lexical artifacts, dataset bias, or a readable
+  feature the base model never uses. Those belong to selectivity controls, lexical
+  controls, and causal interventions. A short codelength says the property is
+  cheaply readable, not that the model relies on it.
+</Aside>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>MacKay (1992), <a href="https://doi.org/10.1162/neco.1992.4.3.448">"A Practical Bayesian Framework for Backpropagation Networks"</a>, for evidence and Occam factors.</li>
+    <li>Voita and Titov (2020), <a href="https://aclanthology.org/2020.emnlp-main.14/">"Information-Theoretic Probing with Minimum Description Length"</a>, for online codelength and compression as a probing measure.</li>
+    <li>Immer, Torroba Hennigen, Fortuin, and Cotterell (2022), <a href="https://aclanthology.org/2022.acl-long.129.pdf">"Probing as Quantifying Inductive Bias"</a>, for Bayesian model selection as probe evaluation.</li>
+    <li>Hewitt and Liang (2019), <a href="https://arxiv.org/abs/1909.03368">"Designing and Interpreting Probes with Control Tasks"</a>, for control tasks and selectivity.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/math/bayesian-neural-networks/">Bayesian Neural Networks</a> for evidence, Occam's hill, and prior mismatch.</li>
+    <li><a href="/math/variational-inference/">Free Energy & Variational Inference</a> for evidence as a log-partition problem.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/probes-validity/", tag: "Back", title: "Probes and Validity", role: "The basic diagnostic and its controls." },
+  { href: "/ml/causal-interventions/", tag: "Next", title: "Causal Interventions", role: "When a readable signal is tested by changing activations." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

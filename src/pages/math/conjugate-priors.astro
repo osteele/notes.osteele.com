@@ -79,7 +79,7 @@ essentially restricted to this case; outside the exponential family, the
 posterior's complexity grows with $n$.
 </p>
 
-<h2 id="why-conjugacy">2. Why conjugate priors exist</h2>
+<h2 id="why-conjugacy">2. Conjugacy follows from exponential-family sufficient statistics</h2>
 
 <p>
 With $n$ i.i.d. observations $x_&#123;1:n&#125;$ from an exponential family, the joint
@@ -532,7 +532,7 @@ Normal–Gamma is Student-$t$, not Gaussian. The likelihood family is only recov
 in the $n\to\infty$ limit when the posterior on $\eta$ becomes a point mass.
 </p>
 
-<h2 id="caveats">8. When conjugate priors are appropriate</h2>
+<h2 id="caveats">8. Conjugacy is useful only when the family fits the belief</h2>
 
 <p>
 Conjugate priors are computationally cheap and have a clean pseudo-count
@@ -572,7 +572,7 @@ thinking of the prior as data, you may not have meant that.
 </p>
 
 <NextCards heading="What next" cards={[
-  { href: "/choosing-a-prior/", tag: "Bayes", title: "Choosing a Prior", role: "Conjugacy is one route to a workable prior; this page covers the others — group invariance, max entropy, Jeffreys — and when to reach for each." },
+  { href: "/choosing-a-prior/", tag: "Bayes", title: "Choosing a Prior", role: "Conjugacy is one route to a workable prior; group invariance, max entropy, and Jeffreys give other routes." },
   { href: "/fisher-information/", tag: "Geometry", title: "Fisher Information & Jeffreys Priors", role: "The geometric story behind one of the canonical 'uninformative' priors, with interactive coordinate transforms." },
   { href: "/exponential-family/", tag: "Foundation", title: "The Exponential Family", role: "Why conjugate priors only have finite-dimensional hyperparameter updates inside the exponential family — and what η, T, h, A each mean." },
   { href: "/named-distributions/", tag: "Reference", title: "Named Distributions", role: "Where the named likelihoods and their conjugate partners sit in the broader distribution zoo." },

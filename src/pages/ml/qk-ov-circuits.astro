@@ -1,0 +1,142 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="QK and OV Circuits" breadcrumb="QK and OV Circuits" section="transformer-internals">
+<Hero title="QK and OV Circuits" subtitle="QK sets the attention weights. OV maps the weighted values into a residual-stream update." />
+
+<p>
+The standard attention formula combines two operations inside one head. The
+query-key part sets the attention weights over source positions. The
+value-output part maps the selected source representations into the vector added
+to the residual stream. Elhage, Nanda, Olsson, and coauthors describe these as
+the QK and OV circuits.
+</p>
+
+<p>
+An attention pattern shows where weight went. A mechanism claim also needs the
+write: what vector the head added, whether later components read it, and whether
+changing that write changes the behavior under study. A head can attend to the
+right token and write irrelevant information, or attend to a boring-looking token
+and write a specific feature.
+</p>
+
+<table class="formula-table">
+  <tbody>
+    <tr>
+      <th>QK</th>
+      <td>$q_t = x_t W_Q,\quad k_i = x_i W_K,\quad s_&#123;ti&#125; = q_t k_i^\top / \sqrt&#123;d_k&#125;,\quad a_&#123;ti&#125; = \operatorname&#123;softmax&#125;(s_t)_i$</td>
+      <td>Scores source positions for destination token $t$.</td>
+    </tr>
+    <tr>
+      <th>OV</th>
+      <td>$v_i = x_i W_V,\quad z_t = \sum_i a_&#123;ti&#125; v_i,\quad \Delta x_t = z_t W_O$</td>
+      <td>Turns the weighted values into a residual-stream update.</td>
+    </tr>
+    <tr>
+      <th>Combined</th>
+      <td>$\Delta x_t = \sum_i a_&#123;ti&#125; x_i W_V W_O$</td>
+      <td>The attention weights and the written vector can be analyzed separately.</td>
+    </tr>
+  </tbody>
+</table>
+
+<Figure title="Figure 1 · QK weights, OV write" canvasId="qk-ov-canvas" width="760" height="430" readoutId="qk-ov-readout">
+<Fragment slot="controls">
+  <ControlRange id="qk-token" label="destination token" valueId="qk-token-v" min="0" max="5" step="1" value="3" />
+</Fragment>
+</Figure>
+
+<h2>1. QK sets the attention weights</h2>
+
+<p>
+For each destination position, a head forms a query vector. For each possible
+source position, it forms a key vector. The dot products between query and keys
+become attention scores. After softmax, the destination receives a weighted
+mixture of source values. This part of the head determines which source
+positions receive high weight for the current destination token.
+</p>
+
+<p>
+In an interpretable example, QK might implement "look to the previous token",
+"look to the matching earlier token", "look to the subject of this verb", or
+"look to the beginning-of-sequence token". Those descriptions are summaries of a
+pattern, not proof of a function. A head's causal role also depends on what the
+OV circuit does with the attended source.
+</p>
+
+<h2>2. OV writes the residual-stream update</h2>
+
+<p>
+The value and output matrices determine the vector added to the residual stream.
+That write can be read later by other heads, by MLPs, or by the final unembedding
+matrix. In a copying head, the OV circuit may write in a direction that promotes
+the source token. In a suppression head, it may write a direction that pushes a
+token down. In a syntactic head, it may write information that later components
+read.
+</p>
+
+<p>
+Whether a head copies can be read off the OV path directly. Compose it with the
+embedding and unembedding to get the token-to-token map $W_E W_V W_O W_U$, which
+scores how attending to source token $i$ changes the logit of output token $j$. A
+copying head has large positive entries on the diagonal of that matrix: attending
+to a token promotes the same token at the output. The framework summarizes the
+matrix by the fraction of its eigenvalues that are positive, a copying score for
+the OV path that does not depend on where any particular attention pattern
+happened to point. A suppression head shows the opposite sign on the diagonal.
+</p>
+
+<Aside>
+  <strong>Attention weights underdetermine the mechanism.</strong> A large
+  attention weight shows a source position that was read. It does not say what
+  was read, whether the write mattered, or whether another component could
+  compensate. QK and OV analysis separates routing evidence from write evidence.
+</Aside>
+
+<h2>3. Heads compose through QK and OV handoffs</h2>
+
+<p>
+Heads do not act in isolation. A head in one layer can write a feature that
+becomes the key or query for a head in a later layer. In an induction-circuit
+account, an earlier head marks token relationships, and a later head uses that
+mark to copy the next token. One component writes a direction; another component
+uses that direction for routing.
+</p>
+
+<p>
+QK-composition and OV-composition are different handoffs. In QK-composition, an
+earlier head writes a direction that changes a later head's queries or keys, so
+the later head attends somewhere different. In OV-composition, an earlier write
+becomes content that another head, MLP, or the unembedding reads. Transformer
+circuits sometimes describe these chained routes as virtual attention heads: the
+effective computation is spread across several ordinary heads.
+</p>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>Elhage, Nanda, Olsson, and coauthors (2021), <a href="https://transformer-circuits.pub/2021/framework/index.html">"A Mathematical Framework for Transformer Circuits"</a>, for the QK/OV decomposition, composition terms, and virtual attention heads.</li>
+    <li>Olsson, Elhage, Nanda, and coauthors (2022), <a href="https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html">"In-context Learning and Induction Heads"</a>, for induction heads as a concrete QK/OV copying mechanism.</li>
+    <li>McDougall, Conmy, Rushing, McGrath, and Nanda (2023), <a href="https://arxiv.org/abs/2310.04625">"Copy Suppression"</a>, for an attention head whose OV circuit suppresses repeated-token predictions.</li>
+    <li>Wang, Variengien, Conmy, Shlegeris, and Steinhardt (2023), <a href="https://arxiv.org/abs/2211.00593">"Interpretability in the Wild"</a>, for causal circuit analysis of name-mover and backup name-mover heads.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/attention/">Attention</a> for the weighted-sum and softmax view of attention.</li>
+    <li><a href="/ml/residual-stream-directions/">Residual Stream & Directions</a> for the vector workspace that OV writes into.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/induction-heads/", tag: "Mechanism", title: "Induction Heads", role: "A named head type where QK and OV form a clear copying algorithm." },
+  { href: "/ml/attention-head-types/", tag: "Labels", title: "Attention Head Labels", role: "Where head labels stop short of mechanism claims." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

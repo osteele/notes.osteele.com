@@ -1,0 +1,139 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Variable Binding across Language, Code, and Logic" breadcrumb="Variable Binding" section="phenomena-and-circuits">
+<Hero title="Variable Binding" subtitle="A use resolves against the right source, even when a nearer distractor is available." />
+
+<p>
+Variable binding is the problem of keeping track of what refers to what. A
+pronoun resolves against an antecedent, a variable use resolves against its
+definition, a conclusion depends on the premises that license it. The surface
+domains differ, but the shape is the same: connect a use to a nonlocal source
+while a closer, plausible-looking candidate competes for the link.
+</p>
+
+<p>
+The difficulty is structural rather than lexical. A model can get local word
+statistics right and still bind to the wrong source, because the correct source
+is often farther away than a distractor. That is why binding is studied with
+minimal pairs: change one token, hold most of the surface statistics fixed, and
+see whether the resolution follows the structure or the proximity.
+</p>
+
+<Figure title="Figure 1 · The same binding shape in three domains" canvasId="variable-binding-canvas" width="760" height="350" readoutId="variable-binding-readout">
+<Fragment slot="controls">
+  <label class="control"><span>nearest distractor</span><input id="binding-distractor" type="checkbox" /></label>
+</Fragment>
+</Figure>
+
+<h2>1. Source, use, distractor</h2>
+
+<p>
+Each binding case has three parts: a source that licenses the answer, a use that
+needs resolving, and a distractor that is closer or more salient but wrong.
+Figure 1 lays the three domains side by side. Toggling the distractor swaps the
+licensed link for the lure, which is the failure a good test is built to provoke.
+</p>
+
+<p>
+Subject-verb agreement makes the structural cue concrete. In "The key to the
+cabinets is rusty," the verb agrees with <em>key</em>, not the nearer plural
+<em>cabinets</em>. A minimal pair changes only the head noun's number, "the key"
+versus "the keys," so the verb form must track the grammatical subject rather than
+the closest noun. If the model prefers <em>are</em> when <em>cabinets</em> is
+adjacent, it followed proximity; if it tracks <em>key</em>, it followed structure.
+</p>
+
+<h2>2. Three domains</h2>
+
+<p>
+The same source-use-distractor template recurs with different vocabularies. The
+examples below are schematic, but they make the shared shape concrete.
+</p>
+
+<dl class="definition-list">
+  <dt>Natural language</dt>
+  <dd>Agreement, anaphora, and filler-gap dependencies all create source-use links that cross intervening words. The licensed source is set by grammar, and a nearer noun or name is the standard distractor.</dd>
+  <dt>Code</dt>
+  <dd>In <code>let total = 0; ... let count = item.count; ... return total</code>, the final use resolves to the accumulator while <code>count</code> sits nearby as a lure. The VarMisuse task tests whether a model tracks definitions and uses through program structure rather than text order.</dd>
+  <dt>Logic</dt>
+  <dd>From <code>A -> B</code>, <code>B -> C</code>, and <code>A</code>, the conclusion <code>C</code> depends on the chain through <code>B</code>. A premise such as <code>D -> C</code> is irrelevant unless <code>D</code> is established, so it functions as a distractor.</dd>
+</dl>
+
+<Aside>
+  <strong>A shared test, not a shared result.</strong> The figure is a schema for
+  evaluations, not evidence that one circuit handles all three domains. A positive
+  result shows that the model follows the licensed source and resists the nearer
+  unlicensed one. The recurring design is to specify the source-use relation,
+  introduce a plausible distractor, and compare minimal pairs that differ in which
+  source is structurally licensed.
+</Aside>
+
+<h2>3. Candidate mechanisms</h2>
+
+<dl class="definition-list">
+  <dt>Induction-like copying</dt>
+  <dd>A prefix match can route from a use to an earlier matching context and copy the following token or feature, the mechanism on the <a href="/ml/induction-heads/">induction heads</a> page.</dd>
+  <dt>Binding-ID features</dt>
+  <dd>The model can mark a source and its later uses with a shared, abstract identifier that survives intervening tokens, so the link is carried by a feature rather than by position.</dd>
+  <dt>Use-to-source attention</dt>
+  <dd>A head can route directly from the use site to the licensed source, which is what a distractor closer in surface order is designed to disrupt.</dd>
+  <dt>Scope-sensitive representations</dt>
+  <dd>For code, a model can encode scope and syntax-tree position, so a use resolves through program structure rather than nearby text.</dd>
+</dl>
+
+<p>
+The binding-ID account has the most direct causal evidence. Feng and Steinhardt
+describe abstract binding vectors that tie an entity to its attributes; an
+intervention that swaps two entities' binding vectors swaps which attribute the
+model reports, which is the signature of a genuine binding variable rather than a
+positional cue. Dai and coauthors locate the same structure in a low-rank
+subspace, so the binding direction occupies a small part of the residual stream.
+</p>
+
+<h2>4. Representation and routing together</h2>
+
+<p>
+Binding is not a single circuit because it combines two jobs. The model has to
+mark the source, a representation question about which feature or direction
+carries the identifier, and it has to deliver that mark to the use site, a routing
+question about which head reads it. A model can do one well and the other poorly,
+which is how a nearer distractor wins: the source is represented, but routing
+attends to proximity instead.
+</p>
+
+<p>
+The mechanism also varies by model and domain, so a result on agreement does not
+transfer automatically to code or logic. The shared template is what makes the
+comparison worth running. Where binding-ID interventions succeed, they show a
+model using an abstract variable, which is a stronger claim than any probe-level
+decodability result for the same dependency.
+</p>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>Warstadt, Parrish, Liu, Mohananey, Peng, Wang, and Bowman (2020), <a href="https://arxiv.org/abs/1912.00582">"BLiMP"</a>, for linguistic minimal pairs.</li>
+    <li>Allamanis, Brockschmidt, and Khademi (2018), <a href="https://arxiv.org/abs/1711.00740">"Learning to Represent Programs with Graphs"</a>, for VarMisuse and program-graph structure.</li>
+    <li>Feng and Steinhardt (2024), <a href="https://arxiv.org/abs/2310.17191">"How do Language Models Bind Entities in Context?"</a>, for binding-ID interventions.</li>
+    <li>Dai, Heinzerling, and Inui (2024), <a href="https://arxiv.org/abs/2409.05448">"Representational Analysis of Binding in Language Models"</a>, for low-rank binding subspaces.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/induction-heads/">Induction Heads</a> for a copying mechanism that supports simple binding-like behavior.</li>
+    <li><a href="/ml/structural-probes/">Dependency Trees & Structural Probes</a> for another way to test nonlocal structure.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/structural-probes/", tag: "Related", title: "Structural Probes", role: "Tree structure as geometry." },
+  { href: "/ml/semantic-composition-probes/", tag: "Related", title: "Semantic Composition", role: "Relations that build meaning from parts." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

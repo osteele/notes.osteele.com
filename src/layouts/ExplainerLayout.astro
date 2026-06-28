@@ -2,7 +2,14 @@
 import "../styles/explainer.css";
 import { descriptionForPath } from "../lib/page-index";
 
-type Section = "probability-and-statistics" | "information-theory" | "random-processes" | "bayesian-inference" | "machine-learning";
+type Section =
+  | "probability-and-statistics"
+  | "information-theory"
+  | "random-processes"
+  | "bayesian-inference"
+  | "transformer-internals"
+  | "interpretability-methods"
+  | "phenomena-and-circuits";
 
 interface Props {
   title: string;
@@ -18,8 +25,14 @@ const SECTION_LABELS: Record<Section, string> = {
   "information-theory": "Information Theory",
   "random-processes": "Random Processes",
   "bayesian-inference": "Bayesian Inference",
-  "machine-learning": "Machine Learning",
+  "transformer-internals": "Transformer Internals",
+  "interpretability-methods": "Interpretability Methods",
+  "phenomena-and-circuits": "Phenomena & Circuits",
 };
+
+// Which index a section belongs to. ML sections live under /ml/; the rest under
+// /math/. Drives the site-nav crumb and the breadcrumb back-link.
+const ML_SECTIONS = new Set<Section>(["transformer-internals", "interpretability-methods", "phenomena-and-circuits"]);
 
 const {
   title,
@@ -30,6 +43,9 @@ const {
   showToc = true,
 } = Astro.props;
 const sectionLabel = SECTION_LABELS[section];
+const isMl = ML_SECTIONS.has(section);
+const indexBase = isMl ? "/ml/" : "/math/";
+const indexLabel = isMl ? "ml" : "math";
 const metaDescription = description ?? descriptionForPath(Astro.url.pathname);
 const katexOnload = "renderMathInElement(document.body,{throwOnError:false,delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\\\[',right:'\\\\]',display:true},{left:'\\\\(',right:'\\\\)',display:false}]});";
 ---
@@ -71,12 +87,12 @@ const katexOnload = "renderMathInElement(document.body,{throwOnError:false,delim
       <span class="sep">/</span>
       <a href="/">notes</a>
       <span class="sep">/</span>
-      <a class="current" href="/math/">math</a>
+      <a class="current" href={indexBase}>{indexLabel}</a>
     </nav>
     <main class="explainer-shell">
       <div class="explainer-content">
         <nav class="breadcrumbs" aria-label="Breadcrumb">
-          <a href={`/math/#${section}`}>{sectionLabel}</a>
+          <a href={`${indexBase}#${section}`}>{sectionLabel}</a>
           <span class="sep">›</span>
           <span class="current">{breadcrumb}</span>
         </nav>
@@ -181,10 +197,32 @@ const katexOnload = "renderMathInElement(document.body,{throwOnError:false,delim
           const hint = trigger.dataset.hintControl;
           if (hint) pulse(document.getElementById(hint)?.closest(".control") || document.getElementById(hint), "control-hint", 1500);
         });
-        function drawPreview(canvas, t) {
+        function setupPreviewCanvas(canvas) {
+          if (!canvas.dataset.logicalWidth) {
+            canvas.dataset.logicalWidth = canvas.getAttribute("width") || String(canvas.width || 220);
+            canvas.dataset.logicalHeight = canvas.getAttribute("height") || String(canvas.height || 54);
+          }
+          const w = Number(canvas.dataset.logicalWidth) || 220;
+          const h = Number(canvas.dataset.logicalHeight) || 54;
+          const rect = canvas.getBoundingClientRect();
+          const cssWidth = rect.width || w;
+          const cssHeight = rect.height || h;
+          const dpr = Math.max(1, window.devicePixelRatio || 1);
+          const backingWidth = Math.round(cssWidth * dpr);
+          const backingHeight = Math.round(cssHeight * dpr);
+          if (canvas.width !== backingWidth || canvas.height !== backingHeight) {
+            canvas.width = backingWidth;
+            canvas.height = backingHeight;
+          }
           const ctx = canvas.getContext("2d");
-          const w = canvas.width;
-          const h = canvas.height;
+          if (!ctx) return null;
+          ctx.setTransform(cssWidth / w * dpr, 0, 0, cssHeight / h * dpr, 0, 0);
+          return { ctx, w, h };
+        }
+        function drawPreview(canvas, t) {
+          const setup = setupPreviewCanvas(canvas);
+          if (!setup) return;
+          const { ctx, w, h } = setup;
           const href = canvas.dataset.previewHref || "";
           ctx.clearRect(0, 0, w, h);
           ctx.fillStyle = "#f3f1ec";
@@ -224,6 +262,47 @@ const katexOnload = "renderMathInElement(document.body,{throwOnError:false,delim
             ctx.arc(x, y, r, 0, Math.PI * 2);
             ctx.fill();
           }
+          function line(x1, y1, x2, y2, color, width = 1.4, alpha = 1) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            ctx.restore();
+          }
+          function arrow(x1, y1, x2, y2, color, width = 1.4) {
+            line(x1, y1, x2, y2, color, width);
+            const a = Math.atan2(y2 - y1, x2 - x1);
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - 5 * Math.cos(a - 0.45), y2 - 5 * Math.sin(a - 0.45));
+            ctx.lineTo(x2 - 5 * Math.cos(a + 0.45), y2 - 5 * Math.sin(a + 0.45));
+            ctx.closePath();
+            ctx.fill();
+          }
+          function box(x, y, bw, bh, color, fill = "rgba(31,74,140,0.08)") {
+            ctx.fillStyle = fill;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.2;
+            ctx.fillRect(x, y, bw, bh);
+            ctx.strokeRect(x + 0.5, y + 0.5, bw - 1, bh - 1);
+          }
+          function tokenRow(x, y, count, active = -1) {
+            for (let i = 0; i < count; i++) {
+              const c = i === active ? red : i % 2 ? green : blue;
+              box(x + i * 18, y, 12, 14, c, `${c}22`);
+            }
+          }
+          function miniBars(x, y, values, colors) {
+            values.forEach((v, i) => {
+              ctx.fillStyle = colors[i % colors.length];
+              ctx.fillRect(x + i * 9, y + 30 - v * 28, 6, v * 28);
+            });
+          }
           if (key.includes("monte-carlo") || key.includes("state-space-filtering") || key.includes("sampling-methods")) {
             axes();
             curve(blue);
@@ -233,6 +312,123 @@ const katexOnload = "renderMathInElement(document.body,{throwOnError:false,delim
               const y = plotY + plotH - (0.16 + Math.exp(-Math.pow((u - 0.52) * 4.5, 2)) * 0.62) * plotH + jitter;
               dot(plotX + u * plotW, y, 2.4, i % 3 === 0 ? red : green);
             }
+          } else if (key.includes("qk-ov-circuits")) {
+            tokenRow(20, 30, 5, 3);
+            for (let r = 0; r < 4; r++) {
+              for (let c = 0; c < 4; c++) {
+                const v = Math.max(0.08, 0.7 - Math.abs(r - c) * 0.16 + Math.sin(t / 650 + r + c) * 0.08);
+                ctx.fillStyle = `rgba(31,74,140,${v})`;
+                ctx.fillRect(78 + c * 8, 12 + r * 8, 7, 7);
+              }
+            }
+            arrow(104, 28, 142, 20, purple);
+            arrow(104, 28, 142, 38, green);
+            for (let i = 0; i < 4; i++) {
+              line(150 + i * 8, 14, 166 + i * 8, 36, i % 2 ? green : purple, 2.1);
+            }
+            dot(104, 28, 3, red);
+          } else if (key.includes("residual-stream-directions")) {
+            line(26, 44, 190, 44, "#c9c1b2", 1.2);
+            for (let i = 0; i < 7; i++) {
+              const x = 34 + i * 24;
+              const hgt = 15 + Math.sin(t / 550 + i) * 6;
+              box(x - 4, 18, 8, 26, i % 2 ? green : blue, "rgba(255,255,255,0.45)");
+              arrow(x, 41, x + 12, 41 - hgt, i % 3 === 0 ? red : purple, 1.5);
+            }
+          } else if (key.includes("attention-head-types")) {
+            for (let row = 0; row < 2; row++) {
+              for (let col = 0; col < 5; col++) {
+                const ox = 28 + col * 34;
+                const oy = 17 + row * 18;
+                line(ox - 7, oy + 7, ox + 7, oy - 7, col % 2 ? green : blue, 1.4);
+                line(ox, oy + 8, ox + 11, oy + 6 * Math.sin(t / 700 + col), row ? purple : red, 1.3);
+                dot(ox - 8, oy + 8, 2.2, blue);
+                dot(ox + 8, oy - 8, 2.2, red);
+              }
+            }
+          } else if (key.includes("induction-heads")) {
+            tokenRow(22, 12, 8, 6);
+            tokenRow(22, 34, 8, 7);
+            line(42, 27, 132, 12, purple, 1.5, 0.65);
+            line(60, 27, 150, 12, purple, 1.5, 0.65);
+            arrow(132, 34, 150, 34, red, 1.7);
+            arrow(150, 34, 168, 34, red, 1.7);
+          } else if (key.includes("logit-lens-tuned-lens")) {
+            for (let i = 0; i < 6; i++) {
+              const x = 28 + i * 20;
+              box(x, 10, 12, 34, i % 2 ? green : blue, "rgba(255,255,255,0.45)");
+              arrow(x + 6, 15, 160, 15 + i * 5, i < 3 ? blue : purple, 0.9);
+            }
+            miniBars(156, 12, [0.28, 0.45, 0.74, 0.5, 0.35], [blue, green, red, purple]);
+          } else if (key.includes("probes-validity")) {
+            axes();
+            for (let i = 0; i < 18; i++) {
+              const side = i % 2 ? -1 : 1;
+              const x = plotX + 16 + i * 7.5;
+              const y = plotY + plotH * 0.5 + side * (9 + Math.sin(t / 700 + i) * 5);
+              dot(x, y, 2.3, side > 0 ? blue : red);
+            }
+            line(plotX + 18, plotY + plotH - 4, plotX + plotW - 18, plotY + 8, purple, 1.8);
+          } else if (key.includes("structural-probes")) {
+            const pts = [[52,14],[30,32],[74,32],[60,45],[98,45],[142,18],[164,36]];
+            [[0,1],[0,2],[2,3],[2,4],[0,5],[5,6]].forEach(([a, b]) => line(pts[a][0], pts[a][1], pts[b][0], pts[b][1], "#8f8678", 1.2));
+            pts.forEach((p, i) => dot(p[0], p[1], i % 2 ? 2.8 : 3.2, i % 3 === 0 ? red : blue));
+            for (let r = 0; r < 4; r++) {
+              for (let c = 0; c < 4; c++) {
+                ctx.fillStyle = `rgba(107,69,146,${0.12 + Math.abs(r - c) * 0.09})`;
+                ctx.fillRect(120 + c * 7, 11 + r * 7, 6, 6);
+              }
+            }
+          } else if (key.includes("semantic-composition-probes")) {
+            dot(48, 30, 4, blue);
+            dot(88, 18, 4, green);
+            dot(92, 42, 4, red);
+            arrow(52, 29, 82, 20, blue, 1.5);
+            arrow(54, 32, 86, 41, red, 1.5);
+            arrow(98, 30, 154, 30, purple, 1.8);
+            miniBars(158, 12, [0.35, 0.7, 0.42, 0.58], [green, blue, purple, red]);
+          } else if (key.includes("bayesian-mdl-probes")) {
+            axes();
+            ctx.strokeStyle = blue;
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            for (let i = 0; i <= plotW; i++) {
+              const u = i / plotW;
+              const y = plotY + plotH - (0.18 + 0.62 * (1 - Math.exp(-4 * u))) * plotH;
+              i ? ctx.lineTo(plotX + i, y) : ctx.moveTo(plotX + i, y);
+            }
+            ctx.stroke();
+            ctx.strokeStyle = red;
+            ctx.beginPath();
+            for (let i = 0; i <= plotW; i++) {
+              const u = i / plotW;
+              const y = plotY + plotH - (0.7 - 0.42 * u + Math.sin(t / 900 + u * 5) * 0.03) * plotH;
+              i ? ctx.lineTo(plotX + i, y) : ctx.moveTo(plotX + i, y);
+            }
+            ctx.stroke();
+          } else if (key.includes("causal-interventions")) {
+            const pts = [[34,18],[76,18],[118,18],[160,18],[76,39],[118,39]];
+            [[0,1],[1,2],[2,3],[1,4],[4,5],[5,3]].forEach(([a, b]) => arrow(pts[a][0], pts[a][1], pts[b][0], pts[b][1], a === 1 && b === 4 ? red : "#8f8678", 1.2));
+            pts.forEach((p, i) => dot(p[0], p[1], i === 4 ? 4 : 3, i === 4 ? red : i % 2 ? blue : green));
+            line(70, 33, 84, 45, red, 2);
+            line(84, 33, 70, 45, red, 2);
+          } else if (key.includes("variable-binding")) {
+            tokenRow(25, 30, 7, 2);
+            [[0,3,blue],[1,5,green],[2,6,red]].forEach(([a, b, c]) => {
+              const x1 = 31 + a * 18, x2 = 31 + b * 18;
+              ctx.strokeStyle = c;
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.moveTo(x1, 29);
+              ctx.quadraticCurveTo((x1 + x2) / 2, 8, x2, 29);
+              ctx.stroke();
+            });
+          } else if (key.includes("represented-vs-expressed-knowledge")) {
+            miniBars(28, 12, [0.78, 0.42, 0.3, 0.62, 0.48], [blue, green, purple, red]);
+            arrow(82, 27, 126, 27, "#8f8678", 1.4);
+            miniBars(132, 12, [0.26, 0.36, 0.68, 0.34, 0.46], [blue, green, red, purple]);
+            line(36, 12, 54, 12, red, 2);
+            line(148, 12, 166, 12, red, 2);
           } else if (key.includes("fisher-information")) {
             axes();
             curve(blue);
@@ -301,6 +497,15 @@ const katexOnload = "renderMathInElement(document.body,{throwOnError:false,delim
             ctx.fillStyle = green;
             ctx.font = "bold 14px serif";
             ctx.fillText("T(x)", 158, 32);
+          } else if (key.includes("attention")) {
+            tokenRow(24, 34, 7, 4);
+            for (let i = 0; i < 7; i++) {
+              const x = 30 + i * 18;
+              const weight = 0.15 + Math.exp(-Math.pow((i - 4) / 1.8, 2)) * 0.65;
+              line(x, 34, 106, 14, i === 4 ? red : blue, 1 + weight * 2, weight);
+            }
+            dot(106, 14, 4, red);
+            miniBars(146, 13, [0.18, 0.42, 0.74, 0.36], [blue, green, red, purple]);
           } else if (key.includes("kv-cache-memory")) {
             for (let i = 0; i < 7; i++) {
               const x = 26 + i * 23;
@@ -354,6 +559,106 @@ const katexOnload = "renderMathInElement(document.body,{throwOnError:false,delim
               ctx.stroke();
               dot(x, plotY + plotH - 6, 2.2, i % 2 ? red : blue);
             });
+          } else if (key.includes("named-distributions") || key.includes("exponential-family")) {
+            axes();
+            const means = key.includes("exponential-family") ? [0.32, 0.5, 0.68] : [0.28, 0.48, 0.72];
+            means.forEach((mean, j) => {
+              ctx.strokeStyle = [blue, red, green][j];
+              ctx.lineWidth = 1.6;
+              ctx.beginPath();
+              for (let i = 0; i <= plotW; i++) {
+                const u = (i / plotW - mean) * (j === 1 ? 5 : 7);
+                const y = plotY + plotH - (Math.exp(-u * u) * (0.5 + j * 0.08) + 0.07) * plotH;
+                i ? ctx.lineTo(plotX + i, y) : ctx.moveTo(plotX + i, y);
+              }
+              ctx.stroke();
+            });
+          } else if (key.includes("calculus-of-variations")) {
+            ctx.strokeStyle = "#c9c1b2";
+            ctx.lineWidth = 1;
+            for (let y = 14; y <= 42; y += 7) line(20, y, 190, y, "#d8d2c4", 0.8);
+            [[blue, 0], [purple, 0.8], [red, 1.6]].forEach(([color, phase], j) => {
+              ctx.strokeStyle = color;
+              ctx.globalAlpha = 0.45 + j * 0.18;
+              ctx.lineWidth = 1.5 + j * 0.3;
+              ctx.beginPath();
+              for (let i = 0; i <= 150; i++) {
+                const u = i / 150;
+                const y = 40 - 25 * Math.sin(u * Math.PI) + Math.sin(u * 8 + t / 700 + phase) * (4 - j);
+                i ? ctx.lineTo(32 + i, y) : ctx.moveTo(32 + i, y);
+              }
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            });
+          } else if (key.includes("bayesian-graphical-models") || key.includes("hidden-markov-models")) {
+            const pts = key.includes("hidden-markov-models")
+              ? [[30,22],[70,22],[110,22],[150,22],[30,40],[70,40],[110,40],[150,40]]
+              : [[48,18],[86,18],[124,18],[68,40],[112,40],[156,32]];
+            const edges = key.includes("hidden-markov-models")
+              ? [[0,1],[1,2],[2,3],[0,4],[1,5],[2,6],[3,7]]
+              : [[0,1],[1,2],[0,3],[1,3],[1,4],[2,4],[4,5]];
+            edges.forEach(([a, b]) => arrow(pts[a][0], pts[a][1], pts[b][0], pts[b][1], "#8f8678", 1));
+            pts.forEach((p, i) => dot(p[0], p[1], 3, i % 2 ? blue : green));
+          } else if (key.includes("hierarchical-bayes")) {
+            dot(104, 12, 4, purple);
+            for (let i = 0; i < 5; i++) {
+              const x = 36 + i * 34;
+              arrow(104, 16, x, 36, "#8f8678", 1);
+              dot(x, 38, 3.3, i % 2 ? blue : red);
+              line(x - 8, 45, x + 8, 45 - Math.sin(t / 600 + i) * 5, i % 2 ? blue : red, 1.5);
+            }
+          } else if (key.includes("bayesian-regression") || key.includes("posterior-summaries")) {
+            axes();
+            if (key.includes("posterior-summaries")) {
+              curve(blue);
+              [0.44, 0.52, 0.62].forEach((u, i) => line(plotX + u * plotW, plotY + 8, plotX + u * plotW, plotY + plotH, [red, green, purple][i], 1.7));
+            } else {
+              line(plotX + 4, plotY + plotH - 9, plotX + plotW - 4, plotY + 12, blue, 2);
+              for (let i = 0; i < 14; i++) {
+                const u = i / 13;
+                const y = plotY + plotH - 10 - u * (plotH - 20) + Math.sin(t / 600 + i) * 5;
+                dot(plotX + 8 + u * (plotW - 16), y, 2.2, i % 2 ? red : green);
+              }
+            }
+          } else if (key.includes("bayesian-neural-networks")) {
+            axes();
+            for (let j = 0; j < 5; j++) {
+              ctx.strokeStyle = `rgba(${j % 2 ? "184,65,42" : "31,74,140"},${0.22 + j * 0.09})`;
+              ctx.lineWidth = 1.4;
+              ctx.beginPath();
+              for (let i = 0; i <= plotW; i++) {
+                const u = i / plotW;
+                const y = plotY + plotH * (0.55 - 0.28 * Math.sin(u * Math.PI * 1.5 + j * 0.45 + t / 900));
+                i ? ctx.lineTo(plotX + i, y) : ctx.moveTo(plotX + i, y);
+              }
+              ctx.stroke();
+            }
+          } else if (key.includes("vb-gaussian-mixture")) {
+            for (let i = 0; i < 3; i++) {
+              ctx.save();
+              ctx.translate(56 + i * 48, 28 + Math.sin(t / 700 + i) * 2);
+              ctx.rotate((i - 1) * 0.35);
+              ctx.scale(1.7, 0.85);
+              ctx.strokeStyle = [blue, red, green][i];
+              ctx.lineWidth = 1.4;
+              ctx.beginPath();
+              ctx.arc(0, 0, 10, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.restore();
+              dot(56 + i * 48, 28, 2.5, [blue, red, green][i]);
+            }
+          } else if (key.includes("information-geometry")) {
+            const a = [54, 42], b = [104, 12], c = [154, 42];
+            [a, b, c].forEach((p, i) => dot(p[0], p[1], 3.5, [blue, red, green][i]));
+            line(a[0], a[1], b[0], b[1], "#8f8678", 1);
+            line(b[0], b[1], c[0], c[1], "#8f8678", 1);
+            line(c[0], c[1], a[0], a[1], "#8f8678", 1);
+            ctx.strokeStyle = purple;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(68, 37);
+            ctx.quadraticCurveTo(104, 12 + Math.sin(t / 700) * 3, 140, 37);
+            ctx.stroke();
           } else if (key.includes("optimal-transport")) {
             const left = [], right = [];
             for (let i = 0; i < 6; i++) {
@@ -463,10 +768,15 @@ const katexOnload = "renderMathInElement(document.body,{throwOnError:false,delim
             ctx.fillStyle = "rgba(184,65,42,0.25)";
             ctx.beginPath(); ctx.arc(98, 28, 18, 0, Math.PI * 2); ctx.fill();
           } else {
-            ctx.strokeStyle = purple;
-            ctx.beginPath();
-            for (let x = 12; x < w - 12; x += 18) { ctx.moveTo(x, 12); ctx.lineTo(x + 9, 42); }
-            ctx.stroke();
+            const pts = Array.from({ length: 10 }, (_, i) => ({
+              x: 26 + i * 18,
+              y: 28 + Math.sin(t / 650 + i * 1.3) * 14,
+            }));
+            pts.forEach((p, i) => {
+              if (i > 0) line(pts[i - 1].x, pts[i - 1].y, p.x, p.y, i % 2 ? blue : purple, 1.2, 0.45);
+              if (i > 2 && i % 3 === 0) line(pts[i - 3].x, pts[i - 3].y, p.x, p.y, green, 1, 0.25);
+            });
+            pts.forEach((p, i) => dot(p.x, p.y, 2.6, [blue, red, green, purple][i % 4]));
           }
         }
         const previews = Array.from(document.querySelectorAll(".live-preview"));

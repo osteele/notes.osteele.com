@@ -1,0 +1,141 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Causal Interventions" breadcrumb="Causal Interventions" section="interpretability-methods">
+<Hero title="Causal Interventions" subtitle="Causal interventions change activations and measure the effect on model behavior." />
+
+<p>
+Probes and lenses ask what can be read from a representation. Causal
+interventions ask what happens to the model's behavior when the representation is
+changed. The shift is from decodability to use: a feature can be readable and
+still play no role, and intervention is how that difference gets tested.
+</p>
+
+<p>
+The basic design compares a clean run, where the model produces the behavior
+under study, against a corrupted run, where some relevant fact or relation has
+been altered. An activation from one run is copied into the other at a chosen
+site. If behavior changes in the expected direction under a stated metric, that
+site carries causal weight for the behavior.
+</p>
+
+<Figure title="Figure 1 · Necessity-style and restoration evidence" canvasId="causal-intervention-canvas" width="760" height="350" readoutId="causal-intervention-readout">
+<Fragment slot="controls">
+  <ControlSelect id="causal-mode" label="intervention" valueId="causal-mode-v" options={[
+    { value: "ablate", label: "ablate head A", selected: true },
+    { value: "patch", label: "patch clean A" },
+    { value: "hydra", label: "self-repair" },
+  ]} />
+</Fragment>
+</Figure>
+
+<h2>1. A worked patch</h2>
+
+<p>
+The indirect-object task is a standard example. The prompt "When John and Mary
+went to the store, John gave a drink to" should continue with <em>Mary</em>. A
+natural metric is the logit difference $\Delta = \text&#123;logit&#125;(\text&#123;Mary&#125;) -
+\text&#123;logit&#125;(\text&#123;John&#125;)$, which is large and positive on a clean run. Corrupt the
+prompt by swapping the names so the licensed answer flips, which collapses
+$\Delta$.
+</p>
+
+<p>
+Now patch: take the activation at one head, on the corrupted run, and overwrite it
+with the value that head held on the clean run. If $\Delta$ recovers toward its
+clean value, that head was carrying information the answer depends on. Figure 1
+contrasts this restoration with plain ablation. The "patch clean A" mode lifts
+the metric back up; the "ablate head A" mode drops it and leaves it down. Patching
+gives sufficiency-style evidence; ablation gives necessity-style evidence, and
+the two need not agree.
+</p>
+
+<h2>2. Intervention types</h2>
+
+<dl class="definition-list">
+  <dt>Ablation</dt>
+  <dd>Remove or zero a component. A metric drop is necessity-style evidence, mixed with redundancy and compensation effects.</dd>
+  <dt>Activation patching</dt>
+  <dd>Copy an activation from a clean run into a corrupted run. Whether behavior is restored depends on the corruption, the site, the representation type, and the metric.</dd>
+  <dt>Path patching</dt>
+  <dd>Restrict a patch to a route through the network, such as one head writing into another head's input, so the test isolates a connection rather than a component.</dd>
+  <dt>Attribution patching</dt>
+  <dd>Use a local linear approximation to estimate many patch effects at once, cheaply, at lower resolution and under stronger assumptions.</dd>
+  <dt>Self-repair</dt>
+  <dd>Measure whether another component's contribution grows once the targeted component is removed.</dd>
+</dl>
+
+<h2>3. The corruption and the metric are part of the claim</h2>
+
+<p>
+A patching result is only as specific as its corruption. Swapping a name, zeroing
+an activation, replacing it with a dataset mean, or resampling it from another
+prompt each define a different counterfactual, and a head can look important under
+one and irrelevant under another. The direction matters too: denoising patches a
+clean activation into a corrupted run and asks what restores the behavior, while
+noising patches a corrupted activation into a clean run and asks what breaks it.
+The two answer different questions and can disagree.
+</p>
+
+<Aside>
+  <strong>The metric is part of the claim.</strong> A component can restore one
+  logit-difference metric while doing little for loss, calibration, or a different
+  prompt family. The behavior you measure sets the scope of the causal claim, so a
+  result stated without its metric is incomplete.
+</Aside>
+
+<h2>4. Self-repair changes what is being measured</h2>
+
+<p>
+In the Hydra effect, ablating one component causes another to grow its
+contribution. An ablation result therefore mixes the removed component's role
+with the model's reaction to its removal. A small metric drop can mean the
+component was unimportant, or that the rest of the network compensated before the
+metric was read.
+</p>
+
+<p>
+This makes single-component ablation a lower bound on one kind of causal role
+rather than a clean measurement of the original computation. The intervention has
+changed the system being measured, so the number reflects the perturbed model,
+not the one you wanted to characterize.
+</p>
+
+<p>
+The practical response is to triangulate. Compare ablation with activation
+patching and path patching, and use paired interventions that remove a candidate
+compensator alongside the target. A claim is stronger when necessity-style and
+restoration-style evidence tell the same story and the model is treated as
+adaptive rather than passive.
+</p>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>Zhang and Nanda (2024), <a href="https://arxiv.org/abs/2309.16042">"Towards Best Practices of Activation Patching in Language Models"</a>, for metrics, corruption choices, and noising versus denoising.</li>
+    <li>Wang, Variengien, Conmy, Shlegeris, and Steinhardt (2023), <a href="https://arxiv.org/abs/2211.00593">"Interpretability in the Wild"</a>, for the indirect-object task and logit-difference metric.</li>
+    <li>Meng, Bau, Andonian, and Belinkov (2022), <a href="https://arxiv.org/abs/2202.05262">"Locating and Editing Factual Associations in GPT"</a>, for causal tracing in factual recall.</li>
+    <li>Goldowsky-Dill, MacLeod, Sato, and Arora (2023), <a href="https://arxiv.org/abs/2304.05969">"Localizing Model Behavior with Path Patching"</a>, for path patching.</li>
+    <li>Syed, Rager, and Conmy (2023), <a href="https://arxiv.org/abs/2310.10348">"Attribution Patching Outperforms Automated Circuit Discovery"</a>, for attribution patching.</li>
+    <li>McGrath, Rahtz, Kramar, Mikulik, and Legg (2023), <a href="https://arxiv.org/abs/2307.15771">"The Hydra Effect"</a>, for self-repair under ablation.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/residual-stream-directions/">Residual Stream & Directions</a> for what many activation patches replace.</li>
+    <li><a href="/ml/probes-validity/">Probes and Validity</a> for the decodability claims interventions are meant to test.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/probes-validity/", tag: "Before", title: "Probes and Validity", role: "Readable features before intervention." },
+  { href: "/ml/qk-ov-circuits/", tag: "Circuit", title: "QK and OV Circuits", role: "The attention-head pieces interventions often target." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

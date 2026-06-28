@@ -6,7 +6,7 @@ import InteractivePanel from "../../components/explainer/InteractivePanel.astro"
 import NextCards from "../../components/explainer/NextCards.astro";
 ---
 
-<ExplainerLayout title="Distance Correlation — An Interactive Explainer" breadcrumb="Distance Correlation" section="probability-and-statistics">
+<ExplainerLayout title="Distance Correlation" breadcrumb="Distance Correlation" section="probability-and-statistics">
   <style>
     :root {
       --bg: #f4f6f8;
@@ -216,7 +216,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
 
         <div class="part-divider">Part I &middot; <span class="part-name">Distance correlation (2007)</span></div>
 
-        <h2 id="pearson">1. What Pearson&rsquo;s r misses</h2>
+        <h2 id="pearson">1. Pearson&rsquo;s r misses symmetric nonlinear dependence</h2>
         <p>
           Pearson&rsquo;s $r$ is a coefficient of <em>linear</em> dependence: it measures whether the cloud of points stretches along a diagonal. Symmetric nonlinear relationships, such as a parabola, a sine wave, or a circle, can have $r &bsol;approx 0$ while $X$ and $Y$ are tightly coupled, even deterministic. Rank-based generalizations (Spearman, Kendall) fix monotone misses but not the symmetric ones. The 2007 paper&rsquo;s motivating quote: &ldquo;distance correlation is zero only if the random vectors are independent.&rdquo;
         </p>
@@ -345,7 +345,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
           </div>
         </div>
 
-        <h3>What it replaced</h3>
+        <h3>Earlier dependence tests had narrow regimes</h3>
         <p>
           Before 2007, each standard way to test for dependence between two random vectors had its own narrow regime:
         </p>
@@ -570,7 +570,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
         <h2>Further reading</h2>
         <ul style="font-size:14px;">
           <li>Szekely, Rizzo &amp; Bakirov (2007), <em>Measuring and testing dependence by correlation of distances</em> &mdash; the original.</li>
-          <li>Szekely &amp; Rizzo (2014), <em><a href="https://arxiv.org/abs/1310.2926" target="_blank" rel="noopener">Partial Distance Correlation with Methods for Dissimilarities</a></em> &mdash; this page.</li>
+          <li>Szekely &amp; Rizzo (2014), <em><a href="https://arxiv.org/abs/1310.2926" target="_blank" rel="noopener">Partial Distance Correlation with Methods for Dissimilarities</a></em> for the dissimilarity and partial-distance extension.</li>
           <li>R package <code>energy</code> by Rizzo &amp; Szekely &mdash; reference implementation of all of the above.</li>
         </ul>
 

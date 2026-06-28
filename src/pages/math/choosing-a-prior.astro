@@ -20,12 +20,12 @@ import OrientationNote from "../../components/explainer/OrientationNote.astro";
     know</em>; "uninformative" priors are a fallback when you genuinely don't, and
     each construction (group invariance, max entropy, Jeffreys) answers a slightly
     different question. The
-    <a href="/math/fisher-information/">Fisher information</a> page covers the geometry
-    of Jeffreys priors in depth; this page is the decision guide that sits above it.
+    <a href="/math/fisher-information/">Fisher information</a> covers the geometry
+    of Jeffreys priors in depth; prior selection sits one level above that geometry.
   </p>
 </OrientationNote>
 
-<h2 id="first-principle">1. The first principle</h2>
+<h2 id="first-principle">1. Use real prior information when available</h2>
 
 <p>
 The most important principle of prior selection is that <strong>your prior should
@@ -267,7 +267,7 @@ detail, including the multi-parameter version through the Fisher metric and
 several worked transformations.
 </p>
 
-<h2 id="comparison">6. The routes can disagree</h2>
+<h2 id="comparison">6. Prior rules disagree near boundaries</h2>
 
 <p>
 The three routes don't always pick the same prior, because they answer different

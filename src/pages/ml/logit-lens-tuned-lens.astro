@@ -1,0 +1,152 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Logit Lens & Tuned Lens" breadcrumb="Logit Lens & Tuned Lens" section="interpretability-methods">
+<Hero title="Logit Lens & Tuned Lens" subtitle="Lens methods decode intermediate residual streams as vocabulary predictions. Layer depth is not time." />
+
+<p>
+A transformer produces vocabulary logits by multiplying its final residual
+stream by the unembedding matrix $W_U$, usually after a layer norm. The logit
+lens applies that same readout to a residual stream from an earlier layer instead
+of the last one. The question it answers is concrete: if the model were forced to
+commit to a next token using the state at layer $\ell$, which tokens would that
+state favor?
+</p>
+
+<p>
+Running the lens at every layer gives a trajectory of latent predictions. Early
+layers often decode to high-frequency or locally plausible tokens. Middle layers
+may surface partial hypotheses. Late layers usually sharpen into the token the
+model finally emits. The trajectory is a readout of intermediate state, not a
+record of the model deliberating.
+</p>
+
+<Figure title="Figure 1 · Layerwise vocabulary readouts" canvasId="lens-canvas" width="760" height="380" readoutId="lens-readout">
+<Fragment slot="controls">
+  <ControlRange id="lens-layer" label="layer" valueId="lens-layer-v" min="0" max="10" step="1" value="5" />
+  <label class="control"><span>tuned lens</span><input id="lens-tuned" type="checkbox" /></label>
+</Fragment>
+</Figure>
+
+<h2>1. What the logit lens reads</h2>
+
+<p>
+The logit lens adds no trained parameters. It reuses the model's own final
+readout as a probe at each depth, which makes it cheap and keeps it in the
+model's coordinate system rather than a probe's. Move the layer slider in
+Figure 1 to watch the decoded distribution change. If a token is already on top
+at layer 8 and stays on top through layer 12, that token was linearly readable
+well before the output. If the top tokens churn from layer to layer, the decoded
+state is still moving.
+</p>
+
+<p>
+A lens can surface information that is present internally but does not reach the
+output. A layer may rank a token highly even though a later component routes
+around it or suppresses it, the gap discussed under
+<a href="/ml/represented-vs-expressed-knowledge/">represented versus expressed
+knowledge</a>. The lens reports decodability under a fixed readout. It does not
+establish that the model uses the decoded token.
+</p>
+
+<h2>2. Why early layers decode poorly</h2>
+
+<p>
+The unembedding was trained against final-layer states. Earlier residual streams
+occupy a related but shifted region of the same vector space: different typical
+norms, different offsets contributed by components that have not yet written, and
+in some models a basis that later layers rotate. Feeding those states straight
+into $W_U$ decodes them as if they were finished, which is why a raw logit lens
+can look noisy or systematically wrong in early and middle layers, and can fail
+almost entirely on some model families.
+</p>
+
+<p>
+The failure is a coordinate mismatch rather than an absence of information. The
+state at layer $\ell$ may carry a usable prediction that the final readout cannot
+extract because it expects the final coordinate system. Correcting that mismatch
+is what the tuned lens does.
+</p>
+
+<h2>3. The tuned lens translator</h2>
+
+<p>
+The tuned lens trains one affine map per layer, $h_\ell \mapsto A_\ell h_\ell +
+b_\ell$, applied before the shared unembedding. The map is fit to make the
+decoded distribution at layer $\ell$ match the model's final distribution, by
+minimizing the KL divergence from the lens output to the final output over a
+training corpus. Each layer gets its own translator into final-layer
+coordinates, while $W_U$ stays fixed.
+</p>
+
+<Aside>
+  <strong>The translator is small and the target is the model itself.</strong>
+  Because the objective is KL to the model's own final distribution rather than to
+  ground-truth tokens, the tuned lens measures what the layer already implies
+  about the model's eventual prediction, not what a fresh classifier could learn.
+  An affine map cannot manufacture a prediction that the layer does not contain;
+  it can only realign one that the raw lens misreads.
+</Aside>
+
+<p>
+Toggling the tuned-lens control in Figure 1 pulls the early-layer readouts toward
+the final answer and reduces their noise. Tuned-lens predictions are typically
+better calibrated than raw logit-lens predictions and track the final
+distribution more smoothly across depth. The cost is the per-layer fit, and the
+caveat is that a trained translator can paper over a genuine coordinate change
+that the raw lens would have exposed.
+</p>
+
+<h2>4. Reading a lens trajectory</h2>
+
+<p>
+A lens marks the depth at which a prediction becomes linearly decodable. That is
+useful for locating where information appears and for comparing layers, but it
+invites two misreadings. The first treats the trajectory as a timeline of
+thought; the second treats a high lens score as proof the model acts on the
+token.
+</p>
+
+<Aside>
+  <strong>Layer depth is not cognitive time.</strong> A lens trajectory is not a
+  movie of the model thinking. Each layer exposes a different intermediate state
+  in one feed-forward pass. The trajectory can show when information becomes
+  decodable, but it is not an event sequence in the human sense.
+</Aside>
+
+<p>
+The disciplined use pairs a lens with a causal test. The lens proposes that a
+token is readable at some layer; a
+<a href="/ml/causal-interventions/">causal intervention</a> on that layer's
+activations checks whether the readable state changes behavior. Decodability
+locates a candidate; intervention tests whether it matters. The lenses decode the
+<a href="/ml/residual-stream-directions/">residual stream</a>, so a lens result is
+also a claim about which directions in that stream the unembedding can read.
+</p>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>nostalgebraist (2020), <a href="https://www.alignmentforum.org/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens">"Interpreting GPT: The Logit Lens"</a>, for applying the final unembedding to intermediate residual streams.</li>
+    <li>Belrose, Furman, Smith, Halawi, Ostrovsky, McKinney, Biderman, and Steinhardt (2023), <a href="https://arxiv.org/abs/2303.08112">"Eliciting Latent Predictions from Transformers with the Tuned Lens"</a>, for the per-layer affine translators, the KL objective, and calibration results.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/residual-stream-directions/">Residual Stream & Directions</a> for the hidden states that lenses decode.</li>
+    <li><a href="/math/kl-divergence/">KL Divergence</a> for the objective the tuned lens minimizes.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/represented-vs-expressed-knowledge/", tag: "Next", title: "Represented vs. Expressed Knowledge", role: "When internal readouts and output behavior disagree." },
+  { href: "/ml/causal-interventions/", tag: "Method", title: "Causal Interventions", role: "Activation changes test lens hypotheses." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

@@ -1,0 +1,138 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Attention Head Labels" breadcrumb="Attention Head Labels" section="phenomena-and-circuits">
+<Hero title="Attention Head Labels" subtitle="Labels such as positional, induction, and name-mover heads are hypotheses about circuits, not stable kinds." />
+
+<p>
+Attention-head labels name patterns that recur across analyses: positional
+heads, induction heads, syntactic heads, rare-word heads, copy-suppression heads,
+and name-mover heads. The labels are hypotheses about computations, not stable
+ontological kinds. A head is a parameterized computation in a layer, not a
+species.
+</p>
+
+<p>
+The same surface pattern can support different functions, and the same function
+can be distributed across several heads. A cluster of head embeddings or
+attention patterns is evidence about similarity. It is not by itself evidence
+about causal role.
+</p>
+
+<Figure title="Figure 1 · Clusters before and after a null" canvasId="head-types-canvas" width="760" height="360" readoutId="head-types-readout">
+<Fragment slot="controls">
+  <label class="control"><span>within-layer null</span><input id="head-null" type="checkbox" /></label>
+</Fragment>
+</Figure>
+
+<h2>1. What the labels describe</h2>
+
+<p>
+Labels help orient analysis. In Figure 1, a cluster labeled "positional" means
+the heads share offset or boundary-token behavior; a cluster labeled "induction"
+means the heads participate in a prefix-match-and-copy pattern. Those words make
+the analysis discussable. They also provide intervention hypotheses: if this is
+a copy head, ablating or patching it changes copying behavior under the relevant
+metric.
+</p>
+
+<dl class="definition-list">
+  <dt>Positional</dt>
+  <dd>Attends by relative offset, often to the previous token, or to boundary tokens such as the start-of-sequence position. The heatmap is a band parallel to the diagonal. Common and easy to find, and rarely an interesting computation on its own.</dd>
+  <dt>Induction</dt>
+  <dd>On a repeated sequence, attends from a token back to the position just after that token's previous occurrence, so the OV path can copy what followed. The signature of in-context pattern continuation; see the Induction Heads page.</dd>
+  <dt>Syntactic</dt>
+  <dd>Attends along a dependency-like relation, for example a determiner to its noun or an object to its verb. Tested by checking whether the head's strongest attention matches gold dependency edges above a positional baseline, which most heads do only partially.</dd>
+  <dt>Name mover</dt>
+  <dd>In the indirect-object-identification circuit, moves a candidate name's information toward the final position so it can be predicted. Defined by its role in that circuit, not by a generic heatmap shape.</dd>
+  <dt>Copy suppression</dt>
+  <dd>Attends to an earlier instance of the current token and writes against it, lowering the probability of repeating a token already in context. A clear OV-defined function rather than a heatmap shape.</dd>
+  <dt>Rare-word</dt>
+  <dd>Attends to low-frequency tokens, often to carry an unusual word forward. A frequency-conditioned pattern that overlaps with other roles.</dd>
+</dl>
+
+<Figure title="Figure 2 · Idealized attention patterns (schematic, not measured)" canvasId="head-patterns-canvas" width="760" height="420" />
+
+<p>
+Each panel is a destination-by-source attention grid for one short sentence,
+darker where a destination token attends more to a source token. The shapes are
+caricatures of the labels, drawn to be told apart, not read off a real model.
+</p>
+
+<h2>2. What the labels hide</h2>
+
+<p>
+Head identity is layer-sensitive. Two heads with similar attention heatmaps can
+write very different OV outputs. Two heads with different heatmaps can contribute
+to the same behavior. A cluster may reflect layer, token-position statistics, or
+training artifacts more than a human-interpretable function.
+</p>
+
+<p>
+A within-layer null asks whether the apparent separation remains after
+controlling for layer position. Other nulls shuffle labels, compare to simple
+positional baselines, or test whether a cluster predicts causal importance.
+</p>
+
+<Aside>
+  <strong>Patterns precede mechanism claims.</strong> Attention heatmaps are often
+  where a hypothesis starts. QK/OV analysis and interventions determine whether
+  pattern evidence extends to a mechanism claim.
+</Aside>
+
+<h2>3. From label to circuit</h2>
+
+<p>
+The indirect-object task shows how much a label depends on the circuit around it.
+On "When John and Mary went to the store, John gave a drink to," the heads that
+push <em>Mary</em> toward the output are name movers. Ablate them and the
+prediction does not collapse as far as the label predicts, because backup name
+movers that were quiet on the clean run step up to do the same job. The original
+heads were named for a role they hold only while the backups stay idle.
+</p>
+
+<p>
+The same circuit contains heads whose OV path writes against the correct name, a
+copy-suppression role that lowers an answer rather than promoting it. A heatmap
+alone would not separate a promoter from a suppressor, since both can attend to
+the name; the sign of the OV write does. The label that survives is the one tied
+to what the head writes and to how the rest of the circuit responds when it is
+removed, which is why head identity is better read as a position in a circuit than
+as a fixed type. The backup behavior is an instance of the self-repair discussed
+under <a href="/ml/causal-interventions/">causal interventions</a>.
+</p>
+
+<p>
+A head-type label becomes a mechanism claim only after the analysis identifies
+what the head writes, tests whether the label survives a matched null, and shows
+whether changing the head changes the behavior the label names.
+</p>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>Clark, Khandelwal, Levy, and Manning (2019), <a href="https://arxiv.org/abs/1906.04341">"What Does BERT Look At?"</a>, for early attention-pattern analysis.</li>
+    <li>Htut, Phang, Bordia, and Bowman (2019), <a href="https://arxiv.org/abs/1911.12246">"Do Attention Heads in BERT Track Syntactic Dependencies?"</a>, for syntactic head tests.</li>
+    <li>Michel, Levy, and Neubig (2019), <a href="https://arxiv.org/abs/1905.10650">"Are Sixteen Heads Really Better than One?"</a>, for head pruning and redundancy.</li>
+    <li>Wang, Variengien, Conmy, Shlegeris, and Steinhardt (2023), <a href="https://arxiv.org/abs/2211.00593">"Interpretability in the Wild"</a>, for IOI circuit head labels such as name movers.</li>
+    <li>McDougall, Conmy, Rushing, McGrath, and Nanda (2023), <a href="https://arxiv.org/abs/2310.04625">"Copy Suppression"</a>, for copy-suppression heads.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/qk-ov-circuits/">QK and OV Circuits</a> for separating attention patterns from residual writes.</li>
+    <li><a href="/ml/causal-interventions/">Causal Interventions</a> for the ablation and patching tests that turn a label into a claim.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/qk-ov-circuits/", tag: "Method", title: "QK and OV Circuits", role: "Separate attention pattern from residual write." },
+  { href: "/ml/induction-heads/", tag: "Example", title: "Induction Heads", role: "A named type with a specified copy circuit." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

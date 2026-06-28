@@ -30,6 +30,7 @@
 [data-theme="dark"] .section-header.gray { background: #333; color: #ccc; }
 [data-theme="dark"] img { opacity: 0.9; }
 [data-theme="dark"] .callout { background: #222; }
+[data-theme="dark"] .section-card { background: #1f1f1f; border-color: var(--border-color); }
 [data-theme="dark"] .canvas-preview { background: #2a2a2a; }
 [data-theme="dark"] .step-canvas-wrapper { background: #2a2a2a; }
 

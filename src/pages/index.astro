@@ -2,81 +2,281 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<BaseLayout title="Oliver's Notes">
-  <div class="section-header blue">Creative Coding</div>
-  <ul class="page-list">
-    <li><a href="/creative-coding/">Creative Coding</a></li>
-    <li><a href="https://creative-coding.osteele.com/">Creative Coding with p5.js</a></li>
-    <li><a href="/processing/">Creative Coding with Processing</a></li>
-  </ul>
-  <div class="subhead">Tutorials</div>
-  <ul class="page-list">
-    <li><a href="https://creative-coding.osteele.com/arranging-items-in-a-line/">Arranging Items in a Line</a></li>
-    <li><a href="https://creative-coding.osteele.com/arranging-items-in-a-circle-or-spiral/">Arranging Items in a Circle or Spiral</a></li>
-    <li><a href="https://creative-coding.osteele.com/arranging-items-in-a-grid/">Arranging Items in a Grid</a></li>
-    <li><a href="https://creative-coding.osteele.com/iteration-notes/">Iteration Notes</a></li>
-    <li><a href="https://creative-coding.osteele.com/refactoring-into-functions/">Refactoring into Functions</a></li>
-    <li><a href="https://creative-coding.osteele.com/animation-and-randomness/">Animation and Randomness</a></li>
-    <li><a href="/processing/processing-and-animation/">Processing and Animation</a></li>
-    <li><a href="/processing/processing-arrays-and-animation/">Processing Arrays and Animation</a></li>
-  </ul>
+<BaseLayout
+  title="Oliver's Notes"
+  description="Teaching and project notes by Oliver Steele — creative coding, p5.js, physical computing, math, teaching, and woodworking."
+>
+  <p class="intro">
+    Notes and resources from teaching and projects — pick a topic below.
+  </p>
 
-  <div class="two-column">
-    <div>
-      <div class="section-header blue">JavaScript &amp; p5.js</div>
-      <ul class="page-list">
-        <li><a href="/javascript/">JavaScript Resources</a></li>
-        <li><a href="/javascript/arrays/">JavaScript Arrays</a></li>
-        <li><a href="/p5js/">p5.js Resources</a></li>
-        <li><a href="/vscode/">Visual Studio Code for p5.js</a></li>
-        <li><a href="/posenet/">PoseNet</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="section-header blue">Physical Computing</div>
-      <ul class="page-list">
-        <li><a href="/physical-computing/">Physical Computing</a></li>
-        <li><a href="/arduino/">Arduino</a></li>
-        <li><a href="/raspberry-pi/">Raspberry Pi</a></li>
-      </ul>
-    </div>
+  <div class="featured">
+    <a class="section-card featured-card" href="/creative-coding/">
+      <div class="cover"><canvas id="feat-cc" width="280" height="120"></canvas></div>
+      <div class="featured-title">Creative Coding</div>
+      <div class="featured-sub">p5.js and Processing — sketches, tutorials, and techniques</div>
+    </a>
+    <a class="section-card featured-card" href="/javascript/">
+      <div class="cover"><canvas id="feat-js" width="280" height="120"></canvas></div>
+      <div class="featured-title">JavaScript &amp; p5.js</div>
+      <div class="featured-sub">Language resources, reference, and PoseNet</div>
+    </a>
+    <a class="section-card featured-card" href="/physical-computing/">
+      <div class="cover"><canvas id="feat-pc" width="280" height="120"></canvas></div>
+      <div class="featured-title">Physical Computing</div>
+      <div class="featured-sub">Arduino, Raspberry Pi, sensors, and circuits</div>
+    </a>
+    <a class="section-card featured-card" href="/math/">
+      <div class="cover"><canvas id="feat-math" width="280" height="120"></canvas></div>
+      <div class="featured-title">Math Notes</div>
+      <div class="featured-sub">Probability, information theory &amp; Bayesian inference — with live visualizations</div>
+    </a>
+    <a class="section-card featured-card" href="/teaching/">
+      <div class="cover"><canvas id="feat-teach" width="280" height="120"></canvas></div>
+      <div class="featured-title">Teaching</div>
+      <div class="featured-sub">Course notes, NYU Shanghai, and classroom tools</div>
+    </a>
+    <a class="section-card featured-card" href="https://osteele.com/woodworking">
+      <div class="cover"><canvas id="feat-wood" width="280" height="120"></canvas></div>
+      <div class="featured-title">Woodworking</div>
+      <div class="featured-sub">Custom furniture and wooden objects — projects on osteele.com</div>
+    </a>
   </div>
 
-  <div class="two-column">
-    <div>
-      <div class="section-header purple"><a href="/math/">Math</a></div>
-      <ul class="page-list">
-        <li><a href="/math/#probability-and-statistics">Probability &amp; Statistics</a></li>
-        <li><a href="/math/#information-theory">Information Theory</a></li>
-        <li><a href="/math/#random-processes">Random Processes</a></li>
-        <li><a href="/math/#bayesian-inference">Bayesian Inference</a></li>
-        <li><a href="/math/#machine-learning">Machine Learning</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="section-header purple">Teaching</div>
-      <ul class="page-list">
-        <li><a href="/courses/">Course Notes</a></li>
-        <li><a href="/nyush/">NYU Shanghai</a></li>
-        <li><a href="/education/">Education Tools &amp; Materials</a></li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="two-column">
-    <div>
-      <div class="section-header gray">Tools &amp; Reference</div>
-      <ul class="page-list">
-        <li><a href="/tools/">Tools</a></li>
-        <li><a href="/reference/">Reference</a></li>
-        <li><a href="/uses/">Uses</a> — what I use</li>
-      </ul>
-    </div>
-    <div>
-      <div class="section-header gray">Miscellaneous</div>
-      <ul class="page-list">
-        <li><a href="/woodworking/">Woodworking</a></li>
-      </ul>
-    </div>
-  </div>
+  <p class="also">
+    Also — <a href="/reference/">Reference</a> · <a href="/uses/">Uses</a> · <a href="/woodworking/">Shop notes</a>
+  </p>
 </BaseLayout>
+
+<style>
+  .featured {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin: 0 0 1em;
+  }
+
+  @media (max-width: 720px) {
+    .featured {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Card is the link; rely on the global .section-card for box + hover lift */
+  .featured-card {
+    display: block;
+    padding: 0;
+    overflow: hidden;
+    color: inherit;
+  }
+
+  .featured-card:hover {
+    text-decoration: none;
+  }
+
+  .featured-card .cover {
+    background: linear-gradient(135deg, #eef3f8, #f7f2ea);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .featured-card canvas {
+    display: block;
+    width: 100%;
+    height: 120px;
+  }
+
+  .featured-title {
+    font-weight: 700;
+    font-size: 1.1em;
+    margin: 12px 16px 2px;
+  }
+
+  .featured-sub {
+    font-size: 0.85em;
+    color: var(--secondary-color);
+    margin: 0 16px 14px;
+    line-height: 1.4;
+  }
+
+  .intro {
+    color: var(--secondary-color);
+    font-size: 1.05em;
+    margin: -0.2em 0 1.5em;
+  }
+
+  .also {
+    text-align: center;
+    color: var(--secondary-color);
+    font-size: 0.9em;
+    margin: 0.5em 0 1.5em;
+  }
+
+  .also a {
+    color: var(--secondary-color);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .also a:hover {
+    color: var(--link-color);
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function sized(id) {
+      var c = document.getElementById(id);
+      if (!c) return null;
+      var dpr = window.devicePixelRatio || 1;
+      var rect = c.getBoundingClientRect();
+      var w = Math.round(rect.width) || 280;
+      var h = Math.round(rect.height) || 120;
+      c.width = w * dpr;
+      c.height = h * dpr;
+      var ctx = c.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx: ctx, w: w, h: h };
+    }
+
+    // Creative Coding — phyllotaxis spiral
+    function drawCC() {
+      var s = sized('feat-cc');
+      if (!s) return;
+      var ctx = s.ctx, w = s.w, h = s.h;
+      var cx = w / 2, cy = h / 2, N = 150, golden = Math.PI * (3 - Math.sqrt(5));
+      for (var i = 0; i < N; i++) {
+        var a = i * golden, r = 4.2 * Math.sqrt(i);
+        var x = cx + r * Math.cos(a), y = cy + r * Math.sin(a), tt = i / N;
+        ctx.fillStyle = 'rgba(' + Math.round(50 + tt * 70) + ',' +
+          Math.round(125 - tt * 70) + ',' + Math.round(169 - tt * 15) + ',0.85)';
+        ctx.beginPath(); ctx.arc(x, y, 2.1 + tt * 1.7, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    // JavaScript & p5.js — Lissajous curve
+    function drawJS() {
+      var s = sized('feat-js');
+      if (!s) return;
+      var ctx = s.ctx, w = s.w, h = s.h, cx = w / 2, cy = h / 2;
+      var A = w * 0.36, B = h * 0.34, a = 3, b = 2, d = Math.PI / 2;
+      var grad = ctx.createLinearGradient(0, 0, w, 0);
+      grad.addColorStop(0, '#327DA9'); grad.addColorStop(1, '#6a4a8a');
+      ctx.strokeStyle = grad; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      for (var i = 0; i <= 240; i++) {
+        var t = i / 240 * Math.PI * 2;
+        var x = cx + A * Math.sin(a * t + d), y = cy + B * Math.sin(b * t);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // Physical Computing — breadboard grid with traces
+    function drawPC() {
+      var s = sized('feat-pc');
+      if (!s) return;
+      var ctx = s.ctx, w = s.w, h = s.h, gx = 14, gy = 14, ox = 18, oy = 16;
+      ctx.fillStyle = 'rgba(50,125,169,0.32)';
+      for (var y = oy; y < h - 6; y += gy)
+        for (var x = ox; x < w - 6; x += gx) {
+          ctx.beginPath(); ctx.arc(x, y, 1.4, 0, Math.PI * 2); ctx.fill();
+        }
+      ctx.lineCap = 'round'; ctx.lineWidth = 2;
+      ctx.strokeStyle = '#2f9e6e';
+      ctx.beginPath();
+      ctx.moveTo(ox, oy + gy); ctx.lineTo(ox + gx * 3, oy + gy);
+      ctx.lineTo(ox + gx * 3, oy + gy * 3); ctx.lineTo(ox + gx * 6, oy + gy * 3);
+      ctx.stroke();
+      ctx.strokeStyle = '#c2553a';
+      ctx.beginPath();
+      ctx.moveTo(ox + gx, oy + gy * 4); ctx.lineTo(ox + gx * 5, oy + gy * 4);
+      ctx.lineTo(ox + gx * 5, oy + gy); ctx.stroke();
+      ctx.fillStyle = '#2f9e6e';
+      ctx.beginPath(); ctx.arc(ox + gx * 6, oy + gy * 3, 3, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Teaching — ruled notebook paper
+    function drawTeach() {
+      var s = sized('feat-teach');
+      if (!s) return;
+      var ctx = s.ctx, w = s.w, h = s.h;
+      ctx.strokeStyle = 'rgba(50,125,169,0.28)'; ctx.lineWidth = 1;
+      for (var y = 22; y < h - 6; y += 16) {
+        ctx.beginPath(); ctx.moveTo(14, y); ctx.lineTo(w - 12, y); ctx.stroke();
+      }
+      ctx.strokeStyle = 'rgba(194,85,58,0.55)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(32, 8); ctx.lineTo(32, h - 8); ctx.stroke();
+    }
+
+    // Woodworking — woodgrain bending around a knot
+    function drawWood() {
+      var s = sized('feat-wood');
+      if (!s) return;
+      var ctx = s.ctx, w = s.w, h = s.h, knotX = w * 0.7;
+      ctx.lineWidth = 1.5;
+      for (var k = 0; k < 9; k++) {
+        var baseY = 12 + k * ((h - 20) / 8);
+        ctx.strokeStyle = 'rgba(' + (140 - k * 3) + ',' + (92 - k * 2) + ',50,0.55)';
+        ctx.beginPath();
+        for (var x = 6; x <= w - 6; x += 4) {
+          var dx = x - knotX;
+          var bend = 14 * Math.exp(-(dx * dx) / 1800) * (k % 2 === 0 ? 1 : -1);
+          var y = baseY + bend + Math.sin(x * 0.05 + k) * 1.5;
+          if (x === 6) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      ctx.strokeStyle = 'rgba(110,70,38,0.7)';
+      for (var r = 2; r <= 8; r += 3) {
+        ctx.beginPath(); ctx.ellipse(knotX, h * 0.5, r, r * 1.6, 0, 0, Math.PI * 2); ctx.stroke();
+      }
+    }
+
+    // Math — damped sequence converging to its limit (animated)
+    var mathRaf = null;
+    function drawMath() {
+      if (mathRaf) cancelAnimationFrame(mathRaf);
+      var s = sized('feat-math');
+      if (!s) return;
+      var ctx = s.ctx, w = s.w, h = s.h, limit = h * 0.55;
+      function frame(t) {
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = 'rgba(74,42,106,0.28)'; ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(0, limit); ctx.lineTo(w, limit); ctx.stroke();
+        ctx.setLineDash([]);
+        var phase = t * 0.0016;
+        ctx.strokeStyle = '#6a4a8a'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (var px = 0; px <= w; px += 2) {
+          var x = px / w;
+          var env = Math.exp(-2.6 * x) * (h * 0.32);
+          var y = limit - env * Math.sin(11 * x - phase);
+          if (px === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y);
+        }
+        ctx.stroke();
+        ctx.fillStyle = '#327DA9';
+        ctx.beginPath(); ctx.arc(w - 7, limit, 3.5, 0, Math.PI * 2); ctx.fill();
+        if (!reduce && !document.hidden) mathRaf = requestAnimationFrame(frame);
+      }
+      mathRaf = requestAnimationFrame(frame);
+    }
+
+    function render() {
+      drawCC(); drawJS(); drawPC(); drawTeach(); drawWood(); drawMath();
+    }
+
+    render();
+
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(render, 150);
+    });
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) drawMath();
+    });
+  })();
+</script>

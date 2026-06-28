@@ -4,12 +4,17 @@ import SearchWidget from "../components/SearchWidget.astro";
 
 interface Props {
   title?: string;
-  frontmatter?: { title?: string; breadcrumbs?: { label: string; href: string }[] };
+  description?: string;
+  frontmatter?: { title?: string; description?: string; breadcrumbs?: { label: string; href: string }[] };
   breadcrumbs?: { label: string; href: string }[];
 }
 
 const { frontmatter } = Astro.props;
 const title = Astro.props.title ?? frontmatter?.title ?? "";
+const description =
+  Astro.props.description ??
+  frontmatter?.description ??
+  "Teaching and project notes by Oliver Steele — creative coding, p5.js, physical computing, math, and tools.";
 const customBreadcrumbs = Astro.props.breadcrumbs ?? frontmatter?.breadcrumbs;
 
 // Known slug-to-label mappings
@@ -61,11 +66,16 @@ const pageTitle = segments.length > 0 ? `${title} - Oliver's Notes` : title;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{pageTitle}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <meta name="description" content={description} />
     <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
     <meta property="og:type" content="article" />
     <meta property="og:url" content={Astro.url.href} />
     <meta property="og:site_name" content="Oliver's Notes" />
     <meta name="twitter:card" content="summary" />
+    <meta name="twitter:description" content={description} />
     <script is:inline>
       (function() {
         var t = localStorage.getItem('theme');

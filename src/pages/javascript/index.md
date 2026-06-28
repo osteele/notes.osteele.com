@@ -3,6 +3,10 @@ title: "JavaScript Resources"
 layout: ../../layouts/BaseLayout.astro
 ---
 
+# Pages
+
+[JavaScript Arrays](/javascript/arrays/) · [Iteration Methods](/javascript/iteration-methods/) · [p5.js Resources](/p5js/) · [Visual Studio Code for p5.js](/vscode/) · [PoseNet](/posenet/)
+
 # Tutorials and Examples
 
 - [JavaScript Crash Course](https://paper.dropbox.com/doc/JavaScript-Crash-Course--ApRkMF3FH~pDlkHv5aP6oi~aAg-IYQ3f4icQsFSi6YrY7IAN)

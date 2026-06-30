@@ -60,7 +60,33 @@ chosen similarity. Attention makes the weights depend on a query and learned
 dot-product similarities.
 </p>
 
-<h2>2. Attention as Nadaraya–Watson kernel regression</h2>
+<h2>2. Attention as soft dictionary lookup</h2>
+
+<p>
+The default reading is a content-addressed lookup. Each position projects its
+residual vector into three roles: a <em>query</em> $q = W^Q x$, a <em>key</em>
+$k = W^K x$, and a <em>value</em> $v = W^V x$. A query is scored against every key
+by dot product, the scores are normalized with a softmax, and the output is the
+resulting blend of values,
+$\operatorname&#123;Attn&#125;(q, K, V) = \sum_i \alpha_i(q)\, v_i$ with
+$\alpha_i(q) = \operatorname&#123;softmax&#125;_i(q \cdot k_i / \tau)$. A key advertises
+what its position offers, a value carries what that position contributes, and a
+query states what the current position is looking for.
+</p>
+
+<p>
+A hard dictionary returns the one value whose key matches the query. Attention
+returns a weighted average of every value, each weighted by how well its key
+matches — a differentiable lookup over an associative memory. The temperature
+$\tau$ sets how peaked the match is: small $\tau$ approaches a hard argmax, large
+$\tau$ averages over everything. The <a href="/ml/qk-ov-circuits/">QK and OV
+circuits</a> page separates the matching half (which positions a query reads) from
+the value-write half (what gets copied back). The sections that follow recast this
+same weighted sum — as kernel regression, and as the unique entropy-regularized
+retrieval rule.
+</p>
+
+<h2>3. Attention as Nadaraya–Watson kernel regression</h2>
 
 <p>
 The Nadaraya–Watson estimator
@@ -112,7 +138,7 @@ stability, the usual bias-variance tradeoff in non-parametric regression.
   are how the network <em>chooses what counts as "near."</em>
 </Aside>
 
-<h2>3. Softmax is the unique entropy-regularized retrieval rule</h2>
+<h2>4. Softmax is the unique entropy-regularized retrieval rule</h2>
 
 <p>
 Among all retrieval distributions $a$ over the memory items, softmax maximizes
@@ -181,7 +207,7 @@ intermediate regime.
   <a href="/math/sufficient-statistics/">Sufficient Statistics</a>.
 </Aside>
 
-<h2>4. Kernel variants</h2>
+<h2>5. Kernel variants</h2>
 
 <p>
 Changing the kernel changes how retrieval weight falls off with similarity or
@@ -217,10 +243,10 @@ and pre-aggregate to bring cost to $O(N)$. Local-window attention restricts
 the kernel to a sliding interval. Position-bias schemes like ALiBi and T5
 relative bias add a position-only decay before the softmax, equivalent to
 multiplying the kernel by a position prior, the KL-regularized form
-$a_i \propto r_i \exp(s_i/\tau)$ from the Aside in §3.
+$a_i \propto r_i \exp(s_i/\tau)$ from the Aside in §4.
 </p>
 
-<h2>5. Multi-head: many statistics at once</h2>
+<h2>6. Multi-head: many statistics at once</h2>
 
 <p>
 A multi-head layer computes several query-dependent statistics in parallel.
@@ -264,7 +290,7 @@ combined into higher-level statistics. <em>Multi-head = multiple sufficient
 statistics in parallel.</em>
 </p>
 
-<h2>6. Causal masking and the KV cache</h2>
+<h2>7. Causal masking and the KV cache</h2>
 
 <p>
 During autoregressive generation, attention at step $t$ depends on the previous
@@ -307,7 +333,7 @@ demand. For memory growth, paging, and attention sinks, see
 <a href="https://viz.osteele.com/llm-visualizations/kv-cache-memory.html">KV cache memory</a>.
 </p>
 
-<h2>7. Adaptive sufficiency</h2>
+<h2>8. Adaptive sufficiency</h2>
 
 <p>
 Attention can be interpreted as an adaptive

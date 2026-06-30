@@ -252,7 +252,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
 
         <h2 id="recipe">2. The 2007 definition</h2>
         <p>
-          The population coefficient. Take a weighted $L^2$ distance between the joint characteristic function $&bsol;phi_&lbrace;X,Y&rbrace;$ and the product of marginals $&bsol;phi_X&bsol;phi_Y$:
+          The population coefficient is built from a weighted $L^2$ distance between the joint characteristic function $&bsol;phi_&lbrace;X,Y&rbrace;$ and the product of marginals $&bsol;phi_X&bsol;phi_Y$:
         </p>
         <div class="formula">
           $$V^2(X,Y) = &bsol;int |&bsol;phi_&lbrace;X,Y&rbrace;(t,s) - &bsol;phi_X(t)&bsol;phi_Y(s)|^2 w(t,s)&bsol;,dt&bsol;,ds$$
@@ -466,7 +466,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
           $$R^*(X,Y;Z) = &lbrace;R^*(X,Y) - R^*(X,Z)R^*(Y,Z)&bsol;over &bsol;sqrt&lbrace;(1 - R^*(X,Z)^2)(1 - R^*(Y,Z)^2)&rbrace;&rbrace;$$
         </div>
         <p class="footnote">
-          The familiar partial-correlation formula falls out as Proposition 2 of the paper, a direct consequence of the projection geometry. Note that here $R^*$ plays the role that <em>squared</em> dCor plays elsewhere, so its values are on the scale of $dCor^2$ and can be negative.
+          The familiar partial-correlation formula falls out as Proposition 2 of the paper, a direct consequence of the projection geometry. Here $R^*$ plays the role that <em>squared</em> dCor plays elsewhere, so its values are on the scale of $dCor^2$ and can be negative.
         </p>
 
         <h2 id="dissim">6. Beyond Euclidean distances</h2>

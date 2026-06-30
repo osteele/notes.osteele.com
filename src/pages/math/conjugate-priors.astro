@@ -17,7 +17,7 @@ import NotationAside from "../../components/explainer/NotationAside.astro";
   <p>
     A <em>conjugate</em> prior is one that keeps its functional form after Bayesian
     updating: if the prior is in family $P$ and the likelihood is in family $F$, the
-    posterior is again in $P$. This page explains when that happens (whenever the
+    posterior is again in $P$. Conjugacy holds when that happens (whenever the
     likelihood is exponential-family with a finite-dimensional sufficient statistic),
     why the hyperparameters read as <em>pseudo-counts</em> of prior observations, and
     how to update them by simple arithmetic.
@@ -331,9 +331,9 @@ x_* \mid x_&#123;1:n&#125; \;\sim\; t_&#123;2\alpha_n&#125;\!\Bigl(\mu_n,\;\frac
 $$
 
 <p>
-A Student-$t$, with degrees of freedom equal to twice the posterior shape — small
-$n$ gives heavy tails reflecting variance uncertainty, large $n$ recovers the
-Gaussian predictive of the known-variance case.
+The predictive is a Student-$t$ with degrees of freedom equal to twice the
+posterior shape: small $n$ gives heavy tails reflecting variance uncertainty,
+large $n$ recovers the Gaussian predictive of the known-variance case.
 </p>
 
 <h3 id="gaussian-priors">5a. Gaussian priors at a glance</h3>
@@ -526,7 +526,7 @@ For conjugate pairs the integral is closed-form and gives a named distribution:
 </ul>
 
 <p>
-Notice that the predictive distributions for finite $n$ are never the original
+The predictive distributions for finite $n$ are never the original
 likelihood family. The Beta-Binomial is not a Binomial; the predictive for a
 Normal–Gamma is Student-$t$, not Gaussian. The likelihood family is only recovered
 in the $n\to\infty$ limit when the posterior on $\eta$ becomes a point mass.

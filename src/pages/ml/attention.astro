@@ -159,10 +159,10 @@ intermediate regime.
 <ul>
   <li><strong>$\tau \to 0$ (argmax).</strong> The total objective collapses to
   $\max_i s_i$; the retrieval distribution puts all mass on the highest-scoring
-  item; entropy is zero. Brittle but maximally relevant.</li>
+  item; entropy is zero — brittle but maximally relevant.</li>
   <li><strong>$\tau \to \infty$ (uniform).</strong> The objective is dominated
   by the entropy term; the retrieval distribution is uniform; effective $k$ is
-  $N$. Maximally spread, scores don't matter.</li>
+  $N$ — maximally spread, and scores don't matter.</li>
   <li><strong>Intermediate $\tau$.</strong> The softmax interpolates. Multiple
   items contribute; the "effective $k$" (i.e., $\exp H(a)$) tells you roughly
   how many memory items you're actually pulling from.</li>

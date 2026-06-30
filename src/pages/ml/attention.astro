@@ -54,12 +54,13 @@ $\alpha_i(q) \propto \exp(q \cdot k_i / \tau)$.
 </div>
 
 <p>
-A sufficient statistic compresses data with fixed weights. Kernel regression
-makes the weights depend on a query and a chosen similarity. Attention makes the
-weights depend on a query and learned dot-product similarities.
+A <a href="/math/sufficient-statistics/">sufficient statistic</a> compresses data
+with fixed weights. Kernel regression makes the weights depend on a query and a
+chosen similarity. Attention makes the weights depend on a query and learned
+dot-product similarities.
 </p>
 
-<h2>2. Attention is Nadaraya–Watson kernel regression</h2>
+<h2>2. Attention as Nadaraya–Watson kernel regression</h2>
 
 <p>
 The Nadaraya–Watson estimator
@@ -309,8 +310,8 @@ demand. For memory growth, paging, and attention sinks, see
 <h2>7. Adaptive sufficiency</h2>
 
 <p>
-Attention can be interpreted as an
-<a href="/math/sufficient-statistics/">adaptive sufficient statistic</a>: the
+Attention can be interpreted as an adaptive
+<a href="/math/sufficient-statistics/">sufficient statistic</a>: the
 weighted sum compresses the sequence into a summary chosen for the current
 prediction. Kernel regression interprets the softmax as Nadaraya–Watson with
 learned similarity. From the maximum-entropy side, the softmax is the unique

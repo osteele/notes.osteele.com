@@ -156,7 +156,7 @@ export const mlSections: Section[] = [
   {
     id: "phenomena-and-circuits",
     title: "Phenomena & Circuits",
-    description: "Attention-head labels, copying circuits, variable binding, and gaps between internal state and output behavior.",
+    description: "Attention-head labels, copying circuits, binding and lookback, and gaps between internal state and output behavior.",
     caveat: mlCaveat,
     accent: "#7c3aed",
     tint: "#ede9fe",
@@ -164,7 +164,8 @@ export const mlSections: Section[] = [
     items: [
       { href: "/ml/attention-head-types/", title: "Attention Head Labels", desc: "Positional, induction, syntactic, rare-word, copy-suppression, and name-mover labels as hypotheses rather than stable kinds" },
       { href: "/ml/induction-heads/", title: "Induction Heads", desc: "The prefix-match then copy mechanism behind the [A][B] ... [A] -> [B] transformer circuit" },
-      { href: "/ml/variable-binding/", title: "Variable Binding", desc: "Nonlocal dependency resolution across natural language, code, and logic, with minimal pairs and distractor controls" },
+      { href: "/ml/binding/", title: "Binding", desc: "Resolving a use against a nonlocal source — agreement, anaphora, traces, variable use, and logical chaining — with minimal pairs and distractor controls" },
+      { href: "/ml/lookback-mechanism/", title: "The Lookback Mechanism", desc: "Store an address, carry a pointer, look back to dereference it: how binding IDs and retrieval heads combine into one in-context recall motif" },
       { href: "/ml/represented-vs-expressed-knowledge/", title: "Represented vs. Expressed Knowledge", desc: "Surprisal, internal readouts, and cases where a model carries information that does not surface in the output distribution" },
     ],
   },

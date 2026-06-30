@@ -6,15 +6,15 @@ import Figure from "../../components/explainer/Figure.astro";
 import NextCards from "../../components/explainer/NextCards.astro";
 ---
 
-<ExplainerLayout title="Variable Binding across Language, Code, and Logic" breadcrumb="Variable Binding" section="phenomena-and-circuits">
-<Hero title="Variable Binding" subtitle="A use resolves against the right source, even when a nearer distractor is available." />
+<ExplainerLayout title="Binding across Language, Code, and Logic" breadcrumb="Binding" section="phenomena-and-circuits">
+<Hero title="Binding" subtitle="A use resolves against the right source, even when a nearer distractor is available." />
 
 <p>
-Variable binding is the problem of keeping track of what refers to what. A
-pronoun resolves against an antecedent, a variable use resolves against its
-definition, a conclusion depends on the premises that license it. The surface
-domains differ, but the shape is the same: connect a use to a nonlocal source
-while a closer, plausible-looking candidate competes for the link.
+Binding is the problem of keeping track of what refers to what. A pronoun
+resolves against an antecedent, a variable use resolves against its definition, a
+conclusion depends on the premises that license it. The surface domains differ,
+but the shape is the same: connect a use to a nonlocal source while a closer,
+plausible-looking candidate competes for the link.
 </p>
 
 <p>
@@ -25,7 +25,7 @@ minimal pairs: change one token, hold most of the surface statistics fixed, and
 see whether the resolution follows the structure or the proximity.
 </p>
 
-<Figure title="Figure 1 · The same binding shape in three domains" canvasId="variable-binding-canvas" width="760" height="350" readoutId="variable-binding-readout">
+<Figure title="Figure 1 · The same binding shape in three domains" canvasId="binding-canvas" width="760" height="350" readoutId="binding-readout">
 <Fragment slot="controls">
   <label class="control"><span>nearest distractor</span><input id="binding-distractor" type="checkbox" /></label>
 </Fragment>
@@ -64,6 +64,19 @@ examples below are schematic, but they make the shared shape concrete.
   <dt>Logic</dt>
   <dd>From <code>A -> B</code>, <code>B -> C</code>, and <code>A</code>, the conclusion <code>C</code> depends on the chain through <code>B</code>. A premise such as <code>D -> C</code> is irrelevant unless <code>D</code> is established, so it functions as a distractor.</dd>
 </dl>
+
+<Aside>
+  <strong>Binding vs. variable binding.</strong> These cases are not all
+  <em>variable</em> binding in the strict sense. Code use-to-definition, logical
+  chaining, wh-traces, and bound-variable anaphora ("every farmer who owns a
+  donkey beats <em>it</em>") genuinely bind a variable to a value or operator.
+  Referential anaphora ("John ... <em>he</em>") is coreference, and subject-verb
+  agreement is a grammatical dependency; neither binds a variable. What unifies
+  the family is the looser property the page is built around — resolving a use
+  against a nonlocal source — so the broad term is <em>binding</em>, with
+  <em>variable binding</em> reserved for the genuine-variable subset and for the
+  variable-like <em>mechanism</em> described below.
+</Aside>
 
 <Aside>
   <strong>A shared test, not a shared result.</strong> The figure is a schema for
@@ -108,11 +121,14 @@ attends to proximity instead.
 </p>
 
 <p>
-The mechanism also varies by model and domain, so a result on agreement does not
-transfer automatically to code or logic. The shared template is what makes the
-comparison worth running. Where binding-ID interventions succeed, they show a
-model using an abstract variable, which is a stronger claim than any probe-level
-decodability result for the same dependency.
+The <a href="/ml/lookback-mechanism/">lookback mechanism</a> is the account that
+joins the two jobs into one algorithm: the binding ID is written as an address,
+carried forward as a pointer, and dereferenced by a retrieval head that looks back
+to the source. The mechanism also varies by model and domain, so a result on
+agreement does not transfer automatically to code or logic. The shared template is
+what makes the comparison worth running. Where binding-ID interventions succeed,
+they show a model using an abstract variable, which is a stronger claim than any
+probe-level decodability result for the same dependency.
 </p>
 
 <div class="source-list">
@@ -125,12 +141,14 @@ decodability result for the same dependency.
   </ul>
   <strong>Related pages</strong>
   <ul>
+    <li><a href="/ml/lookback-mechanism/">The Lookback Mechanism</a> for how the binding ID is stored, carried, and dereferenced.</li>
     <li><a href="/ml/induction-heads/">Induction Heads</a> for a copying mechanism that supports simple binding-like behavior.</li>
     <li><a href="/ml/structural-probes/">Dependency Trees & Structural Probes</a> for another way to test nonlocal structure.</li>
   </ul>
 </div>
 
 <NextCards cards={[
+  { href: "/ml/lookback-mechanism/", tag: "Next", title: "The Lookback Mechanism", role: "How a binding is stored, carried, and dereferenced." },
   { href: "/ml/structural-probes/", tag: "Related", title: "Structural Probes", role: "Tree structure as geometry." },
   { href: "/ml/semantic-composition-probes/", tag: "Related", title: "Semantic Composition", role: "Relations that build meaning from parts." },
 ]} />

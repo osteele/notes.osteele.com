@@ -1,3 +1,6 @@
+# ml: variable-binding renamed to binding
+/ml/variable-binding/ /ml/binding/ 301
+
 # Creative coding course pages -> new microsite
 /courses/creative-coding/ https://creative-coding.osteele.com/ 301
 /courses/creative-coding/animation-and-easing/ https://creative-coding.osteele.com/animation-and-easing/ 301

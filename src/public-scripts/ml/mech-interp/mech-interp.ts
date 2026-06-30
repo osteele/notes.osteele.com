@@ -694,8 +694,8 @@ function drawRepresentedExpressed() {
   readout("represented-expressed-readout", `<div class="row"><span class="lbl">gap</span><span>${Math.round(divergence * 100)}%</span></div><div class="row"><span class="lbl">relation</span><span>decodable internal state and emitted behavior can disagree</span></div>`);
 }
 
-function drawVariableBinding() {
-  const c = canvas("variable-binding-canvas");
+function drawBinding() {
+  const c = canvas("binding-canvas");
   if (!c) return;
   const ctx = ctx2d(c);
   const distractor = input("binding-distractor")?.checked ?? false;
@@ -720,7 +720,93 @@ function drawVariableBinding() {
     label(ctx, p.use, u.x, u.y + 4, colors.red, 11, "center");
     arrow(ctx, u, distractor ? b : a, distractor ? colors.orange : colors.green, 3);
   });
-  readout("variable-binding-readout", `<div class="row"><span class="lbl">binding</span><span>${distractor ? "nearest distractor lure" : "structural dependency"}</span></div><div class="row"><span class="lbl">shared problem</span><span>resolve a use against a nonlocal source</span></div>`);
+  readout("binding-readout", `<div class="row"><span class="lbl">binding</span><span>${distractor ? "nearest distractor lure" : "structural dependency"}</span></div><div class="row"><span class="lbl">shared problem</span><span>resolve a use against a nonlocal source</span></div>`);
+}
+
+function drawLookback() {
+  const c = canvas("lookback-canvas");
+  if (!c) return;
+  const ctx = ctx2d(c);
+  const step = Math.max(0, Math.min(3, Math.round(value("lookback-step", 0))));
+  const names = ["bind", "pointer", "dereference", "emit"];
+  setText("lookback-step-v", names[step]);
+  clear(ctx, c);
+
+  const toks = ["Alice", "took", "box", ".", "Bob", "took", "cup", ".", "Alice", "took", "?"];
+  const w = 56;
+  const gap = 8;
+  const x0 = 26;
+  const yTok = 86;
+  const yLane = yTok + 38;
+  const laneH = 50;
+  const pos = toks.map((_, i) => x0 + i * (w + gap));
+  const mid = (i: number) => pos[i] + w / 2;
+  const entIdx = 0;
+  const stateIdx = 2;
+  const queryIdx = toks.length - 1;
+  const ADDR = colors.blue;
+  const PTR = colors.purple;
+
+  // binding group outline around the first character-object-state run
+  ctx.strokeStyle = colors.orange;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(pos[entIdx] - 4, yTok - 4, pos[stateIdx] + w - pos[entIdx] + 8, 38);
+  label(ctx, "binding group", pos[entIdx], yTok - 12, colors.orange, 12, "left");
+
+  toks.forEach((t, i) => {
+    const x = pos[i];
+    const isQuery = i === queryIdx;
+    box(ctx, x, yTok, w, 30, isQuery ? "#fee2d5" : "#fff", isQuery ? colors.red : colors.rule);
+    label(ctx, t, x + w / 2, yTok + 19, isQuery ? colors.red : colors.text, 12, "center");
+    box(ctx, x, yLane, w, laneH, colors.panel, colors.rule);
+  });
+  label(ctx, "residual stream", x0, yLane + laneH + 18, colors.dim, 12, "left");
+
+  // address written into the recalled (state) token's residual stream
+  box(ctx, pos[stateIdx] + 6, yLane + 12, w - 12, 26, "#e7eefc", ADDR);
+  label(ctx, "addr #1", mid(stateIdx), yLane + 29, ADDR, 11, "center");
+
+  // pointer formed at the query token
+  if (step >= 1) {
+    box(ctx, pos[queryIdx] + 6, yLane + 12, w - 12, 26, "#efe7f7", PTR);
+    label(ctx, "ptr #1", mid(queryIdx), yLane + 29, PTR, 11, "center");
+  }
+
+  // dereference: retrieval head attends from the pointer back to the address
+  if (step >= 2) {
+    const sx = mid(queryIdx);
+    const ex = mid(stateIdx);
+    ctx.strokeStyle = PTR;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(sx, yTok - 6);
+    ctx.quadraticCurveTo((sx + ex) / 2, yTok - 58, ex, yTok - 6);
+    ctx.stroke();
+    const head = { x: ex, y: yTok - 6 };
+    ctx.fillStyle = PTR;
+    ctx.beginPath();
+    ctx.moveTo(head.x, head.y);
+    ctx.lineTo(head.x - 6, head.y - 9);
+    ctx.lineTo(head.x + 6, head.y - 9);
+    ctx.closePath();
+    ctx.fill();
+    label(ctx, "look back", (sx + ex) / 2, yTok - 44, PTR, 12, "center");
+  }
+
+  // emit: the bound payload is copied to the output
+  if (step >= 3) {
+    box(ctx, pos[queryIdx] - 2, yLane + laneH + 8, w + 4, 26, "#e9f6ec", colors.green);
+    label(ctx, "box", mid(queryIdx), yLane + laneH + 25, colors.green, 12, "center");
+    arrow(ctx, { x: mid(queryIdx), y: yLane + laneH + 8 }, { x: mid(queryIdx), y: yLane + laneH }, colors.green, 2);
+  }
+
+  const detail = [
+    "co-locate Alice-took-box; store an abstract id (addr #1) on the state token",
+    "the query forms a matching pointer (ptr #1) to Alice's id",
+    "a retrieval head attends from ptr #1 back to the matching address",
+    "the bound payload (box) is copied to the output, beating the nearer 'cup'",
+  ];
+  readout("lookback-readout", `<div class="row"><span class="lbl">step</span><span>${names[step]}</span></div><div class="row"><span class="lbl">action</span><span>${detail[step]}</span></div>`);
 }
 
 function init() {
@@ -737,7 +823,8 @@ function init() {
   attach(["induction-step"], drawInduction);
   attach(["induction-bump-step"], drawInductionBump);
   attach(["knowledge-divergence"], drawRepresentedExpressed);
-  attach(["binding-distractor"], drawVariableBinding);
+  attach(["binding-distractor"], drawBinding);
+  attach(["lookback-step"], drawLookback);
 }
 
 init();

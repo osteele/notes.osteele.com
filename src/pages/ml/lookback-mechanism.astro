@@ -1,0 +1,133 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="The Lookback Mechanism" breadcrumb="Lookback" section="phenomena-and-circuits">
+<Hero title="The Lookback Mechanism" subtitle="Store an address, carry a pointer, look back to dereference it." />
+
+<p>
+In-context recall asks the model to do three things in sequence: <em>mark</em> a
+source so it can be found again, <em>carry</em> something that points back to it,
+and <em>fetch</em> the source's payload at the moment it is needed. The three
+topics that usually get studied separately — entity binding, retrieval heads, and
+the lookback motif — are answers to those three jobs. Binding is how the source is
+marked. A retrieval head is the hardware that fetches. Lookback is the protocol
+that links the mark to the fetch by treating the binding as a pointer.
+</p>
+
+<p>
+The example below is the smallest case that needs all three. Two characters each
+act on an object; a later query names one character and must report that
+character's object, not the nearer one. Surface proximity favors the wrong answer,
+so getting it right requires a stored reference rather than a local guess.
+</p>
+
+<Figure title="Figure 1 · Store an address, carry a pointer, dereference" canvasId="lookback-canvas" width="760" height="300" readoutId="lookback-readout">
+<Fragment slot="controls">
+  <label class="control"><span>step</span><input id="lookback-step" type="range" min="0" max="3" step="1" value="0" /><span id="lookback-step-v" class="control-value">bind</span></label>
+</Fragment>
+</Figure>
+
+<h2>1. Binding stores the address</h2>
+
+<p>
+Before anything can be retrieved, the source has to be marked. The model binds an
+entity to its attributes by co-locating their reference information in the residual
+stream of a single token, encoded as an abstract identifier — a binding ID, or in
+Prakash and coauthors' terms an ordering ID — that lives in a low-rank subspace.
+The identifier is variable-like: it does not name a position, so it survives
+intervening tokens. The causal test is the swap. Exchange two entities' binding
+IDs and the model reports the swapped attribute, which is the signature of a
+genuine binding variable rather than a positional cue. This is the storage step,
+covered in more detail on the <a href="/ml/binding/">binding</a> page.
+</p>
+
+<h2>2. Retrieval heads do the fetch</h2>
+
+<p>
+The fetch is performed by a small, distinctive set of attention heads. Across
+model families and scales, fewer than about five percent of heads carry most
+long-context recall; they are present in models pretrained on short contexts and
+remain the same heads when the context window is extended. Functionally a
+retrieval head performs a conditional copy-paste: when its query matches a source,
+the OV path copies the source token forward. Masking these heads degrades the
+output gracefully — from complete to partial recall to a fluent but unsupported
+answer — which ties them directly to factuality rather than to fluency. A
+retrieval head is the conditional-copy generalization of the
+<a href="/ml/induction-heads/">induction head</a>, and appears in the catalog of
+<a href="/ml/attention-head-types/">attention-head labels</a> as one of the
+better causally-tested kinds.
+</p>
+
+<h2>3. Lookback joins the two</h2>
+
+<p>
+Lookback is the protocol that turns a stored binding into a completed retrieval.
+When the source is recalled, its reference is copied into an <em>address</em> in
+the residual stream of the recalled token. At the later position that needs the
+information, a matching <em>pointer</em> is formed. A retrieval head then
+dereferences the pointer: it attends from the pointer back to the token whose
+address matches, and copies the bound payload forward. The figure walks the four
+states — bind, pointer, dereference, emit.
+</p>
+
+<p>
+The motif recurs beyond the single example. Prakash and coauthors find it
+implementing belief tracking, where a query about one character's view of an
+object dereferences the binding set up earlier in the passage, and a visibility
+relation is itself stored as an ID and looked back to. Later work studies the
+pointers themselves — how the dereferenced payload is brought into the residual
+stream of the final token — and how lookback is rebound when an entity's state
+changes mid-context.
+</p>
+
+<Aside>
+  <strong>One algorithm, three questions.</strong> Binding is the representation
+  question — which direction carries the identifier. The retrieval head is the
+  routing question — which head reads it. Lookback is the protocol question — how
+  an address written at one position is dereferenced at another. A model can hold
+  the binding correctly and still answer wrong if the pointer dereferences to a
+  nearer token, which is the same representation-versus-routing split that makes a
+  distractor win on the <a href="/ml/binding/">binding</a> page.
+</Aside>
+
+<h2>4. Why read it as one mechanism</h2>
+
+<p>
+Treating binding, retrieval heads, and lookback as one mechanism is what lets a
+result transfer. A swap intervention shows the address is real; a head-masking
+experiment shows the fetch is real; a pointer-patching experiment shows the
+dereference is real. Each is evidence about a different stage of the same
+pointer-and-payload algorithm, and a claim about in-context recall is strongest
+when it names which stage it tests. The mechanism still varies by model and task,
+so the motif is a template for analysis rather than a fixed circuit.
+</p>
+
+<div class="source-list">
+  <strong>Citations</strong>
+  <ul>
+    <li>Feng and Steinhardt (2024), <a href="https://arxiv.org/abs/2310.17191">"How do Language Models Bind Entities in Context?"</a>, for binding-ID interventions.</li>
+    <li>Wu, Wang, Xiao, Peng, and Fu (2025), <a href="https://arxiv.org/abs/2404.15574">"Retrieval Head Mechanistically Explains Long-Context Factuality"</a>, for sparse, universal, intrinsic retrieval heads and masking experiments.</li>
+    <li>Prakash, Shaham, Rager, Geva, Bau, and coauthors (2025), <a href="https://arxiv.org/abs/2505.14685">"Language Models Use Lookbacks to Track Beliefs"</a>, for the lookback motif and ordering IDs.</li>
+    <li>Feng, Geiger, and coauthors (2025), <a href="https://arxiv.org/abs/2510.06182">"Mixing Mechanisms: How Language Models Retrieve Bound Entities In-Context"</a>, for the pointers used in lookback.</li>
+  </ul>
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/binding/">Binding</a> for the dependency the mechanism resolves and the swap intervention.</li>
+    <li><a href="/ml/attention-head-types/">Attention Head Labels</a> for retrieval heads in context with other labels.</li>
+    <li><a href="/ml/induction-heads/">Induction Heads</a> for the copy circuit that retrieval generalizes.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/binding/", tag: "Back", title: "Binding", role: "The dependency the mechanism resolves." },
+  { href: "/ml/attention-head-types/", tag: "Related", title: "Attention Head Labels", role: "Retrieval heads among other labels." },
+  { href: "/ml/causal-interventions/", tag: "Method", title: "Causal Interventions", role: "Patching tests that probe each stage." },
+]} />
+
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
+</ExplainerLayout>

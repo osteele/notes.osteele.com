@@ -412,7 +412,20 @@ const katexOnload = "renderMathInElement(document.body,{throwOnError:false,delim
             pts.forEach((p, i) => dot(p[0], p[1], i === 4 ? 4 : 3, i === 4 ? red : i % 2 ? blue : green));
             line(70, 33, 84, 45, red, 2);
             line(84, 33, 70, 45, red, 2);
-          } else if (key.includes("variable-binding")) {
+          } else if (key.includes("lookback-mechanism")) {
+            const tc = (i) => 28 + i * 18;
+            tokenRow(22, 36, 8, 2);
+            dot(tc(2), 32, 3.2, blue);
+            dot(tc(7), 32, 3.2, purple);
+            ctx.strokeStyle = purple;
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(tc(7), 28);
+            ctx.quadraticCurveTo((tc(2) + tc(7)) / 2, 6, tc(2), 28);
+            ctx.stroke();
+            dot(tc(2), 28, 2.4, red);
+            arrow(tc(7), 48, tc(7) + 16, 48, green, 1.6);
+          } else if (key.includes("/ml/binding/")) {
             tokenRow(25, 30, 7, 2);
             [[0,3,blue],[1,5,green],[2,6,red]].forEach(([a, b, c]) => {
               const x1 = 31 + a * 18, x2 = 31 + b * 18;

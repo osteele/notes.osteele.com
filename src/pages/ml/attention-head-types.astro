@@ -12,9 +12,9 @@ import NextCards from "../../components/explainer/NextCards.astro";
 <p>
 Attention-head labels name patterns that recur across analyses: positional
 heads, induction heads, syntactic heads, rare-word heads, copy-suppression heads,
-and name-mover heads. The labels are hypotheses about computations, not stable
-ontological kinds. A head is a parameterized computation in a layer, not a
-species.
+retrieval heads, and name-mover heads. The labels are hypotheses about
+computations, not stable ontological kinds. A head is a parameterized computation
+in a layer, not a species.
 </p>
 
 <p>
@@ -46,6 +46,8 @@ metric.
   <dd>Attends by relative offset, often to the previous token, or to boundary tokens such as the start-of-sequence position. The heatmap is a band parallel to the diagonal. Common and easy to find, and rarely an interesting computation on its own.</dd>
   <dt>Induction</dt>
   <dd>On a repeated sequence, attends from a token back to the position just after that token's previous occurrence, so the OV path can copy what followed. The signature of in-context pattern continuation; see the Induction Heads page.</dd>
+  <dt>Retrieval</dt>
+  <dd>On a query whose answer is copied verbatim from the context, attends from the generation position to the matching source token so the OV path can copy it — the conditional-copy generalization of an induction head. A small, stable set of such heads (under about five percent) accounts for much long-context recall, and masking them makes the model hallucinate a fluent but unsupported answer rather than lose fluency, which ties the label to factuality and makes it one of the better causally-tested kinds. The <a href="/ml/lookback-mechanism/">lookback mechanism</a> uses these heads to dereference a stored binding.</dd>
   <dt>Syntactic</dt>
   <dd>Attends along a dependency-like relation, for example a determiner to its noun or an object to its verb. Tested by checking whether the head's strongest attention matches gold dependency edges above a positional baseline, which most heads do only partially.</dd>
   <dt>Name mover</dt>
@@ -121,11 +123,13 @@ whether changing the head changes the behavior the label names.
     <li>Michel, Levy, and Neubig (2019), <a href="https://arxiv.org/abs/1905.10650">"Are Sixteen Heads Really Better than One?"</a>, for head pruning and redundancy.</li>
     <li>Wang, Variengien, Conmy, Shlegeris, and Steinhardt (2023), <a href="https://arxiv.org/abs/2211.00593">"Interpretability in the Wild"</a>, for IOI circuit head labels such as name movers.</li>
     <li>McDougall, Conmy, Rushing, McGrath, and Nanda (2023), <a href="https://arxiv.org/abs/2310.04625">"Copy Suppression"</a>, for copy-suppression heads.</li>
+    <li>Wu, Wang, Xiao, Peng, and Fu (2025), <a href="https://arxiv.org/abs/2404.15574">"Retrieval Head Mechanistically Explains Long-Context Factuality"</a>, for retrieval heads and masking experiments.</li>
   </ul>
   <strong>Related pages</strong>
   <ul>
     <li><a href="/ml/qk-ov-circuits/">QK and OV Circuits</a> for separating attention patterns from residual writes.</li>
     <li><a href="/ml/causal-interventions/">Causal Interventions</a> for the ablation and patching tests that turn a label into a claim.</li>
+    <li><a href="/ml/lookback-mechanism/">The Lookback Mechanism</a> for how retrieval heads dereference a stored binding.</li>
   </ul>
 </div>
 

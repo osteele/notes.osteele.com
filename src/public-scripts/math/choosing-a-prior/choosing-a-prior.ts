@@ -44,6 +44,13 @@ function betaPdf(x: number, a: number, b: number) {
   if (x <= 0 || x >= 1) return 0;
   return Math.exp((a - 1) * Math.log(x) + (b - 1) * Math.log(1 - x) - logBeta(a, b));
 }
+function normalPdf(x: number, mean = 0, sd = 1) {
+  return Math.exp(-0.5 * ((x - mean) / sd) ** 2) / (sd * Math.sqrt(2 * Math.PI));
+}
+function gammaPdf(x: number, shape: number, rate: number) {
+  if (x <= 0) return 0;
+  return Math.exp(shape * Math.log(rate) + (shape - 1) * Math.log(x) - rate * x - logGamma(shape));
+}
 // Density of Beta(a,b) in logit-coordinates eta = log p/(1-p):
 // p = sigmoid(eta), 1-p = sigmoid(-eta), dp/deta = p(1-p)
 // so f_eta(eta) = f_p(p) * p(1-p)
@@ -120,6 +127,126 @@ function plotCurve(
   ctx.lineWidth = lineWidth;
   ctx.stroke();
   ctx.setLineDash([]);
+}
+
+function setupMaxEnt() {
+  const canvas = document.getElementById("fig-maxent") as HTMLCanvasElement | null;
+  if (!canvas) return;
+  const positiveInput = document.getElementById("fig-maxent-positive") as HTMLInputElement;
+  const meanInput = document.getElementById("fig-maxent-mean") as HTMLInputElement;
+  const varInput = document.getElementById("fig-maxent-var") as HTMLInputElement;
+  const logInput = document.getElementById("fig-maxent-log") as HTMLInputElement;
+  const readout = document.getElementById("fig-maxent-readout");
+
+  function render() {
+    const positive = positiveInput.checked;
+    const mean = meanInput.checked;
+    const variance = varInput.checked;
+    const logx = logInput.checked;
+    const { ctx, w, h } = setupCanvas(canvas);
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, w, h);
+    const padL = 50, padR = 24, padT = 24, padB = 40;
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
+
+    let xMin = positive ? 0 : -4;
+    let xMax = positive ? 6 : 4;
+    let name = "Uniform";
+    let explanation = "Known bounded support only: the least-committal density is uniform on the displayed support.";
+    let density = (x: number) => (x >= xMin && x <= xMax ? 1 / (xMax - xMin) : 0);
+
+    if (positive && mean && logx) {
+      name = "Gamma";
+      explanation = "Positive support with E[x] and E[log x] fixed gives a Gamma family: log x and x are the sufficient statistics.";
+      density = (x) => gammaPdf(x, 3, 2);
+    } else if (positive && mean && variance) {
+      name = "Gamma-like positive exponential family";
+      explanation = "Positive support with mean and variance fixed gives an exponential-family density on x and x²; the plotted Gamma member shows the same one-sided shape.";
+      density = (x) => gammaPdf(x, 4, 2);
+    } else if (positive && mean) {
+      name = "Exponential";
+      explanation = "Positive support with only the mean fixed gives Exponential(1/μ).";
+      density = (x) => Math.exp(-x);
+    } else if (positive && logx) {
+      name = "Log-uniform window";
+      explanation = "Positive support with only E[log x] is not a proper MaxEnt density without another scale constraint; this shows the log-uniform shape on the displayed window.";
+      xMin = 0.15;
+      density = (x) => 1 / (x * Math.log(xMax / xMin));
+    } else if (!positive && mean && variance) {
+      name = "Normal";
+      explanation = "Real support with mean and variance fixed gives the Gaussian.";
+      density = (x) => normalPdf(x, 0, 1);
+    } else if (!positive && variance) {
+      name = "Centered Normal";
+      explanation = "Real support with variance fixed and mean constrained to 0 gives a centered Gaussian.";
+      density = (x) => normalPdf(x, 0, 1);
+    }
+
+    const N = 420;
+    const pts = Array.from({ length: N }, (_, i) => {
+      const x = xMin + ((i + 0.5) / N) * (xMax - xMin);
+      return density(x);
+    });
+    const yMax = Math.max(0.25, ...pts) * 1.1;
+    drawAxes(ctx, padL, padT, plotW, plotH, xMin, xMax, positive ? "x ≥ 0" : "x ∈ R");
+    plotCurve(ctx, padL, padT, plotW, plotH, yMax, pts, C.flat, 2.4);
+    if (readout) {
+      readout.innerHTML = `<div class="row"><span class="lbl">MaxEnt family</span><span>${name}</span></div><div class="row"><span class="lbl">reason</span><span>${explanation}</span></div>`;
+    }
+  }
+
+  [positiveInput, meanInput, varInput, logInput].forEach((el) => el.addEventListener("input", render));
+  render();
+  window.addEventListener("resize", render);
+}
+
+function setupScaleReparam() {
+  const canvas = document.getElementById("fig-scale-reparam") as HTMLCanvasElement | null;
+  if (!canvas) return;
+  const coordSel = document.getElementById("fig-scale-coordinate") as HTMLSelectElement;
+  const coordV = document.getElementById("fig-scale-coordinate-v");
+  const readout = document.getElementById("fig-scale-readout");
+
+  function render() {
+    const coord = coordSel.value;
+    if (coordV) coordV.textContent = coordSel.selectedOptions[0]?.textContent ?? coord;
+    const { ctx, w, h } = setupCanvas(canvas);
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, w, h);
+    const padL = 50, padR = 24, padT = 24, padB = 40;
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
+    const xMin = 0.2;
+    const xMax = 5;
+    const normLog = Math.log(xMax / xMin);
+    const normSigma2 = xMax ** 2 - xMin ** 2;
+    let name = "flat in σ";
+    let density = (sigma: number) => 1 / (xMax - xMin);
+    if (coord === "log-sigma") {
+      name = "flat in log σ";
+      density = (sigma) => 1 / (sigma * normLog);
+    } else if (coord === "sigma2") {
+      name = "flat in σ²";
+      density = (sigma) => (2 * sigma) / normSigma2;
+    }
+    const N = 420;
+    const pts = Array.from({ length: N }, (_, i) => {
+      const sigma = xMin + ((i + 0.5) / N) * (xMax - xMin);
+      return density(sigma);
+    });
+    const yMax = Math.max(...pts) * 1.08;
+    drawAxes(ctx, padL, padT, plotW, plotH, xMin, xMax, "scale σ");
+    plotCurve(ctx, padL, padT, plotW, plotH, yMax, pts, C.flat, 2.4);
+    if (readout) {
+      const rule = coord === "log-sigma" ? "π(σ) ∝ 1/σ; this is scale-invariant." : coord === "sigma2" ? "π(σ) ∝ σ; large scales get more density." : "π(σ) is constant; changing units changes the induced prior on log σ.";
+      readout.innerHTML = `<div class="row"><span class="lbl">coordinate</span><span>${name}</span></div><div class="row"><span class="lbl">density on σ</span><span>${rule}</span></div>`;
+    }
+  }
+
+  coordSel.addEventListener("change", render);
+  render();
+  window.addEventListener("resize", render);
 }
 
 function setupThreePriors() {
@@ -220,8 +347,14 @@ function setupThreePriors() {
   window.addEventListener("resize", render);
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", setupThreePriors);
-} else {
+function setupAll() {
+  setupMaxEnt();
   setupThreePriors();
+  setupScaleReparam();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", setupAll);
+} else {
+  setupAll();
 }

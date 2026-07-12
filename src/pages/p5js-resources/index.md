@@ -36,7 +36,7 @@ You can also use a code editor, such as Visual Studio Code or Atom, that runs as
 
 You may find this preferable if you are already familiar with a code editor, if you have a slow internet connection, or if you prefer to manage your own files – especially if you want to connect these files in your own git repository.
 
-Follow these instructions [Visual Studio Code for P5.js](/vscode/)  to configure Visual Studio Code for p5.js development.
+Follow these instructions [Visual Studio Code for P5.js](/tools/vscode/p5js/) to configure Visual Studio Code for p5.js development.
 
 # References
 

@@ -83,7 +83,23 @@ coordinate system.
   final readout can still be linear.
 </Aside>
 
-<h2>3. Superposition</h2>
+<h2>3. Steering vectors and dose-response</h2>
+
+<p>
+A steering vector adds a direction back into the residual stream and asks how the
+output changes as the dose increases. A useful direction should produce a
+smooth, task-specific logit-margin curve, while matched random directions form a
+control band. The non-destructive range is the part of the curve where the target
+margin moves but the unrelated quality metric has not collapsed.
+</p>
+
+<Figure title="Figure 2 · Dose-response for a residual-stream direction" canvasId="steering-dose-canvas" width="760" height="360" readoutId="steering-dose-readout">
+<Fragment slot="controls">
+  <ControlRange id="steering-dose" label="dose" valueId="steering-dose-v" min="-3" max="3" step="0.1" value="1.2" />
+</Fragment>
+</Figure>
+
+<h2>4. Superposition</h2>
 
 <p>
 The residual stream has finite dimension, but the model may represent many more
@@ -117,5 +133,98 @@ active together, off-axis interference grows.
   { href: "/ml/probes-validity/", tag: "Method", title: "Probes and Validity", role: "Decodability, selectivity, and causal use." },
 ]} />
 
+<script is:inline>
+  (() => {
+    const canvas = document.getElementById("steering-dose-canvas");
+    const slider = document.getElementById("steering-dose");
+    const value = document.getElementById("steering-dose-v");
+    const readout = document.getElementById("steering-dose-readout");
+    if (!canvas || !slider) return;
+    function setup() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const w = 760, h = 360;
+      const cssW = rect.width || w;
+      const cssH = rect.height || h;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform((cssW / w) * dpr, 0, 0, (cssH / h) * dpr, 0, 0);
+      return { ctx, w, h };
+    }
+    function drawCurve(ctx, fn, color, width, dash) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.setLineDash(dash || []);
+      ctx.beginPath();
+      for (let i = 0; i <= 120; i += 1) {
+        const d = -3 + i * 0.05;
+        const x = 72 + ((d + 3) / 6) * 610;
+        const y = 280 - ((fn(d) + 1.2) / 2.8) * 210;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    function margin(d) {
+      return 1.45 * Math.tanh((d - 0.25) / 1.25);
+    }
+    function quality(d) {
+      return 1 - Math.max(0, Math.abs(d) - 1.6) * 0.22;
+    }
+    function draw() {
+      const env = setup();
+      if (!env) return;
+      const { ctx } = env;
+      const dose = Number(slider.value);
+      ctx.clearRect(0, 0, 760, 360);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("Target direction rises above matched random controls", 48, 42);
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(72, 280);
+      ctx.lineTo(690, 280);
+      ctx.moveTo(72, 70);
+      ctx.lineTo(72, 280);
+      ctx.stroke();
+      for (const offset of [-0.18, 0, 0.16]) {
+        drawCurve(ctx, (d) => 0.18 * Math.sin(d * 1.5 + offset * 5) + offset, "#cbd5e1", 2, [5, 5]);
+      }
+      drawCurve(ctx, margin, "#be123c", 4);
+      drawCurve(ctx, (d) => quality(d) - 0.9, "#0ea5e9", 3);
+      const x = 72 + ((dose + 3) / 6) * 610;
+      const y = 280 - ((margin(dose) + 1.2) / 2.8) * 210;
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x, 72);
+      ctx.lineTo(x, 282);
+      ctx.stroke();
+      ctx.fillStyle = "#be123c";
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#475569";
+      ctx.font = "12px system-ui";
+      ctx.fillText("dose", 664, 306);
+      ctx.fillText("margin", 30, 82);
+      ctx.fillStyle = "#be123c";
+      ctx.fillText("target vector", 560, 108);
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("random band", 560, 160);
+      ctx.fillStyle = "#0ea5e9";
+      ctx.fillText("quality", 560, 236);
+      value.textContent = dose.toFixed(1);
+      const q = quality(dose);
+      readout.textContent = `Dose ${dose.toFixed(1)} gives target margin ${margin(dose).toFixed(2)} with quality ${(q * 100).toFixed(0)}%; matched random directions stay near zero.`;
+    }
+    slider.addEventListener("input", draw);
+    window.addEventListener("resize", draw);
+    draw();
+  })();
+</script>
 <script is:inline src="/ml/mech-interp/mech-interp.js"></script>
 </ExplainerLayout>

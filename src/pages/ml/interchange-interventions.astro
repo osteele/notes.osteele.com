@@ -1,0 +1,334 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Interchange Interventions & DAS" breadcrumb="Interchange Interventions" section="interpretability-methods">
+<Hero title="Interchange Interventions & DAS" subtitle="Distributed alignment search trains a low-rank interchange that makes a frozen model behave as if one latent variable had been swapped." />
+
+<p>
+Activation patching copies a vector at a chosen site. Interchange interventions
+make a more targeted claim: there is a subspace whose values act like a specific
+causal variable. Distributed alignment search (DAS) trains a rotation, chooses a
+low-rank slice of the rotated activation, and swaps only that slice between two
+prompts while the model itself stays frozen.
+</p>
+
+<Figure title="Figure 1 · Rank-limited interchange against a matched random subspace" canvasId="das-rank-canvas" width="760" height="420" readoutId="das-rank-readout">
+<Fragment slot="controls">
+  <ControlRange id="das-rank" label="rank" valueId="das-rank-v" min="1" max="12" step="1" value="4" />
+  <ControlSelect id="das-pair" label="latent variable" valueId="das-pair-v" options={[
+    { value: "belief", label: "belief space", selected: true },
+    { value: "order", label: "adjective order" },
+    { value: "binding", label: "binding id" },
+  ]} />
+</Fragment>
+</Figure>
+
+<h2>1. What gets trained</h2>
+
+<p>
+DAS does not train the language model. It trains an alignment around one layer:
+rotate the activation, expose a small number of rotated coordinates, and optimize
+that slice so swapping it transfers the target variable. The downstream model is
+then run normally. If the output flips under the learned slice but not under a
+random slice of the same rank, the evidence is stronger than plain
+decodability.
+</p>
+
+<Aside>
+  <strong>The random control matters.</strong> A high-dimensional activation has
+  many low-rank slices. A learned slice has to beat the chance that any matched
+  amount of vector mass would disturb the output.
+</Aside>
+
+<h2>2. Floor, ceiling, and transfer index</h2>
+
+<p>
+The raw flip rate is hard to read by itself. A corrupted prompt may already flip
+some of the time, and even a perfect intervention may not reach 100 percent. The
+useful number is normalized between a floor and a ceiling: how much of the
+available behavioral transfer did the learned interchange recover?
+</p>
+
+<Figure title="Figure 2 · The same efficacy can mean two different claims" canvasId="das-normalization-canvas" width="760" height="320" readoutId="das-normalization-readout">
+<Fragment slot="controls">
+  <ControlRange id="das-floor" label="floor" valueId="das-floor-v" min="0" max="0.45" step="0.05" value="0.15" />
+  <ControlRange id="das-ceiling" label="ceiling" valueId="das-ceiling-v" min="0.55" max="1" step="0.05" value="0.85" />
+</Fragment>
+</Figure>
+
+<h2>3. Expressive fit is not yet mechanism</h2>
+
+<p>
+A trained alignment can be too expressive. If the aligner finds a subspace that
+predictably moves the output but is off the path the model actually uses, it has
+shown a useful control surface rather than the internal mechanism. The critique
+is not that DAS is invalid; it is that an efficacy number needs supporting
+evidence about location, controls, and path specificity.
+</p>
+
+<Figure title="Figure 3 · Efficacy without path specificity" canvasId="das-path-canvas" width="760" height="360" readoutId="das-path-readout">
+<Fragment slot="controls">
+  <ControlRange id="das-offpath" label="off-pathway leakage" valueId="das-offpath-v" min="0" max="1" step="0.05" value="0.35" />
+</Fragment>
+</Figure>
+
+<p>
+The practical reading is conservative. DAS can turn a probe-like readout into a
+causal interchange test. It does not, by itself, prove that the model stores the
+variable in exactly the learned coordinates or that this is the only path used
+for the behavior.
+</p>
+
+<div class="source-list">
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/causal-interventions/">Causal Interventions</a> for ablation, activation patching, and path patching.</li>
+    <li><a href="/ml/subspace-geometry/">Subspace Geometry</a> for the rotations and low-rank slices used by DAS.</li>
+    <li><a href="/ml/probes-validity/">Probes and Validity</a> for the decodability claim DAS tries to strengthen.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/causal-interventions/", tag: "Before", title: "Causal Interventions", role: "The patching baseline DAS extends." },
+  { href: "/ml/subspace-geometry/", tag: "Geometry", title: "Subspace Geometry", role: "Rotations, ranks, and alignment maps." },
+]} />
+
+<style>
+  .das-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 4.5rem;
+    padding: 0.18rem 0.45rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const $ = (id) => document.getElementById(id);
+    const clamp = (x, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, x));
+    const fmt = (x) => `${Math.round(x * 100)}%`;
+
+    function setupCanvas(id, logicalW, logicalH) {
+      const canvas = $(id);
+      if (!canvas) return null;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const cssW = rect.width || logicalW;
+      const cssH = rect.height || logicalH;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform((cssW / logicalW) * dpr, 0, 0, (cssH / logicalH) * dpr, 0, 0);
+      return { ctx, w: logicalW, h: logicalH };
+    }
+
+    function bar(ctx, x, y, w, h, value, color, label) {
+      ctx.fillStyle = "#f6f7fb";
+      ctx.strokeStyle = "#d7dde8";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.roundRect(x, y, w * clamp(value), h, 8);
+      ctx.fill();
+      ctx.fillStyle = "#1f2937";
+      ctx.font = "600 13px system-ui";
+      ctx.fillText(label, x, y - 8);
+      ctx.fillStyle = "#475569";
+      ctx.font = "12px system-ui";
+      ctx.fillText(fmt(value), x + w + 12, y + h - 8);
+    }
+
+    function drawRank() {
+      const env = setupCanvas("das-rank-canvas", 760, 420);
+      if (!env) return;
+      const { ctx } = env;
+      const rank = Number($("das-rank")?.value || 4);
+      const pair = $("das-pair")?.value || "belief";
+      const maxRank = 12;
+      const learnedBase = pair === "belief" ? 0.18 : pair === "order" ? 0.1 : 0.14;
+      const learned = clamp(learnedBase + 0.72 * (1 - Math.exp(-rank / 3.2)));
+      const random = clamp(0.08 + 0.19 * (rank / maxRank) + (pair === "order" ? 0.03 : 0));
+      const clean = pair === "belief" ? "Alice believes cup=blue" : pair === "order" ? "big red box" : "pronoun -> source A";
+      const source = pair === "belief" ? "Alice believes cup=green" : pair === "order" ? "red big box" : "pronoun -> source B";
+      ctx.clearRect(0, 0, 760, 420);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 19px system-ui";
+      ctx.fillText("Frozen model, two prompt runs", 36, 40);
+      ctx.font = "13px system-ui";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("Only the exposed rotated slice is swapped.", 36, 62);
+
+      const boxes = [
+        { x: 44, y: 100, label: "base prompt", text: clean, color: "#0ea5e9" },
+        { x: 44, y: 222, label: "source prompt", text: source, color: "#f97316" },
+      ];
+      for (const b of boxes) {
+        ctx.fillStyle = "#fff";
+        ctx.strokeStyle = "#d7dde8";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.roundRect(b.x, b.y, 250, 76, 10);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = b.color;
+        ctx.font = "700 12px system-ui";
+        ctx.fillText(b.label.toUpperCase(), b.x + 16, b.y + 24);
+        ctx.fillStyle = "#111827";
+        ctx.font = "600 15px system-ui";
+        ctx.fillText(b.text, b.x + 16, b.y + 52);
+      }
+
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath();
+      ctx.moveTo(314, 260);
+      ctx.bezierCurveTo(374, 250, 392, 162, 452, 150);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#334155";
+      ctx.font = "600 13px system-ui";
+      ctx.fillText(`swap rank ${rank} learned slice`, 342, 202);
+
+      for (let i = 0; i < maxRank; i += 1) {
+        const x = 448 + i * 15;
+        const y = 106;
+        ctx.fillStyle = i < rank ? "#be123c" : "#e2e8f0";
+        ctx.fillRect(x, y, 10, 110);
+      }
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 14px system-ui";
+      ctx.fillText("rotated activation", 448, 92);
+
+      bar(ctx, 448, 260, 210, 24, learned, "#be123c", "learned DAS transfer");
+      bar(ctx, 448, 330, 210, 24, random, "#94a3b8", "matched random subspace");
+
+      const readout = $("das-rank-readout");
+      if (readout) {
+        readout.innerHTML = `<span class="das-badge">learned ${fmt(learned)}</span> <span class="das-badge">random ${fmt(random)}</span> Rank ${rank} recovers ${fmt(learned - random)} more target transfer than the matched random control.`;
+      }
+      $("das-rank-v") && ($("das-rank-v").textContent = String(rank));
+      $("das-pair-v") && ($("das-pair-v").textContent = $("das-pair").selectedOptions[0].textContent);
+    }
+
+    function drawNorm() {
+      const env = setupCanvas("das-normalization-canvas", 760, 320);
+      if (!env) return;
+      const { ctx } = env;
+      const floor = Number($("das-floor")?.value || 0.15);
+      const ceiling = Math.max(floor + 0.1, Number($("das-ceiling")?.value || 0.85));
+      const raw = clamp(floor + 0.62 * (ceiling - floor));
+      const transfer = (raw - floor) / (ceiling - floor);
+      ctx.clearRect(0, 0, 760, 320);
+      const x = 78, y = 126, w = 600, h = 38;
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 2;
+      ctx.fillStyle = "#f8fafc";
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, 12);
+      ctx.fill();
+      ctx.stroke();
+      const xf = x + floor * w;
+      const xc = x + ceiling * w;
+      const xr = x + raw * w;
+      ctx.fillStyle = "#fee2e2";
+      ctx.fillRect(xf, y, Math.max(1, xc - xf), h);
+      ctx.fillStyle = "#be123c";
+      ctx.fillRect(xf, y, Math.max(1, xr - xf), h);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("Normalize the behavioral effect to the available room", 78, 54);
+      ctx.font = "12px system-ui";
+      ctx.fillStyle = "#475569";
+      for (const [label, xx] of [["floor", xf], ["raw", xr], ["ceiling", xc]]) {
+        ctx.beginPath();
+        ctx.moveTo(xx, y - 10);
+        ctx.lineTo(xx, y + h + 22);
+        ctx.strokeStyle = label === "raw" ? "#be123c" : "#64748b";
+        ctx.stroke();
+        ctx.fillStyle = label === "raw" ? "#be123c" : "#475569";
+        ctx.fillText(label, xx - 16, y + h + 40);
+      }
+      const readout = $("das-normalization-readout");
+      if (readout) readout.textContent = `Raw flip rate ${fmt(raw)} becomes transfer index ${fmt(transfer)} after subtracting floor ${fmt(floor)} and ceiling ${fmt(ceiling)}.`;
+      $("das-floor-v") && ($("das-floor-v").textContent = fmt(floor));
+      $("das-ceiling-v") && ($("das-ceiling-v").textContent = fmt(ceiling));
+    }
+
+    function drawPath() {
+      const env = setupCanvas("das-path-canvas", 760, 360);
+      if (!env) return;
+      const { ctx } = env;
+      const leak = Number($("das-offpath")?.value || 0.35);
+      ctx.clearRect(0, 0, 760, 360);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("A strong control surface can bypass the measured mechanism", 44, 42);
+      const nodes = [
+        { x: 92, y: 170, label: "prompt" },
+        { x: 278, y: 104, label: "candidate\nsite" },
+        { x: 488, y: 104, label: "target\ncircuit" },
+        { x: 650, y: 170, label: "output" },
+        { x: 392, y: 246, label: "off-path\nsurface" },
+      ];
+      function node(n, color) {
+        ctx.fillStyle = color;
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(n.x - 54, n.y - 30, 108, 60, 10);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#111827";
+        ctx.font = "700 13px system-ui";
+        const lines = n.label.split("\n");
+        lines.forEach((line, i) => ctx.fillText(line, n.x - 36, n.y - 4 + i * 17));
+      }
+      function edge(a, b, width, color, dash = false) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.setLineDash(dash ? [7, 6] : []);
+        ctx.beginPath();
+        ctx.moveTo(a.x + 54, a.y);
+        ctx.lineTo(b.x - 54, b.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      edge(nodes[0], nodes[1], 3, "#64748b");
+      edge(nodes[1], nodes[2], 3.5 * (1 - leak) + 1, "#be123c");
+      edge(nodes[2], nodes[3], 3, "#64748b");
+      edge(nodes[1], nodes[4], 1 + leak * 8, "#f97316", true);
+      edge(nodes[4], nodes[3], 1 + leak * 8, "#f97316", true);
+      nodes.forEach((n, i) => node(n, i === 4 ? "#fff7ed" : i === 1 ? "#ffe4e6" : "#ffffff"));
+      const readout = $("das-path-readout");
+      if (readout) readout.textContent = `Off-pathway leakage ${fmt(leak)}: efficacy can stay high while evidence for the named circuit gets weaker.`;
+      $("das-offpath-v") && ($("das-offpath-v").textContent = fmt(leak));
+    }
+
+    ["das-rank", "das-pair"].forEach((id) => $(id)?.addEventListener("input", drawRank));
+    ["das-floor", "das-ceiling"].forEach((id) => $(id)?.addEventListener("input", drawNorm));
+    $("das-offpath")?.addEventListener("input", drawPath);
+    window.addEventListener("resize", () => { drawRank(); drawNorm(); drawPath(); });
+    drawRank();
+    drawNorm();
+    drawPath();
+  })();
+</script>
+</ExplainerLayout>

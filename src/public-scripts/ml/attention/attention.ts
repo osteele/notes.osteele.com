@@ -1,5 +1,21 @@
 // Interactive figures for the Attention explainer.
 
+const mathRenderOptions = {
+  throwOnError: false,
+  delimiters: [
+    { left: "$$", right: "$$", display: true },
+    { left: "$", right: "$", display: false },
+    { left: "\\[", right: "\\]", display: true },
+    { left: "\\(", right: "\\)", display: false },
+  ],
+};
+
+function renderReadoutMath(readout) {
+  if (typeof window.renderMathInElement === "function") {
+    window.renderMathInElement(readout, mathRenderOptions);
+  }
+}
+
 // Horizontal drag helper: drags inside a canvas region to update a range input.
 // Coexists with the slider — keyboard / focus / aria semantics are unchanged.
 function attachHorizontalDrag(opts) {
@@ -226,6 +242,7 @@ function attachHorizontalDrag(opts) {
       `<div class="row"><span class="lbl">kernel bandwidth $h$ = $\\sqrt{\\tau}$</span><span>${Math.sqrt(tau).toFixed(4)}</span></div>` +
       `<div class="row"><span class="lbl">predicted value $\\hat f(q)$</span><span>${yhat.toFixed(3)}</span></div>` +
       `<div class="row"><span class="lbl">attention entropy / log N</span><span>${(H / Hmax).toFixed(3)} (1 = uniform, 0 = argmax)</span></div>`;
+    renderReadoutMath(readout);
   }
 
   [qIn, tIn].forEach(i => i.addEventListener("input", draw));
@@ -525,6 +542,7 @@ function attachHorizontalDrag(opts) {
       `<div class="row"><span class="lbl">linear attention</span><span>$O(N)$ cost via $\\phi(q)^\\top \\sum \\phi(k_i) v_i^\\top$ factorization</span></div>` +
       `<div class="row"><span class="lbl">local-window</span><span>sliding-window transformers, $O(Nw)$ cost</span></div>` +
       `<div class="row"><span class="lbl">positional bias (ALiBi, T5)</span><span>linear/log decay added to logits before softmax</span></div>`;
+    renderReadoutMath(readout);
   }
 
   bwIn.addEventListener("input", draw);
@@ -858,6 +876,7 @@ function attachHorizontalDrag(opts) {
       `<div class="row"><span class="lbl">peak attention</span><span>token ${focusIdx + 1} (${TOKENS[focusIdx]}) at ${(alphas[focusIdx] * 100).toFixed(0)}%</span></div>` +
       `<div class="row"><span class="lbl">output value</span><span>${output.toFixed(3)} — weighted sum of cached vᵢ</span></div>` +
       `<div class="row"><span class="lbl">why not collapse the cache</span><span>each future query qₜ' reweights the same kᵢ differently — the summary is query-dependent, so raw kᵢ must be retained</span></div>`;
+    renderReadoutMath(readout);
   }
 
   [tIn, tauIn, patIn].forEach(i => i.addEventListener("input", draw));

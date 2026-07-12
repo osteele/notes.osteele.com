@@ -1,0 +1,320 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Subspace Geometry" breadcrumb="Subspace Geometry" section="interpretability-methods">
+<Hero title="Subspace Geometry" subtitle="PCA, principal angles, Procrustes fits, and relative representations explain how two nearly different-looking bases can still carry the same structure." />
+
+<p>
+Representation papers often compare spaces rather than single neurons. A probe
+may work after projecting to the top PCA components; two models may have nearly
+orthogonal principal bases; an affine map may still align their examples. The
+geometry is easier to see as a moving point cloud than as a table of cosines.
+</p>
+
+<Figure title="Figure 1 · Rotate one cloud and watch the top-k planes separate" canvasId="subspace-cloud-canvas" width="760" height="430" readoutId="subspace-cloud-readout">
+<Fragment slot="controls">
+  <ControlRange id="subspace-angle" label="rotation" valueId="subspace-angle-v" min="0" max="89" step="1" value="54" />
+  <ControlRange id="subspace-rank" label="top-k rank" valueId="subspace-rank-v" min="1" max="6" step="1" value="3" />
+</Fragment>
+</Figure>
+
+<h2>1. PCA chooses a subspace, not a mechanism</h2>
+
+<p>
+PCA finds directions of high variance. In probe transfer work, the top-k
+subspace can be a useful compression before fitting an alignment map. That does
+not mean variance caused the feature. It means the feature was readable after a
+particular low-rank projection.
+</p>
+
+<p>
+Principal angles summarize how two subspaces sit relative to one another. Small
+angles mean the planes overlap; angles near 90 degrees mean the bases can look
+almost orthogonal. But a bad-looking basis comparison is not the same as a failed
+example alignment.
+</p>
+
+<Figure title="Figure 2 · Procrustes rotation versus affine fit" canvasId="subspace-fit-canvas" width="760" height="390" readoutId="subspace-fit-readout">
+<Fragment slot="controls">
+  <ControlSelect id="subspace-fit-mode" label="alignment" valueId="subspace-fit-mode-v" options={[
+    { value: "procrustes", label: "rotation-only", selected: true },
+    { value: "affine", label: "affine map" },
+  ]} />
+  <ControlRange id="subspace-fit-step" label="fit progress" valueId="subspace-fit-step-v" min="0" max="1" step="0.05" value="0.55" />
+</Fragment>
+</Figure>
+
+<h2>2. Alignment maps answer a different question</h2>
+
+<p>
+Procrustes alignment rotates one centered cloud toward another while preserving
+distances. An affine fit can also stretch, shear, and translate. If Procrustes
+fails but affine succeeds, the result says the examples share a recoverable
+coordinate relationship, not that the two models used identical geometry.
+</p>
+
+<Aside>
+  <strong>Near-orthogonal bases can still transfer.</strong> A top PCA basis can
+  point almost nowhere near another top PCA basis while the examples themselves
+  remain alignable after an affine map. The important question is whether the
+  selected subspace keeps task-relevant neighborhoods and directions.
+</Aside>
+
+<Figure title="Figure 3 · Subspace selection beats rank alone" canvasId="subspace-counter-canvas" width="760" height="350" readoutId="subspace-counter-readout">
+<Fragment slot="controls">
+  <ControlRange id="subspace-counter-angle" label="basis angle" valueId="subspace-counter-angle-v" min="70" max="89" step="1" value="87" />
+</Fragment>
+</Figure>
+
+<h2>3. Relative representations use anchors</h2>
+
+<p>
+Absolute coordinates are fragile. Rotate every point and a coordinate probe has
+to relearn its weights. Distances or cosines to anchor examples can stay stable
+under the same rotation, giving a relative representation that survives changes
+of basis.
+</p>
+
+<Figure title="Figure 4 · Rotate coordinates; anchor signatures stay fixed" canvasId="subspace-anchor-canvas" width="760" height="360" readoutId="subspace-anchor-readout">
+<Fragment slot="controls">
+  <ControlRange id="subspace-anchor-rotation" label="coordinate rotation" valueId="subspace-anchor-rotation-v" min="0" max="180" step="5" value="45" />
+</Fragment>
+</Figure>
+
+<div class="source-list">
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/structural-probes/">Dependency Trees & Structural Probes</a> for the tree-distance probe that often gets aligned across models.</li>
+    <li><a href="/ml/interchange-interventions/">Interchange Interventions & DAS</a> for learned rotations used as causal interventions.</li>
+    <li><a href="/ml/residual-stream-directions/">Residual Stream & Directions</a> for the local "feature as direction" approximation.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/structural-probes/", tag: "Application", title: "Structural Probes", role: "Where cross-model alignment pressure appears." },
+  { href: "/ml/interchange-interventions/", tag: "Method", title: "Interchange Interventions", role: "How trained low-rank slices become causal tests." },
+]} />
+
+<script is:inline>
+  (() => {
+    const $ = (id) => document.getElementById(id);
+    const fmt = (x) => `${Math.round(x)}°`;
+    const pts = [
+      [-1.2, -0.4, 0.15], [-0.8, 0.2, -0.35], [-0.45, -0.6, 0.42], [-0.2, 0.5, 0.28], [0.35, -0.1, -0.2],
+      [0.65, 0.55, 0.5], [0.95, -0.5, -0.45], [1.25, 0.15, 0.08], [0.1, 0.95, -0.25], [-1.05, 0.75, 0.36],
+    ];
+    const anchors = [[-1.05, 0.75, 0.36], [0.95, -0.5, -0.45], [0.1, 0.95, -0.25]];
+
+    function env(id, logicalW, logicalH) {
+      const canvas = $(id);
+      if (!canvas) return null;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const cssW = rect.width || logicalW;
+      const cssH = rect.height || logicalH;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform((cssW / logicalW) * dpr, 0, 0, (cssH / logicalH) * dpr, 0, 0);
+      return { ctx, w: logicalW, h: logicalH };
+    }
+    function rot(p, deg) {
+      const a = (deg * Math.PI) / 180;
+      const x = p[0] * Math.cos(a) - p[2] * Math.sin(a);
+      const z = p[0] * Math.sin(a) + p[2] * Math.cos(a);
+      const b = a * 0.45;
+      return [x, p[1] * Math.cos(b) - z * Math.sin(b), p[1] * Math.sin(b) + z * Math.cos(b)];
+    }
+    function xy(p, cx, cy, s = 88) {
+      const z = p[2] || 0;
+      return [cx + p[0] * s + z * 22, cy - p[1] * s + z * 10];
+    }
+    function point(ctx, p, cx, cy, color, r = 4.5) {
+      const z = p[2] || 0;
+      const [x, y] = xy(p, cx, cy);
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.72 + Math.max(-0.4, Math.min(0.4, z)) * 0.4;
+      ctx.beginPath();
+      ctx.arc(x, y, r + z * 1.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    function axes(ctx, cx, cy, angle, color, len = 120) {
+      const a = (angle * Math.PI) / 180;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx - Math.cos(a) * len, cy + Math.sin(a) * len);
+      ctx.lineTo(cx + Math.cos(a) * len, cy - Math.sin(a) * len);
+      ctx.stroke();
+      ctx.globalAlpha = 0.45;
+      ctx.beginPath();
+      ctx.moveTo(cx - Math.cos(a + Math.PI / 2) * len * 0.58, cy + Math.sin(a + Math.PI / 2) * len * 0.58);
+      ctx.lineTo(cx + Math.cos(a + Math.PI / 2) * len * 0.58, cy - Math.sin(a + Math.PI / 2) * len * 0.58);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    function drawCloud() {
+      const out = env("subspace-cloud-canvas", 760, 430);
+      if (!out) return;
+      const { ctx } = out;
+      const angle = Number($("subspace-angle")?.value || 54);
+      const rank = Number($("subspace-rank")?.value || 3);
+      ctx.clearRect(0, 0, 760, 430);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("Same examples, different basis", 42, 42);
+      ctx.fillStyle = "#64748b";
+      ctx.font = "13px system-ui";
+      ctx.fillText("The top-k plane turns as the representation basis turns.", 42, 64);
+      axes(ctx, 230, 230, 0, "#0ea5e9");
+      axes(ctx, 530, 230, angle, "#be123c");
+      pts.forEach((p) => point(ctx, p, 230, 230, "#0ea5e9"));
+      pts.map((p) => rot(p, angle)).forEach((p) => point(ctx, p, 530, 230, "#be123c"));
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 14px system-ui";
+      ctx.fillText("model A PCA plane", 155, 382);
+      ctx.fillText("model B PCA plane", 455, 382);
+      const meanAngle = angle * (0.7 + rank * 0.035);
+      const cos = Math.cos((Math.min(89, meanAngle) * Math.PI) / 180);
+      $("subspace-cloud-readout") && ($("subspace-cloud-readout").textContent = `Top-${rank} mean principal angle ${fmt(Math.min(89, meanAngle))}; mean principal cosine ${cos.toFixed(2)}.`);
+      $("subspace-angle-v") && ($("subspace-angle-v").textContent = fmt(angle));
+      $("subspace-rank-v") && ($("subspace-rank-v").textContent = String(rank));
+    }
+
+    function drawFit() {
+      const out = env("subspace-fit-canvas", 760, 390);
+      if (!out) return;
+      const { ctx } = out;
+      const mode = $("subspace-fit-mode")?.value || "procrustes";
+      const step = Number($("subspace-fit-step")?.value || 0.55);
+      ctx.clearRect(0, 0, 760, 390);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("Move source points toward the target cloud", 44, 42);
+      const target = pts.map((p) => [p[0] * 1.05 + 0.15, p[1] * 0.9 - 0.05]);
+      const start = pts.map((p) => rot([p[0] * 1.35 - 0.4, p[1] * 0.65 + 0.25], 48));
+      const mapped = start.map((p, i) => {
+        const t = target[i];
+        const affineBoost = mode === "affine" ? 1 : 0.62;
+        return [p[0] + (t[0] - p[0]) * step * affineBoost, p[1] + (t[1] - p[1]) * step * affineBoost];
+      });
+      target.forEach((p) => point(ctx, p, 380, 210, "#0ea5e9", 5));
+      mapped.forEach((p, i) => {
+        point(ctx, p, 380, 210, mode === "affine" ? "#be123c" : "#f97316", 4.5);
+        const [x1, y1] = xy(p, 380, 210);
+        const [x2, y2] = xy(target[i], 380, 210);
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      });
+      const residual = mode === "affine" ? 0.36 * (1 - step) : 0.26 + 0.46 * (1 - step);
+      $("subspace-fit-readout") && ($("subspace-fit-readout").textContent = `${mode === "affine" ? "Affine" : "Rotation-only"} fit residual ${(residual).toFixed(2)}: lower is better, but the allowed map changes the claim.`);
+      $("subspace-fit-mode-v") && ($("subspace-fit-mode-v").textContent = $("subspace-fit-mode").selectedOptions[0].textContent);
+      $("subspace-fit-step-v") && ($("subspace-fit-step-v").textContent = `${Math.round(step * 100)}%`);
+    }
+
+    function drawCounter() {
+      const out = env("subspace-counter-canvas", 760, 350);
+      if (!out) return;
+      const { ctx } = out;
+      const angle = Number($("subspace-counter-angle")?.value || 87);
+      ctx.clearRect(0, 0, 760, 350);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("Same rank, same basis angle, different information", 42, 42);
+      const selected = 0.86 - (angle - 70) * 0.006;
+      const random = 0.34 - (angle - 70) * 0.003;
+      function panel(x, label, score, color) {
+        ctx.fillStyle = "#fff";
+        ctx.strokeStyle = "#d7dde8";
+        ctx.beginPath();
+        ctx.roundRect(x, 82, 300, 210, 12);
+        ctx.fill();
+        ctx.stroke();
+        axes(ctx, x + 150, 170, angle, color, 82);
+        pts.slice(0, 7).forEach((p) => point(ctx, rot(p, angle), x + 150, 170, color, 4));
+        ctx.fillStyle = "#111827";
+        ctx.font = "700 14px system-ui";
+        ctx.fillText(label, x + 24, 116);
+        ctx.fillStyle = "#f1f5f9";
+        ctx.fillRect(x + 24, 250, 220, 18);
+        ctx.fillStyle = color;
+        ctx.fillRect(x + 24, 250, 220 * score, 18);
+        ctx.fillStyle = "#475569";
+        ctx.font = "12px system-ui";
+        ctx.fillText(`transfer ${(score * 100).toFixed(0)}%`, x + 252, 264);
+      }
+      panel(66, "selected PCA subspace", selected, "#be123c");
+      panel(394, "random rank-matched subspace", random, "#94a3b8");
+      $("subspace-counter-readout") && ($("subspace-counter-readout").textContent = `Both panels use a ${fmt(angle)} basis angle; selected subspaces preserve neighborhoods that random rank alone does not.`);
+      $("subspace-counter-angle-v") && ($("subspace-counter-angle-v").textContent = fmt(angle));
+    }
+
+    function drawAnchor() {
+      const out = env("subspace-anchor-canvas", 760, 360);
+      if (!out) return;
+      const { ctx } = out;
+      const angle = Number($("subspace-anchor-rotation")?.value || 45);
+      ctx.clearRect(0, 0, 760, 360);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("Coordinates change; anchor distances do not", 42, 42);
+      const query = [0.35, -0.1, -0.2];
+      const rq = rot(query, angle);
+      const rAnchors = anchors.map((p) => rot(p, angle));
+      anchors.forEach((p, i) => point(ctx, p, 210, 195, ["#0ea5e9", "#be123c", "#f97316"][i], 7));
+      point(ctx, query, 210, 195, "#111827", 6);
+      rAnchors.forEach((p, i) => point(ctx, p, 510, 195, ["#0ea5e9", "#be123c", "#f97316"][i], 7));
+      point(ctx, rq, 510, 195, "#111827", 6);
+      ctx.fillStyle = "#475569";
+      ctx.font = "13px system-ui";
+      ctx.fillText("absolute coordinates", 152, 320);
+      ctx.fillText("after rotation", 468, 320);
+      const sig = anchors.map((a) => Math.hypot(a[0] - query[0], a[1] - query[1], a[2] - query[2]).toFixed(2)).join(", ");
+      $("subspace-anchor-readout") && ($("subspace-anchor-readout").textContent = `Anchor signature [${sig}] is unchanged after a ${fmt(angle)} coordinate rotation.`);
+      $("subspace-anchor-rotation-v") && ($("subspace-anchor-rotation-v").textContent = fmt(angle));
+    }
+
+    let draggingCloud = false;
+    let lastX = 0;
+    const cloudCanvas = $("subspace-cloud-canvas");
+    cloudCanvas?.addEventListener("pointerdown", (event) => {
+      draggingCloud = true;
+      lastX = event.clientX;
+      cloudCanvas.setPointerCapture(event.pointerId);
+    });
+    cloudCanvas?.addEventListener("pointermove", (event) => {
+      if (!draggingCloud) return;
+      const input = $("subspace-angle");
+      if (!input) return;
+      const next = Math.max(0, Math.min(89, Number(input.value) + (event.clientX - lastX) * 0.35));
+      input.value = String(next.toFixed(0));
+      lastX = event.clientX;
+      drawCloud();
+    });
+    cloudCanvas?.addEventListener("pointerup", () => { draggingCloud = false; });
+    cloudCanvas?.addEventListener("pointercancel", () => { draggingCloud = false; });
+    ["subspace-angle", "subspace-rank"].forEach((id) => $(id)?.addEventListener("input", drawCloud));
+    ["subspace-fit-mode", "subspace-fit-step"].forEach((id) => $(id)?.addEventListener("input", drawFit));
+    $("subspace-counter-angle")?.addEventListener("input", drawCounter);
+    $("subspace-anchor-rotation")?.addEventListener("input", drawAnchor);
+    window.addEventListener("resize", () => { drawCloud(); drawFit(); drawCounter(); drawAnchor(); });
+    drawCloud();
+    drawFit();
+    drawCounter();
+    drawAnchor();
+  })();
+</script>
+</ExplainerLayout>

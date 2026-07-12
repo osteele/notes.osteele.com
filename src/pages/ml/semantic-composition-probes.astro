@@ -4,6 +4,7 @@ import Hero from "../../components/explainer/Hero.astro";
 import Aside from "../../components/explainer/Aside.astro";
 import Figure from "../../components/explainer/Figure.astro";
 import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
 import NextCards from "../../components/explainer/NextCards.astro";
 ---
 
@@ -34,6 +35,12 @@ modified phrase.
     { value: "bilinear", label: "bilinear" },
     { value: "nonlinear", label: "nonlinear" },
   ]} />
+  <ControlSelect id="composition-case" label="phrase type" valueId="composition-case-v" options={[
+    { value: "intersective", label: "red car", selected: true },
+    { value: "subsective", label: "skillful surgeon" },
+    { value: "privative", label: "fake gun" },
+  ]} />
+  <ControlRange id="composition-interaction" label="interaction strength" valueId="composition-interaction-v" min="0" max="1" step="0.05" value="0.65" />
 </Fragment>
 </Figure>
 
@@ -62,25 +69,12 @@ interventions.
 <h2>2. Types and argument structure</h2>
 
 <p>
-Formal semantics distinguishes predicates, arguments, quantifiers, modifiers,
-and type-shifting operations. This vocabulary separates semantic tasks that
-would otherwise collapse into a vague "meaning" label. A subject relation, an
-object relation, and an adjunct relation are not automatically the same
-composition operation.
+The page only needs a small slice of formal-semantics vocabulary: a probe usually
+takes a <em>head</em>, a <em>dependent</em>, and their dependency relation as
+input. Subject, object, and modifier relations are not automatically the same
+composition operation, so a bilinear probe can condition on the relation rather
+than treating every pair of words alike.
 </p>
-
-<dl class="definition-list">
-  <dt>Head</dt>
-  <dd>The word that fixes a phrase's category and what it can combine with, such as the verb in a verb phrase or the noun in a noun phrase. Composition is described relative to the head.</dd>
-  <dt>Dependent</dt>
-  <dd>A word or phrase attached to the head: a subject, object, or modifier. A composition probe takes a head-dependent pair as input rather than a single token.</dd>
-  <dt>Dependency relation</dt>
-  <dd>The typed head-dependent link. Universal Dependencies labels such as nsubj, obj, amod, and nmod name the composition site: a head, a dependent, and the relation between them. A bilinear probe can condition on the relation, not just the two words.</dd>
-  <dt>Argument</dt>
-  <dd>An expression that fills a role a predicate requires, as "the door" fills the object of "open." In Montague-style semantics a predicate is a function and its arguments are the inputs it applies to, written f(x).</dd>
-  <dt>Type shift</dt>
-  <dd>A change of semantic type so an expression can compose where a different type is expected, for example coercing a proper name (type e) into a quantifier-like meaning (type ⟨⟨e,t⟩,t⟩). Type shifting keeps composition well-typed when surface forms do not line up.</dd>
-</dl>
 
 <h2>3. Where additive composition breaks down</h2>
 

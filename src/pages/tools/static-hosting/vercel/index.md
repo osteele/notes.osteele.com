@@ -48,4 +48,4 @@ Zero-configuration for:
 
 ## Related
 
-<ul class="page-list"><li><a href="/tools/static-hosting/netlify/">Netlify</a></li><li><a href="/tools/static-hosting/github-pages/">GitHub Pages</a></li><li><a href="/tools/static-hosting/">All Static Hosting</a></li></ul>
+<ul class="page-list"><li><a href="/tools/static-hosting/github-pages/">GitHub Pages</a></li><li><a href="/tools/static-hosting/">All Static Hosting</a></li></ul>

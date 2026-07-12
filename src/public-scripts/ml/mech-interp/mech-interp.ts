@@ -194,7 +194,9 @@ function drawQkOv() {
   if (!c) return;
   const ctx = ctx2d(c);
   const focus = Math.max(0, Math.min(5, Math.round(value("qk-token", 3))));
+  const qkScale = value("qk-scale", 1);
   setText("qk-token-v", String(focus));
+  setText("qk-scale-v", qkScale.toFixed(2));
   clear(ctx, c);
   const tokens = ["The", "key", "unlocked", "the", "door", "."];
   const scores = tokens.map((_, i) => {
@@ -202,8 +204,9 @@ function drawQkOv() {
     const target = Math.max(0, focus - 1);
     return 2.35 - Math.abs(i - target) * 0.95 - (i === focus ? 0.65 : 0);
   });
-  const maxScore = Math.max(...scores);
-  const expScores = scores.map((s, i) => (i <= focus ? Math.exp(s - maxScore) : 0));
+  const scaledScores = scores.map((s) => s * qkScale);
+  const maxScore = Math.max(...scaledScores);
+  const expScores = scaledScores.map((s, i) => (i <= focus ? Math.exp(s - maxScore) : 0));
   const normalizer = expScores.reduce((a, b) => a + b, 0);
   const weights = expScores.map((s) => s / normalizer);
   const topSource = weights.reduce((best, w, i) => (w > weights[best] ? i : best), 0);
@@ -245,7 +248,7 @@ function drawQkOv() {
     ctx.fillRect(x - 13, weightBase - weightHeight, 26, weightHeight);
     label(ctx, `${Math.round(weights[i] * 100)}%`, x, weightBase + 16, colors.dim, 9, "center");
   });
-  label(ctx, "softmax turns scores into the weights used below", 520, 210, colors.dim, 11);
+  label(ctx, `softmax scale ${qkScale.toFixed(2)} changes routing sharpness`, 508, 210, colors.dim, 11);
   label(ctx, "OV: map weighted values to the residual stream", 30, 292, colors.text, 14);
   tokens.forEach((t, i) => {
     const x = 54 + i * 58;
@@ -274,7 +277,7 @@ function drawQkOv() {
     ctx.fillRect(528 + i * 38, 424 - h, 18, h);
     label(ctx, word, 537 + i * 38, 418, colors.dim, 8, "center");
   });
-  readout("qk-ov-readout", `<div class="row"><span class="lbl">destination token</span><span>${tokens[focus]}</span></div><div class="row"><span class="lbl">largest QK weight</span><span>${tokens[topSource]} (${Math.round(weights[topSource] * 100)}%)</span></div><div class="row"><span class="lbl">OV step</span><span>weighted values -> output matrix -> residual update</span></div>`);
+  readout("qk-ov-readout", `<div class="row"><span class="lbl">destination token</span><span>${tokens[focus]}</span></div><div class="row"><span class="lbl">QK scale</span><span>${qkScale.toFixed(2)} (${qkScale > 1 ? "sharper" : qkScale < 1 ? "flatter" : "baseline"} softmax)</span></div><div class="row"><span class="lbl">largest QK weight</span><span>${tokens[topSource]} (${Math.round(weights[topSource] * 100)}%)</span></div><div class="row"><span class="lbl">OV step</span><span>weighted values -> output matrix -> residual update</span></div>`);
 }
 
 function drawProbeValidity() {
@@ -446,21 +449,62 @@ function drawStructuralProbe() {
   if (!c) return;
   const ctx = ctx2d(c);
   const layer = value("structural-layer", 6);
+  const step = value("structural-step", 5);
   setText("structural-layer-v", layer.toFixed(0));
+  setText("structural-step-v", step.toFixed(0));
   clear(ctx, c);
-  const words = ["The", "student", "solved", "the", "problem"];
+  const words = ["The", "cat", "sat", "on", "the", "mat"];
   const pts = [
-    { x: 80, y: 138 },
-    { x: 205, y: 80 },
-    { x: 330, y: 138 },
-    { x: 455, y: 82 },
-    { x: 580, y: 138 },
+    { x: 72, y: 146 },
+    { x: 178, y: 92 },
+    { x: 284, y: 146 },
+    { x: 390, y: 92 },
+    { x: 496, y: 146 },
+    { x: 602, y: 92 },
   ];
-  const edges = [[2, 1], [1, 0], [2, 4], [4, 3]];
-  label(ctx, "gold dependency tree and probe-recovered MST", 28, 28, colors.text, 14);
-  edges.forEach(([a, b], i) => {
-    const correct = layer > 3 && layer < 9 || i < 2;
-    line(ctx, pts[a], pts[b], correct ? colors.green : colors.red, 3);
+  const goldEdges = [[2, 1], [1, 0], [2, 3], [3, 5], [5, 4]];
+  const goldKey = (a: number, b: number) => [Math.min(a, b), Math.max(a, b)].join("-");
+  const goldSet = new Set(goldEdges.map(([a, b]) => goldKey(a, b)));
+  const adjacency = Array.from({ length: words.length }, () => [] as number[]);
+  goldEdges.forEach(([a, b]) => { adjacency[a].push(b); adjacency[b].push(a); });
+  const treeDistance = (start: number, end: number) => {
+    const queue: Array<[number, number]> = [[start, 0]];
+    const seen = new Set([start]);
+    for (const [node, dist] of queue) {
+      if (node === end) return dist;
+      adjacency[node].forEach((next) => {
+        if (!seen.has(next)) {
+          seen.add(next);
+          queue.push([next, dist + 1]);
+        }
+      });
+    }
+    return 0;
+  };
+  const layerError = Math.abs(layer - 6) / 6;
+  const noise = (i: number, j: number) => 0.55 * layerError * (Math.sin((i + 1) * 2.1 + (j + 1) * 1.3) + Math.cos((i + j + 2) * 1.7));
+  const predictedDistance = (i: number, j: number) => Math.max(0.15, treeDistance(i, j) + noise(i, j));
+  const candidates: Array<[number, number, number]> = [];
+  for (let i = 0; i < words.length; i++) {
+    for (let j = i + 1; j < words.length; j++) candidates.push([i, j, predictedDistance(i, j)]);
+  }
+  candidates.sort((a, b) => a[2] - b[2]);
+  const parent = Array.from({ length: words.length }, (_, i) => i);
+  const find = (x: number): number => parent[x] === x ? x : (parent[x] = find(parent[x]));
+  const mst: Array<[number, number, number]> = [];
+  for (const [a, b, d] of candidates) {
+    const ra = find(a), rb = find(b);
+    if (ra === rb) continue;
+    parent[ra] = rb;
+    mst.push([a, b, d]);
+    if (mst.length === words.length - 1) break;
+  }
+  label(ctx, "probe distances → Kruskal MST → UUAS", 28, 28, colors.text, 14);
+  goldEdges.forEach(([a, b]) => line(ctx, pts[a], pts[b], colors.rule, 1.2));
+  const shown = mst.slice(0, step);
+  shown.forEach(([a, b]) => {
+    const correct = goldSet.has(goldKey(a, b));
+    line(ctx, pts[a], pts[b], correct ? colors.green : colors.red, 3.4);
   });
   pts.forEach((p, i) => {
     box(ctx, p.x - 38, p.y + 18, 76, 30, "#fff", colors.rule);
@@ -473,18 +517,20 @@ function drawStructuralProbe() {
   label(ctx, "predicted tree-distance matrix", mx, my - 18, colors.dim);
   for (let r = 0; r < words.length; r++) {
     for (let col = 0; col < words.length; col++) {
-      const dist = Math.abs(r - col) + Math.abs(layer - 6) * 0.25;
+      const dist = r === col ? 0 : predictedDistance(r, col);
       const alpha = Math.max(0.08, Math.min(0.82, 1 - dist / 5.2));
       ctx.fillStyle = `rgba(31,74,140,${alpha})`;
       ctx.fillRect(mx + col * cell, my + r * cell, cell - 2, cell - 2);
     }
   }
-  const quality = Math.max(0.15, 1 - Math.abs(layer - 6) / 7);
+  const recovered = shown.filter(([a, b]) => goldSet.has(goldKey(a, b))).length;
+  const quality = shown.length === 0 ? 0 : recovered / goldEdges.length;
   ctx.fillStyle = colors.green;
   ctx.fillRect(430, 392 - quality * 130, 58, quality * 130);
-  label(ctx, "UUAS-like score", 459, 410, colors.dim, 11, "center");
+  label(ctx, "UUAS", 459, 410, colors.dim, 11, "center");
   label(ctx, `${Math.round(quality * 100)}%`, 459, 382 - quality * 130, colors.green, 12, "center");
-  readout("structural-probe-readout", `<div class="row"><span class="lbl">layer</span><span>${layer}</span></div><div class="row"><span class="lbl">pattern</span><span>syntax is easiest to decode near the middle in this schematic</span></div>`);
+  const next = candidates.find(([a, b]) => !shown.some(([x, y]) => goldKey(x, y) === goldKey(a, b)));
+  readout("structural-probe-readout", `<div class="row"><span class="lbl">layer</span><span>${layer}</span></div><div class="row"><span class="lbl">MST edges shown</span><span>${shown.length} / ${goldEdges.length}</span></div><div class="row"><span class="lbl">UUAS</span><span>${recovered}/${goldEdges.length}</span></div><div class="row"><span class="lbl">next closest pair</span><span>${next ? `${words[next[0]]}–${words[next[1]]}` : "tree complete"}</span></div>`);
 }
 
 function drawSemanticComposition() {
@@ -492,29 +538,112 @@ function drawSemanticComposition() {
   if (!c) return;
   const ctx = ctx2d(c);
   const form = select("composition-form")?.value ?? "add";
+  const phraseCase = select("composition-case")?.value ?? "intersective";
+  const interaction = value("composition-interaction", 0.65);
   setText("composition-form-v", select("composition-form")?.selectedOptions[0]?.textContent ?? form);
+  setText("composition-case-v", select("composition-case")?.selectedOptions[0]?.textContent ?? phraseCase);
+  setText("composition-interaction-v", interaction.toFixed(2));
   clear(ctx, c);
-  label(ctx, "head + dependent -> parent meaning", 30, 28, colors.text, 14);
-  const origin = { x: 210, y: 275 };
-  arrow(ctx, origin, { x: 310, y: 206 }, colors.blue, 4);
-  arrow(ctx, origin, { x: 282, y: 328 }, colors.red, 4);
-  const parent = form === "bilinear" ? { x: 373, y: 198 } : form === "nonlinear" ? { x: 342, y: 166 } : { x: 382, y: 258 };
-  arrow(ctx, origin, parent, colors.green, 5);
-  dot(ctx, parent, 7, colors.green);
-  label(ctx, "head", 315, 202, colors.blue);
-  label(ctx, "dependent", 286, 346, colors.red);
-  label(ctx, "predicted parent", parent.x + 10, parent.y, colors.green);
-  box(ctx, 488, 108, 176, 64, "#fff", colors.rule);
-  label(ctx, form === "add" ? "additive" : form === "bilinear" ? "bilinear" : "nonlinear", 576, 136, colors.text, 16, "center");
-  label(ctx, "composition hypothesis", 576, 156, colors.dim, 11, "center");
-  readout("semantic-composition-readout", `<div class="row"><span class="lbl">form</span><span>${form}</span></div><div class="row"><span class="lbl">scope</span><span>these are alternative probe forms, not model results</span></div>`);
+  type Vec = { x: number; y: number };
+  const cases: Record<string, { title: string; head: string; dependent: string; headVec: Vec; depVec: Vec; interaction: Vec; targetExtra: Vec; note: string }> = {
+    intersective: {
+      title: "red car",
+      head: "car",
+      dependent: "red",
+      headVec: { x: 82, y: 4 },
+      depVec: { x: -6, y: 62 },
+      interaction: { x: 8, y: 4 },
+      targetExtra: { x: 2, y: 3 },
+      note: "close to additive",
+    },
+    subsective: {
+      title: "skillful surgeon",
+      head: "surgeon",
+      dependent: "skillful",
+      headVec: { x: 76, y: 8 },
+      depVec: { x: -20, y: 58 },
+      interaction: { x: 42, y: 22 },
+      targetExtra: { x: 34, y: 18 },
+      note: "head-dependent modifier",
+    },
+    privative: {
+      title: "fake gun",
+      head: "gun",
+      dependent: "fake",
+      headVec: { x: 88, y: 2 },
+      depVec: { x: -16, y: 50 },
+      interaction: { x: -118, y: 26 },
+      targetExtra: { x: -96, y: 26 },
+      note: "leaves head category",
+    },
+  };
+  const selected = cases[phraseCase] ?? cases.intersective;
+  const addVec = { x: selected.headVec.x + selected.depVec.x, y: selected.headVec.y + selected.depVec.y };
+  const bilinearVec = {
+    x: addVec.x + interaction * selected.interaction.x,
+    y: addVec.y + interaction * selected.interaction.y,
+  };
+  const nonlinearVec = {
+    x: selected.headVec.x + selected.depVec.x + selected.targetExtra.x,
+    y: selected.headVec.y + selected.depVec.y + selected.targetExtra.y,
+  };
+  const targetVec = {
+    x: selected.headVec.x + selected.depVec.x + selected.targetExtra.x,
+    y: selected.headVec.y + selected.depVec.y + selected.targetExtra.y,
+  };
+  const predicted = form === "bilinear" ? bilinearVec : form === "nonlinear" ? nonlinearVec : addVec;
+  const origin = { x: 238, y: 282 };
+  const scale = 1.32;
+  const toScreen = (v: Vec): Point => ({ x: origin.x + v.x * scale, y: origin.y - v.y * scale });
+  label(ctx, "semantic composition sandbox", 30, 28, colors.text, 14);
+  label(ctx, selected.title, 30, 48, colors.dim, 12);
+  for (let gx = -120; gx <= 150; gx += 30) {
+    line(ctx, toScreen({ x: gx, y: -70 }), toScreen({ x: gx, y: 120 }), colors.grid, 0.7);
+  }
+  for (let gy = -60; gy <= 120; gy += 30) {
+    line(ctx, toScreen({ x: -120, y: gy }), toScreen({ x: 150, y: gy }), colors.grid, 0.7);
+  }
+  line(ctx, toScreen({ x: -120, y: 0 }), toScreen({ x: 150, y: 0 }), colors.rule, 1.1);
+  line(ctx, toScreen({ x: 0, y: -70 }), toScreen({ x: 0, y: 120 }), colors.rule, 1.1);
+  arrow(ctx, origin, toScreen(selected.headVec), colors.blue, 4);
+  arrow(ctx, origin, toScreen(selected.depVec), colors.red, 4);
+  arrow(ctx, origin, toScreen(addVec), "rgba(90,101,119,0.58)", 2);
+  arrow(ctx, origin, toScreen(bilinearVec), colors.purple, form === "bilinear" ? 4 : 2);
+  arrow(ctx, origin, toScreen(predicted), colors.orange, 5);
+  dot(ctx, toScreen(targetVec), 7, colors.green);
+  dot(ctx, toScreen(predicted), 7, colors.orange);
+  label(ctx, selected.head, toScreen(selected.headVec).x + 8, toScreen(selected.headVec).y - 6, colors.blue);
+  label(ctx, selected.dependent, toScreen(selected.depVec).x + 8, toScreen(selected.depVec).y + 14, colors.red);
+  label(ctx, "add", toScreen(addVec).x + 8, toScreen(addVec).y, colors.dim);
+  label(ctx, "bilinear", toScreen(bilinearVec).x + 8, toScreen(bilinearVec).y - 8, colors.purple);
+  label(ctx, "target phrase", toScreen(targetVec).x + 10, toScreen(targetVec).y + 4, colors.green);
+  label(ctx, "selected prediction", toScreen(predicted).x + 10, toScreen(predicted).y + 18, colors.orange);
+  line(ctx, toScreen(predicted), toScreen(targetVec), colors.red, 2);
+
+  const panelX = 520;
+  box(ctx, panelX, 76, 188, 198, "#fff", colors.rule);
+  label(ctx, "probe hypothesis", panelX + 94, 102, colors.text, 15, "center");
+  const rows = [
+    ["add", "A h + B d", form === "add"],
+    ["bilinear", "A h + B d + h^T W d", form === "bilinear"],
+    ["nonlinear", "MLP(h,d,rel)", form === "nonlinear"],
+  ];
+  rows.forEach(([name, formula, active], i) => {
+    const y = 130 + i * 44;
+    box(ctx, panelX + 16, y - 20, 156, 30, active ? "rgba(212,105,10,0.1)" : colors.panel, active ? colors.orange : colors.rule);
+    label(ctx, `${name}: ${formula}`, panelX + 94, y, active ? colors.text : colors.dim, 11, "center");
+  });
+  label(ctx, selected.note, panelX + 18, 258, colors.dim, 11);
+  const err = Math.hypot(predicted.x - targetVec.x, predicted.y - targetVec.y);
+  readout("semantic-composition-readout", `<div class="row"><span class="lbl">phrase</span><span>${selected.title}</span></div><div class="row"><span class="lbl">selected form</span><span>${form}</span></div><div class="row"><span class="lbl">prediction error</span><span>${err.toFixed(1)} vector units</span></div><div class="row"><span class="lbl">interpretation</span><span>${selected.note}</span></div>`);
 }
 
 function drawHeadTypes() {
   const c = canvas("head-types-canvas");
   if (!c) return;
   const ctx = ctx2d(c);
-  const nullOn = input("head-null")?.checked ?? false;
+  const nullStrength = value("head-null", 0);
+  setText("head-null-v", `${Math.round(nullStrength * 100)}%`);
   clear(ctx, c);
   label(ctx, "head embeddings: clean-looking clusters need controls", 30, 28, colors.text, 14);
   const centers = [
@@ -524,57 +653,127 @@ function drawHeadTypes() {
   ];
   for (let i = 0; i < 90; i++) {
     const g = i % 3;
-    const layerShift = nullOn ? (Math.floor(i / 9) - 5) * 15 : 0;
+    const layerShift = nullStrength * (Math.floor(i / 9) - 5) * 15;
+    const wash = nullStrength * 0.55;
     const p = centers[g];
-    dot(ctx, { x: p.x + Math.sin(i * 1.7) * 28 + layerShift, y: p.y + Math.cos(i * 1.2) * 24 }, 4, p.color);
+    const x = p.x + Math.sin(i * 1.7) * (28 + nullStrength * 18) + layerShift;
+    const y = p.y + Math.cos(i * 1.2) * (24 + nullStrength * 18);
+    dot(ctx, { x, y }, 4, wash > 0.45 ? colors.dim : p.color);
   }
   centers.forEach((p) => label(ctx, p.name, p.x + 34, p.y, p.color, 11));
-  const silhouette = nullOn ? 0.24 : 0.71;
+  const silhouette = 0.71 - nullStrength * 0.47;
   ctx.fillStyle = silhouette > 0.5 ? colors.green : colors.orange;
   ctx.fillRect(540, 288 - silhouette * 180, 58, silhouette * 180);
   label(ctx, "silhouette", 569, 308, colors.dim, 11, "center");
   label(ctx, silhouette.toFixed(2), 569, 278 - silhouette * 180, colors.text, 14, "center");
-  readout("head-types-readout", `<div class="row"><span class="lbl">diagnostic</span><span>${nullOn ? "within-layer null on" : "raw clusters"}</span></div><div class="row"><span class="lbl">scope</span><span>cluster shape and causal role are separate questions</span></div>`);
+  readout("head-types-readout", `<div class="row"><span class="lbl">within-layer control</span><span>${Math.round(nullStrength * 100)}%</span></div><div class="row"><span class="lbl">diagnostic</span><span>${nullStrength < 0.35 ? "raw clusters dominate" : nullStrength < 0.75 ? "layer effects compete with labels" : "clusters largely dissolve"}</span></div><div class="row"><span class="lbl">scope</span><span>cluster shape and causal role are separate questions</span></div>`);
 }
 
 function drawHeadPatterns() {
   const c = canvas("head-patterns-canvas");
   if (!c) return;
   const ctx = ctx2d(c);
+  const kind = select("head-pattern-kind")?.value ?? "positional";
+  const dest = Math.max(1, Math.min(8, value("head-pattern-dest", 7)));
+  setText("head-pattern-kind-v", select("head-pattern-kind")?.selectedOptions[0]?.textContent ?? kind);
+  setText("head-pattern-dest-v", String(dest));
   clear(ctx, c);
-  const toks = ["the", "cat", "sat", "on", "the", "mat"];
+  const toks = ["When", "John", "and", "Mary", "John", "gave", "drink", "to", "?"];
   const n = toks.length;
-  // Stanford-style heads (preposition heads its phrase); root "sat" points to itself.
-  const depHead = [1, 2, 2, 2, 5, 3];
-  const panels: { name: string; w: (d: number, s: number) => number }[] = [
-    { name: "positional: previous token", w: (d, s) => (s === d - 1 ? 1 : 0) },
-    { name: "induction: 2nd ‘the’ → after 1st ‘the’", w: (d, s) => (d === 4 ? (s === 1 ? 1 : 0) : s === d - 1 ? 0.6 : 0) },
-    { name: "syntactic: dependent → head", w: (d, s) => (d !== 2 && depHead[d] === s ? 1 : s === d ? 0.2 : 0) },
-    { name: "name-mover: → a name token", w: (d, s) => (s === 1 ? 1 : 0) },
-  ];
-  panels.forEach((panel, idx) => {
-    const px = 24 + (idx % 2) * 380;
-    const py = 32 + Math.floor(idx / 2) * 196;
-    label(ctx, panel.name, px, py, colors.text, 12.5);
-    const gx = px + 40;
-    const gy = py + 16;
-    const cell = 22;
-    for (let d = 0; d < n; d++) {
-      let total = 0;
-      for (let s = 0; s <= d; s++) total += panel.w(d, s);
-      for (let s = 0; s < n; s++) {
-        const allowed = s <= d;
-        const wv = allowed && total > 0 ? panel.w(d, s) / total : 0;
-        ctx.fillStyle = allowed ? `rgba(31,74,140,${0.05 + wv * 0.83})` : "#f3f1ec";
-        ctx.fillRect(gx + s * cell, gy + d * cell, cell - 2, cell - 2);
-      }
-      label(ctx, toks[d], gx - 6, gy + d * cell + cell - 8, colors.dim, 9.5, "right");
-    }
+  const depHead = [5, 5, 3, 5, 5, 5, 5, 5, 7];
+  const specs: Record<string, { title: string; sign: number; target: string; note: string; w: (d: number, s: number) => number }> = {
+    positional: {
+      title: "positional head",
+      sign: 0.2,
+      target: "copies local context",
+      note: "same attention offset can be used by many circuits",
+      w: (d, s) => (s === d - 1 ? 1 : s === d ? 0.15 : 0),
+    },
+    induction: {
+      title: "induction head",
+      sign: 0.75,
+      target: "promotes token after match",
+      note: "pattern finds a previous occurrence, OV copies the following token",
+      w: (d, s) => (d >= 4 && s === 2 ? 1 : s === d - 1 ? 0.25 : 0),
+    },
+    syntactic: {
+      title: "syntactic head",
+      sign: 0.35,
+      target: "routes dependent to head",
+      note: "dependency-like attention is a pattern, not by itself a causal role",
+      w: (d, s) => (depHead[d] === s ? 1 : s === d ? 0.18 : 0),
+    },
+    "name-mover": {
+      title: "name mover",
+      sign: 0.9,
+      target: "promotes Mary",
+      note: "attending to a name matters because OV writes that name toward logits",
+      w: (_d, s) => (s === 3 ? 1 : s === 1 || s === 4 ? 0.18 : 0),
+    },
+    "copy-suppression": {
+      title: "copy-suppression head",
+      sign: -0.75,
+      target: "suppresses copied name",
+      note: "same name attention can write against the attended token",
+      w: (_d, s) => (s === 3 ? 1 : s === 1 || s === 4 ? 0.22 : 0),
+    },
+    retrieval: {
+      title: "retrieval head",
+      sign: 0.65,
+      target: "retrieves bound value",
+      note: "query token dereferences an earlier address-like state",
+      w: (d, s) => (d >= 7 && s === 3 ? 1 : s === d - 2 ? 0.25 : 0),
+    },
+  };
+  const spec = specs[kind] ?? specs.positional;
+  label(ctx, spec.title, 30, 28, colors.text, 14);
+  const gx = 74;
+  const gy = 58;
+  const cell = 26;
+  const weightsFor = (d: number) => {
+    const raw = toks.map((_, s) => s <= d ? Math.max(0, spec.w(d, s)) : 0);
+    const total = raw.reduce((a, b) => a + b, 0) || 1;
+    return raw.map((v) => v / total);
+  };
+  for (let d = 0; d < n; d++) {
+    const row = weightsFor(d);
     for (let s = 0; s < n; s++) {
-      label(ctx, toks[s], gx + s * cell + (cell - 2) / 2, gy + n * cell + 12, colors.dim, 9.5, "center");
+      const allowed = s <= d;
+      const wv = allowed ? row[s] : 0;
+      ctx.fillStyle = allowed ? `rgba(31,74,140,${0.05 + wv * 0.83})` : "#f3f1ec";
+      ctx.fillRect(gx + s * cell, gy + d * cell, cell - 2, cell - 2);
     }
-    label(ctx, "source position →", gx, gy + n * cell + 28, colors.dim, 9.5);
+    label(ctx, toks[d], gx - 7, gy + d * cell + cell - 8, d === dest ? colors.red : colors.dim, 9.5, "right");
+  }
+  for (let s = 0; s < n; s++) {
+    label(ctx, toks[s], gx + s * cell + (cell - 2) / 2, gy + n * cell + 12, colors.dim, 9.5, "center");
+  }
+  label(ctx, "source position →", gx, gy + n * cell + 28, colors.dim, 9.5);
+
+  const yTok = 346;
+  const xs = toks.map((_, i) => 52 + i * 76);
+  toks.forEach((tok, i) => {
+    box(ctx, xs[i] - 28, yTok - 17, 56, 34, i === dest ? "#fee2d5" : "#fff", i === dest ? colors.red : colors.rule);
+    label(ctx, tok, xs[i], yTok + 4, i === dest ? colors.red : colors.text, 10.5, "center");
   });
+  const destPoint = { x: xs[dest], y: yTok - 24 };
+  const row = weightsFor(dest);
+  row.forEach((wv, s) => {
+    if (wv < 0.16 || s === dest) return;
+    arrow(ctx, destPoint, { x: xs[s], y: yTok - 24 }, colors.blue, 1.5 + wv * 3);
+  });
+
+  const barX = 620;
+  const barY = 104;
+  label(ctx, "OV write", barX, barY - 22, colors.text, 12, "center");
+  line(ctx, { x: barX - 72, y: barY }, { x: barX + 72, y: barY }, colors.rule, 7);
+  const signColor = spec.sign >= 0 ? colors.green : colors.red;
+  line(ctx, { x: barX, y: barY }, { x: barX + spec.sign * 72, y: barY }, signColor, 9);
+  label(ctx, spec.sign >= 0 ? "+" : "−", barX + spec.sign * 72, barY - 12, signColor, 16, "center");
+  box(ctx, 522, 144, 196, 74, "#fff", colors.rule);
+  label(ctx, spec.target, 620, 174, signColor, 13, "center");
+  label(ctx, spec.note, 620, 198, colors.dim, 10.5, "center");
+  readout("head-patterns-readout", `<div class="row"><span class="lbl">label</span><span>${spec.title}</span></div><div class="row"><span class="lbl">destination</span><span>${toks[dest]}</span></div><div class="row"><span class="lbl">OV sign</span><span>${spec.sign >= 0 ? "promotes" : "suppresses"}: ${spec.target}</span></div>`);
 }
 
 function drawInduction() {
@@ -811,15 +1010,15 @@ function drawLookback() {
 
 function init() {
   attach(["residual-layer", "residual-sparsity"], drawResidualStream);
-  attach(["qk-token"], drawQkOv);
+  attach(["qk-token", "qk-scale"], drawQkOv);
   attach(["probe-capacity", "probe-control"], drawProbeValidity);
   attach(["mdl-complexity"], drawMdlEvidence);
   attach(["causal-mode"], drawCausalInterventions);
   attach(["lens-layer", "lens-tuned"], drawLens);
-  attach(["structural-layer"], drawStructuralProbe);
-  attach(["composition-form"], drawSemanticComposition);
+  attach(["structural-layer", "structural-step"], drawStructuralProbe);
+  attach(["composition-form", "composition-case", "composition-interaction"], drawSemanticComposition);
   attach(["head-null"], drawHeadTypes);
-  drawHeadPatterns();
+  attach(["head-pattern-kind", "head-pattern-dest"], drawHeadPatterns);
   attach(["induction-step"], drawInduction);
   attach(["induction-bump-step"], drawInductionBump);
   attach(["knowledge-divergence"], drawRepresentedExpressed);

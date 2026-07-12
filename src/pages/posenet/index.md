@@ -5,6 +5,10 @@ layout: ../../layouts/BaseLayout.astro
 
 [PoseNet](https://github.com/tensorflow/tfjs-models/tree/master/posenet) estimates poses (joint positions of a human figure) from a webcam (or other image data). It runs in a web page, and can be used with p5.js, or other JavaScript programs.
 
+> PoseNet is deprecated. For current class work, use the
+> [BlazePose lab](/courses/movement-practices-class/movement-practices-lab-1-pose-detection-with-blazepose/)
+> instead.
+
 # References
 
 [ml5.js PoseNet API](https://learn.ml5js.org/#/reference/posenet) – if you are using PoseNet within p5.js
@@ -16,8 +20,7 @@ layout: ../../layouts/BaseLayout.astro
 Use these to get started:
 
 - OpenProcessing.org: Start with [this template](https://openprocessing.org/sketch/1073957). Click the code icon (`</>`) to start editing. Remember to Save your work! This will ask you to create a (free) account on OpenProcessing.org if you do not already have one.
-- Glitch: Remix [this template](https://glitch.com/edit/#!/cclab-p5js-template?path=README.md%3A1%3A0).
-- Local development (Atom or Visual Studio Code): [p5pose](https://github.com/osteele/p5pose) is a p5.js + [ml5.js PoseNet](https://learn.ml5js.org/#/reference/posenet) starter. I prefer it to the official starter code, because it uses the [for…of statement](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of) to avoid those pesky nested iteration indices.
+- Local development (Visual Studio Code): [p5pose](https://github.com/osteele/p5pose) is a p5.js + [ml5.js PoseNet](https://learn.ml5js.org/#/reference/posenet) starter. I prefer it to the official starter code, because it uses the [for…of statement](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of) to avoid those pesky nested iteration indices.
 
 # Selecting the Camera
 

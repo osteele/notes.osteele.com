@@ -313,11 +313,11 @@ import PresetRow from "../../components/explainer/PresetRow.astro";
 
     <h2 id="entropy">1. Entropy: average surprise</h2>
     <p>
-      A rare event is more surprising than a common one. Information theory writes the surprise of an event with probability $p$ as $-&bsol;log_2 p$ bits. Entropy is the probability-weighted average surprise:
+      A rare event is more surprising than a common one. Information theory writes the surprise of an event with probability $p$ as $-\log_2 p$ bits. Entropy is the probability-weighted average surprise:
     </p>
 
     <div class="formula">
-      $$H(X) = - &bsol;sum_x p(x)&bsol;log_2 p(x)$$
+      $$H(X) = - \sum_x p(x)\log_2 p(x)$$
     </div>
 
     <p>
@@ -361,7 +361,7 @@ import PresetRow from "../../components/explainer/PresetRow.astro";
 </InteractivePanel>
 
     <p>
-      Entropy is the <em>average</em> surprise over many draws. Sample from the current distribution and watch the running mean of $-&bsol;log_2 p(x)$ approach $H(X)$. Adjust the slider above to change $p$; both lines on the trace will adjust live.
+      Entropy is the <em>average</em> surprise over many draws. Sample from the current distribution and watch the running mean of $-\log_2 p(x)$ approach $H(X)$. Adjust the slider above to change $p$; both lines on the trace will adjust live.
     </p>
 
     <InteractivePanel title="Sampling: surprise converges to entropy" labelledBy="samples-title">
@@ -404,11 +404,11 @@ import PresetRow from "../../components/explainer/PresetRow.astro";
 
     <h2 id="joint">2. Joint and conditional entropy</h2>
     <p>
-      With two variables, $H(X,Y)$ measures uncertainty about the pair. Conditional entropy $H(Y&bsol;mid X)$ measures what remains uncertain about $Y$ once $X$ is known.
+      With two variables, $H(X,Y)$ measures uncertainty about the pair. Conditional entropy $H(Y\mid X)$ measures what remains uncertain about $Y$ once $X$ is known.
     </p>
 
     <div class="formula">
-      $$H(X,Y) = H(X) + H(Y&bsol;mid X) = H(Y) + H(X&bsol;mid Y)$$
+      $$H(X,Y) = H(X) + H(Y\mid X) = H(Y) + H(X\mid Y)$$
     </div>
 
     <p>
@@ -495,7 +495,7 @@ import PresetRow from "../../components/explainer/PresetRow.astro";
     </p>
 
     <div class="formula">
-      $$I(X;Y) = H(X) + H(Y) - H(X,Y) = H(Y) - H(Y&bsol;mid X)$$
+      $$I(X;Y) = H(X) + H(Y) - H(X,Y) = H(Y) - H(Y\mid X)$$
     </div>
 
     <p>

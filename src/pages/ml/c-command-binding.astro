@@ -1,0 +1,311 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="C-Command & Binding Domains" breadcrumb="C-Command" section="phenomena-and-circuits">
+<Hero title="C-Command & Binding Domains" subtitle="Binding theory is geometric: an antecedent can be visible to a pronoun or reflexive because of where it sits in the constituency tree." />
+
+<p>
+Mechanistic pages often use "binding" for a pointer from a use site back to a
+source. Linguistic binding is narrower. It asks which noun phrases are licensed
+as antecedents for reflexives, pronouns, and names. The basic geometry is
+c-command: a node c-commands the material under its sister.
+</p>
+
+<Figure title="Figure 1 · Click a node to flood its c-command domain" canvasId="c-command-tree-canvas" width="760" height="430" readoutId="c-command-tree-readout">
+<Fragment slot="controls">
+  <ControlSelect id="c-command-node" label="selected node" valueId="c-command-node-v" options={[
+    { value: "john", label: "John", selected: true },
+    { value: "mary", label: "Mary" },
+    { value: "himself", label: "himself" },
+    { value: "vp", label: "VP" },
+  ]} />
+</Fragment>
+</Figure>
+
+<h2>1. C-command is a tree relation</h2>
+
+<p>
+A node c-commands its sister and everything below that sister. In "John said
+Mary praised himself", John c-commands the embedded clause, but Mary c-commands
+the reflexive inside her local clause. Principle A requires a reflexive to have
+a local antecedent, so Mary is licensed and John is not.
+</p>
+
+<Figure title="Figure 2 · Constituency relation versus dependency-depth proxy" canvasId="c-command-proxy-canvas" width="760" height="360" readoutId="c-command-proxy-readout">
+<Fragment slot="controls">
+  <ControlSelect id="c-command-case" label="example" valueId="c-command-case-v" options={[
+    { value: "agree", label: "proxy agrees", selected: true },
+    { value: "break", label: "proxy breaks" },
+  ]} />
+</Fragment>
+</Figure>
+
+<h2>2. Binding principles are local tests</h2>
+
+<p>
+Principle A says a reflexive needs a local binder. Principle B says an ordinary
+pronoun must be free in its local domain. Principle C says a name cannot be
+bound by a co-referring expression that c-commands it. The principles are not
+just labels; they change when an antecedent is dragged in or out of the local
+domain.
+</p>
+
+<Figure title="Figure 3 · Move the antecedent in or out of the local domain" canvasId="c-command-principles-canvas" width="760" height="360" readoutId="c-command-principles-readout">
+<Fragment slot="controls">
+  <ControlSelect id="binding-principle" label="principle" valueId="binding-principle-v" options={[
+    { value: "A", label: "A: reflexive", selected: true },
+    { value: "B", label: "B: pronoun" },
+    { value: "C", label: "C: name" },
+  ]} />
+  <ControlSelect id="binding-position" label="antecedent" valueId="binding-position-v" options={[
+    { value: "local", label: "local", selected: true },
+    { value: "nonlocal", label: "nonlocal" },
+  ]} />
+</Fragment>
+</Figure>
+
+<h2>3. Islands block filler-gap dependencies</h2>
+
+<p>
+Filler-gap dependencies use similar geometry but a different constraint family.
+The gap can be linked to a displaced filler across ordinary clause boundaries,
+but not out of islands such as complex noun phrases or adjuncts. An island suite
+therefore tests whether a model is tracking structural boundaries rather than
+only linear distance.
+</p>
+
+<Figure title="Figure 4 · Dragging a gap across an island boundary" canvasId="c-command-island-canvas" width="760" height="300" readoutId="c-command-island-readout">
+<Fragment slot="controls">
+  <ControlSelect id="island-mode" label="boundary" valueId="island-mode-v" options={[
+    { value: "open", label: "ordinary clause", selected: true },
+    { value: "island", label: "island" },
+  ]} />
+</Fragment>
+</Figure>
+
+<div class="source-list">
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/binding/">Binding</a> for the mechanistic source/use/distractor framing.</li>
+    <li><a href="/ml/structural-probes/">Dependency Trees & Structural Probes</a> for dependency-depth and tree-distance readouts.</li>
+    <li><a href="/ml/subspace-geometry/">Subspace Geometry</a> for cross-model probe alignment.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/binding/", tag: "Mechanism", title: "Binding", role: "Pointer-like retrieval in model internals." },
+  { href: "/ml/structural-probes/", tag: "Syntax", title: "Structural Probes", role: "Tree-distance and depth as readout targets." },
+]} />
+
+<script is:inline>
+  (() => {
+    const $ = (id) => document.getElementById(id);
+    function env(id, logicalW, logicalH) {
+      const canvas = $(id);
+      if (!canvas) return null;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const cssW = rect.width || logicalW;
+      const cssH = rect.height || logicalH;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform((cssW / logicalW) * dpr, 0, 0, (cssH / logicalH) * dpr, 0, 0);
+      return { ctx };
+    }
+    const nodes = {
+      s: { x: 380, y: 52, label: "S" },
+      john: { x: 178, y: 134, label: "John" },
+      vp: { x: 474, y: 134, label: "VP" },
+      v: { x: 380, y: 220, label: "said" },
+      cp: { x: 562, y: 220, label: "CP" },
+      mary: { x: 480, y: 306, label: "Mary" },
+      himself: { x: 642, y: 306, label: "himself" },
+    };
+    const domains = {
+      john: ["vp", "v", "cp", "mary", "himself"],
+      mary: ["himself"],
+      himself: [],
+      vp: ["john"],
+    };
+    function edge(ctx, a, b) {
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(nodes[a].x, nodes[a].y + 18);
+      ctx.lineTo(nodes[b].x, nodes[b].y - 18);
+      ctx.stroke();
+    }
+    function drawNode(ctx, key, selected, highlighted) {
+      const n = nodes[key];
+      ctx.fillStyle = selected ? "#ffe4e6" : highlighted ? "#dbeafe" : "#ffffff";
+      ctx.strokeStyle = selected ? "#be123c" : highlighted ? "#0ea5e9" : "#cbd5e1";
+      ctx.lineWidth = selected ? 3 : 1.4;
+      ctx.beginPath();
+      ctx.roundRect(n.x - 48, n.y - 20, 96, 40, 10);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 13px system-ui";
+      ctx.fillText(n.label, n.x - ctx.measureText(n.label).width / 2, n.y + 5);
+    }
+    function drawTree() {
+      const out = env("c-command-tree-canvas", 760, 430);
+      if (!out) return;
+      const ctx = out.ctx;
+      const selected = $("c-command-node")?.value || "john";
+      ctx.clearRect(0, 0, 760, 430);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("John said Mary praised himself", 44, 42);
+      [["s", "john"], ["s", "vp"], ["vp", "v"], ["vp", "cp"], ["cp", "mary"], ["cp", "himself"]].forEach(([a, b]) => edge(ctx, a, b));
+      const highlighted = new Set(domains[selected] || []);
+      Object.keys(nodes).forEach((key) => drawNode(ctx, key, key === selected, highlighted.has(key)));
+      const list = [...highlighted].map((key) => nodes[key].label).join(", ") || "nothing";
+      $("c-command-tree-readout") && ($("c-command-tree-readout").textContent = `${nodes[selected].label} c-commands ${list}.`);
+      $("c-command-node-v") && ($("c-command-node-v").textContent = $("c-command-node").selectedOptions[0].textContent);
+    }
+    function selectTreeNode(event) {
+      const canvas = $("c-command-tree-canvas");
+      const select = $("c-command-node");
+      if (!canvas || !select) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 760;
+      const y = ((event.clientY - rect.top) / rect.height) * 430;
+      for (const key of Object.keys(nodes)) {
+        const n = nodes[key];
+        if (Math.abs(x - n.x) <= 52 && Math.abs(y - n.y) <= 24 && [...select.options].some((o) => o.value === key)) {
+          select.value = key;
+          drawTree();
+          break;
+        }
+      }
+    }
+    function drawProxy() {
+      const out = env("c-command-proxy-canvas", 760, 360);
+      if (!out) return;
+      const ctx = out.ctx;
+      const mode = $("c-command-case")?.value || "agree";
+      ctx.clearRect(0, 0, 760, 360);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText(mode === "agree" ? "Depth proxy agrees with c-command" : "Depth proxy misses the constituency boundary", 44, 42);
+      const rows = mode === "agree"
+        ? [["Mary", "depth 3", "c-commands reflexive", true], ["John", "depth 2", "outside local domain", false]]
+        : [["Picture of John", "depth 2", "does not bind", false], ["he", "depth 3", "linear/depth cue says yes", false]];
+      rows.forEach((r, i) => {
+        const y = 102 + i * 92;
+        ctx.fillStyle = r[3] ? "#dcfce7" : "#fee2e2";
+        ctx.strokeStyle = r[3] ? "#16a34a" : "#be123c";
+        ctx.beginPath();
+        ctx.roundRect(92, y, 576, 58, 12);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#111827";
+        ctx.font = "700 14px system-ui";
+        ctx.fillText(r[0], 122, y + 35);
+        ctx.font = "13px system-ui";
+        ctx.fillText(r[1], 320, y + 35);
+        ctx.fillText(r[2], 444, y + 35);
+      });
+      $("c-command-proxy-readout") && ($("c-command-proxy-readout").textContent = mode === "agree" ? "A dependency-depth proxy can correlate with c-command in simple trees." : "A proxy can fail when a shallow dependency path is not the relevant constituency relation.");
+      $("c-command-case-v") && ($("c-command-case-v").textContent = $("c-command-case").selectedOptions[0].textContent);
+    }
+    function drawPrinciples() {
+      const out = env("c-command-principles-canvas", 760, 360);
+      if (!out) return;
+      const ctx = out.ctx;
+      const principle = $("binding-principle")?.value || "A";
+      const local = ($("binding-position")?.value || "local") === "local";
+      const ok = principle === "A" ? local : principle === "B" ? !local : !local;
+      const target = principle === "A" ? "himself" : principle === "B" ? "him" : "John";
+      ctx.clearRect(0, 0, 760, 360);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText(`Principle ${principle}: antecedent ${local ? "inside" : "outside"} the local domain`, 44, 42);
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.beginPath();
+      ctx.roundRect(170, 104, 420, 150, 14);
+      ctx.fill();
+      ctx.stroke();
+      ctx.strokeStyle = "#94a3b8";
+      ctx.setLineDash([7, 6]);
+      ctx.strokeRect(280, 126, 210, 104);
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#475569";
+      ctx.font = "12px system-ui";
+      ctx.fillText("local binding domain", 312, 124);
+      const antX = local ? 342 : 216;
+      ctx.fillStyle = "#dbeafe";
+      ctx.beginPath();
+      ctx.roundRect(antX - 46, 168, 92, 38, 9);
+      ctx.fill();
+      ctx.strokeStyle = "#0ea5e9";
+      ctx.stroke();
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 13px system-ui";
+      ctx.fillText("antecedent", antX - 34, 192);
+      ctx.fillStyle = "#ffe4e6";
+      ctx.beginPath();
+      ctx.roundRect(432, 168, 92, 38, 9);
+      ctx.fill();
+      ctx.strokeStyle = "#be123c";
+      ctx.stroke();
+      ctx.fillStyle = "#111827";
+      ctx.fillText(target, 456, 192);
+      ctx.fillStyle = ok ? "#16a34a" : "#be123c";
+      ctx.font = "700 22px system-ui";
+      ctx.fillText(ok ? "licensed" : "blocked", 316, 306);
+      $("c-command-principles-readout") && ($("c-command-principles-readout").textContent = `Principle ${principle} with a ${local ? "local" : "nonlocal"} antecedent is ${ok ? "licensed" : "blocked"}.`);
+      $("binding-principle-v") && ($("binding-principle-v").textContent = $("binding-principle").selectedOptions[0].textContent);
+      $("binding-position-v") && ($("binding-position-v").textContent = $("binding-position").selectedOptions[0].textContent);
+    }
+    function drawIsland() {
+      const out = env("c-command-island-canvas", 760, 300);
+      if (!out) return;
+      const ctx = out.ctx;
+      const island = ($("island-mode")?.value || "open") === "island";
+      ctx.clearRect(0, 0, 760, 300);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("Which book did the editor say the author praised __?", 44, 42);
+      ctx.fillStyle = island ? "#fee2e2" : "#dcfce7";
+      ctx.strokeStyle = island ? "#be123c" : "#16a34a";
+      ctx.beginPath();
+      ctx.roundRect(260, 104, 260, 82, 14);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 14px system-ui";
+      ctx.fillText(island ? "complex-NP island" : "ordinary clause", 312, 150);
+      ctx.strokeStyle = island ? "#be123c" : "#16a34a";
+      ctx.lineWidth = 4;
+      ctx.setLineDash(island ? [8, 6] : []);
+      ctx.beginPath();
+      ctx.moveTo(118, 220);
+      ctx.bezierCurveTo(250, 260, 460, 260, 642, 220);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      $("c-command-island-readout") && ($("c-command-island-readout").textContent = island ? "The dependency arc crosses an island boundary, so the filler-gap parse is blocked." : "No island boundary intervenes, so the filler can license the gap.");
+      $("island-mode-v") && ($("island-mode-v").textContent = $("island-mode").selectedOptions[0].textContent);
+    }
+    $("c-command-node")?.addEventListener("input", drawTree);
+    $("c-command-tree-canvas")?.addEventListener("click", selectTreeNode);
+    $("c-command-case")?.addEventListener("input", drawProxy);
+    ["binding-principle", "binding-position"].forEach((id) => $(id)?.addEventListener("input", drawPrinciples));
+    $("island-mode")?.addEventListener("input", drawIsland);
+    window.addEventListener("resize", () => { drawTree(); drawProxy(); drawPrinciples(); drawIsland(); });
+    drawTree();
+    drawProxy();
+    drawPrinciples();
+    drawIsland();
+  })();
+</script>
+</ExplainerLayout>

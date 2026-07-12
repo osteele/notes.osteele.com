@@ -4,6 +4,7 @@ import Hero from "../../components/explainer/Hero.astro";
 import Aside from "../../components/explainer/Aside.astro";
 import Figure from "../../components/explainer/Figure.astro";
 import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
 import PresetRow from "../../components/explainer/PresetRow.astro";
 import NextCards from "../../components/explainer/NextCards.astro";
 import OrientationNote from "../../components/explainer/OrientationNote.astro";
@@ -143,6 +144,35 @@ $$
   </p>
 </NotationAside>
 
+<Figure title="Figure 1 · The same updater across four conjugate families" canvasId="fig-conjugate-updater" width="780" height="380" readoutId="fig-updater-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#bfb9aa"></span>prior</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>posterior</span>
+    <span><span class="swatch" style="background:#1f4a8c"></span>data summary</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlSelect id="fig-updater-family" label="family" valueId="fig-updater-family-v" options={[
+    { value: "bernoulli", label: "Bernoulli / Beta", selected: true },
+    { value: "poisson", label: "Poisson / Gamma" },
+    { value: "normal", label: "Normal mean / Gaussian" },
+    { value: "normal-gamma", label: "Normal mean+variance / Normal-Gamma" },
+  ]} />
+  <ControlRange id="fig-updater-strength" label="prior pseudo-count strength ν₀" valueId="fig-updater-strength-v" min="0" max="40" step="1" value="8" />
+  <ControlRange id="fig-updater-n" label="sample size n" valueId="fig-updater-n-v" min="0" max="120" step="1" value="24" />
+  <ControlRange id="fig-updater-data" label="data summary" valueId="fig-updater-data-v" min="0" max="1" step="0.01" value="0.68" />
+</Fragment>
+</Figure>
+
+<p>
+Use the family picker to see the same arithmetic in different clothes:
+$\tau$ absorbs the data's sufficient statistic and $\nu$ absorbs the sample
+size. The Normal-Gamma option draws the posterior predictive, so the same
+$n$ slider also shows the Student-$t$ tail shrinking toward a Gaussian as
+variance uncertainty disappears.
+</p>
+
 <h2 id="beta-bernoulli">3. Worked example: Beta–Bernoulli</h2>
 
 <p>
@@ -197,7 +227,7 @@ Jeffreys prior Beta$(1/2,1/2)$, and the Haldane prior Beta$(0,0)$ are all conjug
 near the boundary $p\in\&#123;0,1\&#125;$.
 </p>
 
-<Figure title="Figure 1 · Beta–Bernoulli updating as adding pseudo-counts" canvasId="fig-beta-bernoulli" width="780" height="380" readoutId="fig-beta-readout">
+<Figure title="Figure 2 · Beta–Bernoulli updating as adding pseudo-counts" canvasId="fig-beta-bernoulli" width="780" height="380" readoutId="fig-beta-readout">
 <Fragment slot="legend">
   <div class="legend">
     <span><span class="swatch" style="background:#bfb9aa"></span>prior Beta$(\alpha,\beta)$</span>
@@ -336,60 +366,22 @@ posterior shape: small $n$ gives heavy tails reflecting variance uncertainty,
 large $n$ recovers the Gaussian predictive of the known-variance case.
 </p>
 
-<h3 id="gaussian-priors">5a. Gaussian priors at a glance</h3>
-
 <p>
-The three Gaussian cases above, lined up. Each row corresponds to which
-parameter is unknown; each column gives the canonical non-informative choice
-and the conjugate choice.
-</p>
-
-<div class="gaussian-priors-wrap">
-  <table class="gaussian-priors">
-    <thead>
-      <tr>
-        <th>Unknown parameter</th>
-        <th>Non-informative</th>
-        <th>Conjugate</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>$\mu$ &nbsp;<span class="muted">(variance $\sigma^2$ known)</span></td>
-        <td><strong>Uniform</strong> on $\mathbb R$ &nbsp;<span class="muted">(improper; limit $\tau^2 \to \infty$ of the conjugate prior)</span></td>
-        <td><strong>Gaussian</strong> $\mathcal N(\mu_0, \sigma_0^2)$ &nbsp;<span class="muted">(§4 above)</span></td>
-      </tr>
-      <tr>
-        <td>$\sigma^2$ &nbsp;<span class="muted">(mean $\mu$ known)</span></td>
-        <td><strong>Jeffreys</strong> $p(\sigma^2) \propto 1/\sigma^2$ &nbsp;<span class="muted">(improper)</span></td>
-        <td><strong>Inverse-$\chi^2$</strong> / <strong>Inverse-Gamma</strong> &nbsp;<span class="muted">(equivalent: $\mathrm&#123;Inv&#125;\text&#123;-&#125;\chi^2_\nu = \mathrm&#123;Inv&#125;\text&#123;-&#125;\mathrm&#123;Gamma&#125;(\nu/2, 1/2)$)</span></td>
-      </tr>
-      <tr>
-        <td>$(\mu, \sigma^2)$ &nbsp;<span class="muted">(both unknown)</span></td>
-        <td>Joint <strong>Jeffreys</strong> $p(\mu, \sigma^2) \propto 1/\sigma^2$ &nbsp;<span class="muted">(see <a href="/math/fisher-information/">Fisher information</a>)</span></td>
-        <td><strong>Normal–Gamma</strong> on $(\mu, \tau)$ where $\tau = 1/\sigma^2$ &nbsp;<span class="muted">(§5 above; aka Normal–scaled-Inverse-$\chi^2$ in the $\sigma^2$ parametrization)</span></td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<p>
-Naming: the Inverse-$\chi^2$ and Inverse-Gamma names refer to the same
-distribution under different parametrizations. Bayesian texts in the
-Gelman/BDA tradition use Inverse-$\chi^2$; the standard-pairs table below
-uses the more general Inverse-Gamma form. The scaled-Inverse-$\chi^2$ card
-on <a href="/math/named-distributions/#inverse-chi-square">named distributions</a>
-has the density formulas. The Normal–Gamma case has a sibling name
-"Normal–scaled-Inverse-$\chi^2$" when the variance is parametrized directly
-rather than through precision; same prior, different label.
+For Gaussian models, the conjugate family changes with what is unknown:
+Gaussian for a known-variance mean, Inverse-Gamma or scaled-Inverse-$\chi^2$
+for a known-mean variance, and Normal–Gamma when both mean and variance are
+unknown. The <a href="/math/named-distributions/#inverse-chi-square">named-distributions card</a>
+has the variance-prior density; <a href="/math/fisher-information/">Fisher
+information</a> explains the corresponding Jeffreys priors.
 </p>
 
 <h2 id="table">6. Standard conjugate pairs</h2>
 
 <p>
-For most named likelihoods, the conjugate prior is also named. The hyperparameter
-update is always "add sufficient statistic to $\tau$ and $n$ to $\nu$" — the table
-below just unpacks the convention each row.
+For the common named likelihoods, the conjugate prior is also named. The
+hyperparameter update is always "add sufficient statistic to $\tau$ and $n$ to
+$\nu$" — the table below keeps the pairs used by the worked examples and the
+interactive cards.
 </p>
 
 <p>
@@ -430,20 +422,6 @@ either way and therefore the same Beta or Dirichlet conjugate.
         <td>$\beta$ pseudo-intervals, $\alpha$ pseudo-events</td>
       </tr>
       <tr>
-        <td>Exponential$(\lambda)$</td>
-        <td>$\sum x_i,\;n$</td>
-        <td>Gamma$(\alpha,\beta)$</td>
-        <td>$\alpha\!+\!n,\;\beta\!+\!\sum x_i$</td>
-        <td>$\alpha$ pseudo-arrivals over time $\beta$</td>
-      </tr>
-      <tr>
-        <td>Geometric$(p)$</td>
-        <td>$\sum x_i,\;n$</td>
-        <td>Beta$(\alpha,\beta)$</td>
-        <td>$\alpha\!+\!n,\;\beta\!+\!\sum x_i$</td>
-        <td>$\alpha$ pseudo-trials with $\beta$ pseudo-failures before each success</td>
-      </tr>
-      <tr>
         <td>Normal$(\mu,\sigma^2)$, $\sigma$ known</td>
         <td>$\bar x,\;n$</td>
         <td>Normal$(\mu_0,\sigma_0^2)$</td>
@@ -463,27 +441,6 @@ either way and therefore the same Beta or Dirichlet conjugate.
         <td>Normal–Gamma$(\mu_0,\kappa_0,\alpha_0,\beta_0)$</td>
         <td>see §5</td>
         <td>$\kappa_0$ for mean, $2\alpha_0$ for variance</td>
-      </tr>
-      <tr>
-        <td>Multivariate normal, $\Sigma$ known</td>
-        <td>$\bar x,\;n$</td>
-        <td>Normal$(\boldsymbol\mu_0,\Lambda_0^&#123;-1&#125;)$</td>
-        <td>$\Lambda_n\!=\!\Lambda_0\!+\!n\Sigma^&#123;-1&#125;$</td>
-        <td>precision matrices add</td>
-      </tr>
-      <tr>
-        <td>Multivariate normal, both unknown</td>
-        <td>$\bar&#123;\mathbf x&#125;,\;\mathbf S,\;n$</td>
-        <td>Normal-inverse-Wishart</td>
-        <td>(matrix analogue of Normal–Gamma)</td>
-        <td>$\kappa_0$ for mean, $\nu_0$ for covariance</td>
-      </tr>
-      <tr>
-        <td>Gamma$(\alpha,\beta)$, $\alpha$ known</td>
-        <td>$\sum x_i,\;n$</td>
-        <td>Gamma$(\alpha_0,\beta_0)$ on rate</td>
-        <td>$\alpha_0\!+\!n\alpha,\;\beta_0\!+\!\sum x_i$</td>
-        <td>$n\alpha$-equivalent of arrivals</td>
       </tr>
     </tbody>
   </table>
@@ -604,30 +561,6 @@ thinking of the prior as data, you may not have meant that.
   border-bottom: 2px solid rgba(2, 132, 199, 0.25);
 }
 .conjugate-table .muted { color: var(--text-dim); font-size: 11px; }
-
-.gaussian-priors-wrap { overflow-x: auto; margin: 16px 0 22px; }
-.gaussian-priors {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-.gaussian-priors th, .gaussian-priors td {
-  text-align: left;
-  padding: 9px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  vertical-align: top;
-}
-.gaussian-priors th {
-  font-weight: 600;
-  background: rgba(2, 132, 199, 0.06);
-  border-bottom: 2px solid rgba(2, 132, 199, 0.25);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-dim, #5a6577);
-}
-.gaussian-priors td:first-child { font-weight: 600; white-space: nowrap; }
-.gaussian-priors .muted { color: var(--text-dim); font-size: 11.5px; }
 
 </style>
 

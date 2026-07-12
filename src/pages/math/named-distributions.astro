@@ -697,70 +697,21 @@ limit. Pick a base below and slide $n$.
 <h2 id="conjugacy">6. Conjugate prior–likelihood pairs</h2>
 
 <p>
-Conjugacy means the posterior stays in the same family as the prior. These pairs
-are exact-update shortcuts, and reference points for
-<a href="/math/variational-inference/">variational inference</a> when exact updating is
-not available.
+Conjugacy means the posterior stays in the same family as the prior. This page
+keeps the named pair cards below; the derivation and pseudo-count updates live on
+<a href="/math/conjugate-priors/">Conjugate Priors</a>, and the exponential-family
+reason they work is developed on
+<a href="/math/exponential-family/">The Exponential Family</a>.
 </p>
 
 <Aside>
-<strong>Why conjugacy exists.</strong> All four pairs below share a single structural
-property: the likelihood is an
-<em>exponential family</em>
-$p(x\mid\theta) = h(x)\exp\bigl(\eta(\theta)\cdot T(x) - A(\theta)\bigr)$,
-and the prior has the same exponential-family shape in $\theta$. Multiplying prior by
-likelihood and absorbing the result back into the same form gives a posterior whose
-natural parameter is just a shift in the sufficient-statistic direction. Concretely:
-seeing data shifts $\alpha$ by $\sum T(x_i)$. These are exactly the families
-with finite-dimensional <a href="/math/sufficient-statistics/">sufficient statistics</a>.
-The data influences the posterior only through the fixed-size summary $\sum T(x_i)$,
-which is why the update is a simple parameter shift. Conjugacy is the cases
-where the posterior's <a href="/math/fisher-information/#score-as-tilt">tilt</a>
-stays inside a finite-dimensional family. When that's not true, you reach for
-<a href="/math/variational-inference/">variational inference</a>.
+<strong>Two organizing lenses.</strong> The cards below are named distributions first.
+For conjugate updates, use the <a href="/math/conjugate-priors/#table">standard-pairs
+table</a>. For maximum-entropy characterizations, use the
+<a href="/math/fisher-information/#max-entropy">Fisher-information interactive</a>
+and the <a href="/math/entropy-mutual-information/#legendre">entropy-duality
+section</a>.
 </Aside>
-
-<table class="dist-facts" style="margin: 16px 0 24px;">
-  <thead><tr><th>Family</th><th>Sufficient statistic $T(x)$</th><th>Natural parameter shift on update</th></tr></thead>
-  <tbody>
-    <tr><td>Bernoulli / Binomial</td><td>$x$ (count of successes)</td><td>$\alpha\to\alpha+s,\;\beta\to\beta+f$</td></tr>
-    <tr><td>Poisson</td><td>$x$ (count)</td><td>$\alpha\to\alpha+\sum y_i,\;\beta\to\beta+t$</td></tr>
-    <tr><td>Normal (known $\sigma^2$)</td><td>$x$</td><td>precision adds; mean is precision-weighted</td></tr>
-    <tr><td>Categorical / Multinomial</td><td>$(\mathbb 1_&#123;x=k&#125;)_k$</td><td>$\alpha_k\to\alpha_k+n_k$</td></tr>
-  </tbody>
-</table>
-
-<Aside>
-<strong>Named distributions as maximum-entropy answers.</strong> Most of these
-distributions are not arbitrary mathematical objects; they are the
-<em>unique</em> distributions that maximize entropy given a particular support and
-moment constraint:
-</Aside>
-
-<table class="dist-facts" style="margin: 8px 0 24px;">
-  <thead><tr><th>Support</th><th>Constraints (beyond normalization)</th><th>Max-entropy law</th></tr></thead>
-  <tbody>
-    <tr><td>$[a, b]$</td><td>none</td><td>Uniform$(a,b)$</td></tr>
-    <tr><td>$[0, \infty)$</td><td>fixed mean $1/\lambda$</td><td>Exponential$(\lambda)$</td></tr>
-    <tr><td>$\mathbb&#123;R&#125;$</td><td>fixed mean $\mu$, variance $\sigma^2$</td><td>Normal$(\mu, \sigma^2)$</td></tr>
-    <tr><td>$\mathbb&#123;R&#125;$</td><td>fixed mean $\mu$, mean abs deviation $\mathbb E|X-\mu|=b$</td><td>Laplace$(\mu, b)$</td></tr>
-    <tr><td>$\&#123;0,1,\dots,N\&#125;$</td><td>fixed mean</td><td>Discrete exp-family (Binomial-like)</td></tr>
-    <tr><td>$\&#123;0,1,2,\dots\&#125;$</td><td>fixed mean $\mu$</td><td>Geometric, $q = \mu/(\mu+1)$</td></tr>
-    <tr><td>$\&#123;0,1,2,\dots\&#125;$</td><td>fixed mean & variance</td><td>Negative-binomial-family</td></tr>
-    <tr><td>$\mathbb&#123;R&#125;^d$</td><td>fixed mean & covariance</td><td>Multivariate Normal</td></tr>
-    <tr><td>$(K-1)$-simplex</td><td>fixed $\mathbb E[\log x_k]$ for each $k$</td><td>Dirichlet$(\alpha_1,\dots,\alpha_K)$</td></tr>
-  </tbody>
-</table>
-
-<p>
-The pattern is the same in every row: write down the Lagrangian
-$-\int q\log q - \sum_i \lambda_i(\int T_i q - c_i)$, take the variation, and the
-stationary $q^*\propto\exp(\sum_i\lambda_i T_i)$ is exactly an exponential family
-with $T_i$ as sufficient statistics. See the <a href="/math/fisher-information/#max-entropy">max-entropy
-interactive on the Fisher-information page</a> to step through the constraints and
-watch the family member emerge, and the <a href="/math/entropy-mutual-information/#legendre">Legendre-duality
-section</a> for why this construction is forced by the geometry of $\log\sum e^&#123;\eta T&#125;$.
-</p>
 
 <VizCardGrid>
   <VizCard id="beta-binomial" viz="beta-binomial" mini={true} tag="bayes" tagClass="bayes" title="Beta-Binomial">

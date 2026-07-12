@@ -14,6 +14,8 @@ const C = {
   textDim: "#5a6577",
   posterior: "#2d7a3e",
   posteriorFill: "rgba(45,122,62,0.18)",
+  purple: "#6b4592",
+  red: "#b8412a",
 };
 
 function setupCanvas(canvas: HTMLCanvasElement) {
@@ -61,6 +63,112 @@ function gammaPdf(x: number, alpha: number, beta: number) {
 }
 function normalPdf(x: number, mu: number, sigma: number) {
   return Math.exp(-((x - mu) ** 2) / (2 * sigma * sigma)) / (sigma * Math.sqrt(2 * Math.PI));
+}
+const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
+const bernoulliA = (eta: number) => Math.log1p(Math.exp(eta));
+
+function setupLogPartition() {
+  const canvas = document.getElementById("fig-logpartition") as HTMLCanvasElement | null;
+  if (!canvas) return;
+  const etaInput = document.getElementById("logpartition-eta") as HTMLInputElement | null;
+  const etaV = document.getElementById("logpartition-eta-v") as HTMLElement | null;
+  const readout = document.getElementById("logpartition-readout") as HTMLElement | null;
+  if (!etaInput || !etaV || !readout) return;
+
+  function render() {
+    const { ctx, w, h } = setupCanvas(canvas!);
+    const eta = parseFloat(etaInput!.value);
+    etaV!.textContent = eta.toFixed(2);
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, w, h);
+    const padL = 54, padR = 24, padT = 24, padB = 42;
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
+    const xMin = -5;
+    const xMax = 5;
+    const yMin = 0;
+    const yMax = bernoulliA(xMax) * 1.05;
+    const xS = (x: number) => padL + ((x - xMin) / (xMax - xMin)) * plotW;
+    const yS = (y: number) => padT + plotH - ((y - yMin) / (yMax - yMin)) * plotH;
+
+    ctx.strokeStyle = C.grid;
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 10; i++) {
+      const x = padL + (i / 10) * plotW;
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, padT + plotH);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = C.axis;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT + plotH);
+    ctx.lineTo(padL + plotW, padT + plotH);
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, padT + plotH);
+    ctx.stroke();
+
+    ctx.beginPath();
+    for (let i = 0; i <= 320; i++) {
+      const x = xMin + (i / 320) * (xMax - xMin);
+      const y = bernoulliA(x);
+      if (i === 0) ctx.moveTo(xS(x), yS(y));
+      else ctx.lineTo(xS(x), yS(y));
+    }
+    ctx.strokeStyle = C.posterior;
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+
+    const a = bernoulliA(eta);
+    const mean = sigmoid(eta);
+    const variance = mean * (1 - mean);
+    const tangent = (x: number) => a + mean * (x - eta);
+    const parabola = (x: number) => a + mean * (x - eta) + 0.5 * variance * (x - eta) ** 2;
+    ctx.beginPath();
+    for (let i = 0; i <= 100; i++) {
+      const x = eta - 1.8 + (i / 100) * 3.6;
+      if (i === 0) ctx.moveTo(xS(x), yS(tangent(x)));
+      else ctx.lineTo(xS(x), yS(tangent(x)));
+    }
+    ctx.strokeStyle = C.purple;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.beginPath();
+    for (let i = 0; i <= 100; i++) {
+      const x = eta - 1.8 + (i / 100) * 3.6;
+      if (i === 0) ctx.moveTo(xS(x), yS(parabola(x)));
+      else ctx.lineTo(xS(x), yS(parabola(x)));
+    }
+    ctx.strokeStyle = C.red;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = C.red;
+    ctx.beginPath();
+    ctx.arc(xS(eta), yS(a), 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = C.textDim;
+    ctx.font = "11px -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    for (let i = 0; i <= 5; i++) {
+      const x = xMin + (i / 5) * (xMax - xMin);
+      ctx.fillText(x.toFixed(0), xS(x), padT + plotH + 14);
+    }
+    ctx.fillStyle = C.text;
+    ctx.fillText("natural parameter η", padL + plotW / 2, padT + plotH + 30);
+    readout.innerHTML =
+      `<div class="row"><span class="lbl">A(η)</span><span>${a.toFixed(3)}</span></div>` +
+      `<div class="row"><span class="lbl">A'(η) = E[X]</span><span>${mean.toFixed(3)}</span></div>` +
+      `<div class="row"><span class="lbl">A''(η) = Var[X] = Fisher info</span><span>${variance.toFixed(3)}</span></div>`;
+  }
+
+  etaInput.addEventListener("input", render);
+  render();
+  window.addEventListener("resize", render);
 }
 
 type ExpDist = "bernoulli" | "poisson" | "exponential" | "normal" | "gamma" | "beta";
@@ -302,8 +410,13 @@ function setupExpFamily() {
   window.addEventListener("resize", render);
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", setupExpFamily);
-} else {
+function setupAll() {
+  setupLogPartition();
   setupExpFamily();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", setupAll);
+} else {
+  setupAll();
 }

@@ -58,18 +58,13 @@ the two need not agree.
 
 <h2>2. Intervention types</h2>
 
-<dl class="definition-list">
-  <dt>Ablation</dt>
-  <dd>Remove or zero a component. A metric drop is necessity-style evidence, mixed with redundancy and compensation effects.</dd>
-  <dt>Activation patching</dt>
-  <dd>Copy an activation from a clean run into a corrupted run. Whether behavior is restored depends on the corruption, the site, the representation type, and the metric.</dd>
-  <dt>Path patching</dt>
-  <dd>Restrict a patch to a route through the network, such as one head writing into another head's input, so the test isolates a connection rather than a component.</dd>
-  <dt>Attribution patching</dt>
-  <dd>Use a local linear approximation to estimate many patch effects at once, cheaply, at lower resolution and under stronger assumptions.</dd>
-  <dt>Self-repair</dt>
-  <dd>Measure whether another component's contribution grows once the targeted component is removed.</dd>
-</dl>
+<p>
+Ablation removes a component and asks whether the metric drops. Activation
+patching copies a clean activation into a corrupted run and asks whether the
+metric recovers. Path patching restricts that test to a route, attribution
+patching estimates many patch effects with a local linear approximation, and
+self-repair measures whether backup components grow after the target is removed.
+</p>
 
 <h2>3. The corruption and the metric are part of the claim</h2>
 

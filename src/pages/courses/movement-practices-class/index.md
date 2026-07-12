@@ -26,8 +26,6 @@ The class syllabus is [here](https://docs.google.com/document/d/1QiWUoZ5hCqQJtPF
 
 - [NYUSH IMU Connection Settings](https://docs.google.com/document/d/16tfrlQUlfhclcYJuM4jR2Kbd7K9oLuSkOvZ3CkiaGKw/edit)
 
-[Movement Practices Lab 1: Pose Detection with PoseNet](/courses/movement-practices-class/movement-practices-lab-1-pose-detection-with-posenet/)
-
 [Movement Practices Lab 1: Pose Detection with BlazePose](/courses/movement-practices-class/movement-practices-lab-1-pose-detection-with-blazepose/)
 
 [Movement Practices Coding Resources](/courses/movement-practices-coding-resources/)

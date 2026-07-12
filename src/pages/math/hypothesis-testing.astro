@@ -55,7 +55,7 @@ a different view of the same pair of distributions $(P_0, P_1)$.
 Moving the threshold right reduces $\alpha$ but increases $\beta$. Increasing the
 effect size separates the curves and improves power without changing the threshold.
 This is the core visual tradeoff behind p-values, power analysis, and sample-size
-planning.
+planning. The same threshold is linked to the ROC operating point in Figure 3.
 </p>
 
 <h2 id="lr">2. The likelihood-ratio view</h2>
@@ -114,11 +114,36 @@ null distribution of the test statistic itself: $-2\log\Lambda_n \xrightarrow&#1
 (<a href="/math/modes-of-convergence/">modes of convergence</a>).
 </p>
 
-<h2 id="roc">3. The ROC curve</h2>
+<h2 id="asymptotics">3. Accumulating likelihood ratios</h2>
+
+<Figure title="Figure 3 · Stein and Wilks as sample size grows" canvasId="fig-asymptotics" width="780" height="380" readoutId="asymptotics-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>$H_0$</span>
+    <span><span class="swatch" style="background:#b8412a"></span>$H_1$</span>
+    <span><span class="swatch" style="background:#2d7a3e"></span>$\chi^2_1$ target</span>
+    <span><span class="swatch" style="background:#111827"></span>fixed-$\alpha$ threshold</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="asym-n" label="sample size n" valueId="asym-n-v" min="1" max="240" step="1" value="24" />
+  <ControlRange id="asym-effect" label="effect size μ" valueId="asym-effect-v" min="0.2" max="2.5" step="0.05" value="0.8" />
+</Fragment>
+</Figure>
+
+<p>
+The left panel accumulates $\sum_i\log\Lambda(X_i)$ and holds
+$\alpha\approx0.05$ fixed; the shaded right tail under $H_1$ is the remaining
+type-II error. The right panel shows the Wilks story for a one-parameter nested
+test: the finite-sample null statistic moves toward the $\chi^2_1$ curve.
+</p>
+
+<h2 id="roc">4. The linked ROC curve</h2>
 
 <p>
 Sweeping the threshold traces out the <em>ROC curve</em>: every operating point is a
-pair $(\alpha,\,1-\beta)$. The curve is a measure-theoretic invariant of the pair
+pair $(\alpha,\,1-\beta)$. Move the threshold here or in the overlap diagram and
+the other view follows the same operating point. The curve is a measure-theoretic invariant of the pair
 $(P_0, P_1)$ — any monotone reparametrization of the test statistic gives the same
 curve. The diagonal is the no-information baseline (a random coin flip). The area
 under the curve, $\mathrm&#123;AUC&#125; = P(\Lambda(X_1) > \Lambda(X_0))$, is a single
@@ -126,7 +151,7 @@ number summarizing separability. For two unit-variance Gaussians with mean gap
 $\mu$, $\mathrm&#123;AUC&#125; = \Phi(\mu/\sqrt&#123;2&#125;)$.
 </p>
 
-<Figure title="Figure 3 · ROC curve" canvasId="fig-roc" width="780" height="380" readoutId="roc-readout">
+<Figure title="Figure 4 · ROC curve" canvasId="fig-roc" width="780" height="380" readoutId="roc-readout">
 <Fragment slot="legend">
   <div class="legend">
     <span><span class="swatch" style="background:#2d7a3e"></span>ROC curve</span>
@@ -140,7 +165,7 @@ $\mu$, $\mathrm&#123;AUC&#125; = \Phi(\mu/\sqrt&#123;2&#125;)$.
 </Fragment>
 </Figure>
 
-<h2 id="bayes">4. Bayes risk and the optimal threshold</h2>
+<h2 id="bayes">5. Bayes risk and the optimal threshold</h2>
 
 <p>
 Hand the test a prior $\pi_1$ on $H_1$ and a loss ratio $c_I/c_&#123;II&#125;$ (the cost
@@ -154,7 +179,7 @@ and Bayesian decision theory pick out the same rule, with the threshold set by
 either $\alpha$ or by prior+loss.
 </p>
 
-<Figure title="Figure 4 · Bayes risk vs. threshold" canvasId="fig-bayes" width="780" height="380" readoutId="bayes-readout">
+<Figure title="Figure 5 · Bayes risk vs. threshold" canvasId="fig-bayes" width="780" height="380" readoutId="bayes-readout">
 <Fragment slot="legend">
   <div class="legend">
     <span><span class="swatch" style="background:#6b4592"></span>$R(t)$</span>

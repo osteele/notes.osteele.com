@@ -1,6 +1,12 @@
 # ml: variable-binding renamed to binding
 /ml/variable-binding/ /ml/binding/ 301
 
+# Legacy local duplicates -> canonical pages
+/markdown/ /reference/markdown/ 301
+/vscode/ /tools/vscode/p5js/ 301
+/p5js/vscode/visual-studio-theme-color/ /tools/vscode/visual-studio-theme-color/ 301
+/tools/static-hosting/netlify/ https://www.netlify.com/ 301
+
 # Creative coding course pages -> new microsite
 /courses/creative-coding/ https://creative-coding.osteele.com/ 301
 /courses/creative-coding/animation-and-easing/ https://creative-coding.osteele.com/animation-and-easing/ 301

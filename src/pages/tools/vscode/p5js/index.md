@@ -21,7 +21,7 @@ These are the simplest instructions. The included Visual Studio extension create
 
 This version of the instructions use the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) VS Code extension. You will have to create an HTML file for each sketch, but it uses tools and a workflow that are the same as for general web development.
 
--   [Configuring Visual Studio Code (Live Server extension and GitHub)](/p5js/vscode/)
+-   [Configuring Visual Studio Code (Live Server extension and GitHub)](https://creative-coding.osteele.com/p5js/vscode/)
 
 These instructions start from a GitHub repository on GitHub. They are suitable to a more software-development-oriented track.
 
@@ -47,4 +47,4 @@ youtu.be
 
 # Sub Pages
 
-[![Configuring Visual Studio Code for p5.js Development with the P5 Server extension](https://osteele.gallerycdn.vsassets.io/extensions/osteele/p5-server/1.1.0/1631683723491/Microsoft.VisualStudio.Services.Icons.Default)Configuring Visual Studio Code for p5.js Development with the P5 Server extension](/tools/vscode/configuring-visual-studio-code-for-p5js-development-p5-server/)[![Configuring Visual Studio Code for p5.js Development (Live Server)](https://ritwickdey.gallerycdn.vsassets.io/extensions/ritwickdey/liveserver/5.6.1/1555497731217/Microsoft.VisualStudio.Services.Icons.Default)Configuring Visual Studio Code for p5.js Development (Live Server)](/tools/vscode/configuring-visual-studio-code-for-p5js-development-live-server/)[![Configuring Visual Studio Code for p5.js Development (Live Server and GitHub)](https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/b35b9d74-70e3-447d-ae39-1b1744e59f7b/iu/w=1920,quality=90,fit=scale-down)Configuring Visual Studio Code for p5.js Development (Live Server and GitHub)](/p5js/vscode/)
+[![Configuring Visual Studio Code for p5.js Development with the P5 Server extension](https://osteele.gallerycdn.vsassets.io/extensions/osteele/p5-server/1.1.0/1631683723491/Microsoft.VisualStudio.Services.Icons.Default)Configuring Visual Studio Code for p5.js Development with the P5 Server extension](/tools/vscode/configuring-visual-studio-code-for-p5js-development-p5-server/)[![Configuring Visual Studio Code for p5.js Development (Live Server)](https://ritwickdey.gallerycdn.vsassets.io/extensions/ritwickdey/liveserver/5.6.1/1555497731217/Microsoft.VisualStudio.Services.Icons.Default)Configuring Visual Studio Code for p5.js Development (Live Server)](/tools/vscode/configuring-visual-studio-code-for-p5js-development-live-server/)[![Configuring Visual Studio Code for p5.js Development (Live Server and GitHub)](https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/b35b9d74-70e3-447d-ae39-1b1744e59f7b/iu/w=1920,quality=90,fit=scale-down)Configuring Visual Studio Code for p5.js Development (Live Server and GitHub)](https://creative-coding.osteele.com/p5js/vscode/)

@@ -13,13 +13,27 @@ interface Props {
 }
 
 const { heading = "What next", intro, cards } = Astro.props;
+
+const sectionBase = Astro.url.pathname.match(/^\/(math|ml)\//)?.[1];
+const topLevelRoutePattern =
+  /^\/(?:arduino|courses|creative-coding|education|education-tools-and-materials|gpt-experiments|javascript|keyboard-shortcuts|markdown|math|ml|nyush|p5js|p5js-resources|physical-computing|posenet|processing|raspberry-pi|reference|saw-rasp|teaching|tools|uses|vscode|woodworking)(?:\/|$)/;
+
+function normalizeHref(href: string): string {
+  const cleanHref = href.replace(/\/index\.html(?=([?#]|$))/, "/");
+  if (!sectionBase || !cleanHref.startsWith("/") || cleanHref.startsWith("//") || topLevelRoutePattern.test(cleanHref)) {
+    return cleanHref;
+  }
+  return `/${sectionBase}${cleanHref}`;
+}
+
+const normalizedCards = cards.map((card) => ({ ...card, href: normalizeHref(card.href) }));
 ---
 
 <section class="what-next" aria-labelledby="what-next">
   <h2 id="what-next">{heading}</h2>
   {intro && <p class="intro">{intro}</p>}
   <div class="next-grid">
-    {cards.map((card) => (
+    {normalizedCards.map((card) => (
       <a class="next-card" href={card.href}>
         <canvas class="live-preview" width="220" height="54" data-preview-href={card.href} aria-hidden="true"></canvas>
         <div class="tag" set:html={card.tag}></div>

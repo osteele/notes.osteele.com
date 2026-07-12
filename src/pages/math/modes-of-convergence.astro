@@ -122,7 +122,7 @@ loaded preset — green where that mode converges, red where it fails.
   <div slot="default" class="lattice-host">
     <svg id="lattice-svg" viewBox="0 0 820 320" role="img" aria-label="Implication lattice between modes of convergence"></svg>
     <div class="lattice-caption" id="lattice-caption">
-      Hover or click an edge to see what it claims (or what counterexample disproves the converse). Node tint shows which modes hold for the loaded preset.
+      Hover or click an edge to see what it claims (or what counterexample disproves the converse). Node tint shows which modes hold for the loaded preset. The spike, typewriter, and sign-flip counterexamples live on the dashed arrows; the Cauchy mean is available from Figure 1.
     </div>
   </div>
 </Figure>
@@ -274,38 +274,6 @@ monotonicity off and the guarantee disappears.
     <label class="control"><input type="checkbox" id="mct-mono" checked /> enforce monotone fill (else: random window)</label>
   </Fragment>
 </Figure>
-
-<h2 id="tour">5. A guided tour through the lattice</h2>
-
-<p>
-The four counterexamples occupy specific positions in the lattice. Working
-them out by hand once is rewarding; clicking through them quickly is the next
-best thing.
-</p>
-
-<ul>
-  <li>
-    <strong>Spike</strong> — a.s. and in probability, but not in $L^1$.
-    The path $X_n(\omega) = n\cdot\mathbf&#123;1&#125;_&#123;[0,1/n]&#125;(\omega)$ has
-    $\mathbb&#123;E&#125; X_n = 1$ for all $n$. (Breaks: a.s. $\Rightarrow L^1$, in prob $\Rightarrow L^1$.)
-  </li>
-  <li>
-    <strong>Typewriter</strong> — in probability and in $L^p$, but not almost surely.
-    For each $\omega \in [0,1]$, infinitely many of the sliding indicators
-    $\mathbf&#123;1&#125;_&#123;[(n-2^k)/2^k, (n-2^k+1)/2^k]&#125;$ light up. (Breaks: in prob $\Rightarrow$ a.s., $L^p \Rightarrow$ a.s.)
-  </li>
-  <li>
-    <strong>Sign flip</strong> — in distribution, but not in probability.
-    With $X$ a fair $\pm 1$ and $X_n = (-1)^n X$, every $X_n$ has the same
-    distribution as $X$, so $X_n \overset&#123;d&#125;&#123;\to&#125; X$, but $|X_n - X|$ takes
-    only the values $0$ or $2$. (Breaks: in dist $\Rightarrow$ in prob.)
-  </li>
-  <li>
-    <strong>Cauchy mean</strong> — fails the LLN entirely.
-    The running mean of iid Cauchy is itself Cauchy with the same scale,
-    not contracting. Chebyshev cannot help: $\mathrm&#123;Var&#125; = \infty$.
-  </li>
-</ul>
 
 <Aside>
   <strong>Scope.</strong> The inequalities and implications are quoted rather

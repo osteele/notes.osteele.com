@@ -5,9 +5,9 @@ layout: ../../../../layouts/BaseLayout.astro
 
 Visual Studio Code (“VSCode”) is a [Code Editor](/tools/code-editors/), for editing code on your desktop/laptop computer.
 
-[Visual Studio Code for P5.js](/p5js/vscode/)
+[Visual Studio Code for P5.js](/tools/vscode/p5js/)
 
-[Visual Studio Theme Color](/p5js/vscode/visual-studio-theme-color/)
+[Visual Studio Theme Color](/tools/vscode/visual-studio-theme-color/)
 
 # External Links
 

@@ -13,4 +13,4 @@ layout: ../../../layouts/BaseLayout.astro
 
 ## Related
 
-<ul class="page-list"><li><a href="/tools/code-editors/">Code Editors</a></li><li><a href="/vscode/">Visual Studio Code for P5.js</a></li><li><a href="/tools/">Tools</a></li></ul>
+<ul class="page-list"><li><a href="/tools/code-editors/">Code Editors</a></li><li><a href="/tools/vscode/p5js/">Visual Studio Code for P5.js</a></li><li><a href="/tools/">Tools</a></li></ul>

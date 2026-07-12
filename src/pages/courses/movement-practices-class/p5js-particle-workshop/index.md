@@ -11,7 +11,7 @@ You are not expected to remember exactly how to use everything that appears on t
 
 # Set up your workspace
 
-The instructions for configuring Visual Studio Code and Chrome for web development have moved [here](/p5js/vscode/).
+The instructions for configuring Visual Studio Code and Chrome for web development have moved [here](/tools/vscode/p5js/).
 
 ## A. Configure Visual Studio Code
 

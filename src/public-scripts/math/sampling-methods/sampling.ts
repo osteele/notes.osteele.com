@@ -2114,6 +2114,7 @@ initFig0();
   const runBtn = document.getElementById("fig2variants-runpause");
   const resetBtn = document.getElementById("fig2variants-reset");
   const readout = document.getElementById("fig2variants-readout");
+  const diffLines = Array.from(document.querySelectorAll("#fig2variants-diff .variant-line")) as HTMLElement[];
 
   const variants = {
     metropolis: {
@@ -2223,6 +2224,12 @@ initFig0();
     last = null;
     history = [];
     moveProgress = 1;
+  }
+  function updateDiffLines() {
+    diffLines.forEach((line) => {
+      const methods = (line.dataset.variants ?? "").split(/\s+/);
+      line.classList.toggle("active", methods.includes(variant));
+    });
   }
   function chooseWeighted(options) {
     const sum = options.reduce((s, item) => s + item.weight, 0);
@@ -2847,6 +2854,7 @@ initFig0();
   }
   function draw() {
     const info = variants[variant];
+    updateDiffLines();
     const knob = +knobIn.value;
     knobV.textContent = variant === "metropolis" ? String(1 + Math.round(knob * 3)) : knob.toFixed(2);
     speedV.textContent = (+speedIn.value).toFixed(1);
@@ -4300,6 +4308,270 @@ initFig0();
 
   reset(); draw();
   rafId = requestAnimationFrame(tick);
+})();
+
+// ─────────── State-space relaxation ladder ───────────
+(function figFilterLadder() {
+  const canvas = document.getElementById("fig-filter-ladder") as HTMLCanvasElement | null;
+  if (!canvas) return;
+  const { ctx, w, h } = setupCanvas(canvas);
+  const methodIn = document.getElementById("fig-filter-ladder-method") as HTMLSelectElement;
+  const methodV = document.getElementById("fig-filter-ladder-method-v") as HTMLElement;
+  const nonlinIn = document.getElementById("fig-filter-ladder-nonlinearity") as HTMLInputElement;
+  const nonlinV = document.getElementById("fig-filter-ladder-nonlinearity-v") as HTMLElement;
+  const readout = document.getElementById("fig-filter-ladder-readout") as HTMLElement;
+  const lines = Array.from(document.querySelectorAll("#fig-filter-ladder-steps .algo-line")) as HTMLElement[];
+
+  const labels = {
+    kalman: "Kalman",
+    ekf: "EKF",
+    ukf: "UKF",
+    pf: "Particle filter",
+  };
+
+  function seeded(seed) {
+    let s = seed >>> 0;
+    return () => {
+      s = (1664525 * s + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+  }
+  function normalFrom(rng) {
+    const u = Math.max(1e-9, rng());
+    const v = rng();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  function dynamics(x, t, a) {
+    return 0.82 * x + a * (0.72 * Math.sin(1.12 * x) + 0.42 * Math.cos(0.36 * t));
+  }
+  function dynamicsPrime(x, a) {
+    return 0.82 + a * 0.8064 * Math.cos(1.12 * x);
+  }
+  function observe(x, a) {
+    return x + a * 0.18 * x * x;
+  }
+  function observePrime(x, a) {
+    return 1 + a * 0.36 * x;
+  }
+  function simulateData(a) {
+    const rng = seeded(8821);
+    const T = 46;
+    const q = 0.18;
+    const r = 0.42;
+    let x = -1.2;
+    const trueXs = [];
+    const ys = [];
+    for (let t = 0; t < T; t++) {
+      x = dynamics(x, t, a) + Math.sqrt(q) * normalFrom(rng);
+      trueXs.push(x);
+      ys.push(observe(x, a) + Math.sqrt(r) * normalFrom(rng));
+    }
+    return { trueXs, ys, q, r };
+  }
+  function momentsFromSigma(points, weights) {
+    const mean = points.reduce((s, x, i) => s + weights[i] * x, 0);
+    const variance = points.reduce((s, x, i) => s + weights[i] * (x - mean) ** 2, 0);
+    return { mean, variance };
+  }
+  function runFilter(method, a) {
+    const data = simulateData(a);
+    const estimates = [];
+    const variances = [];
+    const essTrace = [];
+    let finalParticles = [];
+    let finalWeights = [];
+
+    if (method === "pf") {
+      const rng = seeded(60493);
+      const N = 180;
+      let particles = Array.from({ length: N }, () => -0.8 + normalFrom(rng) * 1.4);
+      let weights = new Array(N).fill(1 / N);
+      for (let t = 0; t < data.ys.length; t++) {
+        for (let i = 0; i < N; i++) particles[i] = dynamics(particles[i], t, a) + Math.sqrt(data.q) * normalFrom(rng);
+        let totalW = 0;
+        for (let i = 0; i < N; i++) {
+          const e = data.ys[t] - observe(particles[i], a);
+          weights[i] *= Math.exp(-0.5 * e * e / data.r);
+          totalW += weights[i];
+        }
+        if (totalW < 1e-200) {
+          weights.fill(1 / N);
+        } else {
+          for (let i = 0; i < N; i++) weights[i] /= totalW;
+        }
+        const ess = 1 / weights.reduce((s, wt) => s + wt * wt, 0);
+        essTrace.push(ess / N);
+        let mean = 0;
+        for (let i = 0; i < N; i++) mean += weights[i] * particles[i];
+        let variance = 0;
+        for (let i = 0; i < N; i++) variance += weights[i] * (particles[i] - mean) ** 2;
+        estimates.push(mean);
+        variances.push(variance);
+        if (ess < N * 0.55) {
+          const cum = new Array(N);
+          cum[0] = weights[0];
+          for (let i = 1; i < N; i++) cum[i] = cum[i - 1] + weights[i];
+          const u0 = rng() / N;
+          const next = new Array(N);
+          let j = 0;
+          for (let i = 0; i < N; i++) {
+            const u = u0 + i / N;
+            while (j < N - 1 && cum[j] < u) j++;
+            next[i] = particles[j] + 0.02 * normalFrom(rng);
+          }
+          particles = next;
+          weights = new Array(N).fill(1 / N);
+        }
+      }
+      finalParticles = particles;
+      finalWeights = weights;
+      return { ...data, estimates, variances, essTrace, finalParticles, finalWeights };
+    }
+
+    let m = -0.8;
+    let P = 1.2;
+    for (let t = 0; t < data.ys.length; t++) {
+      let mp = m;
+      let Pp = P;
+      if (method === "kalman") {
+        const F = 0.82;
+        mp = F * m;
+        Pp = F * P * F + data.q;
+        const H = 1;
+        const S = H * Pp * H + data.r;
+        const K = Pp * H / S;
+        m = mp + K * (data.ys[t] - H * mp);
+        P = Math.max(0.02, (1 - K * H) * Pp);
+      } else if (method === "ekf") {
+        const F = dynamicsPrime(m, a);
+        mp = dynamics(m, t, a);
+        Pp = F * P * F + data.q;
+        const H = observePrime(mp, a);
+        const S = H * Pp * H + data.r;
+        const K = Pp * H / S;
+        m = mp + K * (data.ys[t] - observe(mp, a));
+        P = Math.max(0.02, (1 - K * H) * Pp);
+      } else {
+        const spread = Math.sqrt(Math.max(0.001, P));
+        const weights = [0.5, 0.25, 0.25];
+        const sigma = [m, m + spread, m - spread];
+        const pred = sigma.map(x => dynamics(x, t, a));
+        const predMom = momentsFromSigma(pred, weights);
+        mp = predMom.mean;
+        Pp = predMom.variance + data.q;
+        const spread2 = Math.sqrt(Math.max(0.001, Pp));
+        const sigma2 = [mp, mp + spread2, mp - spread2];
+        const obsPts = sigma2.map(x => observe(x, a));
+        const obsMom = momentsFromSigma(obsPts, weights);
+        const S = obsMom.variance + data.r;
+        const Cxy = sigma2.reduce((s, x, i) => s + weights[i] * (x - mp) * (obsPts[i] - obsMom.mean), 0);
+        const K = Cxy / S;
+        m = mp + K * (data.ys[t] - obsMom.mean);
+        P = Math.max(0.02, Pp - K * S * K);
+      }
+      estimates.push(m);
+      variances.push(P);
+      essTrace.push(1);
+    }
+    return { ...data, estimates, variances, essTrace, finalParticles, finalWeights };
+  }
+  function drawTrace(xs, yMap, xMap, color, width = 2, dash: number[] = []) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.setLineDash(dash);
+    ctx.beginPath();
+    xs.forEach((v, i) => {
+      const x = xMap(i);
+      const y = yMap(v);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.restore();
+  }
+  function draw() {
+    const method = methodIn.value;
+    const a = +nonlinIn.value;
+    methodV.textContent = labels[method] ?? method;
+    nonlinV.textContent = a.toFixed(2);
+    lines.forEach((line) => {
+      const methods = (line.dataset.methods ?? "").split(/\s+/);
+      line.classList.toggle("active", methods.includes(method));
+    });
+
+    const result = runFilter(method, a);
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, w, h);
+    const padL = 44, padR = 20, topY = 18, topH = 255;
+    const botY = 302, botH = 90;
+    const plotW = w - padL - padR;
+    const values = [...result.trueXs, ...result.estimates, ...result.ys];
+    let yMin = Math.min(...values) - 0.8;
+    let yMax = Math.max(...values) + 0.8;
+    if (yMax - yMin < 2) { yMin -= 1; yMax += 1; }
+    const xMap = (i) => padL + (i / Math.max(1, result.trueXs.length - 1)) * plotW;
+    const yMap = (v) => topY + topH - ((v - yMin) / (yMax - yMin)) * topH;
+    drawAxes(ctx, padL, topY, plotW, topH, 8, 5);
+    ctx.fillStyle = C.textDim;
+    ctx.font = "10px -apple-system, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("shared nonlinear SSM: x_k=f(x_{k-1})+w,  y_k=h(x_k)+v", padL + 5, topY + 13);
+
+    for (let i = 0; i < result.ys.length; i++) {
+      ctx.fillStyle = "rgba(212,105,10,0.45)";
+      ctx.beginPath();
+      ctx.arc(xMap(i), yMap(result.ys[i]), 2.2, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    ctx.fillStyle = "rgba(107,69,146,0.14)";
+    ctx.beginPath();
+    result.estimates.forEach((m, i) => {
+      const y = yMap(m + 1.65 * Math.sqrt(Math.max(0.001, result.variances[i])));
+      if (i === 0) ctx.moveTo(xMap(i), y); else ctx.lineTo(xMap(i), y);
+    });
+    for (let i = result.estimates.length - 1; i >= 0; i--) {
+      const y = yMap(result.estimates[i] - 1.65 * Math.sqrt(Math.max(0.001, result.variances[i])));
+      ctx.lineTo(xMap(i), y);
+    }
+    ctx.closePath();
+    ctx.fill();
+    drawTrace(result.trueXs, yMap, xMap, C.prop, 2.1);
+    drawTrace(result.estimates, yMap, xMap, C.target, 2.2);
+
+    drawAxes(ctx, padL, botY, plotW, botH, 8, 2);
+    ctx.fillStyle = C.textDim;
+    ctx.font = "10px -apple-system, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(method === "pf" ? "ESS/N over time; final particles below" : "posterior uncertainty over time", padL + 5, botY + 13);
+    if (method === "pf") {
+      drawTrace(result.essTrace, v => botY + botH - v * botH, xMap, C.particle, 2);
+      const finalT = result.trueXs.length - 1;
+      for (let i = 0; i < result.finalParticles.length; i++) {
+        const px = xMap(finalT) - 52 + 104 * ((i * 37) % result.finalParticles.length) / result.finalParticles.length;
+        const py = yMap(result.finalParticles[i]);
+        if (py < topY || py > topY + topH) continue;
+        ctx.fillStyle = "rgba(107,69,146,0.22)";
+        ctx.beginPath();
+        ctx.arc(px, py, 1.8, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    } else {
+      const sdTrace = result.variances.map(v => Math.sqrt(v));
+      const maxSd = Math.max(0.2, ...sdTrace);
+      drawTrace(sdTrace.map(v => v / maxSd), v => botY + botH - v * botH, xMap, C.particle, 2);
+    }
+    const rmse = Math.sqrt(result.trueXs.reduce((s, x, i) => s + (x - result.estimates[i]) ** 2, 0) / result.trueXs.length);
+    const finalSd = Math.sqrt(result.variances[result.variances.length - 1]);
+    const finalEss = result.essTrace[result.essTrace.length - 1];
+    readout.innerHTML =
+      `<div class="row"><span class="lbl">selected filter</span><span>${labels[method]}</span></div>` +
+      `<div class="row"><span class="lbl">relaxed assumption</span><span>${method === "kalman" ? "none: linear-Gaussian approximation" : method === "ekf" ? "nonlinear f,h via Jacobians" : method === "ukf" ? "Jacobian-free nonlinear transform" : "non-Gaussian posterior via samples"}</span></div>` +
+      `<div class="row"><span class="lbl">tracking RMSE</span><span>${rmse.toFixed(3)}</span></div>` +
+      `<div class="row"><span class="lbl">${method === "pf" ? "final ESS/N" : "final posterior sd"}</span><span>${method === "pf" ? finalEss.toFixed(2) : finalSd.toFixed(2)}</span></div>`;
+  }
+  methodIn.addEventListener("input", draw);
+  nonlinIn.addEventListener("input", draw);
+  draw();
 })();
 
 // ─────────── Figure 6: EKF and UKF Gaussian approximation ───────────

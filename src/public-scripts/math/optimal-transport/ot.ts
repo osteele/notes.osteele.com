@@ -209,6 +209,13 @@ function clamp(x: number, lo: number, hi: number) { return Math.max(lo, Math.min
     // W2^2 = (m1-m2)^2 + (s1-s2)^2
     return Math.sqrt(Math.pow(muP - mq, 2) + Math.pow(sigmaP - sigmaQ, 2));
   }
+  function gradKl(mq: number) {
+    return (mq - muP) / (sigmaQ * sigmaQ);
+  }
+  function gradW(mq: number) {
+    const wv = Math.max(1e-9, wasserstein(mq));
+    return (mq - muP) / wv;
+  }
 
   function draw() {
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, w, h);
@@ -277,7 +284,8 @@ function clamp(x: number, lo: number, hi: number) { return Math.max(lo, Math.min
     ctx.strokeStyle = C.q; ctx.setLineDash([2, 2]); ctx.stroke(); ctx.setLineDash([]);
     
     readout!.innerHTML = `<div class="row"><span class="lbl">KL divergence</span><span>${kl(muQ).toFixed(3)}</span></div>` +
-                         `<div class="row"><span class="lbl">Wasserstein-2</span><span>${wasserstein(muQ).toFixed(3)}</span></div>`;
+                         `<div class="row"><span class="lbl">Wasserstein-2</span><span>${wasserstein(muQ).toFixed(3)}</span></div>` +
+                         `<div class="row"><span class="lbl">local gradients</span><span>dKL/dμ = ${gradKl(muQ).toFixed(2)}, dW/dμ = ${gradW(muQ).toFixed(2)}</span></div>`;
   }
 
   canvas.addEventListener("pointerdown", e => {

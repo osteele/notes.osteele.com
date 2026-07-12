@@ -95,7 +95,24 @@ gap in Figure 1 is not a single phenomenon. Naming which mechanism produced it i
 the work, and it usually takes a causal test rather than a readout alone.
 </p>
 
-<h2>4. What "the model knows" means here</h2>
+<h2>4. Frequency controls and abstraction</h2>
+
+<p>
+Output behavior can also reflect surface frequency rather than the abstraction
+of interest. One simple diagnostic is to plot a pairwise margin against the
+bigram-frequency difference and read the fitted line at frequency difference
+zero. The intercept is the frequency-independent preference; the slope is the
+part explained by frequency.
+</p>
+
+<Figure title="Figure 2 · Intercept at matched frequency" canvasId="frequency-intercept-canvas" width="760" height="360" readoutId="frequency-intercept-readout">
+<Fragment slot="controls">
+  <ControlRange id="frequency-slope" label="frequency slope" valueId="frequency-slope-v" min="-1.5" max="1.5" step="0.05" value="0.45" />
+  <ControlRange id="frequency-intercept" label="abstraction intercept" valueId="frequency-intercept-v" min="-1" max="1" step="0.05" value="0.35" />
+</Fragment>
+</Figure>
+
+<h2>5. What "the model knows" means here</h2>
 
 <Aside>
   <strong>Knowledge is shorthand.</strong> "The model knows X" compresses a more
@@ -140,5 +157,83 @@ information is there. Only intervention shows what it does.
   { href: "/ml/causal-interventions/", tag: "Next", title: "Causal Interventions", role: "Testing whether internal state matters for behavior." },
 ]} />
 
+<script is:inline>
+  (() => {
+    const canvas = document.getElementById("frequency-intercept-canvas");
+    const slopeInput = document.getElementById("frequency-slope");
+    const interceptInput = document.getElementById("frequency-intercept");
+    const slopeValue = document.getElementById("frequency-slope-v");
+    const interceptValue = document.getElementById("frequency-intercept-v");
+    const readout = document.getElementById("frequency-intercept-readout");
+    if (!canvas || !slopeInput || !interceptInput) return;
+    const xs = [-1.8, -1.35, -1.1, -0.72, -0.38, -0.12, 0.18, 0.42, 0.76, 1.08, 1.4, 1.75];
+    function setup() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const w = 760, h = 360;
+      const cssW = rect.width || w;
+      const cssH = rect.height || h;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform((cssW / w) * dpr, 0, 0, (cssH / h) * dpr, 0, 0);
+      return ctx;
+    }
+    function sx(x) { return 382 + x * 145; }
+    function sy(y) { return 184 - y * 92; }
+    function draw() {
+      const ctx = setup();
+      const slope = Number(slopeInput.value);
+      const intercept = Number(interceptInput.value);
+      ctx.clearRect(0, 0, 760, 360);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("Read the preference where frequency is matched", 44, 42);
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(92, sy(0));
+      ctx.lineTo(668, sy(0));
+      ctx.moveTo(sx(0), 72);
+      ctx.lineTo(sx(0), 292);
+      ctx.stroke();
+      ctx.fillStyle = "#64748b";
+      ctx.font = "12px system-ui";
+      ctx.fillText("bigram-frequency difference", 284, 320);
+      ctx.fillText("pair margin", 28, 88);
+      xs.forEach((x, i) => {
+        const y = intercept + slope * x + Math.sin(i * 1.7) * 0.22;
+        ctx.fillStyle = "#0ea5e9";
+        ctx.beginPath();
+        ctx.arc(sx(x), sy(y), 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.strokeStyle = "#be123c";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let i = 0; i <= 80; i += 1) {
+        const x = -2 + i * 0.05;
+        const y = intercept + slope * x;
+        if (i === 0) ctx.moveTo(sx(x), sy(y));
+        else ctx.lineTo(sx(x), sy(y));
+      }
+      ctx.stroke();
+      ctx.fillStyle = "#be123c";
+      ctx.beginPath();
+      ctx.arc(sx(0), sy(intercept), 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 13px system-ui";
+      ctx.fillText(`intercept ${intercept.toFixed(2)}`, sx(0) + 12, sy(intercept) - 10);
+      slopeValue.textContent = slope.toFixed(2);
+      interceptValue.textContent = intercept.toFixed(2);
+      readout.textContent = `At frequency difference zero, the fitted preference is ${intercept.toFixed(2)}. The slope ${slope.toFixed(2)} is the frequency-linked part.`;
+    }
+    slopeInput.addEventListener("input", draw);
+    interceptInput.addEventListener("input", draw);
+    window.addEventListener("resize", draw);
+    draw();
+  })();
+</script>
 <script is:inline src="/ml/mech-interp/mech-interp.js"></script>
 </ExplainerLayout>

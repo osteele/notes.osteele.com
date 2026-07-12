@@ -3,6 +3,8 @@ import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
 import Hero from "../../components/explainer/Hero.astro";
 import Aside from "../../components/explainer/Aside.astro";
 import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
 import NextCards from "../../components/explainer/NextCards.astro";
 ---
 
@@ -26,7 +28,7 @@ about causal role.
 
 <Figure title="Figure 1 · Clusters before and after a null" canvasId="head-types-canvas" width="760" height="360" readoutId="head-types-readout">
 <Fragment slot="controls">
-  <label class="control"><span>within-layer null</span><input id="head-null" type="checkbox" /></label>
+  <ControlRange id="head-null" label="within-layer null strength" valueId="head-null-v" min="0" max="1" step="0.01" value="0" />
 </Fragment>
 </Figure>
 
@@ -41,24 +43,26 @@ a copy head, ablating or patching it changes copying behavior under the relevant
 metric.
 </p>
 
-<dl class="definition-list">
-  <dt>Positional</dt>
-  <dd>Attends by relative offset, often to the previous token, or to boundary tokens such as the start-of-sequence position. The heatmap is a band parallel to the diagonal. Common and easy to find, and rarely an interesting computation on its own.</dd>
-  <dt>Induction</dt>
-  <dd>On a repeated sequence, attends from a token back to the position just after that token's previous occurrence, so the OV path can copy what followed. The signature of in-context pattern continuation; see the Induction Heads page.</dd>
-  <dt>Retrieval</dt>
-  <dd>On a query whose answer is copied verbatim from the context, attends from the generation position to the matching source token so the OV path can copy it — the conditional-copy generalization of an induction head. A small, stable set of such heads (under about five percent) accounts for much long-context recall, and masking them makes the model hallucinate a fluent but unsupported answer rather than lose fluency, which ties the label to factuality and makes it one of the better causally-tested kinds. The <a href="/ml/lookback-mechanism/">lookback mechanism</a> uses these heads to dereference a stored binding.</dd>
-  <dt>Syntactic</dt>
-  <dd>Attends along a dependency-like relation, for example a determiner to its noun or an object to its verb. Tested by checking whether the head's strongest attention matches gold dependency edges above a positional baseline, which most heads do only partially.</dd>
-  <dt>Name mover</dt>
-  <dd>In the indirect-object-identification circuit, moves a candidate name's information toward the final position so it can be predicted. Defined by its role in that circuit, not by a generic heatmap shape.</dd>
-  <dt>Copy suppression</dt>
-  <dd>Attends to an earlier instance of the current token and writes against it, lowering the probability of repeating a token already in context. A clear OV-defined function rather than a heatmap shape.</dd>
-  <dt>Rare-word</dt>
-  <dd>Attends to low-frequency tokens, often to carry an unusual word forward. A frequency-conditioned pattern that overlaps with other roles.</dd>
-</dl>
+<p>
+The important split is between pattern labels and mechanism labels: positional,
+induction, retrieval, syntactic, name-mover, copy-suppression, and rare-word
+heads can look similar in attention space, but only OV writes and interventions
+say what role they play.
+</p>
 
-<Figure title="Figure 2 · Idealized attention patterns (schematic, not measured)" canvasId="head-patterns-canvas" width="760" height="420" />
+<Figure title="Figure 2 · Head label, attention pattern, and OV write sign" canvasId="head-patterns-canvas" width="760" height="420" readoutId="head-patterns-readout">
+<Fragment slot="controls">
+  <ControlSelect id="head-pattern-kind" label="head label" valueId="head-pattern-kind-v" options={[
+    { value: "positional", label: "positional", selected: true },
+    { value: "induction", label: "induction" },
+    { value: "syntactic", label: "syntactic" },
+    { value: "name-mover", label: "name mover" },
+    { value: "copy-suppression", label: "copy suppression" },
+    { value: "retrieval", label: "retrieval" },
+  ]} />
+  <ControlRange id="head-pattern-dest" label="destination token" valueId="head-pattern-dest-v" min="1" max="8" step="1" value="7" />
+</Fragment>
+</Figure>
 
 <p>
 Each panel is a destination-by-source attention grid for one short sentence,

@@ -72,58 +72,24 @@ specific choices of likelihood and prior.
   </p>
 </NotationAside>
 
-<h2 id="l2-mle">2. Least squares ⇔ MLE with Gaussian noise</h2>
-
-<p>The model:</p>
-
-$$
-y_i \;=\; x_i^\top\beta + \varepsilon_i,\qquad \varepsilon_i \sim \mathcal N(0,\sigma^2).
-$$
-
-<p>The likelihood factorises across observations:</p>
-
-$$
-p(y\mid X,\beta)
-\;\propto\;
-\exp\!\left(-\frac&#123;1&#125;&#123;2\sigma^2&#125;\sum_i (y_i - x_i^\top\beta)^2\right).
-$$
+<h2 id="l2-ridge">2. Worked case: ridge is Gaussian MAP</h2>
 
 <p>
-Taking the negative log and dropping additive constants leaves
-$\tfrac&#123;1&#125;&#123;2\sigma^2&#125;\sum_i (y_i - x_i^\top\beta)^2$. Maximum
-likelihood is therefore ordinary least squares:
+Use Gaussian observation noise and an independent Gaussian prior on each
+coefficient:
 </p>
 
 $$
-\hat\beta_&#123;\text&#123;OLS&#125;&#125;
-\;=\;
-\arg\min_\beta\;\sum_i (y_i - x_i^\top\beta)^2.
-$$
-
-<div class="aside">
-  <p>
-    <strong>Why squared error?</strong> Because the Gaussian log-density is a
-    quadratic. A residual twice as large is four times as unlikely, so the
-    estimator pushes hardest against the biggest residuals. Switch the noise
-    distribution to Laplace ($\varepsilon_i \sim \text&#123;Laplace&#125;(0,b)$) and the
-    same derivation gives <strong>least absolute deviations</strong>, the
-    median regression of robust statistics. Switch to Student-$t$ and you get
-    a robust regression that down-weights outliers.
-  </p>
-</div>
-
-<h2 id="l2-ridge">3. L2 regularizer ⇔ Gaussian prior (ridge)</h2>
-
-<p>Place an independent Gaussian prior on each coefficient:</p>
-
-$$
+\begin&#123;aligned&#125;
+y_i &= x_i^\top\beta + \varepsilon_i,\qquad \varepsilon_i \sim \mathcal N(0,\sigma^2),\\
 \beta_j \;\sim\; \mathcal N(0, \tau^2)
-\qquad\Longrightarrow\qquad
-p(\beta) \;\propto\; \exp\!\left(-\frac&#123;1&#125;&#123;2\tau^2&#125;\sum_j \beta_j^2\right).
+\end&#123;aligned&#125;
 $$
 
 <p>
-The negative log posterior, again up to constants, is the ridge objective:
+The Gaussian log likelihood gives squared error. The Gaussian log prior gives
+an $\ell_2$ penalty. Dropping constants and multiplying by $2\sigma^2$ leaves
+the ridge objective:
 </p>
 
 $$
@@ -139,7 +105,9 @@ $$
 <p>
 The regularization strength <em>is</em> the ratio of noise variance to prior
 variance. Tight prior (small $\tau^2$) means strong shrinkage; vague prior
-(large $\tau^2$) means $\lambda\to 0$ and ridge collapses back to OLS.
+(large $\tau^2$) means $\lambda\to 0$ and ridge collapses back to OLS. The other
+three rows in the dictionary below follow by changing either the likelihood
+(the loss) or the prior shape near zero (the penalty).
 </p>
 
 <div class="aside">
@@ -153,97 +121,13 @@ variance. Tight prior (small $\tau^2$) means strong shrinkage; vague prior
   </p>
 </div>
 
-<h2 id="l1-lasso">4. L1 regularizer ⇔ Laplace prior (LASSO)</h2>
-
-<p>
-Swap the Gaussian prior for a Laplace prior: same symmetric shape, but with
-$|\beta_j|$ in the exponent rather than $\beta_j^2$:
-</p>
-
-$$
-\beta_j \;\sim\; \text&#123;Laplace&#125;(0, b),
-\qquad
-p(\beta_j) \;\propto\; \exp\!\left(-\frac&#123;|\beta_j|&#125;&#123;b&#125;\right).
-$$
-
-<p>The MAP objective becomes the LASSO:</p>
-
-$$
-\hat\beta_&#123;\text&#123;LASSO&#125;&#125;
-\;=\;
-\arg\min_\beta\;\sum_i (y_i - x_i^\top\beta)^2
-\;+\;
-\lambda\sum_j |\beta_j|,
-\qquad
-\lambda \;=\; \frac&#123;\sigma^2&#125;&#123;b&#125;.
-$$
-
-<div class="aside">
-  <p>
-    <strong>Why LASSO selects.</strong> The Laplace log-density $-|\beta_j|/b$
-    is <em>not</em> differentiable at zero: its left and right slopes are
-    $+1/b$ and $-1/b$. That kink means there is a finite range of likelihood
-    gradients for which the prior pull at $\beta_j = 0$ can dominate from
-    either side, and the optimum sits <em>exactly</em> at zero. The Laplace
-    prior also has heavier tails than a Gaussian of comparable scale, so once
-    a coefficient escapes the kink, the prior tolerates large values better
-    than ridge would. The net effect is shrinkage plus selection: some
-    coefficients are pushed to exactly $0$, the rest are only mildly biased.
-  </p>
-</div>
-
-<h2 id="l0-subset">5. L0 regularizer ⇔ sparsity prior (best subset)</h2>
-
-<p>The $\ell_0$ "norm" counts nonzero coefficients:</p>
-
-$$
-\|\beta\|_0 \;=\; \#\&#123;\,j : \beta_j \neq 0\,\&#125;.
-$$
-
-<p>A penalty $\lambda \|\beta\|_0$ corresponds to a spike-and-slab prior:</p>
-
-$$
-z_j \sim \text&#123;Bernoulli&#125;(\pi),
-\qquad
-\beta_j \mid z_j = 0 \;=\; 0,
-\qquad
-\beta_j \mid z_j = 1 \;\sim\; q(\beta_j),
-$$
-
-<p>
-where $q$ is some diffuse "slab" distribution on the nonzero coefficients.
-Each $z_j = 0$ pays $\log\bigl((1-\pi)/\pi\bigr)$ relative to $z_j = 1$ in
-log-prior terms; the magnitude of an included coefficient is essentially
-free under the slab.
-</p>
-
-$$
-\hat\beta_&#123;\ell_0&#125;
-\;=\;
-\arg\min_\beta\;\sum_i (y_i - x_i^\top\beta)^2
-\;+\;
-\lambda\,\|\beta\|_0.
-$$
-
-<div class="aside">
-  <p>
-    <strong>Why L0 is literal model selection, and why we usually don't solve
-    it.</strong> The L0 penalty charges a flat fee per included variable and
-    is indifferent to how large the included coefficients get. That is the
-    Bayesian statement of "choose which variables matter, not how big they
-    are." The cost is computational: minimising $\ell_0$ requires searching
-    over $2^p$ subsets, which is NP-hard in general. <strong>LASSO is the
-    convex relaxation</strong>: the tightest convex penalty that still
-    encourages sparsity, and the reason L1 became the default in practice.
-  </p>
-</div>
-
-<h2 id="shrink-viz">6. Three estimators side by side</h2>
+<h2 id="shrink-viz">3. Three estimators side by side</h2>
 
 <p>
 Slide $\beta_&#123;\text&#123;OLS&#125;&#125;$ and watch the three estimators respond. The top
-panel plots the negative log posterior (the thing being minimised); the bottom
-panel plots the resulting $\hat\beta$ as a function of $\beta_&#123;\text&#123;OLS&#125;&#125;$.
+panel plots the negative log posterior (the thing being minimised), with a small
+inset showing the prior penalty shape; the bottom panel plots the resulting
+$\hat\beta$ as a function of $\beta_&#123;\text&#123;OLS&#125;&#125;$.
 Ridge is a straight line through the origin with slope $1/(1+\lambda)$,
 proportional shrinkage. LASSO is a soft threshold: a flat dead zone of width
 $\lambda$ around the origin, then a line of slope $1$ shifted toward zero by
@@ -294,7 +178,7 @@ zero inside.
   whenever the L0 estimate has selected out.</li>
 </ul>
 
-<h2 id="summary">7. The four-row dictionary</h2>
+<h2 id="summary">4. The four-row dictionary</h2>
 
 <div class="summary-table-wrap">
   <table class="summary-table">
@@ -340,7 +224,7 @@ zero inside.
   </table>
 </div>
 
-<h2 id="geom-viz">8. LASSO lands on axes because diamond constraints have corners</h2>
+<h2 id="geom-viz">5. LASSO lands on axes because diamond constraints have corners</h2>
 
 <p>
 The 1-D picture above shows soft- vs hard-thresholding cleanly, but it doesn't
@@ -411,7 +295,7 @@ Drag the OLS point around. Things to notice:
   than the L2 MAP.</li>
 </ul>
 
-<h2 id="intuition">9. The shape-near-zero intuition</h2>
+<h2 id="intuition">6. The shape-near-zero intuition</h2>
 
 <p>
 The whole story is in the picture of the log-prior near the origin. Three
@@ -465,7 +349,7 @@ facts stop looking arbitrary:
   </li>
 </ul>
 
-<h2 id="caveats">10. MAP discards posterior spread</h2>
+<h2 id="caveats">7. MAP discards posterior spread</h2>
 
 <p>
 MAP collapses the posterior to its mode, which means it ignores everything

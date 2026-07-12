@@ -30,6 +30,7 @@ edge at a time; a whole tree-like structure is present in the representation.
 <Figure title="Figure 1 · Structural probe as tree geometry" canvasId="structural-probe-canvas" width="760" height="440" readoutId="structural-probe-readout">
 <Fragment slot="controls">
   <ControlRange id="structural-layer" label="layer" valueId="structural-layer-v" min="0" max="12" step="1" value="6" />
+  <ControlRange id="structural-step" label="MST step" valueId="structural-step-v" min="0" max="5" step="1" value="5" />
 </Fragment>
 </Figure>
 
@@ -48,33 +49,18 @@ to sat is 1, and from cat to mat is 3, following the path from cat to sat to on
 to mat. Depth counts from the root, so sat has depth 0 and cat has depth 1.
 </p>
 
-<dl class="definition-list">
-  <dt>Tree distance</dt>
-  <dd>The number of dependency edges on the shortest path between two words. In "The cat sat on the mat," cat to mat is 3, along cat to sat to on to mat. The distance probe learns a linear map B so the squared distance $\lVert B(h_i - h_j)\rVert^2$ between contextual vectors approximates this count for every pair of words.</dd>
-  <dt>Tree depth</dt>
-  <dd>The number of edges from a word to the root. The root has depth 0; in the same sentence sat is the root and cat has depth 1. A separately fit probe matches the squared norm $\lVert B h_i\rVert^2$ to depth, which orders words from root to leaves.</dd>
-  <dt>MST extraction</dt>
-  <dd>Predicted pairwise distances do not by themselves form a tree. The minimum spanning tree over them gives the unrooted, unlabeled tree the probe is scored on, compared edge for edge against the gold parse.</dd>
-</dl>
+<p>
+The probe learns a linear map $B$ so squared distances
+$\lVert B(h_i - h_j)\rVert^2$ approximate dependency-tree distances, while
+$\lVert B h_i\rVert^2$ approximates depth from the root.
+</p>
 
-<table class="axis-grid">
-  <caption>Attachment scores, by what they require</caption>
-  <thead>
-    <tr><th></th><th>Directed (head → dependent)</th><th>Undirected</th></tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Unlabeled</th>
-      <td><strong>UAS</strong> Correct head and direction for each word.</td>
-      <td><strong>UUAS</strong> Correct edge, ignoring direction. What structural probes are scored on, because the extracted MST is unrooted.</td>
-    </tr>
-    <tr>
-      <th>Labeled</th>
-      <td><strong>LAS</strong> Correct head plus the relation label (nsubj, obj, …).</td>
-      <td class="na">Not standard. Structural probes recover geometry, not labels, so neither labeled score applies to them.</td>
-    </tr>
-  </tbody>
-</table>
+<p>
+Because predicted distances are pairwise, the probe extracts an unrooted
+minimum spanning tree and scores it with <strong>UUAS</strong>: the fraction of
+gold undirected edges recovered. UAS and LAS require direction or labels, which
+this geometry probe does not produce.
+</p>
 
 <h2>2. Middle-layer peak</h2>
 

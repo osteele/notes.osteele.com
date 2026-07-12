@@ -272,6 +272,20 @@ sweeps through the regimes where the two methods agree, disagree, or both fail.
         <button id="fig1-resample">Resample</button>
       </PresetRow>
 </Fragment>
+<Fragment slot="after">
+  <div class="variant-diff" id="fig2variants-diff" aria-label="MCMC variant pseudocode differences">
+    <div class="variant-line common" data-variants="metropolis mh gibbs rj hmc"><strong>Common:</strong> keep a current state and propose a transition that should preserve $\pi$.</div>
+    <div class="variant-line" data-variants="metropolis"><strong>Metropolis:</strong> propose from symmetric $q(x' \mid x)$, so $q$ cancels from the ratio.</div>
+    <div class="variant-line" data-variants="metropolis mh"><strong>Accept/reject:</strong> draw $u$ and keep the proposal only when $u \lt \alpha$; otherwise record a self-loop.</div>
+    <div class="variant-line" data-variants="mh"><strong>Hastings correction:</strong> multiply the target ratio by $q(x\mid x')/q(x'\mid x)$.</div>
+    <div class="variant-line" data-variants="gibbs"><strong>Gibbs:</strong> choose a coordinate and sample exactly from its full conditional.</div>
+    <div class="variant-line" data-variants="gibbs"><strong>No rejection:</strong> a true full-conditional draw has $\alpha=1$.</div>
+    <div class="variant-line" data-variants="rj"><strong>RJMCMC:</strong> propose a birth/death move between model dimensions.</div>
+    <div class="variant-line" data-variants="rj"><strong>Dimension match:</strong> include proposal probabilities and the Jacobian $|J|$.</div>
+    <div class="variant-line" data-variants="hmc"><strong>HMC:</strong> simulate a gradient-guided trajectory before proposing the endpoint.</div>
+    <div class="variant-line" data-variants="hmc"><strong>Energy correction:</strong> accept by $\min(1,\exp(-\Delta H))$ to correct discretization error.</div>
+  </div>
+</Fragment>
 </Figure>
 
 <h2 id="mcmc">3. MCMC</h2>
@@ -789,299 +803,7 @@ shallow wells before cooling makes that impossible.
 </Fragment>
 </Figure>
 
-<h2 id="side-by-side">4. Shared algorithm structure</h2>
-
-<p>
-These methods produce the same kind of output (an estimate
-of $\mathbb E_\pi[f]$ or samples from $\pi$) but differ in what they ask of
-$\pi$, how they generate candidate states, and how they update. Lining the
-algorithms up row by row makes the family resemblances and the
-algorithm-specific moves visible at a glance.
-</p>
-
-<div class="pseudocode-table-wrap">
-<table class="pseudocode-table">
-  <thead>
-    <tr>
-      <th></th>
-      <th>Rejection</th>
-      <th>Importance sampling</th>
-      <th>Metropolis</th>
-      <th>Metropolis–Hastings</th>
-      <th>Gibbs</th>
-      <th>HMC</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Family</th>
-      <td>i.i.d., exact</td>
-      <td>i.i.d., weighted</td>
-      <td>MCMC</td>
-      <td>MCMC</td>
-      <td>MCMC</td>
-      <td>MCMC</td>
-    </tr>
-    <tr>
-      <th>Requires</th>
-      <td>envelope $M$ with $M\,q(x) \ge \pi(x)$</td>
-      <td>proposal $q$ with $\mathrm&#123;supp&#125;\,q \supseteq \mathrm&#123;supp&#125;\,\pi$</td>
-      <td>$\pi$ pointwise up to a constant</td>
-      <td>$\pi$ pointwise; proposal $q(x'\mid x)$</td>
-      <td>tractable full conditionals $\pi(x_k\mid x_&#123;-k&#125;)$</td>
-      <td>$\pi$ and $\nabla \log \pi$</td>
-    </tr>
-    <tr>
-      <th>Proposal</th>
-      <td class="code">$x \sim q(\cdot)$</td>
-      <td class="code">$x_i \sim q(\cdot),\ i = 1\ldots N$</td>
-      <td class="code">$x' = x + \varepsilon,\ \varepsilon$ symmetric</td>
-      <td class="code">$x' \sim q(\cdot \mid x)$</td>
-      <td class="code">cycle $k$: $x'_k \sim \pi(x_k\mid x_&#123;-k&#125;)$</td>
-      <td class="code">leapfrog $L$ steps from $(x, p)$</td>
-    </tr>
-    <tr>
-      <th>Accept / weight</th>
-      <td class="code">$u &lt; \dfrac&#123;\pi(x)&#125;&#123;M\,q(x)&#125;$</td>
-      <td class="code">$w_i = \dfrac&#123;\pi(x_i)&#125;&#123;q(x_i)&#125;$</td>
-      <td class="code">$u &lt; \min\!\Bigl(1, \dfrac&#123;\pi(x')&#125;&#123;\pi(x)&#125;\Bigr)$</td>
-      <td class="code">$u &lt; \min\!\Bigl(1, \dfrac&#123;\pi(x')\,q(x\mid x')&#125;&#123;\pi(x)\,q(x'\mid x)&#125;\Bigr)$</td>
-      <td class="code">always (exact draw)</td>
-      <td class="code">$u &lt; \min\!\bigl(1,\, e^&#123;H(x,p) - H(x',p')&#125;\bigr)$</td>
-    </tr>
-    <tr>
-      <th>State update</th>
-      <td>keep $x$ if accepted; else discard and resample</td>
-      <td>no state; reweight each draw</td>
-      <td>$x \leftarrow x'$ if accepted; else stay</td>
-      <td>$x \leftarrow x'$ if accepted; else stay</td>
-      <td>$x_k \leftarrow x'_k$ for each coordinate</td>
-      <td>$x \leftarrow x'$ if accepted; resample momentum $p \sim \mathcal N(0, I)$</td>
-    </tr>
-    <tr>
-      <th>Output</th>
-      <td>i.i.d. samples from $\pi$</td>
-      <td>$\hat&#123;\mathbb E&#125;_\pi[f] = \sum_i \tilde w_i\,f(x_i),\ \tilde w_i \propto w_i$</td>
-      <td>correlated chain $X_0, X_1, \ldots \to \pi$</td>
-      <td>correlated chain $X_0, X_1, \ldots \to \pi$</td>
-      <td>correlated chain $X_0, X_1, \ldots \to \pi$</td>
-      <td>correlated chain with longer effective step</td>
-    </tr>
-    <tr>
-      <th>Main failure mode</th>
-      <td>acceptance rate $1/M$ collapses exponentially in $d$</td>
-      <td>weight degeneracy when $q$ poorly covers $\pi$ or in high $d$</td>
-      <td>symmetric-proposal scale fragility</td>
-      <td>poor $q$ ⇒ sticky chain or mode-trapping</td>
-      <td>strong coordinate correlation ⇒ slow mixing</td>
-      <td>step size and trajectory length need tuning; divergences</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-<p>
-Reading across the <strong>Accept / weight</strong> row is where the family
-shows itself most clearly: rejection accepts or discards; IS accepts every
-sample but reweights; Metropolis and MH accept stochastically by a target-
-density ratio (with MH adding the proposal correction $q(x\mid x')/q(x'\mid x)$
-that the symmetric Metropolis case eliminates); Gibbs accepts always but
-restricts the proposal to one-coordinate conditional draws; HMC accepts by an
-energy ratio rather than a density ratio, because its proposal is a
-trajectory rather than a point. Each row in this table is a single design
-decision; each method is one combination.
-</p>
-
-<p>
-Two methods that share a row stay in the same family of failure modes.
-Reading <strong>Main failure mode</strong> shows why: high-$d$ dimension hurts
-rejection and IS for the same reason (geometric weight-mass concentration in
-the proposal-vs-target ratio), while MH and Gibbs share the symptom
-<em>slow mixing</em> but for different reasons (proposal-scale tuning vs.
-posterior anisotropy in coordinate-aligned axes).
-</p>
-
-<h2 id="pair-changes">5. Pair by pair: what changes between methods</h2>
-
-<p>
-The table above shows the design space at a glance. The four cards below
-zoom in on the single-step changes: <em>this</em> turned into <em>that</em>
-by swapping one line of the inner loop. Pseudocode for each pair shares the
-same outer structure, so the differences are confined to the highlighted
-lines.
-</p>
-
-<div class="pair-card">
-  <div class="pair-header">
-    <h3>Rejection ↔ Importance sampling</h3>
-    <p class="pair-tagline">Both draw from $q$. Rejection discards mismatched samples; IS keeps every sample with a weight.</p>
-  </div>
-  <div class="pair-cols">
-    <div class="pair-col">
-      <div class="pair-col-title">Rejection sampling</div>
-<pre><code>samples = []
-<span class="diff">while |samples| &lt; N:</span>
-    x ~ q(·)
-    <span class="diff">u ~ Uniform(0, 1)
-    if u &lt; π(x) / (M·q(x)):
-        samples.append(x)</span>
-return samples            # i.i.d. from π
-</code></pre>
-    </div>
-    <div class="pair-col">
-      <div class="pair-col-title">Importance sampling</div>
-<pre><code>samples = []; weights = []
-<span class="diff">for i = 1 to N:</span>
-    x ~ q(·)
-    <span class="diff">w = π(x) / q(x)
-    samples.append(x)
-    weights.append(w)</span>
-return Σᵢ w̃ᵢ·f(xᵢ)         # w̃ ∝ w
-</code></pre>
-    </div>
-  </div>
-  <p class="pair-note">
-    The accept-or-discard test (left) becomes a weight assignment (right).
-    Rejection wastes a fraction $1 - 1/M$ of draws but returns honest i.i.d.
-    samples; IS wastes none but returns a weighted estimator whose variance
-    depends on how well $q$ covers $\pi$ (see §2 for the variance algebra).
-  </p>
-</div>
-
-<div class="pair-card">
-  <div class="pair-header">
-    <h3>Metropolis ↔ Metropolis–Hastings</h3>
-    <p class="pair-tagline">Asymmetric proposals need a correction factor in the acceptance ratio.</p>
-  </div>
-  <div class="pair-cols">
-    <div class="pair-col">
-      <div class="pair-col-title">Metropolis (symmetric)</div>
-<pre><code>x = x₀
-chain = [x]
-for t = 1 to T:
-    <span class="diff">x' = x + ε,  ε symmetric</span>
-    u ~ Uniform(0, 1)
-    <span class="diff">if u &lt; min(1, π(x') / π(x)):</span>
-        x = x'
-    chain.append(x)
-return chain
-</code></pre>
-    </div>
-    <div class="pair-col">
-      <div class="pair-col-title">Metropolis–Hastings</div>
-<pre><code>x = x₀
-chain = [x]
-for t = 1 to T:
-    <span class="diff">x' ~ q(·|x)</span>
-    u ~ Uniform(0, 1)
-    <span class="diff">if u &lt; min(1, π(x')·q(x|x') /
-                  (π(x)·q(x'|x))):</span>
-        x = x'
-    chain.append(x)
-return chain
-</code></pre>
-    </div>
-  </div>
-  <p class="pair-note">
-    Two lines change. The proposal becomes a general $q(\cdot \mid x)$
-    instead of a symmetric jump, and the accept test picks up the
-    <strong>Hastings correction</strong> $q(x \mid x')/q(x' \mid x)$ that
-    compensates for proposal asymmetry. Metropolis is MH with $q$ symmetric;
-    the correction equals 1 and cancels.
-  </p>
-</div>
-
-<div class="pair-card">
-  <div class="pair-header">
-    <h3>Metropolis–Hastings ↔ Gibbs</h3>
-    <p class="pair-tagline">Replace "propose then accept/reject" with "draw exactly from a full conditional, always accept."</p>
-  </div>
-  <div class="pair-cols">
-    <div class="pair-col">
-      <div class="pair-col-title">Metropolis–Hastings</div>
-<pre><code>x = x₀
-chain = [x]
-for t = 1 to T:
-    <span class="diff">x' ~ q(·|x)
-    u ~ Uniform(0, 1)
-    if u &lt; min(1, π(x')·q(x|x') /
-                  (π(x)·q(x'|x))):
-        x = x'</span>
-    chain.append(x)
-return chain
-</code></pre>
-    </div>
-    <div class="pair-col">
-      <div class="pair-col-title">Gibbs sampling</div>
-<pre><code>x = x₀
-chain = [x]
-for t = 1 to T:
-    <span class="diff">for k = 1 to d:
-        x_k ~ π(x_k | x_&#123;-k&#125;)</span>
-    chain.append(x)
-return chain
-</code></pre>
-    </div>
-  </div>
-  <p class="pair-note">
-    Gibbs replaces the entire propose/accept block with a coordinate cycle of
-    exact conditional draws. The acceptance probability is identically $1$
-    because each conditional draw is from the right distribution by
-    construction. The price: you need the full conditionals $\pi(x_k \mid x_&#123;-k&#125;)$
-    in closed form. When you don't, MH-within-Gibbs replaces one or more of
-    these conditional draws with a local MH step.
-  </p>
-</div>
-
-<div class="pair-card">
-  <div class="pair-header">
-    <h3>Metropolis–Hastings ↔ HMC</h3>
-    <p class="pair-tagline">Replace random-walk proposals with a Hamiltonian trajectory; replace the density ratio with an energy ratio.</p>
-  </div>
-  <div class="pair-cols">
-    <div class="pair-col">
-      <div class="pair-col-title">Metropolis–Hastings (random walk)</div>
-<pre><code>x = x₀
-chain = [x]
-for t = 1 to T:
-    <span class="diff">x' = x + ε,  ε ~ N(0, Σ)</span>
-
-
-    u ~ Uniform(0, 1)
-    <span class="diff">if u &lt; min(1, π(x') / π(x)):</span>
-        x = x'
-    chain.append(x)
-return chain
-</code></pre>
-    </div>
-    <div class="pair-col">
-      <div class="pair-col-title">Hamiltonian Monte Carlo</div>
-<pre><code>x = x₀
-chain = [x]
-for t = 1 to T:
-    <span class="diff">p ~ N(0, I)
-    (x', p') = leapfrog(x, p, ε, L)
-                                  # uses ∇log π</span>
-    u ~ Uniform(0, 1)
-    <span class="diff">if u &lt; min(1, exp(H(x,p) - H(x',p'))):</span>
-        x = x'
-    chain.append(x)
-return chain
-</code></pre>
-    </div>
-  </div>
-  <p class="pair-note">
-    The proposal step changes from a local random jump to a deterministic
-    leapfrog trajectory of length $L\varepsilon$ using $\nabla\log\pi$. The
-    accept test changes from a density ratio to an energy ratio
-    $\exp(H - H')$ where $H(x, p) = -\log\pi(x) + \tfrac12\|p\|^2$. The
-    leapfrog integrator is reversible and volume-preserving, which is what
-    makes the energy-ratio test correct. HMC trades the need for gradients
-    for much longer effective steps and much better mixing in high $d$.
-  </p>
-</div>
-
-<h2 id="decision">6. Method choice by target</h2>
+<h2 id="decision">4. Method choice by target</h2>
 
 <p>
 The decision table summarizes static-target methods. Tags echo the section colors:
@@ -1184,132 +906,38 @@ For state-space targets (Kalman, EKF, UKF, particle filter), see
     font-weight: 700;
   }
 
-  .pseudocode-table-wrap {
-    overflow-x: auto;
-    margin: 18px 0 24px;
-    border: 1px solid var(--rule, #d8d3c5);
-    border-radius: 6px;
-    background: #ffffff;
-  }
-  .pseudocode-table {
-    width: 100%;
-    min-width: 920px;
-    border-collapse: collapse;
-    font-size: 12.5px;
-    line-height: 1.45;
-  }
-  .pseudocode-table thead th {
-    background: rgba(2, 132, 199, 0.08);
-    border-bottom: 2px solid rgba(2, 132, 199, 0.3);
-    padding: 10px 12px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 12px;
-    color: var(--text, #1f2733);
-    white-space: nowrap;
-  }
-  .pseudocode-table thead th:first-child {
-    background: transparent;
-    border-bottom: 2px solid rgba(2, 132, 199, 0.3);
-  }
-  .pseudocode-table tbody th {
-    text-align: left;
-    padding: 10px 12px;
-    background: var(--panel, #fbfbfa);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    font-weight: 600;
-    font-size: 11.5px;
-    color: var(--text-dim, #5a6577);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    vertical-align: top;
-    width: 132px;
-  }
-  .pseudocode-table tbody td {
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    vertical-align: top;
-  }
-  .pseudocode-table tbody tr:last-child th,
-  .pseudocode-table tbody tr:last-child td { border-bottom: none; }
-  .pseudocode-table tbody tr:nth-child(odd) td:not(.code) {
-    background: rgba(0, 0, 0, 0.012);
-  }
-  .pseudocode-table td.code {
-    font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
-    font-size: 11.5px;
-    background: rgba(45, 122, 62, 0.04);
+  .variant-diff {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
   }
 
-  .pair-card {
-    border: 1px solid var(--rule, #d8d3c5);
+  .variant-line {
+    border: 1px solid rgba(90, 101, 119, 0.16);
     border-radius: 6px;
-    background: #ffffff;
-    margin: 20px 0;
-    padding: 14px 16px 12px;
+    padding: 8px 10px;
+    background: rgba(245, 242, 235, 0.45);
+    color: var(--text-dim);
+    font-size: 12.5px;
+    line-height: 1.35;
   }
-  .pair-header h3 {
-    margin: 0 0 4px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text, #1f2733);
+
+  .variant-line.active {
+    border-color: rgba(31, 74, 140, 0.5);
+    background: rgba(31, 74, 140, 0.08);
+    color: var(--text);
   }
-  .pair-header .pair-tagline {
-    margin: 0 0 12px;
-    color: var(--text-dim, #5a6577);
-    font-size: 13px;
-    line-height: 1.4;
+
+  .variant-line.common.active {
+    border-color: rgba(45, 122, 62, 0.38);
+    background: rgba(45, 122, 62, 0.07);
   }
-  .pair-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin: 0 0 12px;
+
+  @media (max-width: 700px) {
+    .variant-diff { grid-template-columns: 1fr; }
   }
-  @media (max-width: 720px) {
-    .pair-cols { grid-template-columns: 1fr; }
-  }
-  .pair-col {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 4px;
-    background: var(--panel, #fbfbfa);
-    overflow: hidden;
-  }
-  .pair-col-title {
-    padding: 6px 10px;
-    background: rgba(2, 132, 199, 0.06);
-    border-bottom: 1px solid rgba(2, 132, 199, 0.2);
-    font-weight: 600;
-    font-size: 12px;
-    color: var(--text-dim, #5a6577);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .pair-col pre {
-    margin: 0;
-    padding: 10px 12px;
-    overflow-x: auto;
-    background: transparent;
-    line-height: 1.55;
-  }
-  .pair-col code {
-    font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
-    font-size: 12px;
-    color: var(--text, #1f2733);
-    white-space: pre;
-  }
-  .pair-col .diff {
-    background: rgba(251, 191, 36, 0.22);
-    border-radius: 2px;
-    padding: 0 2px;
-  }
-  .pair-note {
-    margin: 8px 4px 0;
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--text, #1f2733);
-  }
+
 </style>
 
 

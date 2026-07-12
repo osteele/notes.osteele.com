@@ -333,6 +333,66 @@ function initShrink(): void {
     }
   }
 
+  function drawPriorInset(): void {
+    const ix = padL + innerW - 214;
+    const iy = topY + 14;
+    const iw = 188;
+    const ih = 78;
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.strokeStyle = C.grid;
+    ctx.lineWidth = 1;
+    ctx.fillRect(ix, iy, iw, ih);
+    ctx.strokeRect(ix, iy, iw, ih);
+    ctx.fillStyle = C.text;
+    ctx.font = "600 10px Inter, system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("prior penalty  −log p(β)", ix + 8, iy + 14);
+    const px0 = ix + 18;
+    const py0 = iy + ih - 14;
+    const pw = iw - 30;
+    const ph = ih - 34;
+    ctx.strokeStyle = C.grid;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(px0, py0);
+    ctx.lineTo(px0 + pw, py0);
+    ctx.moveTo(px0 + pw / 2, py0);
+    ctx.lineTo(px0 + pw / 2, py0 - ph);
+    ctx.stroke();
+    const mapX = (b: number) => px0 + ((b + 2) / 4) * pw;
+    const mapY = (v: number) => py0 - (v / Math.max(0.2, 4 * lambda)) * ph;
+    function plotPenalty(fn: (b: number) => number, color: string, dash: number[] = []): void {
+      ctx.save();
+      if (dash.length) ctx.setLineDash(dash);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.7;
+      ctx.beginPath();
+      for (let i = 0; i <= 120; i++) {
+        const b = -2 + (4 * i) / 120;
+        const x = mapX(b);
+        const y = mapY(Math.min(4 * lambda, fn(b)));
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+    plotPenalty((b) => lambda * b * b, C.ridge);
+    plotPenalty((b) => lambda * Math.abs(b), C.lasso);
+    plotPenalty((b) => b === 0 ? 0 : lambda, C.l0, [3, 3]);
+    ctx.fillStyle = C.l0;
+    ctx.beginPath();
+    ctx.arc(mapX(0), mapY(0), 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = C.textDim;
+    ctx.font = "9px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("smooth", ix + 52, iy + ih - 3);
+    ctx.fillText("kink", ix + 106, iy + ih - 3);
+    ctx.fillText("jump", ix + 156, iy + ih - 3);
+    ctx.restore();
+  }
+
   function updateReadout(): void {
     const r = ridgeMap(bOLS, lambda);
     const l = lassoMap(bOLS, lambda);
@@ -351,6 +411,7 @@ function initShrink(): void {
     drawAxes();
     drawCurves();
     drawEstimatorMap();
+    drawPriorInset();
     updateReadout();
   }
 

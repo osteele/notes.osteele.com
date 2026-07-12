@@ -5,7 +5,7 @@ layout: ../../layouts/BaseLayout.astro
 
 # Pages
 
-[JavaScript Arrays](/javascript/arrays/) · [Iteration Methods](/javascript/iteration-methods/) · [p5.js Resources](/p5js/) · [Visual Studio Code for p5.js](/vscode/) · [PoseNet](/posenet/)
+[JavaScript Arrays](/javascript/arrays/) · [Iteration Methods](/javascript/iteration-methods/) · [p5.js Resources](/p5js/) · [Visual Studio Code for p5.js](/tools/vscode/p5js/) · [PoseNet](/posenet/)
 
 # Tutorials and Examples
 

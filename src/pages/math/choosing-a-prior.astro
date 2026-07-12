@@ -190,6 +190,20 @@ The MaxEnt outputs for the standard constraints are exactly the named "default"
 distributions:
 </p>
 
+<Figure title="Figure 1 · MaxEnt density from stated constraints" canvasId="fig-maxent" width="780" height="360" readoutId="fig-maxent-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>selected MaxEnt density</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <label class="control"><span>positive support</span><input id="fig-maxent-positive" type="checkbox" checked /></label>
+  <label class="control"><span>known mean</span><input id="fig-maxent-mean" type="checkbox" checked /></label>
+  <label class="control"><span>known variance</span><input id="fig-maxent-var" type="checkbox" /></label>
+  <label class="control"><span>known E[log x]</span><input id="fig-maxent-log" type="checkbox" /></label>
+</Fragment>
+</Figure>
+
 <table class="prior-table">
   <thead>
     <tr><th>Support</th><th>Constraints</th><th>MaxEnt density</th></tr>
@@ -293,7 +307,7 @@ depends on the question: do you want a uniform-in-$p$ analysis (MaxEnt), or one
 that survives a switch to log-odds (Jeffreys)?
 </p>
 
-<Figure title="Figure 1 · Three 'uninformative' priors on the Bernoulli bias p" canvasId="fig-three-priors" width="780" height="360" readoutId="fig-three-readout">
+<Figure title="Figure 2 · Three 'uninformative' priors on the Bernoulli bias p" canvasId="fig-three-priors" width="780" height="360" readoutId="fig-three-readout">
 <Fragment slot="legend">
   <div class="legend">
     <span><span class="swatch" style="background:#1f4a8c"></span>Flat / MaxEnt: Beta(1, 1)</span>
@@ -328,6 +342,28 @@ flat prior on $p$ becomes peaked around $p=1/2$, Jeffreys becomes flat in log-od
 $\mathbb&#123;R&#125;$. As $n$ grows the posteriors converge — for moderate $n$ the
 disagreement only matters near the boundary $p\approx 0$ or $p\approx 1$, where
 the prior dominates because the likelihood goes to zero.
+</p>
+
+<Figure title="Figure 3 · Flat on σ is not flat on log σ" canvasId="fig-scale-reparam" width="780" height="320" readoutId="fig-scale-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>flat in selected coordinate, shown as density on σ</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlSelect id="fig-scale-coordinate" label="flat coordinate" valueId="fig-scale-coordinate-v" options={[
+    { value: "sigma", label: "σ", selected: true },
+    { value: "log-sigma", label: "log σ" },
+    { value: "sigma2", label: "σ²" },
+  ]} />
+</Fragment>
+</Figure>
+
+<p>
+The scale-parameter version is the same warning in a different coordinate
+system. A density that is flat in $\sigma$ is not flat in $\log\sigma$, and a
+density flat in $\sigma^2$ leans even harder toward large scales. The
+scale-invariant choice is the middle curve, $\pi(\sigma)\propto1/\sigma$.
 </p>
 
 <h2 id="critique">7. Pitfalls and the "ignorance" warning</h2>

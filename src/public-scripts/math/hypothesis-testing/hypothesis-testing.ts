@@ -39,6 +39,25 @@ function erf(x) {
 }
 const normalPdf = (x, m = 0, s = 1) => Math.exp(-0.5 * ((x - m) / s) ** 2) / (s * Math.sqrt(2 * Math.PI));
 const normalCdf = (x, m = 0, s = 1) => 0.5 * (1 + erf((x - m) / (s * Math.SQRT2)));
+const chiSquare1Pdf = (x) => x <= 0 ? 0 : Math.exp(-x / 2) / Math.sqrt(2 * Math.PI * x);
+
+function mirrorRangeControls(aId: string, bId: string) {
+  const a = document.getElementById(aId) as HTMLInputElement | null;
+  const b = document.getElementById(bId) as HTMLInputElement | null;
+  if (!a || !b) return;
+
+  let syncing = false;
+  const sync = (source: HTMLInputElement, target: HTMLInputElement) => {
+    if (syncing || target.value === source.value) return;
+    syncing = true;
+    target.value = source.value;
+    target.dispatchEvent(new Event("input", { bubbles: true }));
+    syncing = false;
+  };
+
+  a.addEventListener("input", () => sync(a, b));
+  b.addEventListener("input", () => sync(b, a));
+}
 
 function drawGridX(ctx, padL, padT, plotW, plotH, ticks) {
   ctx.strokeStyle = C.grid;
@@ -164,6 +183,8 @@ function drawAxisLabels(ctx, padL, padT, plotW, plotH, xMin, xMax, xLabel, yLabe
       if (p === "weak") { thresholdIn.value = "1.64"; effectIn.value = "0.7"; }
       if (p === "strong") { thresholdIn.value = "1.64"; effectIn.value = "2.6"; }
       draw();
+      effectIn.dispatchEvent(new Event("input", { bubbles: true }));
+      thresholdIn.dispatchEvent(new Event("input", { bubbles: true }));
     });
   });
   draw();
@@ -287,9 +308,152 @@ function drawAxisLabels(ctx, padL, padT, plotW, plotH, xMin, xMax, xLabel, yLabe
 })();
 
 // ────────────────────────────────────────────────────────────────────────
-// Figure 3: ROC curve
+// Figure 3: Stein / Wilks accumulation
 // ────────────────────────────────────────────────────────────────────────
 (function fig3() {
+  const canvas = document.getElementById("fig-asymptotics");
+  if (!canvas) return;
+  const nIn = document.getElementById("asym-n");
+  const effectIn = document.getElementById("asym-effect");
+  const nV = document.getElementById("asym-n-v");
+  const effectV = document.getElementById("asym-effect-v");
+  const readout = document.getElementById("asymptotics-readout");
+
+  function drawDensity(ctx, pts, xS, yS, color, fillFrom, fillTo, fillColor) {
+    if (fillFrom !== undefined && fillTo !== undefined) {
+      ctx.beginPath();
+      let started = false;
+      for (let i = 0; i < pts.length; i++) {
+        const [x, y] = pts[i];
+        if (x < fillFrom || x > fillTo) continue;
+        if (!started) {
+          ctx.moveTo(xS(x), yS(0));
+          started = true;
+        }
+        ctx.lineTo(xS(x), yS(y));
+      }
+      if (started) {
+        ctx.lineTo(xS(fillTo), yS(0));
+        ctx.closePath();
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+      }
+    }
+    ctx.beginPath();
+    pts.forEach(([x, y], i) => {
+      if (i === 0) ctx.moveTo(xS(x), yS(y));
+      else ctx.lineTo(xS(x), yS(y));
+    });
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  function draw() {
+    const { ctx, w, h } = setupCanvas(canvas);
+    const n = +nIn.value;
+    const mu = +effectIn.value;
+    nV.textContent = n.toFixed(0);
+    effectV.textContent = mu.toFixed(2);
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, w, h);
+
+    const gap = 34;
+    const padL = 46, padR = 20, padT = 28, padB = 44;
+    const panelW = (w - padL - padR - gap) / 2;
+    const plotH = h - padT - padB;
+    const leftX0 = padL;
+    const rightX0 = padL + panelW + gap;
+
+    const kl = (mu * mu) / 2;
+    const mean0 = -n * kl;
+    const mean1 = n * kl;
+    const sd = mu * Math.sqrt(n);
+    const threshold = mean0 + 1.6448536269514722 * sd;
+    const beta = normalCdf(threshold, mean1, sd);
+    const betaApprox = Math.exp(-n * kl);
+    const xMin = Math.min(mean0 - 3.2 * sd, threshold - 1.2 * sd);
+    const xMax = Math.max(mean1 + 3.2 * sd, threshold + 1.2 * sd);
+    const leftPts0 = [];
+    const leftPts1 = [];
+    for (let i = 0; i <= 260; i++) {
+      const x = xMin + (i / 260) * (xMax - xMin);
+      leftPts0.push([x, normalPdf(x, mean0, sd)]);
+      leftPts1.push([x, normalPdf(x, mean1, sd)]);
+    }
+    const yMaxLeft = Math.max(...leftPts0.map((p) => p[1]), ...leftPts1.map((p) => p[1])) * 1.12;
+    const lx = (x) => leftX0 + ((x - xMin) / (xMax - xMin)) * panelW;
+    const ly = (y) => padT + plotH - (y / yMaxLeft) * plotH;
+
+    ctx.strokeStyle = C.grid;
+    for (let i = 0; i <= 6; i++) {
+      const x = leftX0 + (i / 6) * panelW;
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, padT + plotH);
+      ctx.stroke();
+    }
+    drawDensity(ctx, leftPts0, lx, ly, C.null0, undefined, undefined, C.null0Fill);
+    drawDensity(ctx, leftPts1, lx, ly, C.alt1, xMin, threshold, C.alt1Fill);
+    ctx.strokeStyle = C.threshold;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(lx(threshold), padT);
+    ctx.lineTo(lx(threshold), padT + plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = C.text;
+    ctx.font = "12px -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Σ log Λ", leftX0 + panelW / 2, padT + plotH + 30);
+    ctx.fillText("Stein: fixed α ≈ 0.05", leftX0 + panelW / 2, padT - 10);
+
+    const rxMin = 0;
+    const rxMax = 8;
+    const rx = (x) => rightX0 + ((x - rxMin) / (rxMax - rxMin)) * panelW;
+    const wilksScale = 1 + 1.8 / Math.sqrt(n);
+    const chiPts = [];
+    const finitePts = [];
+    for (let i = 0; i <= 260; i++) {
+      const x = 0.03 + (i / 260) * (rxMax - 0.03);
+      chiPts.push([x, chiSquare1Pdf(x)]);
+      finitePts.push([x, chiSquare1Pdf(x / wilksScale) / wilksScale]);
+    }
+    const yMaxRight = 1.15;
+    const ry = (y) => padT + plotH - Math.min(1, y / yMaxRight) * plotH;
+    ctx.strokeStyle = C.grid;
+    for (let i = 0; i <= 8; i++) {
+      const x = rightX0 + (i / 8) * panelW;
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, padT + plotH);
+      ctx.stroke();
+    }
+    drawDensity(ctx, finitePts, rx, ry, C.purple, undefined, undefined, C.null0Fill);
+    drawDensity(ctx, chiPts, rx, ry, C.green, undefined, undefined, C.green);
+    ctx.fillStyle = C.text;
+    ctx.textAlign = "center";
+    ctx.fillText("-2 log Λ under H0", rightX0 + panelW / 2, padT + plotH + 30);
+    ctx.fillText("Wilks: finite n → χ²₁", rightX0 + panelW / 2, padT - 10);
+
+    if (readout) {
+      readout.innerHTML =
+        `<div class="row"><span class="lbl">KL exponent D(P₀‖P₁)</span><span>${kl.toFixed(3)}</span></div>` +
+        `<div class="row"><span class="lbl">β at fixed α≈0.05</span><span>${beta.toExponential(2)}</span></div>` +
+        `<div class="row"><span class="lbl">Stein envelope exp(−nD)</span><span>${betaApprox.toExponential(2)}</span></div>` +
+        `<div class="row"><span class="lbl">Wilks finite-n spread factor</span><span>${wilksScale.toFixed(2)}×</span></div>`;
+    }
+  }
+
+  [nIn, effectIn].forEach((input) => input.addEventListener("input", draw));
+  draw();
+  window.addEventListener("resize", draw);
+})();
+
+// ────────────────────────────────────────────────────────────────────────
+// Figure 4: ROC curve
+// ────────────────────────────────────────────────────────────────────────
+(function fig4() {
   const canvas = document.getElementById("fig-roc");
   if (!canvas) return;
   const effectIn = document.getElementById("roc-effect");
@@ -383,12 +547,15 @@ function drawAxisLabels(ctx, padL, padT, plotW, plotH, xMin, xMax, xLabel, yLabe
   window.addEventListener("resize", draw);
 })();
 
+mirrorRangeControls("ab-effect", "roc-effect");
+mirrorRangeControls("ab-threshold", "roc-threshold");
+
 // ────────────────────────────────────────────────────────────────────────
-// Figure 4: Bayes risk vs threshold
+// Figure 5: Bayes risk vs threshold
 // R(t) = π0 c_I α(t) + π1 c_II β(t)
 // Optimal: t* = log((π0 c_I) / (π1 c_II)) / μ + μ/2
 // ────────────────────────────────────────────────────────────────────────
-(function fig4() {
+(function fig5() {
   const canvas = document.getElementById("fig-bayes");
   if (!canvas) return;
   const effectIn = document.getElementById("bayes-effect");

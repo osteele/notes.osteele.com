@@ -1,0 +1,193 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="False-Belief Tasks" breadcrumb="False-Belief Tasks" section="phenomena-and-circuits">
+<Hero title="False-Belief Tasks" subtitle="A useful false-belief stimulus must defeat shortcuts that answer from recency, copying, or visibility instead of belief." />
+
+<p>
+False-belief tasks separate what is true from what an agent believes. In a
+Sally-Anne style vignette, an object moves while Sally is away, so Sally's search
+location differs from reality. For language models, the hard part is not only
+the story logic. It is designing variants where a shallow heuristic cannot get
+the same answer.
+</p>
+
+<Figure title="Figure 1 · Toggle controls and see which shortcut still wins" canvasId="false-belief-canvas" width="760" height="430" readoutId="false-belief-readout">
+<Fragment slot="controls">
+  <label class="control checkbox-control"><input id="fb-order" type="checkbox" checked /> randomized order</label>
+  <label class="control checkbox-control"><input id="fb-copy" type="checkbox" checked /> copy-proof values</label>
+  <label class="control checkbox-control"><input id="fb-visible" type="checkbox" checked /> visibility stated</label>
+</Fragment>
+</Figure>
+
+<h2>1. The shortcut is part of the task</h2>
+
+<p>
+A recency heuristic answers with the last-mentioned location. A copy heuristic
+answers by copying the queried object's current value. A visibility heuristic
+ignores belief unless the story explicitly says who saw the move. A good
+stimulus removes these shortcuts one by one, so success has to track the
+agent's information state.
+</p>
+
+<Aside>
+  <strong>Controls are not decoration.</strong> If a shortcut solves the item,
+  the item is not evidence for belief tracking, even when the surface story is a
+  classic false-belief story.
+</Aside>
+
+<h2>2. Unexpected contents and change of location</h2>
+
+<p>
+Unexpected-contents tasks ask what someone thinks is inside a container after
+the contents are revealed to the reader. Change-of-location tasks ask where an
+agent will look after an object moves unseen. Both require a belief state that
+can diverge from reality, and both need minimal pairs where the reality answer
+and belief answer trade places.
+</p>
+
+<Figure title="Figure 2 · Belief answer versus reality answer" canvasId="false-belief-answer-canvas" width="760" height="340" readoutId="false-belief-answer-readout">
+<Fragment slot="controls">
+  <label class="control checkbox-control"><input id="fb-agent-sees" type="checkbox" /> agent sees the move</label>
+</Fragment>
+</Figure>
+
+<div class="source-list">
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/mental-spaces/">Mental Spaces</a> for the belief/reality frame distinction.</li>
+    <li><a href="/ml/binding/">Binding</a> for source/use/distractor controls.</li>
+    <li><a href="/ml/represented-vs-expressed-knowledge/">Represented vs. Expressed Knowledge</a> for internal belief readouts that may not surface.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/mental-spaces/", tag: "Frames", title: "Mental Spaces", role: "The representation vocabulary behind belief tasks." },
+  { href: "/ml/interchange-interventions/", tag: "Causal", title: "Interchange Interventions", role: "How to test whether a belief variable is used." },
+]} />
+
+<style>
+  .checkbox-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.88rem;
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const $ = (id) => document.getElementById(id);
+    function env(id, logicalW, logicalH) {
+      const canvas = $(id);
+      if (!canvas) return null;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const cssW = rect.width || logicalW;
+      const cssH = rect.height || logicalH;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform((cssW / logicalW) * dpr, 0, 0, (cssH / logicalH) * dpr, 0, 0);
+      return { ctx };
+    }
+    function badge(ctx, x, y, label, ok) {
+      ctx.fillStyle = ok ? "#dcfce7" : "#fee2e2";
+      ctx.strokeStyle = ok ? "#16a34a" : "#be123c";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.roundRect(x, y, 170, 44, 999);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 13px system-ui";
+      ctx.fillText(label, x + 18, y + 28);
+    }
+    function drawControls() {
+      const out = env("false-belief-canvas", 760, 430);
+      if (!out) return;
+      const ctx = out.ctx;
+      const order = $("fb-order")?.checked;
+      const copy = $("fb-copy")?.checked;
+      const visible = $("fb-visible")?.checked;
+      const recencyWorks = !order;
+      const copyWorks = !copy;
+      const visibilityWorks = !visible;
+      ctx.clearRect(0, 0, 760, 430);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("Sally leaves. Anne moves the marble from basket to box.", 44, 42);
+      ctx.fillStyle = "#64748b";
+      ctx.font = "13px system-ui";
+      ctx.fillText("Question: where will Sally look first?", 44, 64);
+      const scenes = [
+        { x: 92, y: 150, label: "basket", fill: "#fef3c7" },
+        { x: 300, y: 150, label: "box", fill: "#e0f2fe" },
+        { x: 536, y: 150, label: "Sally away", fill: "#f8fafc" },
+      ];
+      scenes.forEach((s) => {
+        ctx.fillStyle = s.fill;
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.beginPath();
+        ctx.roundRect(s.x, s.y, 130, 92, 12);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#111827";
+        ctx.font = "700 15px system-ui";
+        ctx.fillText(s.label, s.x + 24, s.y + 52);
+      });
+      ctx.strokeStyle = "#be123c";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(222, 196);
+      ctx.lineTo(300, 196);
+      ctx.stroke();
+      badge(ctx, 76, 306, "recency shortcut", recencyWorks);
+      badge(ctx, 294, 306, "copy shortcut", copyWorks);
+      badge(ctx, 512, 306, "visibility shortcut", visibilityWorks);
+      const live = [recencyWorks && "recency", copyWorks && "copy", visibilityWorks && "visibility"].filter(Boolean);
+      $("false-belief-readout") && ($("false-belief-readout").textContent = live.length ? `Still solvable by ${live.join(", ")}. Add the missing controls before treating success as belief tracking.` : "All three shortcuts are blocked; the belief answer must be maintained apart from reality.");
+    }
+    function drawAnswer() {
+      const out = env("false-belief-answer-canvas", 760, 340);
+      if (!out) return;
+      const ctx = out.ctx;
+      const sees = $("fb-agent-sees")?.checked;
+      ctx.clearRect(0, 0, 760, 340);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("If Sally saw the move, belief collapses back to reality", 44, 42);
+      function bar(x, label, place, color) {
+        ctx.fillStyle = "#fff";
+        ctx.strokeStyle = "#d7dde8";
+        ctx.beginPath();
+        ctx.roundRect(x, 105, 270, 130, 14);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.roundRect(x + 28, 164, 214, 34, 10);
+        ctx.fill();
+        ctx.fillStyle = "#111827";
+        ctx.font = "700 15px system-ui";
+        ctx.fillText(label, x + 28, 140);
+        ctx.font = "700 18px system-ui";
+        ctx.fillText(place, x + 100, 188);
+      }
+      bar(96, "belief answer", sees ? "box" : "basket", sees ? "#dbeafe" : "#fef3c7");
+      bar(396, "reality answer", "box", "#dbeafe");
+      $("false-belief-answer-readout") && ($("false-belief-answer-readout").textContent = sees ? "When Sally sees the move, belief and reality agree. This is a true-belief control, not a false-belief item." : "When Sally misses the move, belief=basket while reality=box; the two answers are de-confounded.");
+    }
+    ["fb-order", "fb-copy", "fb-visible"].forEach((id) => $(id)?.addEventListener("change", drawControls));
+    $("fb-agent-sees")?.addEventListener("change", drawAnswer);
+    window.addEventListener("resize", () => { drawControls(); drawAnswer(); });
+    drawControls();
+    drawAnswer();
+  })();
+</script>
+</ExplainerLayout>

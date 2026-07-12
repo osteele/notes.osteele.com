@@ -15,7 +15,7 @@ If you prefer white-on-black text…
 
 ![](/images/visual-studio-theme-color/visual-studio-theme-color-03.png)
 
-I use a light theme such as “Light (Visual Studio)”. 
+I use a light theme such as “Light (Visual Studio)”.
 
 ## Colored Tabs
 

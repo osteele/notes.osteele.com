@@ -218,7 +218,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
 
         <h2 id="pearson">1. Pearson&rsquo;s r misses symmetric nonlinear dependence</h2>
         <p>
-          Pearson&rsquo;s $r$ is a coefficient of <em>linear</em> dependence: it measures whether the cloud of points stretches along a diagonal. Symmetric nonlinear relationships, such as a parabola, a sine wave, or a circle, can have $r &bsol;approx 0$ while $X$ and $Y$ are tightly coupled, even deterministic. Rank-based generalizations (Spearman, Kendall) fix monotone misses but not the symmetric ones. The 2007 paper&rsquo;s motivating quote: &ldquo;distance correlation is zero only if the random vectors are independent.&rdquo;
+          Pearson&rsquo;s $r$ is a coefficient of <em>linear</em> dependence: it measures whether the cloud of points stretches along a diagonal. Symmetric nonlinear relationships, such as a parabola, a sine wave, or a circle, can have $r \approx 0$ while $X$ and $Y$ are tightly coupled, even deterministic. Rank-based generalizations (Spearman, Kendall) fix monotone misses but not the symmetric ones. The 2007 paper&rsquo;s motivating quote: &ldquo;distance correlation is zero only if the random vectors are independent.&rdquo;
         </p>
 
         <div class="panel">
@@ -242,43 +242,43 @@ import NextCards from "../../components/explainer/NextCards.astro";
           <svg id="d1-scatter" viewBox="0 0 360 220" width="360" height="220" style="margin: 0 auto;"></svg>
           <div class="readout">
             <div class="stat"><div class="label">Pearson r</div><div class="val" id="d1-pearson">&mdash;</div></div>
-            <div class="stat"><div class="label">Spearman $&bsol;rho$</div><div class="val" id="d1-spearman">&mdash;</div></div>
+            <div class="stat"><div class="label">Spearman $\rho$</div><div class="val" id="d1-spearman">&mdash;</div></div>
             <div class="stat"><div class="label">Distance correlation</div><div class="val" id="d1-dcor">&mdash;</div></div>
           </div>
           <div class="legend">
-            Spearman&rsquo;s $&bsol;rho$ patches the linearity assumption for <em>monotone</em> relationships, but still collapses on the symmetric ones (parabola, circle, cross). The 2007 paper specifically calls out rank-based tests as &ldquo;ineffective for testing nonmonotone types of dependence,&rdquo; precisely the gap distance correlation closes.
+            Spearman&rsquo;s $\rho$ patches the linearity assumption for <em>monotone</em> relationships, but still collapses on the symmetric ones (parabola, circle, cross). The 2007 paper specifically calls out rank-based tests as &ldquo;ineffective for testing nonmonotone types of dependence,&rdquo; precisely the gap distance correlation closes.
           </div>
         </div>
 
         <h2 id="recipe">2. The 2007 definition</h2>
         <p>
-          The population coefficient is built from a weighted $L^2$ distance between the joint characteristic function $&bsol;phi_&lbrace;X,Y&rbrace;$ and the product of marginals $&bsol;phi_X&bsol;phi_Y$:
+          The population coefficient is built from a weighted $L^2$ distance between the joint characteristic function $\phi_&#123;X,Y&#125;$ and the product of marginals $\phi_X\phi_Y$:
         </p>
         <div class="formula">
-          $$V^2(X,Y) = &bsol;int |&bsol;phi_&lbrace;X,Y&rbrace;(t,s) - &bsol;phi_X(t)&bsol;phi_Y(s)|^2 w(t,s)&bsol;,dt&bsol;,ds$$
+          $$V^2(X,Y) = \int |\phi_&#123;X,Y&#125;(t,s) - \phi_X(t)\phi_Y(s)|^2 w(t,s)\,dt\,ds$$
         </div>
         <p>
-          The weight $w(t,s) &bsol;propto |t|^&lbrace;-(1+p)&rbrace; |s|^&lbrace;-(1+q)&rbrace;$ is non-integrable on purpose: integrable weights collapse this measure to $&bsol;rho^2$ in the small-signal limit and so cannot distinguish dependence from independence. Under finite first moments, the integral reduces to a compact expected-distance identity:
+          The weight $w(t,s) \propto |t|^&#123;-(1+p)&#125; |s|^&#123;-(1+q)&#125;$ is non-integrable on purpose: integrable weights collapse this measure to $\rho^2$ in the small-signal limit and so cannot distinguish dependence from independence. Under finite first moments, the integral reduces to a compact expected-distance identity:
         </p>
         <div class="formula">
-          $$V^2(X,Y) = &bsol;mathbb&lbrace;E&rbrace;|X-X'||Y-Y'| + &bsol;mathbb&lbrace;E&rbrace;|X-X'|&bsol;,&bsol;mathbb&lbrace;E&rbrace;|Y-Y'| - 2&bsol;mathbb&lbrace;E&rbrace;|X-X'||Y-Y''|$$
+          $$V^2(X,Y) = \mathbb&#123;E&#125;|X-X'||Y-Y'| + \mathbb&#123;E&#125;|X-X'|\,\mathbb&#123;E&#125;|Y-Y'| - 2\mathbb&#123;E&#125;|X-X'||Y-Y''|$$
         </div>
         <p>
-          which is what the sample statistic estimates. Form the matrix of pairwise distances $a_&lbrace;ij&rbrace; = |X_i - X_j|$, <em>double-center</em> it (subtract row means, column means, add back the grand mean), do the same for $Y$, and take the entry-wise mean of the product:
+          which is what the sample statistic estimates. Form the matrix of pairwise distances $a_&#123;ij&#125; = |X_i - X_j|$, <em>double-center</em> it (subtract row means, column means, add back the grand mean), do the same for $Y$, and take the entry-wise mean of the product:
         </p>
         <div class="formula">
-          $$V_n^2(X,Y) = &lbrace;1&bsol;over n^2&rbrace;&bsol;sum_&lbrace;i,j&rbrace; A_&lbrace;ij&rbrace;B_&lbrace;ij&rbrace;, &bsol;qquad dCor_n = &lbrace;V_n(X,Y)&bsol;over &bsol;sqrt&lbrace;V_n(X)V_n(Y)&rbrace;&rbrace;$$
+          $$V_n^2(X,Y) = &#123;1\over n^2&#125;\sum_&#123;i,j&#125; A_&#123;ij&#125;B_&#123;ij&#125;, \qquad dCor_n = &#123;V_n(X,Y)\over \sqrt&#123;V_n(X)V_n(Y)&#125;&#125;$$
         </div>
         <p>
           Under finite first moments, $V^2(X,Y) = 0$ iff $X$ and $Y$ are independent, in arbitrary, possibly different, Euclidean dimensions. This is the 2007 paper&rsquo;s headline theorem; everything else follows from it.
         </p>
         <p>
-          For one classical reference point: when $(X,Y)$ are bivariate standard normal with correlation $&bsol;rho$, distance correlation has a closed form (Theorem 7). It always lies <em>below</em> $|&bsol;rho|$, with the ratio $R(X,Y)/|&bsol;rho|$ bottoming out near $0.891$ as $&bsol;rho &bsol;to 0$:
+          For one classical reference point: when $(X,Y)$ are bivariate standard normal with correlation $\rho$, distance correlation has a closed form (Theorem 7). It always lies <em>below</em> $|\rho|$, with the ratio $R(X,Y)/|\rho|$ bottoming out near $0.891$ as $\rho \to 0$:
         </p>
 
         <div class="panel">
           <div class="controls">
-            <label>$&bsol;rho$ (population correlation)
+            <label>$\rho$ (population correlation)
               <input type="range" id="dbvn-rho" min="-95" max="95" value="50" />
               <span id="dbvn-rho-val" class="mono" style="width:42px;display:inline-block">+0.50</span>
             </label>
@@ -291,23 +291,23 @@ import NextCards from "../../components/explainer/NextCards.astro";
             </div>
             <div>
               <svg id="dbvn-curve" viewBox="0 0 320 240" width="320" height="240"></svg>
-              <div class="caption">$R^2(&bsol;rho)$ and $&bsol;rho^2$: closed form (solid) vs. empirical $dCor^2$ (dot)</div>
+              <div class="caption">$R^2(\rho)$ and $\rho^2$: closed form (solid) vs. empirical $dCor^2$ (dot)</div>
             </div>
           </div>
           <div class="readout">
             <div class="stat"><div class="label">Pearson r (sample)</div><div class="val dim" id="dbvn-r">&mdash;</div></div>
             <div class="stat"><div class="label">R (closed form)</div><div class="val" id="dbvn-R">&mdash;</div></div>
             <div class="stat"><div class="label">dCor (sample)</div><div class="val" id="dbvn-dcor">&mdash;</div></div>
-            <div class="stat"><div class="label">$R / |&bsol;rho|$</div><div class="val dim" id="dbvn-ratio">&mdash;</div></div>
+            <div class="stat"><div class="label">$R / |\rho|$</div><div class="val dim" id="dbvn-ratio">&mdash;</div></div>
           </div>
           <div class="legend">
-            Even in the one case where Pearson is the gold standard, distance correlation is a smooth, slightly attenuated version of $|&bsol;rho|$. The interest of dCor isn&rsquo;t this regime; it&rsquo;s everywhere else, where $&bsol;rho$ fails entirely.
+            Even in the one case where Pearson is the gold standard, distance correlation is a smooth, slightly attenuated version of $|\rho|$. The interest of dCor isn&rsquo;t this regime; it&rsquo;s everywhere else, where $\rho$ fails entirely.
           </div>
         </div>
 
         <h2 id="test">3. Testing independence</h2>
         <p>
-          The sample statistic $V_n^2$ is non-negative but has no clean closed-form null distribution. The 2007 paper proved that under independence and finite first moments, $nV_n^2$ converges in distribution to a quadratic form $&bsol;sum_j &bsol;lambda_j Z_j^2$ in i.i.d. standard normals, with eigenvalues that depend on the distribution of $(X,Y)$. Useful asymptotically, but distribution-dependent. The practical recommendation is a <strong>permutation test</strong>: hold $X$ fixed, shuffle the $Y$ values to break any real dependence, recompute the statistic, and see how often the shuffled value exceeds the observed one.
+          The sample statistic $V_n^2$ is non-negative but has no clean closed-form null distribution. The 2007 paper proved that under independence and finite first moments, $nV_n^2$ converges in distribution to a quadratic form $\sum_j \lambda_j Z_j^2$ in i.i.d. standard normals, with eigenvalues that depend on the distribution of $(X,Y)$. Useful asymptotically, but distribution-dependent. The practical recommendation is a <strong>permutation test</strong>: hold $X$ fixed, shuffle the $Y$ values to break any real dependence, recompute the statistic, and see how often the shuffled value exceeds the observed one.
         </p>
 
         <div class="panel">
@@ -351,9 +351,9 @@ import NextCards from "../../components/explainer/NextCards.astro";
         </p>
         <ul style="font-size:14px;margin:0 0 12px 20px;">
           <li><strong>Pearson&rsquo;s $r$ and Wilks&rsquo; likelihood-ratio test.</strong> Optimal under Gaussianity. Heavy tails or nonlinear coupling break them; the 2007 paper shows Wilks&rsquo; LRT with inflated Type-I error on $t_1$-distributed data, and near-zero power on multiplicative-noise alternatives.</li>
-          <li><strong>Spearman&rsquo;s $&bsol;rho$, Kendall&rsquo;s $&bsol;tau$, Puri-Sen rank correlation.</strong> Distribution-free for <em>monotone</em> alternatives. Power flatlines on symmetric non-monotone dependence (parabolas, sinusoids, multiplicative noise), visible directly in &sect; 1 above.</li>
+          <li><strong>Spearman&rsquo;s $\rho$, Kendall&rsquo;s $\tau$, Puri-Sen rank correlation.</strong> Distribution-free for <em>monotone</em> alternatives. Power flatlines on symmetric non-monotone dependence (parabolas, sinusoids, multiplicative noise), visible directly in &sect; 1 above.</li>
           <li><strong>The Mantel test (1967).</strong> Permutation correlation between two raw distance matrices. Widely used in ecology, but its statistic does not double-center the matrices, so it is not a consistent test of independence; it can return zero when $X$ and $Y$ are dependent. The 2014 paper compares its partial-dCor test directly against partial Mantel and dominates it.</li>
-          <li><strong>Hoeffding&rsquo;s $D$, Blum-Kiefer-Rosenblatt.</strong> Genuine if-and-only-if independence coefficients via the joint vs. product CDFs, but defined only for <em>bivariate continuous</em> distributions. They do not extend to vectors in $&bsol;mathbb&lbrace;R&rbrace;^p &bsol;times &bsol;mathbb&lbrace;R&rbrace;^q$.</li>
+          <li><strong>Hoeffding&rsquo;s $D$, Blum-Kiefer-Rosenblatt.</strong> Genuine if-and-only-if independence coefficients via the joint vs. product CDFs, but defined only for <em>bivariate continuous</em> distributions. They do not extend to vectors in $\mathbb&#123;R&#125;^p \times \mathbb&#123;R&#125;^q$.</li>
           <li><strong>Mutual information estimators (Kraskov et al. 2004, kernel-based).</strong> Also characterize independence in any dimension, but require bandwidth or k-neighbour tuning and don&rsquo;t produce a single canonical scalar.</li>
           <li><strong>HSIC (Gretton et al. 2005).</strong> A near-contemporaneous kernel-based independence criterion, conceptually very close: also an inner product of centered objects in a Hilbert space (an RKHS). The two were later shown to coincide for a particular distance-induced kernel (Sejdinovic et al. 2013).</li>
         </ul>
@@ -364,8 +364,8 @@ import NextCards from "../../components/explainer/NextCards.astro";
         <div class="part-divider">Part II &middot; <span class="part-name">Partial dCor and dissimilarities (2014)</span></div>
 
         <div class="framing">
-          The 2007 sample statistic $V_n^2 = n^&lbrace;-2&rbrace;&bsol;sum A_&lbrace;ij&rbrace;B_&lbrace;ij&rbrace;$ is a <em>bilinear form</em> on double-centered matrices, but it is not a clean inner product on a Hilbert space; it is biased, and there is no natural projection geometry on which to build a partial-correlation analogue. The 2014 paper&rsquo;s observation is that a slightly different centering rule resolves all of these issues. Replace double-centering with <em>U-centering</em> ($&bsol;widetilde A$), and the bilinear form
-          $(&bsol;widetilde A &bsol;cdot &bsol;widetilde B) = &lbrace;1&bsol;over n(n-3)&rbrace;&bsol;sum_&lbrace;i&bsol;ne j&rbrace;&bsol;widetilde A_&lbrace;ij&rbrace;&bsol;widetilde B_&lbrace;ij&rbrace;$
+          The 2007 sample statistic $V_n^2 = n^&#123;-2&#125;\sum A_&#123;ij&#125;B_&#123;ij&#125;$ is a <em>bilinear form</em> on double-centered matrices, but it is not a clean inner product on a Hilbert space; it is biased, and there is no natural projection geometry on which to build a partial-correlation analogue. The 2014 paper&rsquo;s observation is that a slightly different centering rule resolves all of these issues. Replace double-centering with <em>U-centering</em> ($\widetilde A$), and the bilinear form
+          $(\widetilde A \cdot \widetilde B) = &#123;1\over n(n-3)&#125;\sum_&#123;i\ne j&#125;\widetilde A_&#123;ij&#125;\widetilde B_&#123;ij&#125;$
           becomes a positive semidefinite inner product on a Hilbert space $H_n$ of centered matrices. The general recipe: pick a centering that removes the nuisance row, column, and grand-mean structure so the residuals&rsquo; bilinear form (a) still captures dependence and (b) is PSD. Three things follow:
           <ul>
             <li>The inner product is an <strong>unbiased</strong> estimator of $V^2(X,Y)$ (&sect; 4 below).</li>
@@ -379,10 +379,10 @@ import NextCards from "../../components/explainer/NextCards.astro";
           Where the double-centered estimator $V_n^2$ divides row and column sums by $n$ and the grand sum by $n^2$, U-centering uses $n-2$ and $(n-1)(n-2)$, the &ldquo;leave-one-out&rdquo; counts that make the expectation algebra come out cleanly:
         </p>
         <div class="formula">
-          $$&bsol;widetilde A_&lbrace;ij&rbrace; = a_&lbrace;ij&rbrace; - &lbrace;a_&lbrace;i&bsol;cdot&rbrace;&bsol;over n-2&rbrace; - &lbrace;a_&lbrace;&bsol;cdot j&rbrace;&bsol;over n-2&rbrace; + &lbrace;a_&lbrace;&bsol;cdot&bsol;cdot&rbrace;&bsol;over (n-1)(n-2)&rbrace;, &bsol;qquad i&bsol;ne j$$
+          $$\widetilde A_&#123;ij&#125; = a_&#123;ij&#125; - &#123;a_&#123;i\cdot&#125;\over n-2&#125; - &#123;a_&#123;\cdot j&#125;\over n-2&#125; + &#123;a_&#123;\cdot\cdot&#125;\over (n-1)(n-2)&#125;, \qquad i\ne j$$
         </div>
         <p>
-          Diagonal entries are set to zero. Proposition 1: $(&bsol;widetilde A &bsol;cdot &bsol;widetilde B)$ is an <em>unbiased</em> estimator of the population $V^2(X,Y)$. Below: a Monte Carlo comparing the 2007 estimator with its 2014 replacement as $n$ increases.
+          Diagonal entries are set to zero. Proposition 1: $(\widetilde A \cdot \widetilde B)$ is an <em>unbiased</em> estimator of the population $V^2(X,Y)$. Below: a Monte Carlo comparing the 2007 estimator with its 2014 replacement as $n$ increases.
         </p>
 
         <div class="panel">
@@ -406,11 +406,11 @@ import NextCards from "../../components/explainer/NextCards.astro";
           <svg id="d2-plot" viewBox="0 0 540 280" width="540" height="280" style="margin: 0 auto;"></svg>
           <div class="legend" style="text-align:center; margin-top: 4px;">
             <span class="key" style="background: var(--neg)"></span> biased $V_n^2$ (double-centered) &nbsp;
-            <span class="key" style="background: var(--accent)"></span> unbiased $(&bsol;widetilde A&bsol;cdot&bsol;widetilde B)$ (U-centered) &nbsp;
+            <span class="key" style="background: var(--accent)"></span> unbiased $(\widetilde A\cdot\widetilde B)$ (U-centered) &nbsp;
             <span class="key" style="background: var(--pos)"></span> long-run truth
           </div>
           <p class="footnote" style="margin-top:8px">
-            With $X &bsol;perp Y$ the truth is exactly zero, and the bias of $V_n^2$ is most visible: positive, decaying like $1/n$. The unbiased estimator fluctuates symmetrically around zero (it can be negative; remember, it is an inner product, not a squared length).
+            With $X \perp Y$ the truth is exactly zero, and the bias of $V_n^2$ is most visible: positive, decaying like $1/n$. The unbiased estimator fluctuates symmetrically around zero (it can be negative; remember, it is an inner product, not a squared length).
           </p>
         </div>
 
@@ -419,8 +419,8 @@ import NextCards from "../../components/explainer/NextCards.astro";
           The U-centered matrices live in a Hilbert space $H_n$ with the inner product above. Once we have an inner product, every concept from Euclidean geometry (lengths, angles, orthogonal projections) transfers automatically. <em>Partial distance correlation</em> is just the standard geometric construction:
         </p>
         <ol style="font-size:14px;margin:0 0 12px 20px;">
-          <li>Form U-centered matrices $&bsol;widetilde A, &bsol;widetilde B, &bsol;widetilde C$ from $X, Y, Z$.</li>
-          <li>Project $&bsol;widetilde A$ and $&bsol;widetilde B$ onto the orthogonal complement of $&bsol;widetilde C$. Call the residuals $P_&lbrace;Z^&bsol;perp&rbrace;(&bsol;widetilde A) = &bsol;widetilde A - &bsol;alpha&bsol;widetilde C$ and $P_&lbrace;Z^&bsol;perp&rbrace;(&bsol;widetilde B) = &bsol;widetilde B - &bsol;beta&bsol;widetilde C$.</li>
+          <li>Form U-centered matrices $\widetilde A, \widetilde B, \widetilde C$ from $X, Y, Z$.</li>
+          <li>Project $\widetilde A$ and $\widetilde B$ onto the orthogonal complement of $\widetilde C$. Call the residuals $P_&#123;Z^\perp&#125;(\widetilde A) = \widetilde A - \alpha\widetilde C$ and $P_&#123;Z^\perp&#125;(\widetilde B) = \widetilde B - \beta\widetilde C$.</li>
           <li>$R^*(X,Y;Z)$ is the cosine of the angle between the residuals.</li>
         </ol>
         <p>
@@ -444,7 +444,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
             <button id="d3-resample">Resample</button>
           </div>
           <svg id="d3-geom" viewBox="0 0 540 320" width="540" height="320" style="margin: 0 auto;"></svg>
-          <div class="caption">Vectors live in $H_n$; they are sketched here in 2D using their true pairwise angles (the angle between $&bsol;widetilde A$ and $&bsol;widetilde B$ is exact; the placement of $&bsol;widetilde A$ and $&bsol;widetilde B$ on either side of $&bsol;widetilde C$ is chosen so the partial cosine is realised.)</div>
+          <div class="caption">Vectors live in $H_n$; they are sketched here in 2D using their true pairwise angles (the angle between $\widetilde A$ and $\widetilde B$ is exact; the placement of $\widetilde A$ and $\widetilde B$ on either side of $\widetilde C$ is chosen so the partial cosine is realised.)</div>
           <div class="readout">
             <div class="stat"><div class="label">R*(X,Y)</div><div class="val" id="d3-rxy">&mdash;</div></div>
             <div class="stat"><div class="label">R*(X,Z)</div><div class="val dim" id="d3-rxz">&mdash;</div></div>
@@ -452,18 +452,18 @@ import NextCards from "../../components/explainer/NextCards.astro";
             <div class="stat"><div class="label">R*(X,Y;Z)</div><div class="val" id="d3-rxyz">&mdash;</div></div>
           </div>
           <div class="legend">
-            <span class="key" style="background: var(--x-color)"></span> $&bsol;widetilde A$ (from X) &nbsp;
-            <span class="key" style="background: var(--y-color)"></span> $&bsol;widetilde B$ (from Y) &nbsp;
-            <span class="key" style="background: var(--z-color)"></span> $&bsol;widetilde C$ (from Z). Dashed arrows are residuals after projecting out $&bsol;widetilde C$.
+            <span class="key" style="background: var(--x-color)"></span> $\widetilde A$ (from X) &nbsp;
+            <span class="key" style="background: var(--y-color)"></span> $\widetilde B$ (from Y) &nbsp;
+            <span class="key" style="background: var(--z-color)"></span> $\widetilde C$ (from Z). Dashed arrows are residuals after projecting out $\widetilde C$.
           </div>
         </div>
 
         <p>
-          With direct link at zero, $X$ and $Y$ share only their $Z$ pathway: $&bsol;widetilde A$ and $&bsol;widetilde B$ both lean toward $&bsol;widetilde C$, and once that shared component is subtracted, the residuals are nearly perpendicular, with $R^*(X,Y;Z) &bsol;approx 0$. Move the direct slider, and the residuals swing back into alignment. The paper notes that $R^*(X,Y;Z) = 0$ does <em>not</em> in general imply conditional independence; it characterises orthogonality in $H_n$, which is strictly weaker.
+          With direct link at zero, $X$ and $Y$ share only their $Z$ pathway: $\widetilde A$ and $\widetilde B$ both lean toward $\widetilde C$, and once that shared component is subtracted, the residuals are nearly perpendicular, with $R^*(X,Y;Z) \approx 0$. Move the direct slider, and the residuals swing back into alignment. The paper notes that $R^*(X,Y;Z) = 0$ does <em>not</em> in general imply conditional independence; it characterises orthogonality in $H_n$, which is strictly weaker.
         </p>
 
         <div class="formula">
-          $$R^*(X,Y;Z) = &lbrace;R^*(X,Y) - R^*(X,Z)R^*(Y,Z)&bsol;over &bsol;sqrt&lbrace;(1 - R^*(X,Z)^2)(1 - R^*(Y,Z)^2)&rbrace;&rbrace;$$
+          $$R^*(X,Y;Z) = &#123;R^*(X,Y) - R^*(X,Z)R^*(Y,Z)\over \sqrt&#123;(1 - R^*(X,Z)^2)(1 - R^*(Y,Z)^2)&#125;&#125;$$
         </div>
         <p class="footnote">
           The familiar partial-correlation formula falls out as Proposition 2 of the paper, a direct consequence of the projection geometry. Here $R^*$ plays the role that <em>squared</em> dCor plays elsewhere, so its values are on the scale of $dCor^2$ and can be negative.
@@ -474,7 +474,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
           In ecology, genetics, and psychometrics, &ldquo;dissimilarities&rdquo; often violate the triangle inequality; Bray-Curtis on species counts is a standard example. The paper&rsquo;s second contribution: distance-correlation methods still work, because U-centering only sees the <em>inner product</em>, not the original dissimilarities.
         </p>
         <p>
-          Two facts make this go. <strong>Theorem 2</strong>: every element of $H_n$ is the U-centered distance matrix of some Euclidean point configuration in $&bsol;mathbb&lbrace;R&rbrace;^p$ ($p &bsol;le n - 2$), recoverable via classical multidimensional scaling. <strong>Lemma 1(iv)</strong>: U-centering is <em>invariant</em> to adding a constant $c$ to every off-diagonal dissimilarity (a &ldquo;Cailliez constant&rdquo; commonly used to force Euclidean embedding). The recovered MDS configuration moves around as $c$ changes, but the inner product, and hence every dCor statistic, does not.
+          Two facts make this go. <strong>Theorem 2</strong>: every element of $H_n$ is the U-centered distance matrix of some Euclidean point configuration in $\mathbb&#123;R&#125;^p$ ($p \le n - 2$), recoverable via classical multidimensional scaling. <strong>Lemma 1(iv)</strong>: U-centering is <em>invariant</em> to adding a constant $c$ to every off-diagonal dissimilarity (a &ldquo;Cailliez constant&rdquo; commonly used to force Euclidean embedding). The recovered MDS configuration moves around as $c$ changes, but the inner product, and hence every dCor statistic, does not.
         </p>
 
         <div class="panel">
@@ -492,7 +492,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
             </div>
             <div>
               <svg id="d4-mat-uc" viewBox="0 0 220 220" width="220" height="220"></svg>
-              <div class="caption">U-centered ($&bsol;widetilde A$): identical for every $c$</div>
+              <div class="caption">U-centered ($\widetilde A$): identical for every $c$</div>
             </div>
             <div>
               <svg id="d4-mds" viewBox="0 0 220 220" width="220" height="220"></svg>
@@ -501,7 +501,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
           </div>
           <div class="readout">
             <div class="stat"><div class="label">Min MDS eigenvalue</div><div class="val dim" id="d4-tri">&mdash;</div></div>
-            <div class="stat"><div class="label">$|&bsol;widetilde A|^2$ (invariant)</div><div class="val" id="d4-norm">&mdash;</div></div>
+            <div class="stat"><div class="label">$|\widetilde A|^2$ (invariant)</div><div class="val" id="d4-norm">&mdash;</div></div>
             <div class="stat"><div class="label">R*(species, env)</div><div class="val" id="d4-rxy">&mdash;</div></div>
           </div>
           <div class="legend">

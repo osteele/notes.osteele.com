@@ -82,49 +82,33 @@ the
 <h2 id="updates">3. The CAVI updates</h2>
 
 <p>
-The variational expectations needed for the E-step are
+Each CAVI sweep alternates between soft assignments and conjugate posterior
+parameters. The assignment step scores component $k$ by its expected log mixing
+weight plus its expected Gaussian log likelihood, then normalizes:
 </p>
 
 $$
-\begin&#123;aligned&#125;
-\mathbb E\!\bigl[\ln \pi_k\bigr]                 &= \psi(\alpha_k) - \psi(\textstyle\sum_j \alpha_j), \\
-\mathbb E\!\bigl[\ln |\boldsymbol\Lambda_k|\bigr] &= \sum_&#123;d=1&#125;^D \psi\!\Bigl(\tfrac&#123;\nu_k + 1 - d&#125;&#123;2&#125;\Bigr) + D\ln 2 + \ln |\mathbf W_k|, \\
-\mathbb E\!\bigl[(\mathbf x_n - \boldsymbol\mu_k)^\top \boldsymbol\Lambda_k (\mathbf x_n - \boldsymbol\mu_k)\bigr]
-                                                  &= \tfrac&#123;D&#125;&#123;\beta_k&#125; + \nu_k\,(\mathbf x_n - \mathbf m_k)^\top \mathbf W_k (\mathbf x_n - \mathbf m_k).
-\end&#123;aligned&#125;
+\log r_&#123;nk&#125; \leftarrow
+\mathbb E[\log \pi_k] + \mathbb E[\log \mathcal N(\mathbf x_n \mid \boldsymbol\mu_k,\boldsymbol\Lambda_k^&#123;-1&#125;)]
+\quad\text&#123;then normalize over &#125;k.
 $$
 
 <p>
-The responsibilities update is
-</p>
-
-$$
-\ln\rho_&#123;nk&#125; \;=\; \mathbb E[\ln\pi_k] + \tfrac12 \mathbb E[\ln|\boldsymbol\Lambda_k|]
-                  - \tfrac&#123;D&#125;&#123;2&#125;\ln(2\pi) - \tfrac12 \mathbb E[\Delta_&#123;nk&#125;],
-\qquad r_&#123;nk&#125; \;=\; \frac&#123;\rho_&#123;nk&#125;&#125;&#123;\sum_j \rho_&#123;nj&#125;&#125;.
-$$
-
-<p>
-The M-step computes weighted sufficient statistics
+The parameter step computes weighted sufficient statistics
 $N_k = \sum_n r_&#123;nk&#125;$,
 $\bar&#123;\mathbf x&#125;_k = \frac1&#123;N_k&#125;\sum_n r_&#123;nk&#125;\mathbf x_n$,
-$\mathbf S_k = \frac1&#123;N_k&#125;\sum_n r_&#123;nk&#125; (\mathbf x_n - \bar&#123;\mathbf x&#125;_k)(\mathbf x_n - \bar&#123;\mathbf x&#125;_k)^\top$,
-and updates the variational hyperparameters:
+$\mathbf S_k$, and updates the Dirichlet and Normal-Wishart factors. The
+load-bearing update is the pseudo-count:
 </p>
 
 $$
-\begin&#123;aligned&#125;
-\alpha_k   &= \alpha_0 + N_k, \\
-\beta_k    &= \beta_0 + N_k, \\
-\nu_k      &= \nu_0 + N_k, \\
-\mathbf m_k &= \frac&#123;\beta_0 \mathbf m_0 + N_k \bar&#123;\mathbf x&#125;_k&#125;&#123;\beta_k&#125;, \\
-\mathbf W_k^&#123;-1&#125; &= \mathbf W_0^&#123;-1&#125; + N_k \mathbf S_k + \frac&#123;\beta_0 N_k&#125;&#123;\beta_k&#125;(\bar&#123;\mathbf x&#125;_k - \mathbf m_0)(\bar&#123;\mathbf x&#125;_k - \mathbf m_0)^\top.
-\end&#123;aligned&#125;
+\alpha_k = \alpha_0 + N_k.
 $$
 
 <p>
-The whole iteration is closed-form: no sampling, no inner Newton. Each step is
-guaranteed not to decrease the ELBO.
+The remaining Normal-Wishart updates have the same shape: prior strength plus
+effective data assigned to component $k$. The whole iteration is closed-form:
+no sampling, no inner Newton. Each step is guaranteed not to decrease the ELBO.
 </p>
 
 <h2 id="pruning">4. Automatic pruning</h2>
@@ -165,9 +149,11 @@ slice of the mean-field manifold.
 <h2 id="figure">5. Watching VB-GMM converge</h2>
 
 <p>
-Figure 1 runs the CAVI iteration on a 2-D dataset. Start with up to $K = 10$
-components placed by random initialization on a small dataset drawn from 2–4 true
-Gaussian clusters. Watch:
+Figure 1 runs the CAVI iteration on a 2-D dataset. The most important control is
+<strong>Dirichlet $\alpha_0$</strong>, shown on a log scale: push it below $1$ and
+unsupported components rapidly lose mixing weight; raise it and extra components
+remain alive longer. Start with up to $K = 10$ components placed by random
+initialization on a small dataset drawn from 2–4 true Gaussian clusters. Watch:
 </p>
 
 <ul>

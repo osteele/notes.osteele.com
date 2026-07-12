@@ -290,7 +290,44 @@ combined into higher-level statistics. <em>Multi-head = multiple sufficient
 statistics in parallel.</em>
 </p>
 
-<h2>7. Causal masking and the KV cache</h2>
+<h2>7. Encoder and decoder masks</h2>
+
+<p>
+An encoder such as a masked-language model can use bidirectional context: each
+token can attend left and right, and a special masked position asks for a missing
+word. A causal decoder can only attend left when predicting the next token. The
+same attention operation therefore supports different evidence patterns because
+the mask changes which keys are visible.
+</p>
+
+<Figure title="Figure 6 · Bidirectional MLM mask versus causal decoder mask" canvasId="fig-mask-types" width="780" height="360" readoutId="mask-types-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#1f4a8c"></span>visible attention cell</span>
+    <span><span class="swatch" style="background:#cbd5e1"></span>masked future or hidden cell</span>
+    <span><span class="swatch" style="background:#b8412a"></span>query row</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlSelect id="mask-architecture" label="architecture" valueId="mask-architecture-v" options={[
+    { value: "encoder", label: "encoder / MLM", selected: true },
+    { value: "decoder", label: "decoder / CLM" },
+  ]} />
+  <ControlRange id="mask-query" label="query token" valueId="mask-query-v" min="0" max="5" step="1" value="3" />
+</Fragment>
+</Figure>
+
+<p>
+This difference matters for probe comparisons. A bidirectional encoder can
+represent a token using future context that a causal decoder has not seen. A
+masked-language-model objective also trains direct reconstruction of hidden
+tokens, while a causal-language-model objective trains next-token continuation.
+Layerwise syntax or binding readouts can therefore fragment differently across
+encoder, decoder, and encoder-decoder models even when the attention equation is
+the same.
+</p>
+
+<h2>8. Causal masking and the KV cache</h2>
 
 <p>
 During autoregressive generation, attention at step $t$ depends on the previous
@@ -300,7 +337,7 @@ values rather than an accumulated summary, because each new query reweights them
 differently.
 </p>
 
-<Figure title="Figure 6 · Token-by-token attention with a growing KV cache" canvasId="fig-kv" width="780" height="420" readoutId="kv-readout">
+<Figure title="Figure 7 · Token-by-token attention with a growing KV cache" canvasId="fig-kv" width="780" height="420" readoutId="kv-readout">
 <Fragment slot="legend">
   <div class="legend">
     <span><span class="swatch" style="background:#1f4a8c"></span>tokens already in the cache</span>
@@ -333,7 +370,7 @@ demand. For memory growth, paging, and attention sinks, see
 <a href="https://viz.osteele.com/llm-visualizations/kv-cache-memory.html">KV cache memory</a>.
 </p>
 
-<h2>8. Adaptive sufficiency</h2>
+<h2>9. Adaptive sufficiency</h2>
 
 <p>
 Attention can be interpreted as an adaptive
@@ -363,6 +400,80 @@ vectors.
   Built by <a href="https://osteele.com">Oliver Steele</a>. Math typeset with KaTeX.
 </div>
 
+<script is:inline>
+  (() => {
+    const canvas = document.getElementById("fig-mask-types");
+    const archInput = document.getElementById("mask-architecture");
+    const queryInput = document.getElementById("mask-query");
+    const archValue = document.getElementById("mask-architecture-v");
+    const queryValue = document.getElementById("mask-query-v");
+    const readout = document.getElementById("mask-types-readout");
+    if (!canvas || !archInput || !queryInput) return;
+    const tokens = ["The", "red", "[MASK]", "cup", "fell", "."];
+    function setup() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const w = 780, h = 360;
+      const cssW = rect.width || w;
+      const cssH = rect.height || h;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform((cssW / w) * dpr, 0, 0, (cssH / h) * dpr, 0, 0);
+      return ctx;
+    }
+    function draw() {
+      const ctx = setup();
+      const arch = archInput.value;
+      const q = Number(queryInput.value);
+      const n = tokens.length;
+      const cell = 34;
+      const x0 = 122;
+      const y0 = 86;
+      ctx.clearRect(0, 0, 780, 360);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText(arch === "encoder" ? "Encoder attention sees both sides" : "Decoder attention sees only the prefix", 46, 42);
+      ctx.font = "12px system-ui";
+      ctx.fillStyle = "#64748b";
+      for (let i = 0; i < n; i += 1) {
+        ctx.fillText(tokens[i], x0 + i * cell - 8, y0 - 12);
+        ctx.fillText(tokens[i], 46, y0 + i * cell + 22);
+      }
+      for (let row = 0; row < n; row += 1) {
+        for (let col = 0; col < n; col += 1) {
+          const visible = arch === "encoder" ? row !== col || tokens[row] === "[MASK]" : col <= row;
+          ctx.fillStyle = visible ? "#dbeafe" : "#e2e8f0";
+          if (row === q && visible) ctx.fillStyle = "#bfdbfe";
+          if (row === q && col === q) ctx.fillStyle = "#ffe4e6";
+          ctx.strokeStyle = "#ffffff";
+          ctx.fillRect(x0 + col * cell, y0 + row * cell, cell - 2, cell - 2);
+          ctx.strokeRect(x0 + col * cell, y0 + row * cell, cell - 2, cell - 2);
+        }
+      }
+      ctx.strokeStyle = "#be123c";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x0 - 3, y0 + q * cell - 3, n * cell + 4, cell + 2);
+      const visibleCount = arch === "encoder" ? n - (tokens[q] === "[MASK]" ? 0 : 1) : q + 1;
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 14px system-ui";
+      ctx.fillText("attention mask", 410, 122);
+      ctx.fillStyle = "#475569";
+      ctx.font = "13px system-ui";
+      const lines = arch === "encoder"
+        ? ["MLM reconstruction can use left and right context.", "The hidden token is predicted from its surroundings."]
+        : ["CLM prediction can only use the prefix.", "The KV cache grows one token at a time."];
+      lines.forEach((line, i) => ctx.fillText(line, 410, 152 + i * 24));
+      archValue.textContent = archInput.selectedOptions[0].textContent;
+      queryValue.textContent = `${q}: ${tokens[q]}`;
+      readout.textContent = `${archInput.selectedOptions[0].textContent} query "${tokens[q]}" has ${visibleCount} visible key positions; the mask changes what any readout could have used.`;
+    }
+    archInput.addEventListener("input", draw);
+    queryInput.addEventListener("input", draw);
+    window.addEventListener("resize", draw);
+    draw();
+  })();
+</script>
 <script is:inline src="/ml/attention/attention.js"></script>
 
 </ExplainerLayout>

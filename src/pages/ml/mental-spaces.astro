@@ -1,0 +1,210 @@
+---
+import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
+import Hero from "../../components/explainer/Hero.astro";
+import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
+import NextCards from "../../components/explainer/NextCards.astro";
+---
+
+<ExplainerLayout title="Mental Spaces" breadcrumb="Mental Spaces" section="phenomena-and-circuits">
+<Hero title="Mental Spaces" subtitle="A sentence can build several local worlds. Interpretability questions often ask which world a model is reading from." />
+
+<p>
+Mental-space theory treats interpretation as building small connected regions:
+reality, reported speech, belief, pictures, hypotheticals, and other local
+frames. A noun phrase may point to an entity in one space while a connector links
+it to a counterpart in another. This is a useful vocabulary for model internals
+because the same token can be read as a value in one frame and as a report about
+another frame.
+</p>
+
+<Figure title="Figure 1 · Step through a sentence as spaces open" canvasId="mental-space-canvas" width="760" height="430" readoutId="mental-space-readout">
+<Fragment slot="controls">
+  <ControlRange id="mental-step" label="token" valueId="mental-step-v" min="1" max="11" step="1" value="5" />
+  <ControlSelect id="mental-query" label="query frame" valueId="mental-query-v" options={[
+    { value: "belief", label: "belief", selected: true },
+    { value: "reality", label: "reality" },
+    { value: "painting", label: "painting" },
+  ]} />
+</Fragment>
+</Figure>
+
+<h2>1. Spaces are built by words</h2>
+
+<p>
+Space builders are expressions such as "believes", "in the painting", "if", and
+"according to". They tell the listener to open a frame where some facts can
+differ from reality. The sentence in Figure 1 has three frames: reality, Ann's
+belief, and the painting she is thinking about.
+</p>
+
+<p>
+Connectors let a reference cross frames. "The cup" in the painting can be linked
+to the real cup, but predicates are evaluated in the active frame unless the
+sentence shifts the frame. That is why a model may need separate readouts for
+"what is true" and "what Ann believes".
+</p>
+
+<Aside>
+  <strong>The Access Principle is a routing claim.</strong> A speaker can refer
+  to an object through one of its counterparts in another space. In model terms,
+  the readout has to choose which counterpart is currently licensed.
+</Aside>
+
+<h2>2. Report versus use</h2>
+
+<p>
+The same internal value can be used in two ways. A report asks what a character
+believes, so the belief frame is the target. A use question asks what should
+happen in the story world, so reality may be the target even though the belief
+frame is active in the prompt. This is the distinction behind many router-style
+interpretability claims.
+</p>
+
+<Figure title="Figure 2 · One value slot, several frame routers" canvasId="mental-router-canvas" width="760" height="360" readoutId="mental-router-readout">
+<Fragment slot="controls">
+  <ControlSelect id="mental-task" label="question" valueId="mental-task-v" options={[
+    { value: "report", label: "What does Ann think?", selected: true },
+    { value: "use", label: "Where is the cup really?" },
+    { value: "picture", label: "What color is painted?" },
+  ]} />
+</Fragment>
+</Figure>
+
+<div class="source-list">
+  <strong>Related pages</strong>
+  <ul>
+    <li><a href="/ml/lookback-mechanism/">The Lookback Mechanism</a> for address-and-dereference circuits.</li>
+    <li><a href="/ml/false-belief-tasks/">False-Belief Tasks</a> for task controls that separate belief from reality.</li>
+    <li><a href="/ml/interchange-interventions/">Interchange Interventions & DAS</a> for causal tests of frame routing.</li>
+  </ul>
+</div>
+
+<NextCards cards={[
+  { href: "/ml/false-belief-tasks/", tag: "Task", title: "False-Belief Tasks", role: "Stimuli that force belief and reality apart." },
+  { href: "/ml/lookback-mechanism/", tag: "Circuit", title: "The Lookback Mechanism", role: "How a pointer can choose a source frame." },
+]} />
+
+<script is:inline>
+  (() => {
+    const $ = (id) => document.getElementById(id);
+    const tokens = ["Ann", "believes", "the", "cup", "in", "the", "painting", "used", "to", "be", "blue"];
+    const frames = {
+      reality: { label: "reality", cup: "green", x: 70, y: 104, w: 620, h: 250, color: "#e0f2fe" },
+      belief: { label: "Ann's belief", cup: "green", x: 142, y: 158, w: 460, h: 162, color: "#ffe4e6" },
+      painting: { label: "painting", cup: "blue", x: 310, y: 202, w: 220, h: 82, color: "#fef3c7" },
+    };
+    function env(id, logicalW, logicalH) {
+      const canvas = $(id);
+      if (!canvas) return null;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const cssW = rect.width || logicalW;
+      const cssH = rect.height || logicalH;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform((cssW / logicalW) * dpr, 0, 0, (cssH / logicalH) * dpr, 0, 0);
+      return { ctx };
+    }
+    function drawFrame(ctx, f, active) {
+      ctx.fillStyle = f.color;
+      ctx.strokeStyle = active ? "#be123c" : "#cbd5e1";
+      ctx.lineWidth = active ? 3 : 1.4;
+      ctx.beginPath();
+      ctx.roundRect(f.x, f.y, f.w, f.h, 14);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 14px system-ui";
+      ctx.fillText(f.label, f.x + 18, f.y + 28);
+      ctx.font = "13px system-ui";
+      ctx.fillStyle = "#475569";
+      ctx.fillText(`cup color: ${f.cup}`, f.x + 18, f.y + 54);
+    }
+    function drawMental() {
+      const out = env("mental-space-canvas", 760, 430);
+      if (!out) return;
+      const ctx = out.ctx;
+      const step = Number($("mental-step")?.value || 5);
+      const query = $("mental-query")?.value || "belief";
+      ctx.clearRect(0, 0, 760, 430);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("Spaces open as the sentence supplies builders", 44, 42);
+      let open = ["reality"];
+      if (step >= 2) open.push("belief");
+      if (step >= 7) open.push("painting");
+      open.forEach((key) => drawFrame(ctx, frames[key], key === query));
+      if (open.includes("painting")) {
+        ctx.strokeStyle = "#64748b";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 5]);
+        ctx.beginPath();
+        ctx.moveTo(210, 230);
+        ctx.lineTo(330, 246);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#475569";
+        ctx.font = "12px system-ui";
+        ctx.fillText("connector", 236, 224);
+      }
+      let x = 42;
+      tokens.forEach((token, i) => {
+        ctx.fillStyle = i < step ? (i === step - 1 ? "#be123c" : "#111827") : "#94a3b8";
+        ctx.font = i === step - 1 ? "700 14px system-ui" : "13px system-ui";
+        ctx.fillText(token, x, 392);
+        x += ctx.measureText(token).width + 12;
+      });
+      const answer = query === "painting" ? "blue" : "green";
+      $("mental-space-readout") && ($("mental-space-readout").textContent = `Querying ${frames[query].label} reads cup=${answer}; the active space, not the word "cup" alone, chooses the answer.`);
+      $("mental-step-v") && ($("mental-step-v").textContent = `${step}: ${tokens[step - 1]}`);
+      $("mental-query-v") && ($("mental-query-v").textContent = $("mental-query").selectedOptions[0].textContent);
+    }
+    function drawRouter() {
+      const out = env("mental-router-canvas", 760, 360);
+      if (!out) return;
+      const ctx = out.ctx;
+      const task = $("mental-task")?.value || "report";
+      const target = task === "report" ? "belief" : task === "use" ? "reality" : "painting";
+      ctx.clearRect(0, 0, 760, 360);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "700 18px system-ui";
+      ctx.fillText("A question routes the readout to a frame", 50, 42);
+      const xs = { reality: 190, belief: 380, painting: 570 };
+      for (const key of ["reality", "belief", "painting"]) {
+        ctx.fillStyle = key === target ? "#ffe4e6" : "#ffffff";
+        ctx.strokeStyle = key === target ? "#be123c" : "#cbd5e1";
+        ctx.lineWidth = key === target ? 3 : 1.2;
+        ctx.beginPath();
+        ctx.roundRect(xs[key] - 70, 110, 140, 80, 12);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#111827";
+        ctx.font = "700 14px system-ui";
+        ctx.fillText(frames[key].label, xs[key] - 48, 142);
+        ctx.font = "13px system-ui";
+        ctx.fillText(frames[key].cup, xs[key] - 20, 168);
+        ctx.strokeStyle = key === target ? "#be123c" : "#cbd5e1";
+        ctx.lineWidth = key === target ? 4 : 1.5;
+        ctx.beginPath();
+        ctx.moveTo(xs[key], 190);
+        ctx.lineTo(380, 270);
+        ctx.stroke();
+      }
+      ctx.fillStyle = "#111827";
+      ctx.font = "700 15px system-ui";
+      ctx.fillText("shared value slot", 326, 302);
+      $("mental-router-readout") && ($("mental-router-readout").textContent = `${$("mental-task").selectedOptions[0].textContent} routes to ${frames[target].label}, so the same value slot is interpreted as ${frames[target].cup}.`);
+      $("mental-task-v") && ($("mental-task-v").textContent = $("mental-task").selectedOptions[0].textContent);
+    }
+    ["mental-step", "mental-query"].forEach((id) => $(id)?.addEventListener("input", drawMental));
+    $("mental-task")?.addEventListener("input", drawRouter);
+    window.addEventListener("resize", () => { drawMental(); drawRouter(); });
+    drawMental();
+    drawRouter();
+  })();
+</script>
+</ExplainerLayout>

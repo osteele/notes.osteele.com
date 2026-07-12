@@ -5,6 +5,10 @@ layout: ../../../../layouts/BaseLayout.astro
 
 # Introduction to PoseNet
 
+> This lab is deprecated because PoseNet is deprecated. Use
+> [Movement Practices Lab 1: Pose Detection with BlazePose](/courses/movement-practices-class/movement-practices-lab-1-pose-detection-with-blazepose/)
+> for current class work.
+
 ![](/images/movement-practices-lab-1-pose-detection-with-posenet/movement-practices-lab-1-pose-detection-with-posenet-01.gif)
 
 [***PoseNet***](https://www.tensorflow.org/lite/models/pose_estimation/overview) is a machine learning vision model that estimates the pose of a person in an image or video by estimating where key body joints are.

@@ -2,6 +2,8 @@
 import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
 import Hero from "../../components/explainer/Hero.astro";
 import Aside from "../../components/explainer/Aside.astro";
+import Figure from "../../components/explainer/Figure.astro";
+import ControlRange from "../../components/explainer/ControlRange.astro";
 import NextCards from "../../components/explainer/NextCards.astro";
 ---
 
@@ -116,6 +118,25 @@ Two operational consequences follow:
   <li><strong>The mean is a function of $\eta$.</strong> Write $\mu(\eta) = \nabla A(\eta)$; this is the <strong>mean function</strong>. It is the link between the natural parametrization (where the math is clean) and the moment parametrization (where the answers live).</li>
   <li><strong>The Fisher information is the Hessian of $A$.</strong> $I(\eta) = \mathrm&#123;Cov&#125;[T(X)] = \nabla^2 A(\eta)$. So the <a href="/math/fisher-information/">Fisher metric</a> on an exponential family is just the second derivative of the log-partition. This is why exponential families have such clean information geometry.</li>
 </ul>
+
+<Figure title="Figure 1 · Slope and curvature of the log-partition" canvasId="fig-logpartition" width="780" height="360" readoutId="logpartition-readout">
+<Fragment slot="legend">
+  <div class="legend">
+    <span><span class="swatch" style="background:#2d7a3e"></span>$A(\eta)=\log(1+e^\eta)$</span>
+    <span><span class="swatch" style="background:#6b4592"></span>tangent slope $A'(\eta)$</span>
+    <span><span class="swatch" style="background:#b8412a"></span>local curvature $A''(\eta)$</span>
+  </div>
+</Fragment>
+<Fragment slot="controls">
+  <ControlRange id="logpartition-eta" label="natural parameter η" valueId="logpartition-eta-v" min="-5" max="5" step="0.05" value="0" />
+</Fragment>
+</Figure>
+
+<p>
+This figure uses the Bernoulli member because its log-partition is one-dimensional
+and familiar. The same derivative identities hold family-wide: slope is the mean
+parameter and curvature is the Fisher information.
+</p>
 
 <h2 id="links">4. The canonical link function (GLMs)</h2>
 

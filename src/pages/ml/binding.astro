@@ -3,6 +3,7 @@ import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
 import Hero from "../../components/explainer/Hero.astro";
 import Aside from "../../components/explainer/Aside.astro";
 import Figure from "../../components/explainer/Figure.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
 import NextCards from "../../components/explainer/NextCards.astro";
 ---
 
@@ -25,9 +26,16 @@ minimal pairs: change one token, hold most of the surface statistics fixed, and
 see whether the resolution follows the structure or the proximity.
 </p>
 
-<Figure title="Figure 1 · The same binding shape in three domains" canvasId="binding-canvas" width="760" height="350" readoutId="binding-readout">
+<Figure title="Figure 1 · Subject-verb agreement: the minimal pair that catches a proximity shortcut" canvasId="binding-canvas" width="760" height="350" readoutId="binding-readout">
 <Fragment slot="controls">
-  <label class="control"><span>nearest distractor</span><input id="binding-distractor" type="checkbox" /></label>
+  <ControlSelect id="binding-number" label="subject" valueId="binding-number-v" options={[
+    { value: "sg", label: "the key (singular)", selected: true },
+    { value: "pl", label: "the keys (plural)" },
+  ]} />
+  <ControlSelect id="binding-strategy" label="the model follows" valueId="binding-strategy-v" options={[
+    { value: "structure", label: "structure (the subject)", selected: true },
+    { value: "proximity", label: "proximity (nearest noun)" },
+  ]} />
 </Fragment>
 </Figure>
 
@@ -35,18 +43,18 @@ see whether the resolution follows the structure or the proximity.
 
 <p>
 Each binding case has three parts: a source that licenses the answer, a use that
-needs resolving, and a distractor that is closer or more salient but wrong.
-Figure 1 lays the three domains side by side. Toggling the distractor swaps the
-licensed link for the lure, which is the failure a good test is built to provoke.
+needs resolving, and a distractor that is closer or more salient but wrong. Figure
+1 makes this concrete with subject-verb agreement, the case where the failure is
+easiest to provoke and to control.
 </p>
 
 <p>
-Subject-verb agreement makes the structural cue concrete. In "The key to the
-cabinets is rusty," the verb agrees with <em>key</em>, not the nearer plural
-<em>cabinets</em>. A minimal pair changes only the head noun's number, "the key"
-versus "the keys," so the verb form must track the grammatical subject rather than
-the closest noun. If the model prefers <em>are</em> when <em>cabinets</em> is
-adjacent, it followed proximity; if it tracks <em>key</em>, it followed structure.
+In "The key to the cabinets is rusty," the verb agrees with <em>key</em>, not the
+nearer plural <em>cabinets</em>. A minimal pair changes only the head noun's
+number, "the key" versus "the keys." Switch the figure to <em>proximity</em> and
+the verb copies the nearer <em>cabinets</em> and always reads <em>are</em>: that is
+right for "the keys" but wrong for "the key," so only the singular member of the
+pair exposes the shortcut. A structure-follower tracks the subject and gets both.
 </p>
 
 <h2>2. Three domains</h2>
@@ -66,20 +74,20 @@ examples below are schematic, but they make the shared shape concrete.
 </dl>
 
 <Aside>
-  <strong>Binding vs. variable binding.</strong> These cases are not all
+  <strong>Not every binding is variable binding.</strong> These cases are not all
   <em>variable</em> binding in the strict sense. Code use-to-definition, logical
   chaining, wh-traces, and bound-variable anaphora ("every farmer who owns a
   donkey beats <em>it</em>") genuinely bind a variable to a value or operator.
   Referential anaphora ("John ... <em>he</em>") is coreference, and subject-verb
   agreement is a grammatical dependency; neither binds a variable. What unifies
-  the family is the looser property they share — resolving a use
-  against a nonlocal source — so the broad term is <em>binding</em>, with
+  the family is a looser property they share: resolving a use against a nonlocal
+  source. The broad term is therefore <em>binding</em>, with
   <em>variable binding</em> reserved for the genuine-variable subset and for the
   variable-like <em>mechanism</em> described below.
 </Aside>
 
 <Aside>
-  <strong>A shared test, not a shared result.</strong> The figure is a schema for
+  <strong>The design is shared; the result is not.</strong> The figure is a schema for
   evaluations, not evidence that one circuit handles all three domains. A positive
   result shows that the model follows the licensed source and resists the nearer
   unlicensed one. The recurring design is to specify the source-use relation,

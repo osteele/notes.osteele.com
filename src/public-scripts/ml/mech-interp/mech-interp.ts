@@ -897,29 +897,101 @@ function drawBinding() {
   const c = canvas("binding-canvas");
   if (!c) return;
   const ctx = ctx2d(c);
-  const distractor = input("binding-distractor")?.checked ?? false;
   clear(ctx, c);
-  const panels = [
-    { title: "language", a: "Alice", b: "Maya", use: "she" },
-    { title: "code", a: "count", b: "total", use: "count" },
-    { title: "logic", a: "A->B", b: "B->C", use: "A->C" },
+
+  const numberSel = select("binding-number");
+  const strategySel = select("binding-strategy");
+  const subjectPlural = (numberSel?.value ?? "sg") === "pl";
+  const followProximity = (strategySel?.value ?? "structure") === "proximity";
+  setText("binding-number-v", numberSel?.selectedOptions[0]?.textContent ?? "");
+  setText("binding-strategy-v", strategySel?.selectedOptions[0]?.textContent ?? "");
+
+  const subjectWord = subjectPlural ? "keys" : "key";
+  // "cabinets" is always plural, so a proximity-follower always reads "are".
+  const verbPlural = followProximity ? true : subjectPlural;
+  const verbWord = verbPlural ? "are" : "is";
+  const correct = verbPlural === subjectPlural; // agreement is with the subject
+
+  label(ctx, "Does the verb agree with the subject or the nearest noun?", 40, 32, colors.text, 15);
+
+  const toks = [
+    { t: "The", role: "" },
+    { t: subjectWord, role: "subject" },
+    { t: "to", role: "" },
+    { t: "the", role: "" },
+    { t: "cabinets", role: "distractor" },
+    { t: verbWord, role: "verb" },
+    { t: "rusty.", role: "" },
   ];
-  panels.forEach((p, i) => {
-    const x = 70 + i * 220;
-    box(ctx, x, 72, 170, 210, "#fff", colors.rule);
-    label(ctx, p.title, x + 85, 100, colors.red, 12, "center");
-    const a = { x: x + 50, y: 150 };
-    const b = { x: x + 122, y: 150 };
-    const u = { x: x + 86, y: 236 };
-    box(ctx, a.x - 30, a.y - 16, 60, 32, colors.panel, colors.blue);
-    box(ctx, b.x - 30, b.y - 16, 60, 32, colors.panel, colors.orange);
-    box(ctx, u.x - 34, u.y - 16, 68, 32, "#fee2d5", colors.red);
-    label(ctx, p.a, a.x, a.y + 4, colors.blue, 11, "center");
-    label(ctx, p.b, b.x, b.y + 4, colors.orange, 11, "center");
-    label(ctx, p.use, u.x, u.y + 4, colors.red, 11, "center");
-    arrow(ctx, u, distractor ? b : a, distractor ? colors.orange : colors.green, 3);
+
+  const yTok = 152;
+  const h = 36;
+  const padX = 13;
+  const gap = 9;
+  ctx.font = "16px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+  ctx.textAlign = "left";
+  let x = 40;
+  const placed = toks.map((tk) => {
+    const w = ctx.measureText(tk.t).width + padX * 2;
+    const p = { ...tk, x, w, cx: x + w / 2 };
+    x += w + gap;
+    return p;
   });
-  readout("binding-readout", `<div class="row"><span class="lbl">binding</span><span>${distractor ? "nearest distractor lure" : "structural dependency"}</span></div><div class="row"><span class="lbl">shared problem</span><span>resolve a use against a nonlocal source</span></div>`);
+
+  const accentFor = (role: string) =>
+    role === "subject" ? colors.blue
+      : role === "distractor" ? colors.orange
+      : role === "verb" ? (correct ? colors.green : colors.red)
+      : colors.rule;
+
+  placed.forEach((p) => {
+    const active = p.role !== "";
+    const accent = accentFor(p.role);
+    box(ctx, p.x, yTok, p.w, h, active ? "#fff" : colors.panel, active ? accent : colors.rule);
+    label(ctx, p.t, p.cx, yTok + 24, active ? colors.text : colors.dim, 16, "center");
+    if (p.role === "subject") label(ctx, "subject", p.cx, yTok - 10, colors.blue, 11, "center");
+    if (p.role === "distractor") label(ctx, "nearest noun", p.cx, yTok - 10, colors.orange, 11, "center");
+  });
+
+  const verbBox = placed[5];
+  const targetBox = followProximity ? placed[4] : placed[1];
+  const arcColor = correct ? colors.green : colors.red;
+  const sx = verbBox.cx;
+  const ex = targetBox.cx;
+  const topY = yTok - 14;
+  ctx.strokeStyle = arcColor;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(sx, topY);
+  ctx.quadraticCurveTo((sx + ex) / 2, topY - 50, ex, topY);
+  ctx.stroke();
+  ctx.fillStyle = arcColor;
+  ctx.beginPath();
+  ctx.moveTo(ex, topY + 2);
+  ctx.lineTo(ex - 5, topY - 8);
+  ctx.lineTo(ex + 5, topY - 8);
+  ctx.closePath();
+  ctx.fill();
+  label(ctx, "agrees with", (sx + ex) / 2, topY - 54, arcColor, 12, "center");
+
+  const verdict = correct ? "correct: agrees with the subject" : "proximity error: copied “cabinets”";
+  ctx.font = "600 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+  const pillW = ctx.measureText(verdict).width + 34;
+  box(ctx, 40, 238, pillW, 30, correct ? "#e9f6ec" : "#fbe7e2", arcColor);
+  label(ctx, verdict, 40 + pillW / 2, 258, arcColor, 13, "center");
+
+  label(
+    ctx,
+    followProximity
+      ? "Only “the key” (singular) exposes a proximity shortcut; “the keys” would hide it."
+      : "A structure-follower gets both members of the minimal pair right.",
+    40, 302, colors.dim, 13, "left",
+  );
+
+  readout(
+    "binding-readout",
+    `<div class="row"><span class="lbl">reads</span><span>"the ${subjectWord} … ${verbWord} rusty"</span></div><div class="row"><span class="lbl">verdict</span><span>${correct ? "agrees with the subject" : "agrees with the nearer plural, not the subject"}</span></div>`,
+  );
 }
 
 function drawLookback() {
@@ -1008,6 +1080,92 @@ function drawLookback() {
   readout("lookback-readout", `<div class="row"><span class="lbl">step</span><span>${names[step]}</span></div><div class="row"><span class="lbl">action</span><span>${detail[step]}</span></div>`);
 }
 
+function drawRetrievalMask() {
+  const c = canvas("retrieval-mask-canvas");
+  if (!c) return;
+  const ctx = ctx2d(c);
+  clear(ctx, c);
+  const mask = Math.max(0, Math.min(100, value("retrieval-mask", 0)));
+  setText("retrieval-mask-v", `${mask}%`);
+  const frac = mask / 100;
+  const total = 5;
+  const maskedCount = Math.round(frac * total);
+
+  label(ctx, "A few heads carry most recall; masking them removes the answer, not the fluency", 40, 30, colors.text, 14);
+
+  const cols = 12;
+  const rows = 8;
+  const cw = 26;
+  const chH = 15;
+  const gx = 40;
+  const gy = 60;
+  const retrieval = [10, 27, 44, 61, 83];
+  for (let i = 0; i < cols * rows; i++) {
+    const cx = gx + (i % cols) * cw;
+    const cy = gy + Math.floor(i / cols) * chH;
+    const rank = retrieval.indexOf(i);
+    if (rank === -1) {
+      box(ctx, cx, cy, cw - 4, chH - 4, colors.panel, colors.grid);
+    } else if (rank < maskedCount) {
+      box(ctx, cx, cy, cw - 4, chH - 4, "#e7e2d6", colors.dim);
+      ctx.strokeStyle = colors.dim;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(cx + 3, cy + 3);
+      ctx.lineTo(cx + cw - 7, cy + chH - 7);
+      ctx.moveTo(cx + cw - 7, cy + 3);
+      ctx.lineTo(cx + 3, cy + chH - 7);
+      ctx.stroke();
+    } else {
+      box(ctx, cx, cy, cw - 4, chH - 4, "#fbe1d8", colors.red);
+    }
+  }
+  label(ctx, `retrieval heads (${total} of ${cols * rows} ≈ 5%)`, gx, gy + rows * chH + 22, colors.dim, 12);
+  label(ctx, `${maskedCount} masked`, gx, gy + rows * chH + 40, colors.red, 12);
+
+  let stage: string;
+  let answer: string;
+  let col: string;
+  let note: string;
+  if (mask === 0) {
+    stage = "complete recall";
+    answer = "box";
+    col = colors.green;
+    note = "the bound answer is copied";
+  } else if (frac <= 0.6) {
+    stage = "partial recall";
+    answer = "box ?";
+    col = colors.orange;
+    note = "some answers start to drop";
+  } else {
+    stage = "fluent but unsupported";
+    answer = "cup";
+    col = colors.red;
+    note = "still answers, now unfaithful; the nearer token wins";
+  }
+  const px = 470;
+  const py = 66;
+  const pw = 250;
+  const ph = 128;
+  box(ctx, px, py, pw, ph, "#fff", colors.rule);
+  label(ctx, "output for “Alice took … ?”", px + pw / 2, py + 26, colors.dim, 12, "center");
+  label(ctx, answer, px + pw / 2, py + 74, col, 30, "center");
+  label(ctx, stage, px + pw / 2, py + 108, col, 13, "center");
+
+  const mx = px;
+  const my = py + ph + 22;
+  const mw = pw;
+  const mh = 14;
+  box(ctx, mx, my, mw, mh, colors.panel, colors.rule);
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.roundRect(mx, my, Math.max(2, mw * (1 - frac)), mh, 5);
+  ctx.fill();
+  label(ctx, "recall fidelity", mx, my + mh + 16, colors.dim, 11);
+
+  readout("retrieval-mask-readout", `<div class="row"><span class="lbl">masked</span><span>${maskedCount} of ${total} retrieval heads (${mask}%)</span></div><div class="row"><span class="lbl">output</span><span>${stage}: ${note}</span></div>`);
+}
+
 function init() {
   attach(["residual-layer", "residual-sparsity"], drawResidualStream);
   attach(["qk-token", "qk-scale"], drawQkOv);
@@ -1022,8 +1180,9 @@ function init() {
   attach(["induction-step"], drawInduction);
   attach(["induction-bump-step"], drawInductionBump);
   attach(["knowledge-divergence"], drawRepresentedExpressed);
-  attach(["binding-distractor"], drawBinding);
+  attach(["binding-number", "binding-strategy"], drawBinding);
   attach(["lookback-step"], drawLookback);
+  attach(["retrieval-mask"], drawRetrievalMask);
 }
 
 init();

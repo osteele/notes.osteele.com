@@ -18,10 +18,11 @@ orthogonal principal bases; an affine map may still align their examples. The
 geometry is easier to see as a moving point cloud than as a table of cosines.
 </p>
 
-<Figure title="Figure 1 · Rotate one cloud and watch the top-k planes separate" canvasId="subspace-cloud-canvas" width="760" height="430" readoutId="subspace-cloud-readout">
+<p class="schematic-note">The figures on this page are schematic: the angles and transfer scores illustrate the geometry, not measured results from a specific model.</p>
+
+<Figure title="Figure 1 · Drag or scrub the rotation and watch the principal angle open" canvasId="subspace-cloud-canvas" width="760" height="430" readoutId="subspace-cloud-readout">
 <Fragment slot="controls">
   <ControlRange id="subspace-angle" label="rotation" valueId="subspace-angle-v" min="0" max="89" step="1" value="54" />
-  <ControlRange id="subspace-rank" label="top-k rank" valueId="subspace-rank-v" min="1" max="6" step="1" value="3" />
 </Fragment>
 </Figure>
 
@@ -167,14 +168,13 @@ of basis.
       if (!out) return;
       const { ctx } = out;
       const angle = Number($("subspace-angle")?.value || 54);
-      const rank = Number($("subspace-rank")?.value || 3);
       ctx.clearRect(0, 0, 760, 430);
       ctx.fillStyle = "#0f172a";
       ctx.font = "700 18px system-ui";
       ctx.fillText("Same examples, different basis", 42, 42);
       ctx.fillStyle = "#64748b";
       ctx.font = "13px system-ui";
-      ctx.fillText("The top-k plane turns as the representation basis turns.", 42, 64);
+      ctx.fillText("The principal plane turns as the representation basis turns.", 42, 64);
       axes(ctx, 230, 230, 0, "#0ea5e9");
       axes(ctx, 530, 230, angle, "#be123c");
       pts.forEach((p) => point(ctx, p, 230, 230, "#0ea5e9"));
@@ -183,11 +183,9 @@ of basis.
       ctx.font = "700 14px system-ui";
       ctx.fillText("model A PCA plane", 155, 382);
       ctx.fillText("model B PCA plane", 455, 382);
-      const meanAngle = angle * (0.7 + rank * 0.035);
-      const cos = Math.cos((Math.min(89, meanAngle) * Math.PI) / 180);
-      $("subspace-cloud-readout") && ($("subspace-cloud-readout").textContent = `Top-${rank} mean principal angle ${fmt(Math.min(89, meanAngle))}; mean principal cosine ${cos.toFixed(2)}.`);
+      const cos = Math.cos((angle * Math.PI) / 180);
+      $("subspace-cloud-readout") && ($("subspace-cloud-readout").textContent = `Principal angle between the two top planes ${fmt(angle)}; principal cosine ${cos.toFixed(2)}. Rank selection is explored separately in Figure 3.`);
       $("subspace-angle-v") && ($("subspace-angle-v").textContent = fmt(angle));
-      $("subspace-rank-v") && ($("subspace-rank-v").textContent = String(rank));
     }
 
     function drawFit() {
@@ -306,7 +304,7 @@ of basis.
     });
     cloudCanvas?.addEventListener("pointerup", () => { draggingCloud = false; });
     cloudCanvas?.addEventListener("pointercancel", () => { draggingCloud = false; });
-    ["subspace-angle", "subspace-rank"].forEach((id) => $(id)?.addEventListener("input", drawCloud));
+    $("subspace-angle")?.addEventListener("input", drawCloud);
     ["subspace-fit-mode", "subspace-fit-step"].forEach((id) => $(id)?.addEventListener("input", drawFit));
     $("subspace-counter-angle")?.addEventListener("input", drawCounter);
     $("subspace-anchor-rotation")?.addEventListener("input", drawAnchor);

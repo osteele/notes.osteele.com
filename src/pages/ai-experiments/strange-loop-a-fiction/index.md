@@ -30,4 +30,4 @@ ChatGPT handles meta-narrative competently, drawing on its training data of self
 
 ## Related
 
-<ul class="page-list"><li><a href="/gpt-experiments/finishing-each-others-sandwiches/">Finishing Each Other's Sandwiches</a></li><li><a href="/gpt-experiments/audiophiles-take-down/">Audiophile's Take Down</a></li><li><a href="/gpt-experiments/">All GPT Experiments</a></li></ul>
+<ul class="page-list"><li><a href="/ai-experiments/finishing-each-others-sandwiches/">Finishing Each Other's Sandwiches</a></li><li><a href="/ai-experiments/audiophiles-take-down/">Audiophile's Take Down</a></li><li><a href="/ai-experiments/">All AI Experiments</a></li></ul>

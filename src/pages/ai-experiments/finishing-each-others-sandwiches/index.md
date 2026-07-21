@@ -32,4 +32,4 @@ GPT: ...a marine biologist. The ocean seemed so much simpler than legacy code.
 
 ## Related
 
-<ul class="page-list"><li><a href="/gpt-experiments/audiophiles-take-down/">Audiophile's Take Down</a></li><li><a href="/gpt-experiments/strange-loop-a-fiction/">Strange Loop: A Fiction</a></li><li><a href="/gpt-experiments/">All GPT Experiments</a></li></ul>
+<ul class="page-list"><li><a href="/ai-experiments/audiophiles-take-down/">Audiophile's Take Down</a></li><li><a href="/ai-experiments/strange-loop-a-fiction/">Strange Loop: A Fiction</a></li><li><a href="/ai-experiments/">All AI Experiments</a></li></ul>

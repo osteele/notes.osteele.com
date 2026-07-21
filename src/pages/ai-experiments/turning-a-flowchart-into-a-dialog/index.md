@@ -36,4 +36,4 @@ Bot: Try a different outlet. Does it turn on now?
 
 ## Related
 
-<ul class="page-list"><li><a href="/gpt-experiments/reasoning-about-images/">Reasoning About Images</a></li><li><a href="/gpt-experiments/">All GPT Experiments</a></li></ul>
+<ul class="page-list"><li><a href="/ai-experiments/reasoning-about-images/">Reasoning About Images</a></li><li><a href="/ai-experiments/">All AI Experiments</a></li></ul>

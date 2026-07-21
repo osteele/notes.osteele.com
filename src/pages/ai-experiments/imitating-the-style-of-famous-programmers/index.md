@@ -40,4 +40,4 @@ Small functions, descriptive names, lots of extraction.
 
 ## Related
 
-<ul class="page-list"><li><a href="/gpt-experiments/chatgpt-code-explanations/">ChatGPT Code Explanations</a></li><li><a href="/gpt-experiments/">All GPT Experiments</a></li></ul>
+<ul class="page-list"><li><a href="/ai-experiments/chatgpt-code-explanations/">ChatGPT Code Explanations</a></li><li><a href="/ai-experiments/">All AI Experiments</a></li></ul>

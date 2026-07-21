@@ -40,4 +40,4 @@ Result: Can describe structure, may misread specific values.
 
 ## Related
 
-<ul class="page-list"><li><a href="/gpt-experiments/image-description-styles/">Image Description Styles</a></li><li><a href="/gpt-experiments/turning-a-flowchart-into-a-dialog/">Flowchart to Dialog</a></li><li><a href="/gpt-experiments/">All GPT Experiments</a></li></ul>
+<ul class="page-list"><li><a href="/ai-experiments/image-description-styles/">Image Description Styles</a></li><li><a href="/ai-experiments/turning-a-flowchart-into-a-dialog/">Flowchart to Dialog</a></li><li><a href="/ai-experiments/">All AI Experiments</a></li></ul>

@@ -35,4 +35,4 @@ ChatGPT can explain code in various ways depending on how you ask. This experime
 
 ## Related
 
-<ul class="page-list"><li><a href="/gpt-experiments/discussing-an-arduino-sketch-with-chatgpt/">Discussing an Arduino Sketch</a></li><li><a href="/gpt-experiments/">All GPT Experiments</a></li></ul>
+<ul class="page-list"><li><a href="/ai-experiments/discussing-an-arduino-sketch-with-chatgpt/">Discussing an Arduino Sketch</a></li><li><a href="/ai-experiments/">All AI Experiments</a></li></ul>

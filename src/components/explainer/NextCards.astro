@@ -16,7 +16,7 @@ const { heading = "What next", intro, cards } = Astro.props;
 
 const sectionBase = Astro.url.pathname.match(/^\/(math|ml)\//)?.[1];
 const topLevelRoutePattern =
-  /^\/(?:arduino|courses|creative-coding|education|education-tools-and-materials|gpt-experiments|javascript|keyboard-shortcuts|markdown|math|ml|nyush|p5js|p5js-resources|physical-computing|posenet|processing|raspberry-pi|reference|saw-rasp|teaching|tools|uses|vscode|woodworking)(?:\/|$)/;
+  /^\/(?:arduino|courses|creative-coding|education|education-tools-and-materials|ai-experiments|javascript|keyboard-shortcuts|markdown|math|ml|nyush|p5js|p5js-resources|physical-computing|posenet|processing|raspberry-pi|reference|saw-rasp|teaching|tools|uses|vscode|woodworking)(?:\/|$)/;
 
 function normalizeHref(href: string): string {
   const cleanHref = href.replace(/\/index\.html(?=([?#]|$))/, "/");

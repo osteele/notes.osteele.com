@@ -36,4 +36,4 @@ I asked ChatGPT to help create a lesson plan for teaching p5.js to beginners. Th
 
 ## Related
 
-<ul class="page-list"><li><a href="/gpt-experiments/student-feedback-on-a-simple-image/">Student Feedback on an Image</a></li><li><a href="/gpt-experiments/">All GPT Experiments</a></li></ul>
+<ul class="page-list"><li><a href="/ai-experiments/student-feedback-on-a-simple-image/">Student Feedback on an Image</a></li><li><a href="/ai-experiments/">All AI Experiments</a></li></ul>

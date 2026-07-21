@@ -27,4 +27,4 @@ Complaints about "muddy bass response" and "harsh treble peaks."
 
 ## Related
 
-<ul class="page-list"><li><a href="/gpt-experiments/finishing-each-others-sandwiches/">Finishing Each Other's Sandwiches</a></li><li><a href="/gpt-experiments/strange-loop-a-fiction/">Strange Loop: A Fiction</a></li><li><a href="/gpt-experiments/">All GPT Experiments</a></li></ul>
+<ul class="page-list"><li><a href="/ai-experiments/finishing-each-others-sandwiches/">Finishing Each Other's Sandwiches</a></li><li><a href="/ai-experiments/strange-loop-a-fiction/">Strange Loop: A Fiction</a></li><li><a href="/ai-experiments/">All AI Experiments</a></li></ul>

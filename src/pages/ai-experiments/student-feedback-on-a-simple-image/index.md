@@ -37,4 +37,4 @@ In creative coding classes, students often create simple visual outputs. I teste
 
 ## Related
 
-<ul class="page-list"><li><a href="/gpt-experiments/creating-a-lesson-plan/">Creating a Lesson Plan</a></li><li><a href="/gpt-experiments/">All GPT Experiments</a></li></ul>
+<ul class="page-list"><li><a href="/ai-experiments/creating-a-lesson-plan/">Creating a Lesson Plan</a></li><li><a href="/ai-experiments/">All AI Experiments</a></li></ul>

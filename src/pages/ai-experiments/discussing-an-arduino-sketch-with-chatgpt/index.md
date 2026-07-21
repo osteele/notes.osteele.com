@@ -35,4 +35,4 @@ I shared an Arduino sketch with ChatGPT and asked it to:
 
 ## Related
 
-<ul class="page-list"><li><a href="/gpt-experiments/chatgpt-code-explanations/">ChatGPT Code Explanations</a></li><li><a href="/physical-computing/arduino/">Arduino Notes</a></li><li><a href="/gpt-experiments/">All GPT Experiments</a></li></ul>
+<ul class="page-list"><li><a href="/ai-experiments/chatgpt-code-explanations/">ChatGPT Code Explanations</a></li><li><a href="/physical-computing/arduino/">Arduino Notes</a></li><li><a href="/ai-experiments/">All AI Experiments</a></li></ul>

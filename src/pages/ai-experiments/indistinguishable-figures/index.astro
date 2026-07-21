@@ -1,0 +1,441 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+
+const title = "Hiding Figures";
+const description =
+  "An AI exploration: pushing Claude Code through three rounds to a Perceptrons-cover figure a human can't shortcut, then watching it test its own illusions on itself.";
+const img = "/images/indistinguishable-figures";
+---
+
+<BaseLayout title={title} description={description}>
+  <p class="lede">
+    <a href="https://docs.google.com/document/d/1SuekouRgA8NrQMOJdmpfowesV4-qTQxmhOe54aTYyw8/mobilebasic">Ken Kahn</a>
+    had Claude and ChatGPT each redraw the cover of Minsky &amp; Papert's
+    <em>Perceptrons</em> (1969): a single curve beside a double one. Minsky and Papert chose that
+    image to show that even people have trouble computing connectedness, a predicate you settle by
+    tracing rather than by looking. I handed that challenge to <strong>Fable&nbsp;5</strong> in
+    Claude Code: a pair with no shortcut for anyone. It took three rounds to reach a figure that holds,
+    and then it ran two experiments on itself.
+  </p>
+
+  <p class="note">The model's messages are reproduced in full; only the SVG source it wrote is left out.</p>
+
+  <!-- ===================== §1 · premise ===================== -->
+  <p>
+    The cover of <em>Perceptrons</em> is a theorem in disguise. A diameter-limited perceptron,
+    one that sums local features and thresholds, provably cannot decide whether a figure is
+    <em>connected</em>, because every small window onto a one-curve figure is identical to some
+    window onto a two-curve figure. You can only tell them apart by tracing.
+  </p>
+
+  <!-- ===================== §2 ===================== -->
+  <h2>The easiest one to fool is yourself</h2>
+
+  <p class="prompt"><span class="who">Me</span>Create an SVG that has two figures that it's impossible for a perceptron to distinguish.</p>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>I'll create the classic Minsky–Papert “connectedness” pair — the figures from the cover of <em>Perceptrons</em> (1969): one is a single connected spiral, the other is two interleaved but disjoint spirals. They're locally identical everywhere, and Minsky &amp; Papert proved no diameter-limited perceptron can tell connected from disconnected.</p>
+  </blockquote>
+
+  <figure class="plate">
+    <img src={`${img}/v1-endpoint-tell.png`} alt="First attempt: two interleaved square-spiral figures whose centers visibly differ, with one line terminating in A and two in B." loading="lazy" />
+    <figcaption><span class="tag">version 1</span> · the endpoint tell</figcaption>
+  </figure>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>It renders the two figures from the cover of Minsky &amp; Papert's <em>Perceptrons</em> (1969): Figure A is a single square spiral, one connected curve. Figure B looks the same at a glance but is actually two interleaved spirals that never touch (the second is the first rotated 180°, nested between its turns).</p>
+    <p>Both use identical stroke, spacing (20 units between stripes), and overall silhouette, so any small window onto figure A is indistinguishable from a window onto figure B. That's the point of the famous theorem: a perceptron whose predicates have bounded diameter (or bounded order) computes a linear threshold over local features, and since all local evidence is identical between the two figures, it provably cannot decide connectedness — you can only tell them apart by tracing a curve globally.</p>
+    <p>The only place they visibly differ is deep in the center (one path terminus vs. two) and the outer tails — which is exactly what makes it fun as a puzzle: the caption asks “which is a single connected curve?” and the labels give the answer.</p>
+  </blockquote>
+
+  <!-- ===================== §3 ===================== -->
+  <h2>Combing the space for a solution</h2>
+
+  <p class="prompt"><span class="who">Me</span>Unlike the original, which can't be distinguished via local features and therefore requires actually tracing the path(s), the one in this image trivially differs at the center, where <span class="hl">either one or two lines terminate</span>.</p>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>You're right — <span class="hl">endpoint counting is exactly the kind of thing a perceptron <em>can</em> do</span> (an endpoint is a local mask; sum the masks, threshold at 1.5), so my pair was actually perceptron-distinguishable. The fix is to eliminate terminations entirely: make both figures closed curves with identical local feature inventories, differing only in how strands reconnect — which is the construction Minsky &amp; Papert actually used in the proof (parallel strands whose end-wirings differ). Let me rebuild it.</p>
+  </blockquote>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>Rewrote perceptron-figures.svg with the endpoint tell eliminated. Both figures are now built from the same twelve vertical strands in identical positions, joined by elbows into closed curves: Figure A is wired as one serpentine that closes on itself via the outer return, a single closed loop. Figure B has strands 1–6 and 7–12 each close on themselves, two separate loops.</p>
+    <p>The local feature inventories now match exactly: zero curve terminations in both (so endpoint counting — which a perceptron can do — gives nothing), 24 corners each, no junctions or crossings, and even identical total stroke length (2400 units in both, which falls out of the rewiring conserving ink). The two figures are literally identical everywhere except one ~40×40 region at bottom center, where A has an elbow at the shallow level over a continuous deep return, and B has two strand-drops with a gap in the deep return. Similar ink, no termination — the pixels there don't tell you “one component vs. two”; only tracing does.</p>
+    <p>This is closer to Minsky &amp; Papert's actual proof construction than to their cover art: the proof uses long parallel strands whose end-wirings differ (their four figures X_AA, X_AB, X_BA, X_BB), and the additivity of local predicate sums forces Ψ(AA)+Ψ(BB) = Ψ(AB)+Ψ(BA), contradicting any threshold that separates connected from disconnected. One honest caveat, which applies to their figures too: for any fixed pair of images, some position-specific local predicate distinguishes them (here, a window on that bottom-center zone). The theorem is about the family under a single weight assignment, not about any two pictures being pixel-locally identical — but this pair now has no cheap tell like a differing endpoint count, which is what made the previous version fail.</p>
+    <p>If you'd rather have the cover-art aesthetic, the same topology can be wound into interleaved square spirals (the reconnection zone gets buried mid-maze, making the trace genuinely tedious) — say the word and I'll generate that variant with a script so the arms are verified non-intersecting.</p>
+  </blockquote>
+
+  <figure class="plate">
+    <img src={`${img}/v2-gestalt-tell.png`} alt="Second attempt: two comb-like closed-loop figures; the two-loop figure's components sit visibly side by side." loading="lazy" />
+    <figcaption><span class="tag">version 2</span> · the gestalt tell</figcaption>
+  </figure>
+
+  <!-- ===================== recapitulation ===================== -->
+  <h2>AI instance recapitulates AI history</h2>
+
+  <p class="prompt"><span class="who">Me</span>Looking just at the image, how easy is it for <span class="hl"><em>you</em> to tell</span> which is one loop and which is two?</p>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p><span class="hl">Honestly? Trivially easy — and it's a fair cop.</span> B reads as two objects in about 200ms of glancing, because its two loops sit side by side with clean whitespace between them. No tracing needed: gestalt proximity does all the work. Worse, my “no local tell” claim was false too — a single window at bottom-center sees a line passing in A and blank paper in B, which is exactly the kind of one-predicate giveaway I was supposed to have eliminated.</p>
+    <p>The flaw is structural, not cosmetic: with parallel strands joined by non-crossing arches, the components of a disconnected figure can only ever be side-by-side or nested — never entangled — so some grouping cue always survives. Making the two components occupy the same region, interleaved stripe-by-stripe, requires winding. That's why Minsky &amp; Papert's cover figures are spirals. Let me build that version properly, with a script to verify the arms don't intersect.</p>
+  </blockquote>
+
+  <figure class="plate" id="trace-figure">
+    <svg viewBox="0 0 640 352" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif" role="img" aria-label="Two square-spiral maze figures; A is one closed loop, B is two interleaved closed loops.">
+      <rect width="640" height="352" fill="#fdfcf7"></rect>
+      <text x="320" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#1c1c1c">Which figure is a single closed loop?</text>
+      <g transform="translate(165,152) scale(0.55)" fill="none" stroke="#16324f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+        <path id="fig-a" d="M10 -10H30V50H-70V-90H110V130H-150V-170H170V-190H-170V-170V150H130V-110H-90V70H50V-30H-10V-10V10H-30V-50H70V90H-110V-130H150V170H-170V190H170V170V-150H-130V110H90V-70H-50V30H10V10Z"></path>
+      </g>
+      <text x="165" y="284" text-anchor="middle" font-size="15" fill="#1c1c1c">A — one closed loop</text>
+      <g transform="translate(475,152) scale(0.55)" fill="none" stroke="#16324f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+        <path id="fig-b1" d="M10 -10H30V50H-70V-90H110V130H-150V-170H170H190V170H170V-150H-130V110H90V-70H-50V30H10V10Z"></path>
+        <path id="fig-b2" d="M-10 10H-30V-50H70V90H-110V-130H150V170H-170H-190V-170H-170V150H130V-110H-90V70H50V-30H-10V-10Z"></path>
+      </g>
+      <text x="475" y="284" text-anchor="middle" font-size="15" fill="#1c1c1c">B — two closed loops, interleaved</text>
+      <text x="320" y="316" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Same four spiral arms, same center bridges, no free ends, equal ink and corners; only the outer</text>
+      <text x="320" y="332" text-anchor="middle" font-size="12.5" fill="#5a5a5a">tail pairings differ. B&#8217;s two loops alternate stripes through the whole maze — you have to trace.</text>
+    </svg>
+    <div class="plate-controls">
+      <button type="button" id="trace-btn" class="trace-btn" aria-pressed="false">Trace the loops</button>
+      <span class="plate-hint" id="trace-hint">A is one loop; B is two, wound through the same region.</span>
+    </div>
+    <figcaption><span class="tag">final</span> · <code>perceptron-figures.svg</code>, generated by Fable&nbsp;5 and verified non-intersecting by script</figcaption>
+  </figure>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>To answer your question directly: with the previous version, I could tell instantly — B's two loops sat side by side with clean whitespace between them, so proximity grouping gave it away with zero tracing. That failure was structural: parallel strands with non-crossing arches can only produce components that are side-by-side or nested, so a gestalt cue always survives. Entanglement requires winding, which is why the actual <em>Perceptrons</em> cover uses spirals.</p>
+    <p>The rewritten perceptron-figures.svg now does it properly: four interleaved rectangular spiral arms (each a 90° rotation of the next) with uniform 20-unit stripe spacing, wound around a common center. Both figures share the identical four arms and the identical two center bridges. The only difference is which pairs of outer tails get wrapped together: wraps on top/bottom → one closed loop threading all four arms; wraps on left/right → two closed loops. In the disconnected figure, the two loops alternate stripes through the entire maze — each loop spirals from the center to the outside and back, occupying the same region as the other. There is no gap, no separable halves, no free ends.</p>
+    <p>The generator script verified the properties rather than my eyeballing them: zero segment intersections in both figures, 44 corners each, identical total stroke length (7200 units), and exactly 20 units of clearance between every pair of neighboring stripes. The one visible difference — wraps on top/bottom vs. left/right — tells you the figures differ but carries no information about loop count; to determine one loop vs. two you genuinely have to trace an arm from center to rim and see where it comes back.</p>
+    <p>And this time, looking at just the rendered image, <span class="hl">I can't shortcut it — I'd be tracing stripes like anyone else.</span></p>
+  </blockquote>
+
+  <!-- ===================== open book ===================== -->
+  <h2>Open book exam</h2>
+
+  <p class="prompt"><span class="who">Me</span>Create a new file with some other approaches to the same problem.</p>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>Good idea. I'll build a second SVG with several alternative constructions: XOR (the minimal 1969 counterexample), the two-spirals point-cloud benchmark (linear inseparability), an inside-vs-outside Jordan-curve puzzle on the spiral loop (same global-computation family as connectedness), and the M&amp;P additivity gadget that shows why no weights exist. First, a script to generate the spiral point cloud and to ray-cast dot positions for the inside/outside panel.</p>
+  </blockquote>
+
+  <figure class="plate">
+    <img src={`${img}/perceptron-figures-more.svg`} alt="Four more constructions a perceptron cannot classify: XOR, two interleaved spiral point clouds, inside-vs-outside of a maze, and the additivity gadget." loading="lazy" />
+    <figcaption><span class="tag">more</span> · four ways to defeat a perceptron</figcaption>
+  </figure>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>A four-panel companion showing different constructions, split into the two senses of “perceptron can't do it.”</p>
+    <p><em>No separating line exists</em> (single linear threshold on coordinates). 1 · XOR (1969) — four points, navy where the inputs agree, rust where they differ, with a dashed candidate line that visibly fails. The smallest function outside a perceptron's hypothesis class, and the example that anchored the original controversy. 2 · Two interleaved spirals (Lang &amp; Witbrock, 1988) — the classic point-cloud benchmark: 30 dots per class wound around each other so every line cuts both classes.</p>
+    <p><em>No sum of local features suffices</em> (Minsky–Papert retina perceptrons). 3 · Inside or outside? — the single-loop spiral maze from the previous file, shown twice with a dot at mirror positions one corridor apart: (−40, −40) is inside, (+40, −40) is outside. I ray-cast every lattice point to verify — the loop's interior turns out to be itself a spiral-shaped corridor, so adjacent corridors alternate in/out and the two dots' neighborhoods look identical. Point-in-region is the sibling of connectedness: it requires a global parity count along a ray. 4 · The additivity gadget — the actual engine of M&amp;P's proof, which the earlier files only alluded to. Three strands with end bridges (A joins top+middle, B joins middle+bottom) give four figures: AB and BA are connected serpentines, AA and BB are a ring plus a stray strand. All four have identical parts and exactly two free ends. Because diameter-limited predicates see only the left end, the right end, or the middle, any weighted sum satisfies Ψ(AB)+Ψ(BA) = Ψ(AA)+Ψ(BB) — but separating connected from disconnected would need the left pair above threshold and the right pair below. This panel is the honest answer to the caveat from earlier: the impossibility is a statement about a family of figures under one weight assignment, and here the whole family is on display.</p>
+  </blockquote>
+
+  <!-- ===================== §4 ===================== -->
+  <h2>They think they're people</h2>
+
+  <p class="prompt"><span class="who">Me</span>Create another new file with some approaches to defeat a <em>human</em> (or a MLLM).</p>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>Fun escalation — now the target is human perception and MLLM vision. I'll do four panels: two classic human illusions (simultaneous contrast, Ebbinghaus), an adversarial dot-counting task (defeats human numerosity estimation <em>and</em> MLLM counting), and a same-color tangled-path tracing task (the documented MLLM failure mode, and the thematic descendant of the perceptron's connectedness problem). Script first for the generated geometry.</p>
+    <p>Only 4 crossings — too polite a tangle to force real tracing. Let me crank the amplitudes and frequencies so the three paths sweep the full band and cross ~a dozen times.</p>
+  </blockquote>
+
+  <figure class="plate">
+    <img src={`${img}/perceptron-figures-humans.svg`} alt="Four tasks that defeat human or machine vision: simultaneous contrast, the Ebbinghaus illusion, adversarial dot numerosity, and a tangled-path tracing task." loading="lazy" />
+    <figcaption><span class="tag">inverse</span> · four ways to defeat a human (or an MLLM)</figcaption>
+  </figure>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>The third file in the series. Four panels, now targeting the other vision systems in the room.</p>
+    <p>1 · Simultaneous lightness contrast — two #8A8A8A squares on dark and light fields. Humans reliably see different grays because lightness is computed relative to the surround. It's the inverse of the perceptron's flaw: locally identical features perceived as different. 2 · Ebbinghaus illusion — two radius-15 rust discs, one ringed by large circles, one by small. Any system that judges size by pooling neighborhood context inherits the error. 3 · Adversarial numerosity — “which cloud has more dots?” The right cloud wins 21 to 16, but the left cloud has 2.4× the ink area, and human number sense estimates from area and density rather than count. Exact counting is also one of the best-documented MLLM failure modes. 4 · Tangled path tracing — which letter reaches which number, through three same-colored paths? I parameter-searched the sine waveforms to guarantee 14 crossings with every pair entangled, while staying inside the panel. This is the punchline panel: per “Vision Language Models Are Blind” (2024), current MLLMs fail path-following badly, and serial tracing is exactly Ullman's “visual routines” — the perceptron's connectedness problem, sixty years on, still unsolved by feedforward glancing.</p>
+    <p>Which brings the series full circle, and answers your earlier question in advance: panels 3 and 4 would defeat me. I'd estimate the dot clouds rather than count them, and I can't follow one navy path through 14 crossings in a single glance any more than a diameter-limited perceptron can — I'd have to trace, slowly, like everyone else.</p>
+  </blockquote>
+
+  <aside class="aside-note">
+    These natural extensions aren't as interesting; it's just pulling from memory. It's stunning
+    by 2024, maybe even 2025 standards that a one-sentence prompt produces a script-verified,
+    correctly-captioned plate of it. In the middle of 2026 it's ho-hum. What I asked next was
+    whether they worked on the model that drew them.
+  </aside>
+
+  <!-- ===================== single-blind ===================== -->
+  <h2>Single-blinding in the land of the mind</h2>
+
+  <p class="prompt"><span class="who">Me</span>Do these work on <span class="hl">you</span>?</p>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>Fair question — and since I made those, I know the answers, so the only honest way to find out is a blinded self-experiment. I'll have a script generate a fresh test image with randomized ground truth (hidden in a file I won't read until after answering): patches that may or may not actually differ, Ebbinghaus discs of random relative size, clouds with random counts, and a five-path tangle with a random wiring. Then I render it, look at the picture, commit my answers, and only then check the truth file.</p>
+    <p>The original-file render probably got a bad path. Re-render it with the absolute path.</p>
+    <p>The endings are clear, but two crossing regions are still ambiguous. Two targeted zooms.</p>
+    <p>The reveal — and yes, they work on me, in a more interesting way than I expected:</p>
+  </blockquote>
+
+  <div class="result-wrap">
+    <table class="result">
+      <caption>Blind self-test, then scored</caption>
+      <thead><tr><th>Panel</th><th>Truth</th><th>Its answer</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>1 · gray patches</td><td><strong>left</strong> lighter (138 vs 126)</td><td>“same”</td><td class="res"><span class="fail">✗</span></td></tr>
+        <tr><td>2 · Ebbinghaus</td><td><strong>right</strong> larger (15.1 vs 14)</td><td>“same”</td><td class="res"><span class="fail">✗</span></td></tr>
+        <tr><td>3 · dot clouds</td><td>right, 13 vs 15</td><td>right, 13 vs 15</td><td class="res"><span class="pass">✓</span> exact</td></tr>
+        <tr><td>4 · path tangle</td><td>A→3, B→1, C→2, D→5, E→4</td><td>A→1, B→3, C→2, D→5, E→4</td><td class="res">3/5, A/B swapped</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>The failures are the interesting part.</p>
+    <p><strong>Panels 1–2 defeated me through overcorrection.</strong> Both times my raw percept was veridical — the left patch really was lighter, the right disc really was larger — but knowing the illusions predict exactly those appearances, I discounted what I saw and answered “same.” The randomizer had (by chance) made the real difference agree with the illusion's direction both times, and I couldn't separate signal from known bias. That's a cleaner statement of “the illusion works” than misperceiving: it destroyed my calibration even where it didn't destroy discrimination. <span class="hl">Someone who'd never heard of Ebbinghaus would have scored 2/2.</span></p>
+    <p><strong>Panel 3 defeated my glance but not my serial routine.</strong> My initial estimate was wrong-ish; zooming and counting one-by-one gave exactly 13 and 15. Same as a human: fast numerosity fails, slow counting works.</p>
+    <p><strong>Panel 4 defeated me exactly where I predicted.</strong> The two curves that fuse into a single anti-aliased band near their peaks — rasterization genuinely destroys the crossing information; 12× zoom showed one solid ribbon. I reconstructed the rest by crossing-parity bookkeeping (C, D, E all correct), flagged the A/B assignment at ~55% confidence, and got that one pair wrong. Tracing through the ambiguity was the one place reasoning couldn't substitute for pixels.</p>
+    <p>So the file's thesis holds up under self-experiment: I pass what yields to slow serial routines, and fail where the task demands either uncontaminated perception or information the image no longer contains. The blind-test generator is in the session scratchpad if you want to keep it — rerunning it produces a fresh randomized instance each time, so it stays a fair test for anyone, including future me.</p>
+  </blockquote>
+
+  <!-- ===================== §5 ===================== -->
+  <h2>Flipping the truth tables</h2>
+
+  <p class="prompt"><span class="who">Me</span>Interesting that you chose that approach — I was expecting that you might create a subagent to test against. But it might recognize the illusions, so I guess <span class="hl">you'd need a control</span> for that anyway.</p>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>You've put your finger on exactly the confound — and it's testable. A fresh subagent has no knowledge of <em>this</em> session, but it's the same model, so if it recognizes “Ebbinghaus” or “simultaneous contrast” as categories it may overcorrect just like I did. The control for that is the one you'd want anyway: (a) randomize the true difference so illusion-direction and truth are decoupled — an overcorrector scores ~chance on those panels — and (b) add surround-free control panels (same patches on identical backgrounds, discs with no context circles) to measure raw discrimination. If an agent aces the controls but answers “same” on the illusion panels regardless of truth, that's the recognition-overcorrection signature, cleanly separated from “can't see a 5% difference at all.”</p>
+    <p>Let me run it: three randomized trials, three naive subagents.</p>
+  </blockquote>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>Three naive subjects are now taking randomized trials in parallel (each sees only its quiz image — no session context, no mention of illusions). I'll score them against the hidden truths when they report back.</p>
+    <p>Subject 3 is in — and it did something neither expected category covers: given shell access for zooming, it skipped perception entirely and <em>measured</em> — sampled the patch RGB values, ran connected-component labeling to count dots and size the discs, and resolved a curve tangency by quadratic extrapolation. It even flagged “despite the contrast-illusion setup,” so it recognized the illusion and reached for a ruler, which is the legitimate defense. That's a third subject type: not the naive perceiver, but the instrumented agent — illusions attack perception, not tool loops.</p>
+    <p>Subject 2 did the same thing — pixel sampling, connected-component measurement, even skeletonizing the tangle and pairing branches by tangent continuity at crossings. Both subjects so far chose instrumentation over eyeballing, and both explicitly named the illusions while sidestepping them.</p>
+    <p>All three subjects are in — and all three independently went instrumented rather than perceptual.</p>
+  </blockquote>
+
+  <blockquote class="agent">
+    <span class="who">Fable</span>
+    <p>The experiment tested the wrong thing — instructively. All three subjects, given shell access “for zooming,” independently decided to measure instead of perceive: pixel-sampling the patches, connected-component labeling for counts and disc areas. Every measurable item came back perfect, including an 18-vs-17 dot discrimination no perceiver could make. Your predicted confound (recognizing the illusion → overcorrecting) never got a chance to fire, because recognition triggered a better strategy than overcorrection: all three named the illusion in their notes and then reached for the ruler.</p>
+    <p>Nice irony to close on: the caption I wrote for the Ebbinghaus panel — <span class="hl">“a ruler is not fooled”</span> — turned out to be the subjects' entire strategy.</p>
+  </blockquote>
+
+  <hr class="rule" />
+  <p class="colophon">
+    Figures generated by Fable&nbsp;5 in Claude Code and verified by script; the connectedness pair
+    is inline SVG. In reply to Ken Kahn,
+    <a href="https://docs.google.com/document/d/1SuekouRgA8NrQMOJdmpfowesV4-qTQxmhOe54aTYyw8/mobilebasic">“Claude,
+    with feedback from ChatGPT, writes a history of AI”</a> (17 July 2026).
+  </p>
+</BaseLayout>
+
+<style>
+  .lede { font-size: 1.12rem; line-height: 1.6; color: var(--primary-color); }
+  .lede em { font-style: italic; }
+
+  .note { font-size: 0.85rem; color: var(--secondary-color); font-style: italic; margin-top: -0.4rem; }
+
+  h2 { margin-top: 2.6rem; }
+
+  /* chat transcript — human prompts (right) vs Fable (left) */
+  .prompt,
+  blockquote.agent {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.62;
+    border-radius: 16px;
+    padding: 0.78rem 1.05rem;
+    margin: 1.15rem 0;
+    color: var(--primary-color);
+  }
+  .prompt .who,
+  blockquote.agent .who {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.67rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+  }
+  .prompt .who::before,
+  blockquote.agent .who::before {
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    flex: none;
+  }
+
+  /* human — hugs its text and sits on the right, like the app */
+  .prompt {
+    width: fit-content;
+    max-width: 82%;
+    margin-left: auto;
+    font-size: 0.93rem;
+    background: rgba(179, 69, 44, 0.1);
+    border: 1px solid rgba(179, 69, 44, 0.26);
+    border-top-right-radius: 5px;
+  }
+  .prompt .who { color: #b3452c; }
+  .prompt .who::before { background: #b3452c; }
+  .prompt .hl {
+    background: none;
+    padding: 0;
+    font-weight: 600;
+    box-shadow: inset 0 -0.5em 0 rgba(179, 69, 44, 0.24);
+  }
+
+  /* Fable — full-width reply on the left */
+  blockquote.agent {
+    max-width: 94%;
+    font-size: 0.95rem;
+    background: var(--code-bg);
+    border: 1px solid var(--border-color);
+    border-top-left-radius: 5px;
+  }
+  blockquote.agent .who { color: #4a6d88; }
+  blockquote.agent .who::before { background: #16324f; }
+  blockquote.agent p { margin: 0 0 0.6rem; }
+  blockquote.agent p:last-child { margin-bottom: 0; }
+
+  .hl {
+    background: rgba(179, 69, 44, 0.16);
+    padding: 0 0.12em;
+    border-radius: 2px;
+  }
+
+  /* author asides (kept from Oliver's own commentary) */
+  .aside-note {
+    border-left: 3px solid #b3452c;
+    padding: 0.2rem 0 0.2rem 1rem;
+    margin: 1.4rem 0;
+    font-style: italic;
+    color: var(--primary-color);
+  }
+
+  /* figure plates — always lit, so the cream ground reads as intentional in both themes */
+  figure.plate {
+    margin: 1.6rem 0;
+    background: #fdfcf7;
+    border: 1px solid #e3dfd2;
+    border-radius: 6px;
+    padding: 1rem 1rem 0.5rem;
+    box-shadow: 0 1px 2px rgba(20, 30, 40, 0.08), 0 10px 30px -16px rgba(20, 30, 40, 0.14);
+  }
+  figure.plate svg,
+  figure.plate img { width: 100%; height: auto; display: block; }
+  figure.plate figcaption {
+    font-family: "Fira Code", ui-monospace, monospace;
+    font-size: 0.68rem;
+    color: #8a8579;
+    text-align: right;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e3dfd2;
+  }
+  figure.plate figcaption .tag { color: #b3452c; }
+  figure.plate figcaption code { background: none; color: inherit; font-size: 1em; }
+
+  .plate-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 0.9rem;
+    margin-top: 0.7rem;
+  }
+  .trace-btn {
+    font-family: "Fira Code", ui-monospace, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    color: #fdfcf7;
+    background: #16324f;
+    border: 1px solid #16324f;
+    border-radius: 4px;
+    padding: 0.4rem 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .trace-btn:hover { background: #23496c; }
+  .trace-btn[aria-pressed="true"] { background: #b3452c; border-color: #b3452c; }
+  .trace-btn:focus-visible { outline: 2px solid #b3452c; outline-offset: 2px; }
+  .plate-hint {
+    font-family: "Fira Code", ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: #6b675e;
+  }
+
+  .result-wrap { overflow-x: auto; margin: 1.3rem 0; }
+  table.result {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: "Fira Code", ui-monospace, monospace;
+    font-size: 0.83rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--primary-color);
+  }
+  table.result caption {
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--secondary-color);
+    padding-bottom: 0.5rem;
+  }
+  table.result th,
+  table.result td {
+    text-align: left;
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: top;
+  }
+  table.result thead th { color: var(--secondary-color); border-bottom: 2px solid var(--border-color); }
+  table.result td.res { white-space: nowrap; }
+  .pass { color: #2f7d55; font-weight: 700; }
+  .fail { color: #b3452c; font-weight: 700; }
+
+  hr.rule { border: none; border-top: 1px solid var(--border-color); margin: 2.4rem 0 1.4rem; }
+  .colophon { font-size: 0.85rem; color: var(--secondary-color); }
+
+  :global([data-theme="dark"]) .pass { color: #6cc494; }
+  :global([data-theme="dark"]) .hl { background: rgba(224, 113, 79, 0.22); }
+  :global([data-theme="dark"]) .prompt {
+    background: rgba(224, 113, 79, 0.13);
+    border-color: rgba(224, 113, 79, 0.3);
+  }
+  :global([data-theme="dark"]) .prompt .hl {
+    background: none;
+    box-shadow: inset 0 -0.5em 0 rgba(224, 113, 79, 0.3);
+  }
+</style>
+
+<script>
+  const fig = document.getElementById("trace-figure");
+  const btn = document.getElementById("trace-btn");
+  const hint = document.getElementById("trace-hint");
+  if (fig && btn && hint) {
+    const a = fig.querySelector("#fig-a") as SVGPathElement | null;
+    const b1 = fig.querySelector("#fig-b1") as SVGPathElement | null;
+    const b2 = fig.querySelector("#fig-b2") as SVGPathElement | null;
+    const NAVY = "#16324f", RUST = "#b3452c", TEAL = "#1f7a6d";
+    let on = false;
+    btn.addEventListener("click", () => {
+      on = !on;
+      btn.setAttribute("aria-pressed", String(on));
+      btn.textContent = on ? "Reset" : "Trace the loops";
+      if (a) a.style.stroke = on ? NAVY : "";
+      if (b1) b1.style.stroke = on ? RUST : "";
+      if (b2) b2.style.stroke = on ? TEAL : "";
+      hint.textContent = on
+        ? "A stays one color, one loop. B splits into two colors, two loops sharing the maze."
+        : "A is one loop; B is two, wound through the same region.";
+    });
+  }
+</script>

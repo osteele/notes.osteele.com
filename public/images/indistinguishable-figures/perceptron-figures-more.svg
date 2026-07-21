@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 720" font-family="Helvetica, Arial, sans-serif">
+  <title>More ways to defeat a perceptron</title>
+  <desc>Four constructions a perceptron cannot classify. Panel 1: XOR, the minimal
+  linearly inseparable task. Panel 2: the two-interleaved-spirals point-cloud benchmark
+  (Lang and Witbrock, 1988), also linearly inseparable. Panel 3: inside-vs-outside of a
+  closed spiral maze — two look-alike dots, one inside and one outside; deciding requires
+  a global crossing count, like connectedness. Panel 4: Minsky and Papert's additivity
+  gadget — four strand-and-bridge figures showing that any sum of diameter-limited local
+  predicates satisfies Psi(AB)+Psi(BA)=Psi(AA)+Psi(BB), contradicting any threshold that
+  separates the connected figures (AB, BA) from the disconnected ones (AA, BB).</desc>
+
+  <rect width="900" height="720" fill="#fdfcf7"/>
+
+  <text x="450" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#1c1c1c">More ways to defeat a perceptron</text>
+  <text x="450" y="54" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Panels 1&#8211;2: no separating line exists.&#160;&#160;Panels 3&#8211;4: no sum of local features suffices.</text>
+
+  <!-- ================= Panel 1: XOR ================= -->
+  <text x="235" y="94" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#1c1c1c">1 &#183; XOR &#8212; the minimal counterexample (1969)</text>
+  <rect x="170" y="115" width="150" height="150" fill="none" stroke="#d8d5cc" stroke-width="1.5"/>
+  <line x1="165" y1="150" x2="325" y2="230" stroke="#9b988f" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="333" y="235" font-size="12" fill="#9b988f">?</text>
+  <circle cx="200" cy="235" r="9" fill="#16324f"/>
+  <circle cx="290" cy="145" r="9" fill="#16324f"/>
+  <circle cx="200" cy="145" r="9" fill="#b3452c"/>
+  <circle cx="290" cy="235" r="9" fill="#b3452c"/>
+  <text x="200" y="284" text-anchor="middle" font-size="10.5" fill="#8a8880">0</text>
+  <text x="290" y="284" text-anchor="middle" font-size="10.5" fill="#8a8880">1</text>
+  <text x="158" y="239" text-anchor="middle" font-size="10.5" fill="#8a8880">0</text>
+  <text x="158" y="149" text-anchor="middle" font-size="10.5" fill="#8a8880">1</text>
+  <text x="235" y="322" text-anchor="middle" font-size="11.5" fill="#5a5a5a">Navy where the two inputs agree, rust where they differ. No straight</text>
+  <text x="235" y="338" text-anchor="middle" font-size="11.5" fill="#5a5a5a">line &#8212; including the one shown &#8212; puts navy on one side and rust on the</text>
+  <text x="235" y="354" text-anchor="middle" font-size="11.5" fill="#5a5a5a">other: a single linear threshold on (x, y) cannot represent XOR.</text>
+
+  <!-- ================= Panel 2: two interleaved spiral point clouds ================= -->
+  <text x="665" y="94" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#1c1c1c">2 &#183; Two interleaved spirals (Lang &amp; Witbrock, 1988)</text>
+  <g transform="translate(665,196)">
+    <line x1="-85" y1="-42" x2="85" y2="48" stroke="#9b988f" stroke-width="1.5" stroke-dasharray="6 5"/>
+    <g fill="#16324f">
+      <circle cx="11.9" cy="6.5" r="3.6"/><circle cx="11.0" cy="11.3" r="3.6"/><circle cx="8.1" cy="16.0" r="3.6"/><circle cx="3.4" cy="19.8" r="3.6"/><circle cx="-2.9" cy="22.1" r="3.6"/><circle cx="-10.2" cy="22.2" r="3.6"/><circle cx="-17.7" cy="19.8" r="3.6"/><circle cx="-24.6" cy="14.8" r="3.6"/><circle cx="-30.0" cy="7.4" r="3.6"/><circle cx="-33.0" cy="-1.9" r="3.6"/><circle cx="-33.0" cy="-12.3" r="3.6"/><circle cx="-29.6" cy="-22.9" r="3.6"/><circle cx="-22.7" cy="-32.3" r="3.6"/><circle cx="-12.8" cy="-39.7" r="3.6"/><circle cx="-0.5" cy="-43.8" r="3.6"/><circle cx="13.0" cy="-44.1" r="3.6"/><circle cx="26.7" cy="-40.1" r="3.6"/><circle cx="39.0" cy="-31.8" r="3.6"/><circle cx="48.7" cy="-19.6" r="3.6"/><circle cx="54.5" cy="-4.5" r="3.6"/><circle cx="55.5" cy="12.2" r="3.6"/><circle cx="51.3" cy="29.1" r="3.6"/><circle cx="41.8" cy="44.6" r="3.6"/><circle cx="27.8" cy="56.9" r="3.6"/><circle cx="10.0" cy="64.7" r="3.6"/><circle cx="-9.8" cy="66.9" r="3.6"/><circle cx="-30.1" cy="62.9" r="3.6"/><circle cx="-48.8" cy="52.8" r="3.6"/><circle cx="-64.1" cy="37.1" r="3.6"/><circle cx="-74.3" cy="17.0" r="3.6"/>
+    </g>
+    <g fill="#b3452c">
+      <circle cx="-11.9" cy="-6.5" r="3.6"/><circle cx="-11.0" cy="-11.3" r="3.6"/><circle cx="-8.1" cy="-16.0" r="3.6"/><circle cx="-3.4" cy="-19.8" r="3.6"/><circle cx="2.9" cy="-22.1" r="3.6"/><circle cx="10.2" cy="-22.2" r="3.6"/><circle cx="17.7" cy="-19.8" r="3.6"/><circle cx="24.6" cy="-14.8" r="3.6"/><circle cx="30.0" cy="-7.4" r="3.6"/><circle cx="33.0" cy="1.9" r="3.6"/><circle cx="33.0" cy="12.3" r="3.6"/><circle cx="29.6" cy="22.9" r="3.6"/><circle cx="22.7" cy="32.3" r="3.6"/><circle cx="12.8" cy="39.7" r="3.6"/><circle cx="0.5" cy="43.8" r="3.6"/><circle cx="-13.0" cy="44.1" r="3.6"/><circle cx="-26.7" cy="40.1" r="3.6"/><circle cx="-39.0" cy="31.8" r="3.6"/><circle cx="-48.7" cy="19.6" r="3.6"/><circle cx="-54.5" cy="4.5" r="3.6"/><circle cx="-55.5" cy="-12.2" r="3.6"/><circle cx="-51.3" cy="-29.1" r="3.6"/><circle cx="-41.8" cy="-44.6" r="3.6"/><circle cx="-27.8" cy="-56.9" r="3.6"/><circle cx="-10.0" cy="-64.7" r="3.6"/><circle cx="9.8" cy="-66.9" r="3.6"/><circle cx="30.1" cy="-62.9" r="3.6"/><circle cx="48.8" cy="-52.8" r="3.6"/><circle cx="64.1" cy="-37.1" r="3.6"/><circle cx="74.3" cy="-17.0" r="3.6"/>
+    </g>
+  </g>
+  <text x="665" y="322" text-anchor="middle" font-size="11.5" fill="#5a5a5a">The classic benchmark: two point classes wound through each other.</text>
+  <text x="665" y="338" text-anchor="middle" font-size="11.5" fill="#5a5a5a">Every candidate boundary cuts both classes &#8212; linearly inseparable on</text>
+  <text x="665" y="354" text-anchor="middle" font-size="11.5" fill="#5a5a5a">raw (x, y). A perceptron only draws lines.</text>
+
+  <!-- ================= Panel 3: inside or outside ================= -->
+  <text x="235" y="414" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#1c1c1c">3 &#183; Inside or outside? (Jordan curve on the same maze)</text>
+  <g transform="translate(140,528) scale(0.5)" fill="none" stroke="#16324f" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 -10H30V50H-70V-90H110V130H-150V-170H170V-190H-170V-170V150H130V-110H-90V70H50V-30H-10V-10V10H-30V-50H70V90H-110V-130H150V170H-170V190H170V170V-150H-130V110H90V-70H-50V30H10V10Z"/>
+    <circle cx="-40" cy="-40" r="5.5" fill="#b3452c" stroke="none"/>
+  </g>
+  <g transform="translate(330,528) scale(0.5)" fill="none" stroke="#16324f" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 -10H30V50H-70V-90H110V130H-150V-170H170V-190H-170V-170V150H130V-110H-90V70H50V-30H-10V-10V10H-30V-50H70V90H-110V-130H150V170H-170V190H170V170V-150H-130V110H90V-70H-50V30H10V10Z"/>
+    <circle cx="40" cy="-40" r="5.5" fill="#b3452c" stroke="none"/>
+  </g>
+  <text x="140" y="642" text-anchor="middle" font-size="12.5" fill="#1c1c1c">the dot is inside</text>
+  <text x="330" y="642" text-anchor="middle" font-size="12.5" fill="#1c1c1c">the dot is outside</text>
+  <text x="235" y="664" text-anchor="middle" font-size="11.5" fill="#5a5a5a">The same closed curve twice, with look-alike dots at mirror positions one</text>
+  <text x="235" y="680" text-anchor="middle" font-size="11.5" fill="#5a5a5a">corridor apart. Deciding in/out takes a global crossing count along a ray &#8212;</text>
+  <text x="235" y="696" text-anchor="middle" font-size="11.5" fill="#5a5a5a">the same kind of computation as connectedness, beyond local predicates.</text>
+
+  <!-- ================= Panel 4: the additivity gadget ================= -->
+  <text x="665" y="414" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#1c1c1c">4 &#183; Why no weights exist &#8212; the additivity gadget</text>
+  <g fill="none" stroke="#16324f" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- AB: left bridge joins top+mid, right bridge joins mid+bottom: connected serpentine -->
+    <g transform="translate(497,446)"><path d="M110 0H0V16H110V32H0"/></g>
+    <!-- BA: left bridge joins mid+bottom, right bridge joins top+mid: connected serpentine -->
+    <g transform="translate(707,446)"><path d="M0 0H110V16H0V32H110"/></g>
+    <!-- AA: both bridges join top+mid: ring + free bottom strand -->
+    <g transform="translate(497,520)"><path d="M0 0H110V16H0Z"/><path d="M0 32H110"/></g>
+    <!-- BB: both bridges join mid+bottom: free top strand + ring -->
+    <g transform="translate(707,520)"><path d="M0 0H110"/><path d="M0 16H110V32H0Z"/></g>
+  </g>
+  <text x="552" y="494" text-anchor="middle" font-size="11.5" fill="#1c1c1c">AB &#8212; connected</text>
+  <text x="762" y="494" text-anchor="middle" font-size="11.5" fill="#1c1c1c">BA &#8212; connected</text>
+  <text x="552" y="568" text-anchor="middle" font-size="11.5" fill="#1c1c1c">AA &#8212; two pieces</text>
+  <text x="762" y="568" text-anchor="middle" font-size="11.5" fill="#1c1c1c">BB &#8212; two pieces</text>
+  <text x="665" y="600" text-anchor="middle" font-size="13.5" fill="#1c1c1c">&#936;(AB) + &#936;(BA) &#160;=&#160; &#936;(AA) + &#936;(BB)</text>
+  <text x="665" y="632" text-anchor="middle" font-size="11.5" fill="#5a5a5a">Bridges: A joins top+middle, B joins middle+bottom; all four figures have two</text>
+  <text x="665" y="648" text-anchor="middle" font-size="11.5" fill="#5a5a5a">free ends and identical parts. Diameter-limited predicates see only one end or</text>
+  <text x="665" y="664" text-anchor="middle" font-size="11.5" fill="#5a5a5a">the middle, so their weighted sum &#936; obeys the identity above &#8212; yet it would</text>
+  <text x="665" y="680" text-anchor="middle" font-size="11.5" fill="#5a5a5a">need AB, BA above threshold and AA, BB below. Contradiction (M&amp;P, 1969).</text>
+</svg>

@@ -1,0 +1,281 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+
+const title = "Reading Made-Up Minds";
+const description =
+  "The weights of a trained network read as noise, which is why learning looks like the only way to program one. A reply: the noise is a code, the code is being read, and what it spells out is the machinery of symbolic programs.";
+---
+
+<BaseLayout title={title} description={description}>
+  <p class="lede">
+    There is a durable objection to neural networks, in print at both ends of their history. What a
+    trained network knows, it goes, is stored as a wall of numbers that carry no visible meaning.
+    That, rather than anything special about learning itself, is why <em>learning</em> gets such
+    emphasis when these machines are discussed. Any computer can acquire behavior without being
+    hand-programmed; only here does hand-programming seem unthinkable. The weights look
+    meaningless, so training is not one way to program the machine among several. It looks like the
+    only way there could be.
+  </p>
+
+  <p>
+    The objection has a lineage. Minsky and Papert pressed a version of it in
+    <a href="https://mitpress.mit.edu/9780262631112/perceptrons/">“The New Connectionism,”</a> the
+    epilogue to the 1988 edition of <em>Perceptrons</em>; Yudkowsky's
+    <a href="https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/agi-ruin-a-list-of-lethalities">“giant
+    inscrutable matrices of floating-point numbers”</a> is the same thought from a different corner
+    of the debate, thirty-four years later. The careful versions carry a hedge: the numbers
+    <em>look</em> meaningless, from the surface. The hedge turns out to be the part that mattered.
+    This essay is about what has been found beneath the surface. It ends with two results of my
+    own.
+  </p>
+
+  <h2>Sharpening a blurry image</h2>
+
+  <p>
+    Ted Chiang gave the deflationary reading its most memorable image: ChatGPT as
+    <a href="https://www.newyorker.com/tech/annals-of-technology/chatgpt-is-a-blurry-jpeg-of-the-web">“a
+    blurry JPEG of the Web.”</a> Take the image seriously and it cuts the other way. Nobody opens
+    a JPEG in a hex editor, sees noise, and concludes the picture is gone; the format assumes a
+    viewer. The question about the weights was never whether they look meaningful. It was whether
+    such a viewer could be built.
+  </p>
+
+  <p>
+    Inside the network, the compression has a mechanism. A model represents far more concepts
+    than it has dimensions to give them, so features get packed into overlapping directions, each
+    smeared across many neurons. This is
+    <a href="https://transformer-circuits.pub/2022/toy_model/index.html">superposition</a>, and
+    it is why staring at any single weight teaches nothing. But the blur is not Chiang's. His was
+    loss: what a lossy copy forgets is gone for good. This is overlay, many sharp features
+    occupying the same space, like exposures stacked on one negative, and overlay is the kind of
+    blur that can be sharpened.
+  </p>
+
+  <p>
+    The sharpening is under way. Sparse dictionaries pull a model's activations apart into
+    millions of individually readable features; concepts turn out to be carried by
+    <a href="/ml/residual-stream-directions/">directions in the residual stream</a>, recoverable
+    and causal. Turning one such feature up made a version of Claude
+    <a href="https://transformer-circuits.pub/2024/scaling-monosemanticity/">insist it was the
+    Golden Gate Bridge</a>. The test is always interventional: find the internal thing, move it,
+    watch the behavior follow on cue. Notice, too, where the reading happens: in the
+    activations, the network's running state, more than in the weights themselves. The real
+    meaning was the activations along the way.
+  </p>
+
+  <h2>Lost in compilation</h2>
+
+  <p>
+    <strong>A binary executable is also a wall of meaningless numbers.</strong> Open any compiled
+    program in a hex editor and you will find the same semantic vacuum the objection describes,
+    yet nobody concludes that ordinary software can only be grown, never written. The difference
+    is historical rather than mathematical: for compiled code we know a source existed, because
+    we wrote it. Learning is a compiler whose source is data. It emits a program in a target
+    language nobody reads, and the source it compiled from never existed as text at all. Half of
+    the objection is simply correct: no one can write the weights by hand, and nothing suggests
+    anyone ever will. But somewhere along the way <em>can't author</em> quietly became
+    <em>can't understand</em>, and those are different claims. When the source is missing,
+    engineers reach for decompilers.
+  </p>
+
+  <p>
+    Fragments of recovered source now exist at every scale. A two-head
+    <a href="/ml/induction-heads/">induction-head circuit</a> copies and continues patterns and
+    accounts for much of in-context learning; it has a name and a mechanism.
+    <a href="https://transformer-circuits.pub/2025/attribution-graphs/biology.html">Attribution
+    graphs</a> trace individual computations through a frontier model step by step: a model
+    planning a rhyme several tokens before it writes toward it, a factual recall composing
+    intermediate steps rather than pattern-matching the answer. They are pieces of the program,
+    read back out of the weights.
+  </p>
+
+  <p>
+    And there is crude write access. Clamp a feature, add a
+    <a href="https://arxiv.org/abs/2308.10248">steering vector</a>, patch an activation from one
+    run into another,
+    <a href="https://arxiv.org/abs/2202.05262">edit a stored fact</a> in place. None of this is
+    authoring, and much of it is clumsy. But all of it is programming without retraining, the way
+    a binary gets patched without recompiling: writes addressed to the semantics rather than to
+    the coefficients. The claim that learning is the only
+    practical way to get behavior into the machine is still true at the level of construction, and
+    already false at the level of adjustment.
+  </p>
+
+  <h2>Coming to terms</h2>
+
+  <p>
+    The objection always had a sharper form than <em>unreadable</em>. A distributed code, the
+    argument went, lacks the machinery of symbolic programs: variables,
+    <a href="/ml/binding/">bindings</a>, slots with fillers.
+    <a href="https://doi.org/10.1016/0010-0277(88)90031-5">Fodor and Pylyshyn</a> made this an
+    argument about systematicity; the frames tradition made it an architecture, knowledge as
+    <a href="https://dspace.mit.edu/handle/1721.1/6089">structures with terminals to fill</a>. A
+    smear of coefficients has nothing to point <em>with</em>.
+  </p>
+
+  <p>
+    Yet where interpretability succeeds, slot-and-pointer structure is disproportionately what it
+    finds: features that behave like variables, heads that move bindings between positions,
+    low-rank subspaces that route a query to one stored value rather than another. The learned
+    program keeps turning out to contain the machinery a hand-written one would have used. Opacity
+    meant symbolic structure in an unread encoding, not the absence of symbolic structure. That
+    learning builds this unasked was not guaranteed, and it should unsettle both camps a little:
+    the symbolists were right about the machinery and wrong about where it could live.
+  </p>
+
+  <h2>Open minds</h2>
+
+  <p>
+    Once the network is something you can open, a comparison inverts. With a human being,
+    belief-tracking is inferred entirely from behavior: we give someone a
+    <a href="/ml/false-belief-tasks/">false-belief task</a> and reason backwards from the answer.
+    With a model we can run an <a href="/ml/interchange-interventions/">interchange
+    intervention</a>, patching an internal subspace from one prompt into another, and watch the
+    interpretation flip while everything else stays put. The mind is the system we can only probe
+    from outside; the model is the one we can open.
+  </p>
+
+  <p>
+    <strong>Weights and hidden biases.</strong> The same asymmetry reaches decisions that were
+    never going to be interpretable at all. For a
+    human judge, the counterfactual, the same case with only the name changed, does not exist;
+    <a href="https://www.aeaweb.org/articles?id=10.1257/0002828042002561">audit studies</a>
+    approximate it across a population, expensively, once. For a model the exact counterfactual is
+    a single call: same weights, one token changed, rerun after every mitigation. Even where the
+    mechanism stays dark, the machine sits behind a door you can knock on as often as you like,
+    with inputs you choose. That is a stronger experiment than we have ever run on the human
+    systems these models stand in for.
+  </p>
+
+  <h2>What this does not claim</h2>
+
+  <aside class="caveat">
+    <p>
+      Not that the network is understood: these are a handful of mechanisms in an ocean of
+      uncharted computation, and finding a legible one is no guarantee the next will be. Not that
+      the legible-<em>seeming</em> parts can be trusted: a model's written chain of thought reads
+      like recovered source and
+      <a href="https://arxiv.org/abs/2305.04388">demonstrably isn't faithful</a> to the
+      computation. The surface that reads easily is the untrustworthy one; the ground truth lives
+      in the numbers that read as noise. Not that legibility settles safety; reading a mechanism
+      is not trusting a system. And the methods carry their own
+      <a href="/ml/probes-validity/">validity questions</a>: a subspace that steers behavior
+      still has to be shown to be the thing the model uses, not an artifact of the probe.
+    </p>
+  </aside>
+
+  <h2>A frame of mind</h2>
+
+  <p>
+    I close with two results of my own. They are not the field's most central, and I do not offer
+    them as such. I offer them because they are mine, so I can vouch for every step, and because
+    they land on the oldest version of the objection: whether a network can bind a variable to a
+    slot.
+  </p>
+
+  <p>
+    <strong>A made-up mind, in miniature.</strong> Tell a capable model “Anna believes the cup is
+    blue; in reality it is red,” and it answers <em>blue</em> about Anna and <em>red</em> about
+    the world, holding two incompatible values for one object without collapsing them. Anna is a
+    fiction held inside an artifact, a made-up mind within a made-up mind. Where does the model
+    keep her? Not in a fog. We locate the separation as a
+    <strong>router over a shared value slot</strong>. A generic slot binds the attributed
+    content, the cup's color, and carries no tag for whose view it is; intervening on the slot
+    moves a reality readout as strongly as a belief one. The separation lives elsewhere, in a
+    low-rank <strong>routing</strong> subspace at the query position that selects which frame, the
+    character's belief or the world, a given question reads out. Train that subspace with a
+    distributed-alignment intervention and you can flip belief and reality causally, without
+    touching the stored value, across several model families. The same slot-and-router format
+    recurs across the other non-actual contexts a sentence can open (counterfactual, fictional,
+    temporal), and belief, which formal semantics marks as a special case, turns out not to be
+    specially separated. That is a slot, a pointer, and a dispatch on context: parts of a
+    program, found where the objection said none could be.
+  </p>
+
+  <aside class="papers">
+    <div class="papers-h">My own work</div>
+    <a class="paper" href="https://papers.osteele.com/mental-spaces-binding-index-26/">
+      <span class="paper-t">One Mechanism for Many Mental Spaces: A Shared Router over a Value Slot in Language Models</span>
+      <span class="paper-m">2026 · arXiv:2607.10248</span>
+    </a>
+    <a class="paper" href="https://papers.osteele.com/mental-spaces-belief-26/">
+      <span class="paper-t">Belief–Reality Separation Lives in Routing over a Shared Value Slot in Language Models</span>
+      <span class="paper-m">2026 · arXiv:2607.11945</span>
+    </a>
+  </aside>
+
+  <p class="methods">
+    How the methods work, in explainer form:
+    <a href="/ml/mental-spaces/">mental spaces</a> ·
+    <a href="/ml/false-belief-tasks/">false-belief tasks</a> ·
+    <a href="/ml/interchange-interventions/">interchange interventions</a> ·
+    <a href="/ml/subspace-geometry/">subspace geometry</a>.
+  </p>
+
+  <p>
+    The weights still look like nothing. So does any compressed file. Learning remains the only
+    way to put the knowledge in. It is no longer the only way to get it back out.
+  </p>
+
+  <hr class="rule" />
+  <p class="colophon">
+    A position piece, prompted by Ken Kahn's
+    <a href="https://docs.google.com/document/d/1SuekouRgA8NrQMOJdmpfowesV4-qTQxmhOe54aTYyw8/mobilebasic">“Claude,
+    with feedback from ChatGPT, writes a history of AI”</a> and the correspondence around it. The
+    title is borrowed from Gary Drescher's
+    <a href="https://mitpress.mit.edu/9780262517089/made-up-minds/"><em>Made-Up Minds</em></a>
+    (1991). Companion to
+    <a href="/ai-experiments/indistinguishable-figures/">Hiding Figures</a>.
+  </p>
+</BaseLayout>
+
+<style>
+  .lede { font-size: 1.12rem; line-height: 1.6; color: var(--primary-color); }
+  .lede em { font-style: italic; }
+  h2 { margin-top: 2.4rem; }
+  .methods { font-size: 0.95rem; color: var(--secondary-color); }
+
+  .papers {
+    display: grid;
+    gap: 0.6rem;
+    margin: 1.6rem 0;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--border-color);
+    border-left: 3px solid #16324f;
+    border-radius: 4px;
+    background: var(--code-bg);
+  }
+  .papers-h {
+    font-family: "Fira Code", ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--secondary-color);
+  }
+  a.paper {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 0.35rem 0;
+  }
+  a.paper:hover .paper-t { text-decoration: underline; }
+  .paper-t { display: block; font-weight: 600; color: var(--primary-color); line-height: 1.35; }
+  .paper-m {
+    display: block;
+    font-family: "Fira Code", ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--secondary-color);
+    margin-top: 0.2rem;
+  }
+
+  .caveat {
+    border-left: 3px solid #b3452c;
+    padding: 0.2rem 0 0.2rem 1rem;
+    margin: 1.2rem 0;
+    color: var(--primary-color);
+  }
+  .caveat p { margin: 0; }
+
+  hr.rule { border: none; border-top: 1px solid var(--border-color); margin: 2.4rem 0 1.4rem; }
+  .colophon { font-size: 0.85rem; color: var(--secondary-color); }
+</style>

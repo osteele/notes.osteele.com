@@ -49,6 +49,7 @@ example alignment.
     { value: "affine", label: "affine map" },
   ]} />
   <ControlRange id="subspace-fit-step" label="fit progress" valueId="subspace-fit-step-v" min="0" max="1" step="0.05" value="0.55" />
+  <button class="play-btn" data-play-target="subspace-fit-step" data-play-from="0" data-play-to="1" data-play-duration="1700" aria-label="Play the Procrustes fit from start to converged">▶ Play fit</button>
 </Fragment>
 </Figure>
 
@@ -315,4 +316,5 @@ of basis.
     drawAnchor();
   })();
 </script>
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
 </ExplainerLayout>

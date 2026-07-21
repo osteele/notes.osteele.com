@@ -477,7 +477,7 @@ function initGeom(): void {
   // Compute MAP under L1 (diamond) and L2 (disk) constraints with radius r,
   // and L0 (axis-aligned point set: origin + axes truncated to radius r).
   function solveL2(): { b1: number; b2: number } {
-    // Minimise (β-β_OLS)^T A (β-β_OLS) subject to β1^2 + β2^2 <= r^2.
+    // Minimize (β-β_OLS)^T A (β-β_OLS) subject to β1^2 + β2^2 <= r^2.
     // If β_OLS is inside, MAP = β_OLS; otherwise project along A's anisotropy.
     // For visual purposes, do a fine sweep over θ on the circle.
     if (Math.hypot(bOLS.b1, bOLS.b2) <= r) return { ...bOLS };
@@ -492,7 +492,7 @@ function initGeom(): void {
     return { b1: r * Math.cos(bestT), b2: r * Math.sin(bestT) };
   }
   function solveL1(): { b1: number; b2: number } {
-    // Minimise on |β1|+|β2| <= r. Sample the diamond boundary; if interior point
+    // Minimize on |β1|+|β2| <= r. Sample the diamond boundary; if interior point
     // wins, return interior.
     const interior = ellipseQuadFn(bOLS.b1, bOLS.b2);
     if (Math.abs(bOLS.b1) + Math.abs(bOLS.b2) <= r) return { ...bOLS };
@@ -514,7 +514,7 @@ function initGeom(): void {
     return bestPt;
   }
   function solveL0(): { b1: number; b2: number } {
-    // For visualization: support set = {origin, axes}. The MAP minimises the
+    // For visualization: support set = {origin, axes}. The MAP minimizes the
     // OLS quadratic over {(0,0), (β1_OLS,0), (0,β2_OLS)}.
     const cands = [
       { b1: 0, b2: 0 },

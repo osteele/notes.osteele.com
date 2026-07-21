@@ -374,7 +374,7 @@ function secondEigModulus(P) {
     ctx.globalAlpha = 1;
   }
 
-  // A rotating arc through the triangle centre whose direction is the cycle
+  // A rotating arc through the triangle center whose direction is the cycle
   // sense and whose weight grows with |J|. Vanishes when the chain is reversible.
   function drawCirculation(J) {
     const mag = Math.min(1, Math.abs(J) / 0.18);

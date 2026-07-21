@@ -15,7 +15,7 @@ import NotationAside from "../../components/explainer/NotationAside.astro";
   <p>
     A posterior $p(\theta\mid y)$ encodes everything, but actions need a single
     number. The choice of summary (mean, median, or mode) follows from the loss
-    function: each <em>minimises expected loss</em> under a different choice of $L$.
+    function: each <em>minimizes expected loss</em> under a different choice of $L$.
   </p>
 </OrientationNote>
 
@@ -88,7 +88,7 @@ The three canonical results:
 </div>
 
 <p>
-The last row generalises the others: instead of asking for a point estimate $\hat\theta$,
+The last row generalizes the others: instead of asking for a point estimate $\hat\theta$,
 allow the answer to be a whole probability distribution $q$ and use the
 <a href="/math/kl-divergence/">log loss</a> $L(\theta, q) = -\log q(\theta)$. The Bayes risk
 is $\mathbb E_&#123;\theta \mid y&#125;[-\log q(\theta)]$, minimized by $q = p(\theta\mid y)$
@@ -144,7 +144,7 @@ For continuous $\theta$ strict equality has probability zero, so use a thin-wind
 limit: $L_\varepsilon(\theta, \hat\theta) = \mathbf 1[\,|\theta - \hat\theta| > \varepsilon/2\,]$.
 Then $R_\varepsilon(\hat\theta) = 1 - \int_&#123;\hat\theta-\varepsilon/2&#125;^&#123;\hat\theta+\varepsilon/2&#125; p(\theta\mid y)\,d\theta
 \approx 1 - \varepsilon\,p(\hat\theta\mid y)$ for small $\varepsilon$, and the
-minimiser is $\hat\theta^\ast = \arg\max_&#123;\theta&#125; p(\theta\mid y)$, the posterior
+minimizer is $\hat\theta^\ast = \arg\max_&#123;\theta&#125; p(\theta\mid y)$, the posterior
 <strong>mode</strong>, also known as the <em>maximum a posteriori</em> (MAP) estimate.
 </p>
 
@@ -218,7 +218,7 @@ Things to notice as you drag:
 
 <ul>
   <li>On the skewed posterior, mode &lt; median &lt; mean, the canonical ordering
-      when the right tail is heavier. The three Bayes-risk curves each minimise at
+      when the right tail is heavier. The three Bayes-risk curves each minimize at
       a different point.</li>
   <li>On the bimodal posterior, the mode can sit on the taller peak while the
       median balances mass between modes and the mean lands between them.
@@ -227,7 +227,7 @@ Things to notice as you drag:
   <li>On a symmetric Gaussian, all three coincide.</li>
   <li>The squared-loss curve grows quickly away from the mean (it's a parabola
       pinned at posterior variance). Absolute loss grows linearly. Zero-one loss
-      barely moves until you leave the immediate neighbourhood of a peak.</li>
+      barely moves until you leave the immediate neighborhood of a peak.</li>
 </ul>
 
 <h2 id="decision">3. Which to use</h2>
@@ -269,7 +269,7 @@ Standard advice, written from the point of view of how the estimate will be used
 <p>
 A practical note: the MAP estimate is the most computationally accessible. It's
 the maximum of an unnormalised density, which avoids any integration. That's why
-gradient-based optimisation (and hence regularised maximum likelihood) implicitly
+gradient-based optimization (and hence regularized maximum likelihood) implicitly
 chooses 0-1 loss. The posterior mean and median require integrating the posterior,
 which is what
 <a href="/math/monte-carlo/">Monte Carlo &amp; MCMC</a> and

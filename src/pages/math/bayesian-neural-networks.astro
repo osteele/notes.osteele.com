@@ -53,7 +53,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
 
   <h2>2. Laplace approximation, and what it misses</h2>
   <p>
-    Laplace replaces the posterior with a Gaussian centred at the MAP, using the curvature of
+    Laplace replaces the posterior with a Gaussian centered at the MAP, using the curvature of
     $M$ at the MAP as the inverse covariance. That curvature decomposes the same way as the
     energy: $A = \nabla\nabla M\big|_&#123;w^*&#125; = \alpha I + \beta H$, where
     $H = \nabla\nabla E_D$ is the data-only Hessian. The prior contributes the same $\alpha$
@@ -161,11 +161,11 @@ import NextCards from "../../components/explainer/NextCards.astro";
 
   <h2>3. Evidence and Occam's Hill</h2>
   <p>
-    The log evidence $\log p(\mathcal D \mid \alpha, \beta)$ is what model comparison maximises.
+    The log evidence $\log p(\mathcal D \mid \alpha, \beta)$ is what model comparison maximizes.
     In MacKay's framing it is a ratio of three partition functions,
     $p(\mathcal D \mid \alpha, \beta) = Z_M(\alpha,\beta) / \big[Z_W(\alpha)\, Z_D(\beta)\big]$,
     where $Z_W(\alpha) = \int e^&#123;-\alpha E_W&#125; dw = (2\pi/\alpha)^&#123;d/2&#125;$ is the prior
-    normaliser, $Z_D(\beta) = (2\pi/\beta)^&#123;N/2&#125;$ is the noise-model normaliser, and
+    normalizer, $Z_D(\beta) = (2\pi/\beta)^&#123;N/2&#125;$ is the noise-model normalizer, and
     $Z_M(\alpha,\beta) = \int e^&#123;-M(w)&#125; dw$ is the posterior partition function. Under
     Laplace, $Z_M \approx e^&#123;-M(w^*)&#125; (2\pi)^&#123;d/2&#125;/\sqrt&#123;\det A&#125;$, so
     $\log p(\mathcal D \mid \alpha, \beta) \approx -M(w^*) - \tfrac12\log\det A
@@ -176,7 +176,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
     same $(w_1, w_2)$ as Figure 1, repeated for many values of the prior precision $\alpha$. Too
     small $\alpha$ wastes prior mass on regions far from the data ($Z_W$ huge, $Z_M$ barely
     larger); too large $\alpha$ pulls the prior away from where the MAP sits ($Z_W$ tiny but
-    $Z_M$ tiny faster). The peak is the Occam-optimal regulariser.
+    $Z_M$ tiny faster). The peak is the Occam-optimal regularizer.
     The three insets show the weight-space posterior at small, peak, and large $\alpha$. At
     small $\alpha$ the posterior is broad and most of its mass sits far from the data minimum;
     at large $\alpha$ the posterior contracts onto the origin and away from the data minimum.
@@ -224,7 +224,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
     update is the unbiased noise estimator using $N - \gamma$ residual degrees of freedom.
   </p>
 
-  <Figure title="Figure 4 · MacKay evidence-maximisation: α, β, γ trajectories" canvasId="bnn-evidence" width="780" height="430" readoutId="bnn-evidence-readout">
+  <Figure title="Figure 4 · MacKay evidence-maximization: α, β, γ trajectories" canvasId="bnn-evidence" width="780" height="430" readoutId="bnn-evidence-readout">
     <Fragment slot="legend">
       <div class="legend">
         <span><span class="swatch" style="background:#b8412a"></span>posterior contour at current α, β</span>
@@ -642,7 +642,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
         if (viView !== "off") {
           let vc, vs1, vs2;
           if (viView === "reverse") {
-            // reverse KL(q‖p): mode-seeking — centre on the MAP; per-axis precision is the
+            // reverse KL(q‖p): mode-seeking — center on the MAP; per-axis precision is the
             // diagonal of A, so per-axis variance = 1/A_ii, which underestimates the spread.
             vc = { w1: map.w1, w2: map.w2 };
             vs1 = 1 / Math.sqrt(Math.max(1e-4, H.fxx));
@@ -719,7 +719,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
         }
         fillBand(truePred, "rgba(107,69,146,0.18)", C.purple);
         fillBand(lapPred, "rgba(212,105,10,0.18)", C.orange);
-        // MAP function curve (solid blue) — the prediction Laplace centres on.
+        // MAP function curve (solid blue) — the prediction Laplace centers on.
         ctx.strokeStyle = C.blue; ctx.lineWidth = 2; ctx.beginPath();
         for (let i = 0; i <= 120; i++) { const x = -2.2 + 4.4 * i / 120, y = f(x, map.w1, map.w2); i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)); }
         ctx.stroke();
@@ -743,7 +743,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
         widthTrue /= xs.length; widthLap /= xs.length;
         const ratio = widthTrue / Math.max(1e-6, widthLap);
         const verdict = hasReflMap
-          ? `Two modes detected (Δenergy = ${(reflMap.e - map.e).toFixed(2)}). Laplace centres on one and underestimates the other — but both modes give identical predictions, so the predictive band is unaffected.`
+          ? `Two modes detected (Δenergy = ${(reflMap.e - map.e).toFixed(2)}). Laplace centers on one and underestimates the other — but both modes give identical predictions, so the predictive band is unaffected.`
           : `Effectively unimodal posterior. Laplace ≈ truth.`;
         const viRow = viView === "off" ? ""
           : viView === "reverse"
@@ -875,7 +875,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
         drawMiniHeatmap(ctx, xs0 + miniW + gap,         miniTop, miniW, miniH, peak.alpha, beta, `α ≈ ${peak.alpha.toFixed(2)} (Occam peak)`);
         drawMiniHeatmap(ctx, xs0 + 2 * (miniW + gap),   miniTop, miniW, miniH, aHigh,      beta, `α = ${aHigh.toFixed(1)} (pulled toward origin)`);
         const teClose = Math.abs(Math.log(peak.alpha) - Math.log(teMin.alpha)) < Math.log(2.5);
-        $("bnn-occam-readout").innerHTML = `<div class="row"><span class="lbl">peak log evidence at</span><span>α ≈ ${peak.alpha.toFixed(2)}</span></div><div class="row"><span class="lbl">evidence peak vs test-error min</span><span>α ≈ ${peak.alpha.toFixed(2)} vs ${teMin.alpha.toFixed(2)} — ${teClose ? "they nearly coincide: evidence picks the generalising model with no validation set" : "they diverge — the classic signature of model–data mismatch"}</span></div><div class="row"><span class="lbl">current α (Figure 1)</span><span>${alphaCur.toFixed(2)}; evidence ${curEv.evidence.toFixed(2)} vs peak ${peak.evidence.toFixed(2)}</span></div><div class="row"><span class="lbl">interpretation</span><span>The hill shape comes from prior normalisation $(d/2)\\log\\alpha$ minus the Hessian correction; the fit term keeps falling as $\\alpha$ pulls the MAP away from the data.</span></div><div class="row"><span class="lbl">snapshot legend</span><span>red shading = $\\exp(-M)$ posterior; blue dot at origin = prior centre; black cross = MAP. The cross moves toward the origin as α grows.</span></div>`;
+        $("bnn-occam-readout").innerHTML = `<div class="row"><span class="lbl">peak log evidence at</span><span>α ≈ ${peak.alpha.toFixed(2)}</span></div><div class="row"><span class="lbl">evidence peak vs test-error min</span><span>α ≈ ${peak.alpha.toFixed(2)} vs ${teMin.alpha.toFixed(2)} — ${teClose ? "they nearly coincide: evidence picks the generalizing model with no validation set" : "they diverge — the classic signature of model–data mismatch"}</span></div><div class="row"><span class="lbl">current α (Figure 1)</span><span>${alphaCur.toFixed(2)}; evidence ${curEv.evidence.toFixed(2)} vs peak ${peak.evidence.toFixed(2)}</span></div><div class="row"><span class="lbl">interpretation</span><span>The hill shape comes from prior normalization $(d/2)\\log\\alpha$ minus the Hessian correction; the fit term keeps falling as $\\alpha$ pulls the MAP away from the data.</span></div><div class="row"><span class="lbl">snapshot legend</span><span>red shading = $\\exp(-M)$ posterior; blue dot at origin = prior center; black cross = MAP. The cross moves toward the origin as α grows.</span></div>`;
       }
       // ---- Fig 4: prior-predictive vs posterior-predictive on pinned data -------------------
       const priorData = [
@@ -940,7 +940,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
         let verdict = "Prior brackets the data and the posterior contracts around it.";
         if (aIn > 4 && aOut < 4) verdict = "α_in too tight: w₂ is shrunk, so prior functions are almost linear (small slope). Posterior cannot grow nonlinearity.";
         else if (aOut > 4 && aIn < 4) verdict = "α_out too tight: w₁ is shrunk, so prior functions are tiny. Posterior cannot reach the data amplitude.";
-        else if (aIn > 4 && aOut > 4) verdict = "Both layers over-regularised: prior puts all mass near zero. Posterior is pulled toward zero even where data argues otherwise.";
+        else if (aIn > 4 && aOut > 4) verdict = "Both layers over-regularized: prior puts all mass near zero. Posterior is pulled toward zero even where data argues otherwise.";
         $("bnn-prior-readout").innerHTML = `<div class="row"><span class="lbl">α_out / α_in</span><span>${aOut.toFixed(1)} / ${aIn.toFixed(1)}</span></div><div class="row"><span class="lbl">prior 90% band covers</span><span>${priorCovered} / ${priorData.length} data points</span></div><div class="row"><span class="lbl">diagnosis</span><span>${verdict}</span></div>`;
       }
       function drawWeightEffect(id, varyW1) {
@@ -1057,7 +1057,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
         c.addEventListener("mouseup", rel);
         c.addEventListener("mouseleave", rel);
       }
-      // ---- Fig 4: MacKay evidence-maximisation widget --------------------------------------
+      // ---- Fig 4: MacKay evidence-maximization widget --------------------------------------
       const evState = { alpha: 0.05, beta: 0.5, history: [], running: false, timerId: null, converged: false };
       function findMAP(alpha, beta) {
         const Gm = 36;

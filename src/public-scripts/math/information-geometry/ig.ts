@@ -255,7 +255,7 @@ function fromSimplex(x: number, y: number): Vec3 {
 // ─────────── Figure 3: KL surface in 3D (WebGL) ───────────
 //
 // Two independent Bernoullis with means (μ₁, μ₂). The figure shows three
-// stacked artefacts over a unit base square:
+// stacked artifacts over a unit base square:
 //   1. The KL bowl D_KL(θ₀ || θ) as a height field, capped so the boundary
 //      blow-up stays legible.
 //   2. The Fisher quadratic (2nd-order Taylor of KL at the anchor), as a
@@ -393,9 +393,9 @@ function fromSimplex(x: number, y: number): Vec3 {
   // Base-plane frame: square at z=Z_BASE plus two axis ticks
   {
     const arr: number[] = [];
-    const grey: [number, number, number, number] = [0.55, 0.55, 0.55, 1];
+    const gray: [number, number, number, number] = [0.55, 0.55, 0.55, 1];
     const z0 = Z_BASE;
-    const push = (x: number, y: number) => arr.push(x, z0, y, grey[0], grey[1], grey[2], grey[3]);
+    const push = (x: number, y: number) => arr.push(x, z0, y, gray[0], gray[1], gray[2], gray[3]);
     push(-0.5, -0.5); push(0.5, -0.5);
     push(0.5, -0.5); push(0.5, 0.5);
     push(0.5, 0.5); push(-0.5, 0.5);

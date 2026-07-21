@@ -416,7 +416,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
             ctx.fillStyle = color; ctx.textAlign = "center"; ctx.fillText(String(path[t] + 1), x0 + cell / 2, top + r * rowH + 18);
           }
         });
-        // pick the disagreement closest to the middle, with at least one neighbour to look at
+        // pick the disagreement closest to the middle, with at least one neighbor to look at
         const disagreements = [];
         for (let t = 0; t < y.length; t++) if (vit[t] !== marginal[t]) disagreements.push(t);
         const disagCount = disagreements.length;
@@ -427,8 +427,8 @@ import NextCards from "../../components/explainer/NextCards.astro";
           const sticky = (t > 0 && vit[t - 1] === v) || (t + 1 < y.length && vit[t + 1] === v);
           const stick = Number($("hmm-stick").value);
           const reason = sticky
-            ? `Viterbi stays in state ${v + 1} because its neighbours on the Viterbi path are also ${v + 1}, and self-transitions have probability ${stick.toFixed(2)}; switching out and back costs two off-diagonal transitions.`
-            : `Viterbi prefers state ${v + 1} because future observations favour a path through it, even though the local smoothing marginal at t=${t + 1} narrowly favours ${m + 1}.`;
+            ? `Viterbi stays in state ${v + 1} because its neighbors on the Viterbi path are also ${v + 1}, and self-transitions have probability ${stick.toFixed(2)}; switching out and back costs two off-diagonal transitions.`
+            : `Viterbi prefers state ${v + 1} because future observations favor a path through it, even though the local smoothing marginal at t=${t + 1} narrowly favors ${m + 1}.`;
           story = `Disagreement at t=${t + 1}: smoother picks state ${m + 1} (${states[m]}), Viterbi picks state ${v + 1} (${states[v]}). ${reason}`;
         }
         $("hmm-viterbi-readout").innerHTML = `<div class="row"><span class="lbl">Viterbi / marginal disagreements</span><span>${disagCount} of ${y.length}</span></div><div class="row"><span class="lbl">why</span><span>${story}</span></div>`;

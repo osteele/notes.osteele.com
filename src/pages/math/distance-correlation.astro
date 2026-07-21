@@ -354,7 +354,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
           <li><strong>Spearman&rsquo;s $\rho$, Kendall&rsquo;s $\tau$, Puri-Sen rank correlation.</strong> Distribution-free for <em>monotone</em> alternatives. Power flatlines on symmetric non-monotone dependence (parabolas, sinusoids, multiplicative noise), visible directly in &sect; 1 above.</li>
           <li><strong>The Mantel test (1967).</strong> Permutation correlation between two raw distance matrices. Widely used in ecology, but its statistic does not double-center the matrices, so it is not a consistent test of independence; it can return zero when $X$ and $Y$ are dependent. The 2014 paper compares its partial-dCor test directly against partial Mantel and dominates it.</li>
           <li><strong>Hoeffding&rsquo;s $D$, Blum-Kiefer-Rosenblatt.</strong> Genuine if-and-only-if independence coefficients via the joint vs. product CDFs, but defined only for <em>bivariate continuous</em> distributions. They do not extend to vectors in $\mathbb&#123;R&#125;^p \times \mathbb&#123;R&#125;^q$.</li>
-          <li><strong>Mutual information estimators (Kraskov et al. 2004, kernel-based).</strong> Also characterize independence in any dimension, but require bandwidth or k-neighbour tuning and don&rsquo;t produce a single canonical scalar.</li>
+          <li><strong>Mutual information estimators (Kraskov et al. 2004, kernel-based).</strong> Also characterize independence in any dimension, but require bandwidth or k-neighbor tuning and don&rsquo;t produce a single canonical scalar.</li>
           <li><strong>HSIC (Gretton et al. 2005).</strong> A near-contemporaneous kernel-based independence criterion, conceptually very close: also an inner product of centered objects in a Hilbert space (an RKHS). The two were later shown to coincide for a particular distance-induced kernel (Sejdinovic et al. 2013).</li>
         </ul>
         <p>
@@ -364,7 +364,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
         <div class="part-divider">Part II &middot; <span class="part-name">Partial dCor and dissimilarities (2014)</span></div>
 
         <div class="framing">
-          The 2007 sample statistic $V_n^2 = n^&#123;-2&#125;\sum A_&#123;ij&#125;B_&#123;ij&#125;$ is a <em>bilinear form</em> on double-centered matrices, but it is not a clean inner product on a Hilbert space; it is biased, and there is no natural projection geometry on which to build a partial-correlation analogue. The 2014 paper&rsquo;s observation is that a slightly different centering rule resolves all of these issues. Replace double-centering with <em>U-centering</em> ($\widetilde A$), and the bilinear form
+          The 2007 sample statistic $V_n^2 = n^&#123;-2&#125;\sum A_&#123;ij&#125;B_&#123;ij&#125;$ is a <em>bilinear form</em> on double-centered matrices, but it is not a clean inner product on a Hilbert space; it is biased, and there is no natural projection geometry on which to build a partial-correlation analog. The 2014 paper&rsquo;s observation is that a slightly different centering rule resolves all of these issues. Replace double-centering with <em>U-centering</em> ($\widetilde A$), and the bilinear form
           $(\widetilde A \cdot \widetilde B) = &#123;1\over n(n-3)&#125;\sum_&#123;i\ne j&#125;\widetilde A_&#123;ij&#125;\widetilde B_&#123;ij&#125;$
           becomes a positive semidefinite inner product on a Hilbert space $H_n$ of centered matrices. The general recipe: pick a centering that removes the nuisance row, column, and grand-mean structure so the residuals&rsquo; bilinear form (a) still captures dependence and (b) is PSD. Three things follow:
           <ul>
@@ -444,7 +444,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
             <button id="d3-resample">Resample</button>
           </div>
           <svg id="d3-geom" viewBox="0 0 540 320" width="540" height="320" style="margin: 0 auto;"></svg>
-          <div class="caption">Vectors live in $H_n$; they are sketched here in 2D using their true pairwise angles (the angle between $\widetilde A$ and $\widetilde B$ is exact; the placement of $\widetilde A$ and $\widetilde B$ on either side of $\widetilde C$ is chosen so the partial cosine is realised.)</div>
+          <div class="caption">Vectors live in $H_n$; they are sketched here in 2D using their true pairwise angles (the angle between $\widetilde A$ and $\widetilde B$ is exact; the placement of $\widetilde A$ and $\widetilde B$ on either side of $\widetilde C$ is chosen so the partial cosine is realized.)</div>
           <div class="readout">
             <div class="stat"><div class="label">R*(X,Y)</div><div class="val" id="d3-rxy">&mdash;</div></div>
             <div class="stat"><div class="label">R*(X,Z)</div><div class="val dim" id="d3-rxz">&mdash;</div></div>
@@ -459,7 +459,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
         </div>
 
         <p>
-          With direct link at zero, $X$ and $Y$ share only their $Z$ pathway: $\widetilde A$ and $\widetilde B$ both lean toward $\widetilde C$, and once that shared component is subtracted, the residuals are nearly perpendicular, with $R^*(X,Y;Z) \approx 0$. Move the direct slider, and the residuals swing back into alignment. The paper notes that $R^*(X,Y;Z) = 0$ does <em>not</em> in general imply conditional independence; it characterises orthogonality in $H_n$, which is strictly weaker.
+          With direct link at zero, $X$ and $Y$ share only their $Z$ pathway: $\widetilde A$ and $\widetilde B$ both lean toward $\widetilde C$, and once that shared component is subtracted, the residuals are nearly perpendicular, with $R^*(X,Y;Z) \approx 0$. Move the direct slider, and the residuals swing back into alignment. The paper notes that $R^*(X,Y;Z) = 0$ does <em>not</em> in general imply conditional independence; it characterizes orthogonality in $H_n$, which is strictly weaker.
         </p>
 
         <div class="formula">
@@ -1384,7 +1384,7 @@ import NextCards from "../../components/explainer/NextCards.astro";
         let maxD = 0;
         for (let k = 0; k < n * n; k++) if (D[k] > maxD) maxD = D[k];
         heatmap(svgBC, D, n, 220, 220, maxD || 1);
-        // U-centered: scale to its own absmax so colours stay readable as c moves (they shouldn't)
+        // U-centered: scale to its own absmax so colors stay readable as c moves (they shouldn't)
         let maxUC = 0;
         for (let k = 0; k < n * n; k++) if (Math.abs(UC[k]) > maxUC) maxUC = Math.abs(UC[k]);
         heatmap(svgUC, UC, n, 220, 220, maxUC || 1);

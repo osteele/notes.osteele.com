@@ -25,7 +25,7 @@ import OrientationNote from "../../components/explainer/OrientationNote.astro";
 <h2 id="model">1. The model</h2>
 
 <p>
-Observations $\mathbf x_1, \ldots, \mathbf x_N \in \mathbb R^D$ are modelled as a
+Observations $\mathbf x_1, \ldots, \mathbf x_N \in \mathbb R^D$ are modeled as a
 mixture of $K$ Gaussians. Latent assignments $\mathbf z_n \in \&#123;1,\ldots,K\&#125;$
 say which component each $\mathbf x_n$ came from. With conjugate priors,
 </p>
@@ -165,14 +165,14 @@ initialization on a small dataset drawn from 2–4 true Gaussian clusters. Watch
       shrink to near zero. With $\alpha_0 \lt 1$ the surviving components match the
       true cluster count.</li>
   <li>The ELBO trace at the bottom climbs and plateaus.</li>
-  <li>Data points are coloured by their argmax responsibility; the dimmer dots are
+  <li>Data points are colored by their argmax responsibility; the dimmer dots are
       points where no component has a confident claim.</li>
 </ul>
 
 <Figure title="Figure 1 · CAVI updates on a 2-D Gaussian mixture" canvasId="fig-vbgmm" width="780" height="540" readoutId="vbgmm-readout">
 <Fragment slot="legend">
   <div class="legend">
-    <span><span class="swatch" style="background:#1f4a8c;border-radius:50%"></span>data, coloured by argmax responsibility</span>
+    <span><span class="swatch" style="background:#1f4a8c;border-radius:50%"></span>data, colored by argmax responsibility</span>
     <span><span class="swatch" style="background:#fbbf24"></span>true cluster means</span>
     <span><span class="swatch" style="background:#111827;height:2px"></span>component 1-σ ellipses, opacity = $\pi_k$</span>
   </div>

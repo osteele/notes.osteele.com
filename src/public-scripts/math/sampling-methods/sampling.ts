@@ -3306,7 +3306,7 @@ initFig0();
     });
     draw();
   }
-  // One Metropolis step from state `from`: propose a within-radius neighbour,
+  // One Metropolis step from state `from`: propose a within-radius neighbor,
   // accept with the MH ratio, record the visit, and return the outcome. The
   // animated walker and the background sampler share this kernel.
   function metropolisStep(from) {
@@ -3815,7 +3815,7 @@ initFig0();
     ctx.fillText("Merge:  T⁻¹(μ₁, μ₂) = ((μ₁+μ₂)/2, (μ₁−μ₂)/2)", mergeArrowX - 8, (topY + botY) / 2);
     ctx.restore();
 
-    // Animated travelling dot during split/merge
+    // Animated traveling dot during split/merge
     if (animDir !== 0) {
       const tt = t;
       ctx.save();

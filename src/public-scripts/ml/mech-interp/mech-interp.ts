@@ -1166,6 +1166,68 @@ function drawRetrievalMask() {
   readout("retrieval-mask-readout", `<div class="row"><span class="lbl">masked</span><span>${maskedCount} of ${total} retrieval heads (${mask}%)</span></div><div class="row"><span class="lbl">output</span><span>${stage}: ${note}</span></div>`);
 }
 
+// ── Reader-triggered "play" ────────────────────────────────────────────────
+// Ease a range control from one end to the other, dispatching input events so
+// the figure's existing draw re-runs each frame. A [data-play-target="<id>"]
+// button drives the range with id <id>. Honors prefers-reduced-motion (snaps
+// to the end state). This turns a scrubbable figure into one that also plays a
+// process (e.g. the four lookback states, or the accumulating residual stream).
+const activePlays = new Map<string, number>();
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+function playScrub(rangeId: string, opts: { from?: number; to?: number; duration?: number; onDone?: () => void } = {}) {
+  const el = input(rangeId);
+  if (!el) { opts.onDone?.(); return; }
+  const lo = Number(el.min || 0);
+  const hi = Number(el.max || 100);
+  const step = Number(el.step || 1);
+  const from = opts.from ?? lo;
+  const to = opts.to ?? hi;
+  const reduce = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const duration = reduce ? 0 : (opts.duration ?? 1600);
+  const prev = activePlays.get(rangeId);
+  if (prev) cancelAnimationFrame(prev);
+  const set = (v: number) => {
+    el.value = String(step >= 1 ? Math.round(v) : v);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  };
+  if (duration === 0) { set(to); activePlays.delete(rangeId); opts.onDone?.(); return; }
+  const start = performance.now();
+  const tick = (now: number) => {
+    const t = Math.min(1, (now - start) / duration);
+    set(from + (to - from) * easeInOutCubic(t));
+    if (t < 1) {
+      activePlays.set(rangeId, requestAnimationFrame(tick));
+    } else {
+      activePlays.delete(rangeId);
+      opts.onDone?.();
+    }
+  };
+  activePlays.set(rangeId, requestAnimationFrame(tick));
+}
+function numOrUndef(s: string | undefined): number | undefined {
+  return s == null ? undefined : Number(s);
+}
+function wirePlayButtons() {
+  document.querySelectorAll("[data-play-target]").forEach((el) => {
+    const btn = el as HTMLElement;
+    if (btn.dataset.playWired) return;
+    btn.dataset.playWired = "1";
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.playTarget;
+      if (!target) return;
+      btn.setAttribute("aria-busy", "true");
+      playScrub(target, {
+        from: numOrUndef(btn.dataset.playFrom),
+        to: numOrUndef(btn.dataset.playTo),
+        duration: numOrUndef(btn.dataset.playDuration),
+        onDone: () => btn.removeAttribute("aria-busy"),
+      });
+    });
+  });
+}
+
 function init() {
   attach(["residual-layer", "residual-sparsity"], drawResidualStream);
   attach(["qk-token", "qk-scale"], drawQkOv);
@@ -1183,6 +1245,7 @@ function init() {
   attach(["binding-number", "binding-strategy"], drawBinding);
   attach(["lookback-step"], drawLookback);
   attach(["retrieval-mask"], drawRetrievalMask);
+  wirePlayButtons();
 }
 
 init();

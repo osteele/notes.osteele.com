@@ -405,8 +405,8 @@ function clamp(x: number, lo: number, hi: number) { return Math.max(lo, Math.min
 
   {
     const arr: number[] = [];
-    const grey: [number, number, number, number] = [0.55, 0.55, 0.55, 1];
-    const push = (x: number, y: number) => arr.push(x, Z_BASE, y, grey[0], grey[1], grey[2], grey[3]);
+    const gray: [number, number, number, number] = [0.55, 0.55, 0.55, 1];
+    const push = (x: number, y: number) => arr.push(x, Z_BASE, y, gray[0], gray[1], gray[2], gray[3]);
     push(-1, -1); push(1, -1);
     push(1, -1); push(1, 1);
     push(1, 1); push(-1, 1);

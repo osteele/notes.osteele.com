@@ -24,6 +24,7 @@ prompts while the model itself stays frozen.
 <Figure title="Figure 1 · Rank-limited interchange against a matched random subspace" canvasId="das-rank-canvas" width="760" height="420" readoutId="das-rank-readout">
 <Fragment slot="controls">
   <ControlRange id="das-rank" label="rank" valueId="das-rank-v" min="1" max="12" step="1" value="4" />
+  <button class="play-btn" data-play-target="das-rank" data-play-from="1" data-play-to="12" data-play-duration="1900" aria-label="Play the rank sweep from 1 to 12">▶ Sweep rank</button>
   <ControlSelect id="das-pair" label="latent variable" valueId="das-pair-v" options={[
     { value: "belief", label: "belief space", selected: true },
     { value: "order", label: "adjective order" },
@@ -333,4 +334,5 @@ for the behavior.
     drawPath();
   })();
 </script>
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
 </ExplainerLayout>

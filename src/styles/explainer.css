@@ -33,7 +33,7 @@ body {
   .nav a, .nav .current { min-height: 32px; display: inline-flex; align-items: center; }
 }
 
-/* In-page breadcrumb sitting at the top of .explainer-content, modelled on
+/* In-page breadcrumb sitting at the top of .explainer-content, modeled on
    the papers site. Concern is separate from the dark cross-site .nav above. */
 .breadcrumbs {
   margin-bottom: 1.4rem;
@@ -207,6 +207,9 @@ button:hover { background: var(--accent); color: #fff; border-color: var(--accen
 button.active, .preset-row button.active {
   background: var(--accent-2); color: #fff; border-color: var(--accent-2);
 }
+.play-btn { align-self: flex-start; min-height: 30px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px; }
+.play-btn[aria-busy="true"] { background: var(--accent-2); color: #fff; border-color: var(--accent-2); }
+@media (prefers-reduced-motion: reduce) { .play-btn { opacity: 0.85; } }
 .legend {
   display: flex; gap: 16px; flex-wrap: wrap;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;

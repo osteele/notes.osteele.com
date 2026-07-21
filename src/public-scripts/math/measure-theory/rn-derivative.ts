@@ -1333,7 +1333,7 @@ function drawSimpleAxes(ctx, x, y, w, h, verticals = 6, horizontals = 4) {
       const mu = (x) => gaussian(x, 0, 1);
       // ν ∝ μ(x) · exp(θ x)  (exponential tilt)
       const theta = (p - 0.5) * 3; // -1.5 .. 1.5
-      // Normalising constant: ∫ μ(x) e^{θx} dx = e^{θ²/2}
+      // Normalizing constant: ∫ μ(x) e^{θx} dx = e^{θ²/2}
       const Z = Math.exp(theta * theta / 2);
       const nu = (x) => mu(x) * Math.exp(theta * x) / Z;
       return { mu, nu, param: `tilt θ = ${theta.toFixed(2)}` };

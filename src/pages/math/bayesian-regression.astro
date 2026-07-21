@@ -24,7 +24,7 @@ import NotationAside from "../../components/explainer/NotationAside.astro";
 <h2 id="dictionary">1. The dictionary</h2>
 
 <p>
-The MAP estimate maximises the posterior, or equivalently minimises its
+The MAP estimate maximizes the posterior, or equivalently minimizes its
 negative log:
 </p>
 
@@ -39,7 +39,7 @@ $$
 <p>
 The first bracket is a <strong>data-fit loss</strong>; the second is a
 <strong>regularizer</strong>. Read the equation in reverse and every
-penalised-likelihood method you already know turns into a Bayesian model:
+penalized-likelihood method you already know turns into a Bayesian model:
 </p>
 
 <div class="summary-table-wrap">
@@ -125,7 +125,7 @@ three rows in the dictionary below follow by changing either the likelihood
 
 <p>
 Slide $\beta_&#123;\text&#123;OLS&#125;&#125;$ and watch the three estimators respond. The top
-panel plots the negative log posterior (the thing being minimised), with a small
+panel plots the negative log posterior (the thing being minimized), with a small
 inset showing the prior penalty shape; the bottom panel plots the resulting
 $\hat\beta$ as a function of $\beta_&#123;\text&#123;OLS&#125;&#125;$.
 Ridge is a straight line through the origin with slope $1/(1+\lambda)$,
@@ -188,7 +188,7 @@ zero inside.
         <th>Loss + penalty</th>
         <th>Noise model</th>
         <th>Prior on $\beta_j$</th>
-        <th>Behaviour at $\beta_j = 0$</th>
+        <th>Behavior at $\beta_j = 0$</th>
       </tr>
     </thead>
     <tbody>
@@ -240,7 +240,7 @@ $$
 $$
 
 <p>
-The OLS objective's level sets are ellipses centred at
+The OLS objective's level sets are ellipses centered at
 $\beta_&#123;\text&#123;OLS&#125;&#125;$. The MAP estimate is the point of the smallest such
 ellipse that still touches the feasible region. Three regions, three touch
 geometries:
@@ -299,7 +299,7 @@ Drag the OLS point around. Things to notice:
 
 <p>
 The whole story is in the picture of the log-prior near the origin. Three
-curves, three behaviours:
+curves, three behaviors:
 </p>
 
 <ul>
@@ -345,7 +345,7 @@ facts stop looking arbitrary:
   <li>
     <strong>Elastic net</strong> ($\lambda_1\|\beta\|_1 + \lambda_2\|\beta\|_2^2$)
     is MAP under a product of Laplace and Gaussian priors, combining the
-    selection of one with the grouping behaviour of the other.
+    selection of one with the grouping behavior of the other.
   </li>
 </ul>
 

@@ -1166,6 +1166,96 @@ function drawRetrievalMask() {
   readout("retrieval-mask-readout", `<div class="row"><span class="lbl">masked</span><span>${maskedCount} of ${total} retrieval heads (${mask}%)</span></div><div class="row"><span class="lbl">output</span><span>${stage}: ${note}</span></div>`);
 }
 
+// ── Binding-ID swap (binding.astro) ────────────────────────────────────────
+// Two entities each bound to an attribute by a binding ID (a low-rank tag).
+// Swap the IDs and the model reports the swapped attribute — the signature of a
+// variable-like binding rather than a positional cue.
+function drawBindingSwap() {
+  const c = canvas("binding-swap-canvas");
+  if (!c) return;
+  const ctx = ctx2d(c);
+  clear(ctx, c);
+  const swapped = (select("binding-swap")?.value ?? "original") === "swapped";
+  setText("binding-swap-v", swapped ? "swapped" : "original");
+  const idColor = [colors.blue, colors.orange];
+  const ents = [{ name: "Alice", y: 84 }, { name: "Bob", y: 208 }];
+  const attrs = [{ name: "box", y: 84 }, { name: "cup", y: 208 }];
+  const ex = 70, ew = 150, ax = 540, aw = 150, h = 54;
+  const entId = swapped ? [1, 0] : [0, 1]; // which binding ID sits on each entity
+  const attrId = [0, 1]; // attributes keep fixed IDs (box=0, cup=1)
+  label(ctx, "a binding ID (a low-rank tag) links each entity to its attribute", ex, 44, colors.dim, 12);
+  const report: string[] = [];
+  ents.forEach((e, i) => {
+    const aIdx = attrId.indexOf(entId[i]);
+    const a = attrs[aIdx];
+    arrow(ctx, { x: ex + ew - 4, y: e.y + h / 2 }, { x: ax + 4, y: a.y + h / 2 }, idColor[entId[i]], 2.2);
+    report.push(`${e.name} → ${a.name}`);
+  });
+  ents.forEach((e, i) => {
+    box(ctx, ex, e.y, ew, h, "#fff", colors.rule);
+    label(ctx, e.name, ex + 14, e.y + 25, colors.text, 15);
+    label(ctx, "entity", ex + 14, e.y + 43, colors.dim, 11);
+    dot(ctx, { x: ex + ew - 18, y: e.y + h / 2 }, 8, idColor[entId[i]]);
+  });
+  attrs.forEach((a, i) => {
+    box(ctx, ax, a.y, aw, h, "#fff", colors.rule);
+    label(ctx, a.name, ax + 30, a.y + 25, colors.text, 15);
+    label(ctx, "attribute", ax + 30, a.y + 43, colors.dim, 11);
+    dot(ctx, { x: ax + 18, y: a.y + h / 2 }, 8, idColor[attrId[i]]);
+  });
+  readout("binding-swap-readout", `<div class="row"><span class="lbl">binding IDs</span><span>${swapped ? "swapped" : "original"}</span></div><div class="row"><span class="lbl">model reports</span><span>${report.join(", ")}</span></div>`);
+}
+
+// ── Belief value slot + router (false-belief-tasks.astro) ───────────────────
+// The slot holds both frame values; a router at the query position selects
+// which one the answer reads. Belief-vs-reality lives in the routing, not the
+// value. Illustrates papers.osteele.com/mental-spaces-belief-26.
+function drawBeliefSlot() {
+  const c = canvas("belief-slot-canvas");
+  if (!c) return;
+  const ctx = ctx2d(c);
+  clear(ctx, c);
+  const frame = (select("belief-query")?.value ?? "belief") === "reality" ? "reality" : "belief";
+  setText("belief-query-v", frame === "belief" ? "Anna thinks…" : "In fact…");
+  const blue = colors.blue, red = colors.red;
+  const sx = 300, sy = 56, sw = 150, sh = 112;
+  const chips = [
+    { frame: "belief", label: "blue", color: blue, y: sy + 36 },
+    { frame: "reality", label: "red", color: red, y: sy + 72 },
+  ];
+  box(ctx, 30, 62, 214, 44, "#fff", colors.rule);
+  label(ctx, "Anna believes cup = blue", 42, 88, colors.text, 12);
+  box(ctx, 30, 126, 214, 44, "#fff", colors.rule);
+  label(ctx, "in reality cup = red", 42, 152, colors.text, 12);
+  arrow(ctx, { x: 244, y: 84 }, { x: sx, y: sy + 50 }, colors.rule, 1.5);
+  arrow(ctx, { x: 244, y: 148 }, { x: sx, y: sy + 86 }, colors.rule, 1.5);
+  box(ctx, sx, sy, sw, sh, colors.panel, colors.rule);
+  label(ctx, "value slot", sx + sw / 2, sy + 22, colors.dim, 12, "center");
+  chips.forEach((ch) => {
+    const on = ch.frame === frame;
+    if (!on) ctx.globalAlpha = 0.4;
+    box(ctx, sx + 12, ch.y, sw - 24, 28, ch.color, ch.color);
+    label(ctx, ch.frame, sx + 20, ch.y + 19, "#fff", 11);
+    label(ctx, ch.label, sx + sw - 20, ch.y + 19, "#fff", 12, "right");
+    ctx.globalAlpha = 1;
+  });
+  const rx = 500, ry = 76, rw = 112, rh = 66;
+  box(ctx, rx, ry, rw, rh, "#f0edfa", "#c4b5fd");
+  label(ctx, "router", rx + rw / 2, ry + 24, colors.purple, 12, "center");
+  label(ctx, `selects: ${frame}`, rx + rw / 2, ry + 45, colors.dim, 11, "center");
+  box(ctx, 300, 214, 210, 40, "#fff", colors.rule);
+  label(ctx, frame === "belief" ? "Anna thinks the cup is …?" : "In fact the cup is …?", 312, 238, colors.text, 12);
+  arrow(ctx, { x: 405, y: 214 }, { x: rx + rw / 2, y: ry + rh }, colors.purple, 1.6);
+  const sel = chips.find((ch) => ch.frame === frame)!;
+  arrow(ctx, { x: sx + sw, y: sel.y + 14 }, { x: rx, y: ry + rh / 2 }, sel.color, 2.4);
+  const ansX = 660, ansY = 84;
+  box(ctx, ansX, ansY, 74, 50, sel.color, sel.color);
+  label(ctx, sel.label, ansX + 37, ansY + 31, "#fff", 16, "center");
+  label(ctx, "answer", ansX + 37, ansY + 64, colors.dim, 11, "center");
+  arrow(ctx, { x: rx + rw, y: ry + rh / 2 }, { x: ansX, y: ansY + 25 }, sel.color, 2);
+  readout("belief-slot-readout", `<div class="row"><span class="lbl">query</span><span>${frame === "belief" ? "Anna thinks…" : "In fact…"}</span></div><div class="row"><span class="lbl">router selects</span><span>${frame} frame → ${sel.label}</span></div>`);
+}
+
 // ── Reader-triggered "play" ────────────────────────────────────────────────
 // Ease a range control from one end to the other, dispatching input events so
 // the figure's existing draw re-runs each frame. A [data-play-target="<id>"]
@@ -1245,6 +1335,8 @@ function init() {
   attach(["binding-number", "binding-strategy"], drawBinding);
   attach(["lookback-step"], drawLookback);
   attach(["retrieval-mask"], drawRetrievalMask);
+  attach(["binding-swap"], drawBindingSwap);
+  attach(["belief-query"], drawBeliefSlot);
   wirePlayButtons();
 }
 

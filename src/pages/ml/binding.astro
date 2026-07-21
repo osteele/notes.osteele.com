@@ -117,6 +117,22 @@ positional cue. Dai and coauthors locate the same structure in a low-rank
 subspace, so the binding direction occupies a small part of the residual stream.
 </p>
 
+<Figure title="Figure 2 · The binding-ID swap: exchange the tags and the reports swap" canvasId="binding-swap-canvas" width="760" height="290" readoutId="binding-swap-readout">
+<Fragment slot="controls">
+  <ControlSelect id="binding-swap" label="binding IDs" valueId="binding-swap-v" options={[
+    { value: "original", label: "original", selected: true },
+    { value: "swapped", label: "swapped" },
+  ]} />
+</Fragment>
+</Figure>
+
+<p>
+Swapping the two entities' binding IDs makes the model report the swapped
+attribute. Because the swap is on the abstract identifier rather than on a
+position, the report follows the ID, which is what marks the binding as
+variable-like rather than a proximity cue.
+</p>
+
 <h2>4. Representation and routing together</h2>
 
 <p>

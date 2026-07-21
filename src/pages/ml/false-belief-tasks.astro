@@ -3,6 +3,7 @@ import ExplainerLayout from "../../layouts/ExplainerLayout.astro";
 import Hero from "../../components/explainer/Hero.astro";
 import Aside from "../../components/explainer/Aside.astro";
 import Figure from "../../components/explainer/Figure.astro";
+import ControlSelect from "../../components/explainer/ControlSelect.astro";
 import NextCards from "../../components/explainer/NextCards.astro";
 ---
 
@@ -54,6 +55,25 @@ and belief answer trade places.
 <Figure title="Figure 2 · Belief answer versus reality answer" canvasId="false-belief-answer-canvas" width="760" height="340" readoutId="false-belief-answer-readout">
 <Fragment slot="controls">
   <label class="control checkbox-control"><input id="fb-agent-sees" type="checkbox" /> agent sees the move</label>
+</Fragment>
+</Figure>
+
+<h2>3. Where the belief lives</h2>
+
+<p>
+The task keeps two answers about one object ready at once. Inside the model the
+two values sit in a shared <em>value slot</em>; a <em>router</em> at the query
+position selects which one the answer reads. Belief-versus-reality lives in the
+routing, not in the value: the mechanism worked out for
+<a href="https://papers.osteele.com/mental-spaces-belief-26">belief–reality separation in language models</a>.
+</p>
+
+<Figure title="Figure 3 · The value slot holds both; the router selects the frame" canvasId="belief-slot-canvas" width="760" height="290" readoutId="belief-slot-readout">
+<Fragment slot="controls">
+  <ControlSelect id="belief-query" label="query" valueId="belief-query-v" options={[
+    { value: "belief", label: "Anna thinks…", selected: true },
+    { value: "reality", label: "In fact…" },
+  ]} />
 </Fragment>
 </Figure>
 
@@ -190,4 +210,5 @@ and belief answer trade places.
     drawAnswer();
   })();
 </script>
+<script is:inline src="/ml/mech-interp/mech-interp.js"></script>
 </ExplainerLayout>

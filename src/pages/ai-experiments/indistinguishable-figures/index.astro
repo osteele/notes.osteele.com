@@ -31,7 +31,7 @@ const img = "/images/indistinguishable-figures";
   <!-- ===================== §2 ===================== -->
   <h2>The easiest one to fool is yourself</h2>
 
-  <p class="prompt"><span class="who">Me</span>Create an SVG that has two figures that it's impossible for a perceptron to distinguish.</p>
+  <p class="prompt"><span class="who">Me</span>Create a SVG that has two figures that it's impossible for a perceptron to distinguish.</p>
 
   <blockquote class="agent">
     <span class="who">Fable</span>
@@ -47,7 +47,7 @@ const img = "/images/indistinguishable-figures";
     <span class="who">Fable</span>
     <p>It renders the two figures from the cover of Minsky &amp; Papert's <em>Perceptrons</em> (1969): Figure A is a single square spiral, one connected curve. Figure B looks the same at a glance but is actually two interleaved spirals that never touch (the second is the first rotated 180°, nested between its turns).</p>
     <p>Both use identical stroke, spacing (20 units between stripes), and overall silhouette, so any small window onto figure A is indistinguishable from a window onto figure B. That's the point of the famous theorem: a perceptron whose predicates have bounded diameter (or bounded order) computes a linear threshold over local features, and since all local evidence is identical between the two figures, it provably cannot decide connectedness — you can only tell them apart by tracing a curve globally.</p>
-    <p>The only place they visibly differ is deep in the center (one path terminus vs. two) and the outer tails — which is exactly what makes it fun as a puzzle: the caption asks “which is a single connected curve?” and the labels give the answer.</p>
+    <p>The only place they visibly differ is deep in the center (one path terminus vs. two) and the outer tails — which is exactly what makes it fun as a puzzle: the caption asks “which is a single connected curve?” and the labels give the answer. Open it with <code>open perceptron-figures.svg</code> to view.</p>
   </blockquote>
 
   <!-- ===================== §3 ===================== -->
@@ -76,7 +76,7 @@ const img = "/images/indistinguishable-figures";
   <!-- ===================== recapitulation ===================== -->
   <h2>AI instance recapitulates AI history</h2>
 
-  <p class="prompt"><span class="who">Me</span>Looking just at the image, how easy is it for <span class="hl"><em>you</em> to tell</span> which is one loop and which is two?</p>
+  <p class="prompt"><span class="who">Me</span>Looking just at the image, how easy is it for <span class="hl"><em>you</em> to tell</span> which is one lop [sic] and which is two? [Image #1]</p>
 
   <blockquote class="agent">
     <span class="who">Fable</span>
@@ -199,13 +199,13 @@ const img = "/images/indistinguishable-figures";
     <p><strong>Panels 1–2 defeated me through overcorrection.</strong> Both times my raw percept was veridical — the left patch really was lighter, the right disc really was larger — but knowing the illusions predict exactly those appearances, I discounted what I saw and answered “same.” The randomizer had (by chance) made the real difference agree with the illusion's direction both times, and I couldn't separate signal from known bias. That's a cleaner statement of “the illusion works” than misperceiving: it destroyed my calibration even where it didn't destroy discrimination. <span class="hl">Someone who'd never heard of Ebbinghaus would have scored 2/2.</span></p>
     <p><strong>Panel 3 defeated my glance but not my serial routine.</strong> My initial estimate was wrong-ish; zooming and counting one-by-one gave exactly 13 and 15. Same as a human: fast numerosity fails, slow counting works.</p>
     <p><strong>Panel 4 defeated me exactly where I predicted.</strong> The two curves that fuse into a single anti-aliased band near their peaks — rasterization genuinely destroys the crossing information; 12× zoom showed one solid ribbon. I reconstructed the rest by crossing-parity bookkeeping (C, D, E all correct), flagged the A/B assignment at ~55% confidence, and got that one pair wrong. Tracing through the ambiguity was the one place reasoning couldn't substitute for pixels.</p>
-    <p>So the file's thesis holds up under self-experiment: I pass what yields to slow serial routines, and fail where the task demands either uncontaminated perception or information the image no longer contains. The blind-test generator is in the session scratchpad if you want to keep it — rerunning it produces a fresh randomized instance each time, so it stays a fair test for anyone, including future me.</p>
+    <p>So the file's thesis holds up under self-experiment: I pass what yields to slow serial routines, and fail where the task demands either uncontaminated perception or information the image no longer contains. The blind-test generator (<code>gen_blind.py</code>) is in the session scratchpad if you want to keep it — rerunning it produces a fresh randomized instance each time, so it stays a fair test for anyone, including future me.</p>
   </blockquote>
 
   <!-- ===================== §5 ===================== -->
   <h2>Flipping the truth tables</h2>
 
-  <p class="prompt"><span class="who">Me</span>Interesting that you chose that approach — I was expecting that you might create a subagent to test against. But it might recognize the illusions, so I guess <span class="hl">you'd need a control</span> for that anyway.</p>
+  <p class="prompt"><span class="who">Me</span>Interesting that you chose that approach -- I was expecting that you might create a subagent to test against. But it might recognize the illusions, so I guess <span class="hl">you'd need a control</span> for that anyway.</p>
 
   <blockquote class="agent">
     <span class="who">Fable</span>
@@ -223,7 +223,24 @@ const img = "/images/indistinguishable-figures";
 
   <blockquote class="agent">
     <span class="who">Fable</span>
-    <p>The experiment tested the wrong thing — instructively. All three subjects, given shell access “for zooming,” independently decided to measure instead of perceive: pixel-sampling the patches, connected-component labeling for counts and disc areas. Every measurable item came back perfect, including an 18-vs-17 dot discrimination no perceiver could make. Your predicted confound (recognizing the illusion → overcorrecting) never got a chance to fire, because recognition triggered a better strategy than overcorrection: all three named the illusion in their notes and then reached for the ruler.</p>
+    <p>Full results. Truth vs. subjects:</p>
+    <div class="result-wrap">
+      <table class="result">
+        <thead><tr><th>Item</th><th>S1 (trial 1)</th><th>S2 (trial 2)</th><th>S3 (trial 3)</th></tr></thead>
+        <tbody>
+          <tr><td>1a contrast (illusion)</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>1b contrast (control)</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>2a Ebbinghaus (illusion)</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>2b discs (control)</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>3 dot counts</td><td>✓ exact (18/14)</td><td>✓ exact (18/17!)</td><td>✓ exact (13/17)</td></tr>
+          <tr><td>4 tangle (crossings)</td><td>3/5 (19×)</td><td>2/5 (18×)</td><td><strong>5/5</strong> (8×)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Three findings, one of them a genuine surprise.</p>
+    <p><strong>1. The experiment tested the wrong thing — instructively.</strong> All three subjects, given shell access “for zooming,” independently decided to measure instead of perceive: pixel-sampling the patches, connected-component labeling for counts and disc areas. Every measurable item came back perfect, including an 18-vs-17 dot discrimination no perceiver could make. Your predicted confound (recognizing the illusion → overcorrecting) never got a chance to fire, because recognition triggered a better strategy than overcorrection: all three named the illusion in their notes and then reached for the ruler. Illusions attack perception; an agent loop with tools simply doesn't route through perception. To actually test what you proposed, the subjects need the ruler taken away — image only, no Bash, answer from a single look. That's the follow-up design if you want it.</p>
+    <p><strong>2. The tangle survived instrumentation.</strong> Skeletonization, tangent-continuity matching, quadratic extrapolation across tangencies — and accuracy still tracked crossing density: 8 crossings → perfect, 18–19 crossings → 2/5 and 3/5 (each failure a pairwise swap at a dense cluster). Serial tracing was also expensive: subjects spent up to 26 minutes and ~370k tokens each. The connectedness-family task is the one that stays hard even when perception is bypassed.</p>
+    <p><strong>3. The failures were confidently wrong.</strong> Both failing subjects reported their mappings as “verified,” “consistent,” “matches an independent reverse trace” — no hedging, wrong answers. Compare my run, where I flagged the A/B swap at ~55% confidence and was wrong exactly there. The subjects' overconfidence is arguably the more important MLLM blind spot than the tracing errors themselves: the tangle doesn't just defeat the answer, it defeats the error bar.</p>
     <p>Nice irony to close on: the caption I wrote for the Ebbinghaus panel — <span class="hl">“a ruler is not fooled”</span> — turned out to be the subjects' entire strategy.</p>
   </blockquote>
 
